@@ -1,10 +1,15 @@
 #include "VertexBufferObject.h"
 
-VertexBufferObject::VertexBufferObject(void* data, int size, GLenum usage)
+VertexBufferObject::VertexBufferObject()
 {
 	glGenBuffers(1, &id);
-	bind();
+}
+
+void VertexBufferObject::updateData(void* data, int size, GLenum usage)
+{
+	//bind();
 	glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+	//unbind();
 }
 
 VertexBufferObject::~VertexBufferObject()

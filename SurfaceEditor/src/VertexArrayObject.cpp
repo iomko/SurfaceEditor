@@ -5,7 +5,6 @@
 VertexArrayObject::VertexArrayObject()
 {
 	glGenVertexArrays(1, &id);
-	bind();
 }
 
 VertexArrayObject::~VertexArrayObject()

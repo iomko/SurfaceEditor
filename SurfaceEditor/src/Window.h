@@ -5,6 +5,7 @@
 #include <GLFW\glfw3.h>
 #include <string>
 #include "Keyboard.h"
+#include "Camera.h"
 
 class Window
 {
@@ -18,12 +19,14 @@ public:
 	void terminate();
 	void cleanUp();
 	void createNewFrame();
-	void processInput();
+	void processInput(Camera& camera, float& deltaTime);
 	void setCallBackFunctions();
-	void setClosing(bool close);
-	void update();
 
 	static void frameBufferSizeCallBack(GLFWwindow* window, int width, int height);
+private:
+	void processLookAtDirection(Camera& camera);
+	void processMouseScroll(Camera& camera);
+	void processKeys(Camera& camera, float& deltaTime);
 };
 
 #endif

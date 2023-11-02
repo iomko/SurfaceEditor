@@ -50,6 +50,9 @@
     <None Include="glfw3.dll" />
     <None Include="src\shader.vert" />
     <None Include="src\shader.frag" />
+    <None Include="src\lineShader.vert" />
+    <None Include="src\lineShader.frag" />
+    <None Include="src\triangleShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />
@@ -91,6 +94,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TriangleData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Octree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OctreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BoundingRegion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

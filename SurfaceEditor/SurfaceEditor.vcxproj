@@ -145,8 +145,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
+    <None Include="src\lineShader.frag" />
+    <None Include="src\lineShader.vert" />
     <None Include="src\shader.frag" />
     <None Include="src\shader.vert" />
+    <None Include="src\triangleShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />
@@ -158,11 +161,16 @@
     <ClInclude Include="Linking\include\GLFW\glfw3.h" />
     <ClInclude Include="Linking\include\GLFW\glfw3native.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
+    <ClInclude Include="src\BoundingRegion.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\ElementBufferObject.h" />
     <ClInclude Include="src\Keyboard.h" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Mouse.h" />
+    <ClInclude Include="src\Octree.h" />
+    <ClInclude Include="src\OctreeNode.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\TriangleData.h" />
     <ClInclude Include="src\VertexArrayObject.h" />
     <ClInclude Include="src\VertexBufferObject.h" />
     <ClInclude Include="src\Window.h" />

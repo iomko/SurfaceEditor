@@ -45,11 +45,13 @@ void Camera::updateCameraPosition(CameraMovement movementDirection, float amount
 	}
 	if(movementDirection == CameraMovement::LEFT)
 	{
-		this->position += -this->rightVector * amount;
+		this->position -= glm::normalize(glm::cross(this->frontVector, this->upVector)) * amount;
+		//this->position += -this->rightVector * amount;
 	}
 	if(movementDirection == CameraMovement::RIGHT)
 	{
-		this->position += this->rightVector * amount;
+		this->position += glm::normalize(glm::cross(this->frontVector, this->upVector)) * amount;
+		//this->position += this->rightVector * amount;
 	}
 
 	//updateLookAtMatrix

@@ -32,5 +32,6 @@ public:
 	void updateCameraPosition(CameraMovement movementDirection, float amount);
 	void updateCameraVectors();
 	void updateCameraZoom(float amount);
+
 };
 #endif

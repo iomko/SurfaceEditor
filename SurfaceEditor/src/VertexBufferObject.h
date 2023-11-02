@@ -4,7 +4,8 @@
 
 class VertexBufferObject {
 public:
-    VertexBufferObject(void* data, int size, GLenum usage);
+    VertexBufferObject();
+    void updateData(void* data, int size, GLenum usage);
     ~VertexBufferObject();
 
     void bind();

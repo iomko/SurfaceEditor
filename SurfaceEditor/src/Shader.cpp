@@ -12,7 +12,6 @@ Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentS
 	createAndlinkProgram(vertexShaderID, fragmentShaderID);
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
-	bind();
 }
 
 void Shader::bind()

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "Shader.h"
 #include "Window.h"
@@ -11,62 +12,43 @@
 
 #include "Mouse.h"
 #include "Camera.h"
-
-
-void processKeys(Camera& camera, float& deltaTime)
-{
-	const float movementSpeed = 2.5f * deltaTime;
-	if (Keyboard::key(GLFW_KEY_W) == true)
-	{
-		camera.updateCameraPosition(CameraMovement::FORWARD, movementSpeed);
-	}
-	if (Keyboard::key(GLFW_KEY_S) == true)
-	{
-		camera.updateCameraPosition(CameraMovement::BACKWARD, movementSpeed);
-	}
-	if (Keyboard::key(GLFW_KEY_A) == true)
-	{
-		camera.updateCameraPosition(CameraMovement::LEFT, movementSpeed);
-	}
-	if (Keyboard::key(GLFW_KEY_D) == true)
-	{
-		camera.updateCameraPosition(CameraMovement::RIGHT, movementSpeed);
-	}
-}
-
-void processLookAtDirection(Camera& camera)
-{
-	double changedDX = Mouse::getDiffX();
-	double changedDY = Mouse::getDiffY();
-
-	if (changedDX != 0.0 || changedDY != 0.0)
-	{
-		camera.updateCameraDirection(changedDX, changedDY);
-	}
-}
-
-
-void processScroll(Camera& camera)
-{
-	double changedScroll = Mouse::getScrollDiffY();
-	if(changedScroll != 0.0)
-	{
-		camera.updateCameraZoom(changedScroll);
-	}
-}
-
-void processInput(Camera& camera, float& deltaTime)
-{
-	processKeys(camera, deltaTime);
-	processLookAtDirection(camera);
-	processScroll(camera);
-}
+#include "Mesh.h"
+#include "TriangleData.h"
+#include "BoundingRegion.h"
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+
+//testing triangles for now
+TriangleData createFirstTriangle()
+{
+	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	glm::vec3 position1, position2, position3;
+	position1 = { -0.5f, -0.5f, 0.0f };
+	position2 = { 0.5f, -0.5f, 0.0f };
+	position3 = { 0.0f,0.5f, 0.0f };
+
+	return TriangleData({ position1, position2, position3 }, color);
+}
+
+TriangleData createSecondTriangle()
+{
+	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	glm::vec3 position1, position2, position3;
+	position1 = { -0.5f + 1.0f, -0.5f, -1.5f };
+	position2 = { 0.5f + 1.5f, -0.5f, 1.0f };
+	position3 = { 0.0f + 2.0f,0.5f, 1.5f };
+
+	return TriangleData({ position1, position2, position3 }, color);
+}
+
 int main()
 {
+	//add predefined triangles to a mesh
+
 	Window window = Window(800, 600, "SurfaceEditor");
 	window.initialize();
 	window.setCallBackFunctions();
@@ -78,57 +60,22 @@ int main()
 
 	Shader shader = Shader("src\\shader.vert", "src\\shader.frag");
 
-	float vertices[] = {
-	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+	Mesh mesh;
 
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+	
+	VertexArrayObject linesVAO;
+	VertexBufferObject linesVBO;
+	
+	linesVAO.bind();
+	linesVBO.bind();
+	linesVBO.updateData(nullptr, 0, GL_DYNAMIC_DRAW);
+	linesVAO.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	linesVAO.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	linesVAO.unbind();
+	linesVBO.unbind();
 
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f
-	};
-
-
-	VertexArrayObject vao = VertexArrayObject();
-	VertexBufferObject vbo = VertexBufferObject(vertices, sizeof(vertices), GL_STATIC_DRAW);
-	vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	vbo.unbind();
-	vao.unbind();
+	std::array<glm::vec3,2> lineVertices;
+	
 
 	while (!glfwWindowShouldClose(window.windowHandle))
 	{
@@ -136,21 +83,63 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		processInput(camera, deltaTime);
-
+		window.processInput(camera, deltaTime);
 		window.cleanUp();
 
+		shader.bind();
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(glm::radians(camera.zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 		shader.setMat4("projection", projection);
 
-		shader.bind();
 		glm::mat4 view = camera.lookAtMatrix;
 		shader.setMat4("view", view);
 		glm::mat4 model = glm::mat4(1.0f);
 		shader.setMat4("model", model);
-		vao.bind();
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		if (Keyboard::keyWentDown(GLFW_KEY_Q) == true)
+		{
+			mesh.addTriangle(createFirstTriangle());
+		}
+		if (Keyboard::keyWentDown(GLFW_KEY_J) == true)
+		{
+			mesh.addTriangle(createSecondTriangle());
+		}
+		if (Keyboard::keyWentDown(GLFW_KEY_B) == true)
+		{
+			std::vector<glm::vec3> vecPositions;
+			for(const auto& triangle : mesh.triangles)
+			{
+				for (const auto& position : triangle.positions) {
+					vecPositions.push_back(position);
+				}
+			}
+
+			AABB aabb = createAABB(vecPositions);
+
+			//line test
+			glm::vec3 lineStart = aabb.min;
+			glm::vec3 lineEnd = aabb.max;
+			lineVertices[0] = lineStart;
+			lineVertices[1] = lineEnd;
+			
+
+			linesVAO.bind();
+			linesVBO.bind();
+			linesVBO.updateData(&lineVertices[0], lineVertices.size() * sizeof(float), GL_DYNAMIC_DRAW);
+			linesVAO.unbind();
+			linesVBO.unbind();
+			
+		}
+		linesVAO.bind();
+		linesVBO.bind();
+		glDrawArrays(GL_LINES, 0, lineVertices.size());
+		linesVAO.unbind();
+		linesVBO.unbind();
+
+		mesh.render();
+		shader.unbind();
+
 		window.createNewFrame();
 	}
 	window.terminate();

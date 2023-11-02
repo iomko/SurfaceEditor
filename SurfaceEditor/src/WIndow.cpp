@@ -52,9 +52,11 @@ void Window::createNewFrame()
 	glfwPollEvents();
 }
 
-void Window::processInput()
+void Window::processInput(Camera& camera, float& deltaTime)
 {
-	
+	processKeys(camera, deltaTime);
+	processMouseScroll(camera);
+	processLookAtDirection(camera);
 }
 
 void Window::frameBufferSizeCallBack(GLFWwindow* window, int width, int height)
@@ -68,13 +70,48 @@ void Window::setCallBackFunctions()
 	glfwSetCursorPosCallback(windowHandle, Mouse::cursorPositionCallBack);
 	glfwSetFramebufferSizeCallback(windowHandle, frameBufferSizeCallBack);
 	glfwSetScrollCallback(windowHandle, Mouse::mouseScrollCallBack);
+	glfwSetMouseButtonCallback(windowHandle, Mouse::mouseButtonCallBack);
 }
 
-void Window::setClosing(bool close)
+void Window::processLookAtDirection(Camera& camera)
 {
+	double changedDX = Mouse::getDiffX();
+	double changedDY = Mouse::getDiffY();
 
+	if (changedDX != 0.0 || changedDY != 0.0)
+	{
+		camera.updateCameraDirection(changedDX, changedDY);
+	}
 }
 
-void Window::update()
+void Window::processMouseScroll(Camera& camera)
 {
+	double changedScroll = Mouse::getScrollDiffY();
+	if (changedScroll != 0.0)
+	{
+		camera.updateCameraZoom(changedScroll);
+	}
 }
+
+void Window::processKeys(Camera& camera, float& deltaTime)
+{
+	const float movementSpeed = 4.0f * deltaTime;
+	if (Keyboard::key(GLFW_KEY_W) == true)
+	{
+		camera.updateCameraPosition(CameraMovement::FORWARD, movementSpeed);
+	}
+	if (Keyboard::key(GLFW_KEY_S) == true)
+	{
+		camera.updateCameraPosition(CameraMovement::BACKWARD, movementSpeed);
+	}
+	if (Keyboard::key(GLFW_KEY_A) == true)
+	{
+		camera.updateCameraPosition(CameraMovement::LEFT, movementSpeed);
+	}
+	if (Keyboard::key(GLFW_KEY_D) == true)
+	{
+		camera.updateCameraPosition(CameraMovement::RIGHT, movementSpeed);
+	}
+}
+
+

@@ -11,7 +11,7 @@ public:
 	void unbind();
 	void addVertexBufferLayout(int index, int size, GLenum type, bool normalized, int stride, void* offset);
 
-private:
+public:
 	unsigned int id = 0;
 };
 
