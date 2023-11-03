@@ -22,4 +22,6 @@ inline AABB createAABB(const std::vector<glm::vec3>& pointList) {
 
     return aabb;
 }
+
+
 #endif

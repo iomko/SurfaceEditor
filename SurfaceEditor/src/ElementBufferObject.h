@@ -4,10 +4,11 @@
 
 class ElementBufferObject {
 public:
-    ElementBufferObject(unsigned int* indices, int count, GLenum usage);
+    ElementBufferObject();
     ~ElementBufferObject();
     void bind();
     void unbind();
+    void updateData(unsigned int* indices, int count, GLenum usage);
 
 private:
     unsigned int id = 0;

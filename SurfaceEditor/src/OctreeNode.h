@@ -11,7 +11,7 @@ class OctreeNode
 	int depth;
 	std::array<OctreeNode> childrenNodes;
 	std::vector<TriangleData> datas;
-	nodeBounds;
+	
 };
 
 #endif

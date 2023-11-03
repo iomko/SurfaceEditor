@@ -16,8 +16,7 @@ public:
 
     void addData(const TriangleData& data)
     {
-        // Add the data to the octree
-        // You can use the 'data' parameter of type T here
+        
 
     }
 };

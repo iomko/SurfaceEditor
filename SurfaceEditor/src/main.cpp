@@ -19,23 +19,22 @@
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
 //testing triangles for now
 TriangleData createFirstTriangle()
 {
 	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	glm::vec3 position1, position2, position3;
-	position1 = { -0.5f, -0.5f, 0.0f };
-	position2 = { 0.5f, -0.5f, 0.0f };
-	position3 = { 0.0f,0.5f, 0.0f };
+	position1 = { -0.5f, -0.5f, 1.0f };
+	position2 = { 0.5f, -0.5f, -2.0f };
+	position3 = { 0.0f,0.5f, 3.0f };
 
 	return TriangleData({ position1, position2, position3 }, color);
 }
 
 TriangleData createSecondTriangle()
 {
-	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 color = glm::vec3(0.4f, 0.3f, 0.7f);
 
 	glm::vec3 position1, position2, position3;
 	position1 = { -0.5f + 1.0f, -0.5f, -1.5f };
@@ -47,8 +46,6 @@ TriangleData createSecondTriangle()
 
 int main()
 {
-	//add predefined triangles to a mesh
-
 	Window window = Window(800, 600, "SurfaceEditor");
 	window.initialize();
 	window.setCallBackFunctions();
@@ -61,20 +58,7 @@ int main()
 	Shader shader = Shader("src\\shader.vert", "src\\shader.frag");
 
 	Mesh mesh;
-
-	
-	VertexArrayObject linesVAO;
-	VertexBufferObject linesVBO;
-	
-	linesVAO.bind();
-	linesVBO.bind();
-	linesVBO.updateData(nullptr, 0, GL_DYNAMIC_DRAW);
-	linesVAO.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	linesVAO.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	linesVAO.unbind();
-	linesVBO.unbind();
-
-	std::array<glm::vec3,2> lineVertices;
+	Mesh mesh2;
 	
 
 	while (!glfwWindowShouldClose(window.windowHandle))
@@ -101,14 +85,15 @@ int main()
 		{
 			mesh.addTriangle(createFirstTriangle());
 		}
-		if (Keyboard::keyWentDown(GLFW_KEY_J) == true)
+		if (Keyboard::keyWentDown(GLFW_KEY_E) == true)
 		{
 			mesh.addTriangle(createSecondTriangle());
 		}
-		if (Keyboard::keyWentDown(GLFW_KEY_B) == true)
+		if(Keyboard::keyWentDown(GLFW_KEY_B) == true)
 		{
 			std::vector<glm::vec3> vecPositions;
-			for(const auto& triangle : mesh.triangles)
+
+			for (const auto& triangle : mesh.triangles)
 			{
 				for (const auto& position : triangle.positions) {
 					vecPositions.push_back(position);
@@ -117,27 +102,15 @@ int main()
 
 			AABB aabb = createAABB(vecPositions);
 
-			//line test
 			glm::vec3 lineStart = aabb.min;
 			glm::vec3 lineEnd = aabb.max;
-			lineVertices[0] = lineStart;
-			lineVertices[1] = lineEnd;
-			
 
-			linesVAO.bind();
-			linesVBO.bind();
-			linesVBO.updateData(&lineVertices[0], lineVertices.size() * sizeof(float), GL_DYNAMIC_DRAW);
-			linesVAO.unbind();
-			linesVBO.unbind();
-			
+			TriangleData triangleData({ lineStart, lineEnd, glm::vec3{lineStart.x - 0.1f,lineStart.y - 0.1f,lineStart.z - 0.1f} }, glm::vec3{ 0.0f,1.0f,0.0f });
+			mesh2.addTriangle(triangleData);
 		}
-		linesVAO.bind();
-		linesVBO.bind();
-		glDrawArrays(GL_LINES, 0, lineVertices.size());
-		linesVAO.unbind();
-		linesVBO.unbind();
 
 		mesh.render();
+		mesh2.render();
 		shader.unbind();
 
 		window.createNewFrame();
@@ -145,4 +118,3 @@ int main()
 	window.terminate();
 	return 0;
 }
-

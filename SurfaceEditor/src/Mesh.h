@@ -14,16 +14,14 @@ public:
     std::vector<float> vertexBufferData;
     Mesh()
     {
-        vao.bind();
-        vbo.bind();
         vbo.updateData(nullptr, 0, GL_DYNAMIC_DRAW);
         vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         vao.unbind();
         vbo.unbind();
     }
-	void addTriangle(TriangleData triangle)
-	{
+    void addTriangle(TriangleData triangle)
+    {
         vao.bind();
         vbo.bind();
         this->triangles.push_back(triangle);
@@ -40,12 +38,12 @@ public:
         updateBufferData();
         vao.unbind();
         vbo.unbind();
-	}
+    }
     void render()
     {
         vao.bind();
         vbo.bind();
-        glDrawArrays(GL_TRIANGLES, 0, vertexBufferData.size());
+        glDrawArrays(GL_TRIANGLES, 0, vertexBufferData.size()/6);
         vao.unbind();
         vbo.unbind();
     }
@@ -53,7 +51,7 @@ public:
 private:
     void updateBufferData()
     {
-        vbo.updateData(&vertexBufferData[0], vertexBufferData.size() * sizeof(float), GL_DYNAMIC_DRAW);
+        vbo.updateData(vertexBufferData.data(), vertexBufferData.size() * sizeof(float), GL_DYNAMIC_DRAW);
     }
 };
 

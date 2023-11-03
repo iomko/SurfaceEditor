@@ -145,11 +145,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
-    <None Include="src\lineShader.frag" />
-    <None Include="src\lineShader.vert" />
     <None Include="src\shader.frag" />
     <None Include="src\shader.vert" />
-    <None Include="src\triangleShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

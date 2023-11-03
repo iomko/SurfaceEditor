@@ -1,11 +1,9 @@
 #include "ElementBufferObject.h"
 
 
-ElementBufferObject::ElementBufferObject(unsigned int* indices, int count, GLenum usage)
+ElementBufferObject::ElementBufferObject()
 {
 	glGenBuffers(1, &id);
-	bind();
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, usage);
 }
 
 ElementBufferObject::~ElementBufferObject() {
@@ -20,6 +18,11 @@ void ElementBufferObject::bind()
 void ElementBufferObject::unbind()
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void ElementBufferObject::updateData(unsigned int* indices, int count, GLenum usage)
+{
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count, indices, usage);
 }
 
 
