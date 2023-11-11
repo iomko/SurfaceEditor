@@ -5,6 +5,7 @@
 Window::Window(int width, int height, const std::string& title)
 	:screenWidth(width), screenHeight(height), screenTitle(title)
 {
+	initialize();
 }
 
 bool Window::initialize()

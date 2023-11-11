@@ -15,7 +15,6 @@ public:
 	int screenWidth;
 	int screenHeight;
 	GLFWwindow* windowHandle;
-	bool initialize();
 	void terminate();
 	void cleanUp();
 	void createNewFrame();
@@ -24,6 +23,7 @@ public:
 
 	static void frameBufferSizeCallBack(GLFWwindow* window, int width, int height);
 private:
+	bool initialize();
 	void processLookAtDirection(Camera& camera);
 	void processMouseScroll(Camera& camera);
 	void processKeys(Camera& camera, float& deltaTime);

@@ -5,7 +5,8 @@
 class VertexBufferObject {
 public:
     VertexBufferObject();
-    void updateData(void* data, int size, GLenum usage);
+    void createData(const void* data, int size, GLenum usage);
+    void updateData(const void* data, int size, int offset);
     ~VertexBufferObject();
 
     void bind();

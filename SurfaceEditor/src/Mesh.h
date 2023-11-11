@@ -8,22 +8,13 @@
 class Mesh
 {
 public:
-    VertexArrayObject vao;
-    VertexBufferObject vbo;
     std::vector<TriangleData> triangles;
     std::vector<float> vertexBufferData;
     Mesh()
     {
-        vbo.updateData(nullptr, 0, GL_DYNAMIC_DRAW);
-        vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-        vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-        vao.unbind();
-        vbo.unbind();
     }
     void addTriangle(TriangleData triangle)
     {
-        vao.bind();
-        vbo.bind();
         this->triangles.push_back(triangle);
 
         for (const auto& position : triangle.positions)
@@ -35,23 +26,6 @@ public:
             vertexBufferData.push_back(triangle.color.g);
             vertexBufferData.push_back(triangle.color.b);
         }
-        updateBufferData();
-        vao.unbind();
-        vbo.unbind();
-    }
-    void render()
-    {
-        vao.bind();
-        vbo.bind();
-        glDrawArrays(GL_TRIANGLES, 0, vertexBufferData.size()/6);
-        vao.unbind();
-        vbo.unbind();
-    }
-
-private:
-    void updateBufferData()
-    {
-        vbo.updateData(vertexBufferData.data(), vertexBufferData.size() * sizeof(float), GL_DYNAMIC_DRAW);
     }
 };
 

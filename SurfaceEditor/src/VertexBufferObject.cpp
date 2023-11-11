@@ -6,9 +6,14 @@ VertexBufferObject::VertexBufferObject()
 	bind();
 }
 
-void VertexBufferObject::updateData(void* data, int size, GLenum usage)
+void VertexBufferObject::createData(const void* data, int size, GLenum usage)
 {
 	glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+}
+
+void VertexBufferObject::updateData(const void* data, int size, int offset)
+{
+	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 }
 
 VertexBufferObject::~VertexBufferObject()

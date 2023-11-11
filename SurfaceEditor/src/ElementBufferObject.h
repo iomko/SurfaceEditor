@@ -8,7 +8,8 @@ public:
     ~ElementBufferObject();
     void bind();
     void unbind();
-    void updateData(unsigned int* indices, int count, GLenum usage);
+    void createData(unsigned int* indices, int count, GLenum usage);
+    void updateData(unsigned int* indices, int size, int offset);
 
 private:
     unsigned int id = 0;
