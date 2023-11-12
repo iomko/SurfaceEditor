@@ -19,6 +19,7 @@
 
 #include "Renderer.h"
 
+
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -68,12 +69,28 @@ int main()
 	AABBBoundingRegion bounds(glm::vec3(10.0f, 5.2f, -4.0f), glm::vec3(15.0f, 8.0f, 2.0f));
 
 	AABBBoundingRegion testBounds(glm::vec3(12.0f, 6.0f, 1.0f), glm::vec3(13.0f, 7.0f, 0.0f));
-
-
-
+	
+	AABBBoundingRegion testBounds2(glm::vec3(10.0f, 6.0f, -3.0f), glm::vec3(11.0f, 7.0f, -4.0f));
+	
 	//test octree
 	Octree<int, 1> octree(bounds.getMin(), bounds.getMax());
-	octree.addDataToOctree(5, testBounds);
+	octree.addDataToOctree(6, testBounds);
+	octree.addDataToOctree(7, testBounds2);
+	//iteration test
+	auto itBegin = octree.begin();
+	auto itEnd = octree.end();
+
+	
+	for (itBegin; itBegin != itEnd; ++itBegin) {
+		if (!itBegin->nodeData.empty()) {
+			for (auto data : itBegin->nodeData)
+			{
+				std::cout <<"data: " << data << std::endl;
+			}
+		}
+	}
+	
+	
 
 	AABBBoundingRegion testingCol(glm::vec3(8.0f, 9.0f, -4.0f), glm::vec3(11.0f, 5.0f, -1.0f));
 
@@ -83,8 +100,14 @@ int main()
 	{
 		renderer.collectAABBdata(bb, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
+	renderer.collectAABBdata(testBounds, glm::vec3(1.0f, 0.0f, 0.0f));
+	renderer.collectAABBdata(testBounds2, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	std::cout << "NumOfBounds:" << octreeBounds.size() << std::endl;
+
+	//LINES
+	glm::vec3 startPoint{0.0f, 0.0f, 0.0f};
+	glm::vec3 endPoint{ 0.0f, 0.0f, 0.0f };
 
 	//octree.addDataToOctree(6);
 
@@ -119,6 +142,14 @@ int main()
 		glm::mat4 model = glm::mat4(1.0f);
 		shader.setMat4("model", model);
 
+		if (Keyboard::keyWentDown(GLFW_KEY_T)) {
+			startPoint = camera.position;
+			endPoint = camera.position + (camera.frontVector * 10.0f);
+			Ray r(camera.position, camera.frontVector);
+			if (testBounds.intersectsRay(r)) {
+				std::cout << "Ray intersects" << std::endl;
+			}
+		}
 
 		if (Keyboard::keyWentDown(GLFW_KEY_Q) == true)
 		{
@@ -143,7 +174,7 @@ int main()
 		}
 		renderer.drawMesh(mesh);
 		renderer.drawMesh(mesh2);
-
+		renderer.drawLine(startPoint, endPoint);
 
 		//renderer.collectAABBdata(testBounds, glm::vec3(1.0f, 0.0f, 0.0f));
 		//renderer.collectAABBdata(testingCol, glm::vec3(0.0f, 0.0f, 1.0f));

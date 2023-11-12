@@ -17,8 +17,17 @@ struct MeshVertex
 	glm::vec3 color;
 };
 
+struct LineVertex {
+	glm::vec3 position;
+	glm::vec3 color;
+};
+
 struct RendererData
 {
+	//LINE
+	VertexArrayObject Line_vao;
+	VertexBufferObject Line_vbo;
+
 	//MESH
 	VertexArrayObject Mesh_vao;
 	VertexBufferObject Mesh_vbo;
@@ -45,7 +54,6 @@ private:
 public:
 	void init()
 	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		unsigned int offset = 0;
 		//indices
 		/*
@@ -84,6 +92,15 @@ public:
 			offset += 8;
 		}
 		*/
+
+		//LINE
+		data.Line_vao.bind();
+		data.Line_vbo.bind();
+		data.Line_vbo.createData(nullptr, 2 * sizeof(LineVertex), GL_DYNAMIC_DRAW);
+		data.Line_vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)0);
+		data.Line_vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, color));
+		data.Line_vao.unbind();
+		data.Line_vbo.unbind();
 
 		//MESH
 		data.Mesh_vao.bind();
@@ -230,10 +247,10 @@ public:
 
 		// Draw all AABBs in a single call
 		//glDrawElements(GL_LINES, data.maxIndexCount, GL_UNSIGNED_INT, 0);
-
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDrawArrays(GL_TRIANGLES, 0, data.boundingBoxVertices.size());
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		
 		// Unbinding VAO, VBO, EBO
 		//data.AABB_vao.unbind();
 		//data.AABB_vbo.unbind();
@@ -256,6 +273,25 @@ public:
 		//Unbinding VAO,VBO
 		data.Mesh_vao.unbind();
 		data.Mesh_vbo.unbind();
+	}
+
+	void drawLine(const glm::vec3& startPoint, const glm::vec3& endPoint) {
+		
+		LineVertex lineVertex_vertices[] = {
+			{startPoint, glm::vec3(0.0f, 0.0f, 1.0f)},
+			{endPoint, glm::vec3(0.0f, 0.0f, 1.0f)}
+		};
+
+		//Binding VAO,VBO
+		data.Line_vao.bind();
+		data.Line_vbo.bind();
+		//Updade VBO
+		data.Line_vbo.updateData(&lineVertex_vertices[0], std::size(lineVertex_vertices) * sizeof(LineVertex), 0);
+		//Draw Mesh using vertexData
+		glDrawArrays(GL_LINES, 0, std::size(lineVertex_vertices));
+		//Unbinding VAO,VBO
+		data.Line_vao.unbind();
+		data.Line_vbo.unbind();
 	}
 
 	~Renderer()
