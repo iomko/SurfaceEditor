@@ -44,12 +44,11 @@ struct RendererData
 
 	std::vector<AABBVertex> boundingBoxVertices;
 
-	bool onlyOnce = false;
 };
 
 class Renderer
 {
-private:
+public:
 	RendererData data;
 public:
 	void init()
@@ -238,12 +237,8 @@ public:
 		data.AABB_vbo.bind();
 		//data.AABB_ebo.bind();
 
-		// Update VBO and EBO
-		if(data.onlyOnce == false)
-		{
-			data.AABB_vbo.updateData(data.boundingBoxVertices.data(), data.boundingBoxVertices.size() * sizeof(AABBVertex), 0);
-		}
-		data.onlyOnce = true;
+
+		data.AABB_vbo.updateData(data.boundingBoxVertices.data(), data.boundingBoxVertices.size() * sizeof(AABBVertex), 0);
 
 		// Draw all AABBs in a single call
 		//glDrawElements(GL_LINES, data.maxIndexCount, GL_UNSIGNED_INT, 0);
@@ -288,7 +283,9 @@ public:
 		//Updade VBO
 		data.Line_vbo.updateData(&lineVertex_vertices[0], std::size(lineVertex_vertices) * sizeof(LineVertex), 0);
 		//Draw Mesh using vertexData
+		glLineWidth(3.0f);
 		glDrawArrays(GL_LINES, 0, std::size(lineVertex_vertices));
+		glLineWidth(0.5f);
 		//Unbinding VAO,VBO
 		data.Line_vao.unbind();
 		data.Line_vbo.unbind();

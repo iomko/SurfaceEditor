@@ -15,7 +15,7 @@ public:
     }
     void addTriangle(TriangleData triangle)
     {
-        this->triangles.push_back(triangle);
+        //this->triangles.push_back(triangle);
 
         for (const auto& position : triangle.positions)
         {
@@ -26,6 +26,12 @@ public:
             vertexBufferData.push_back(triangle.color.g);
             vertexBufferData.push_back(triangle.color.b);
         }
+    }
+
+    void removeTriangle()
+    {
+        this->triangles.clear();
+        this->vertexBufferData.clear();
     }
 };
 

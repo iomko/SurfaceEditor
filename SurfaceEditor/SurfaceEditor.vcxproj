@@ -178,6 +178,7 @@
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\TestClass.h" />
     <ClInclude Include="src\TriangleData.h" />
     <ClInclude Include="src\VertexArrayObject.h" />
     <ClInclude Include="src\VertexBufferObject.h" />

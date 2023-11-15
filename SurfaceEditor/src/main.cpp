@@ -19,6 +19,8 @@
 
 #include "Renderer.h"
 
+#include "TestClass.h"
+
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -28,31 +30,48 @@ TriangleData createFirstTriangle()
 {
 	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
 
+	/*
 	glm::vec3 position1, position2, position3;
-	position1 = { -0.5f + 4.0f, -0.5f, 0.0f};
+	position1 = { -0.5f -6.0f, -0.5f, 0.0f};
 	position2 = { 0.5f + 4.0f, -0.5f, 0.0f };
 	position3 = { 0.0f + 4.0f,0.5f, 0.0f};
+	*/
 
-	return TriangleData({ position1, position2, position3 }, color);
+	glm::vec3 myPositions[3] = {
+	glm::vec3(-0.5f - 6.0f, -0.5f, -1.0f),
+	glm::vec3(0.5f + 4.0f, -0.5f, -1.0f),
+	glm::vec3(0.0f + 4.0f,0.5f, -1.0f)
+	};
+
+	return TriangleData(myPositions, color);
 }
 
 TriangleData createSecondTriangle()
 {
 	glm::vec3 color = glm::vec3(0.4f, 0.3f, 0.7f);
 
+	/*
 	glm::vec3 position1, position2, position3;
-	position1 = { -0.5f + 1.0f, -0.5f, -1.5f };
-	position2 = { 0.5f + 1.5f, -0.5f, 1.0f };
-	position3 = { 0.0f + 2.0f,0.5f, 1.5f };
+	position1 = { 0.5f - 6.0f, -0.5f + 5.0f, -1.5f };
+	position2 = { 2.0f - 6.0f, -0.5f + 5.0f, 1.0f };
+	position3 = { 2.0f - 6.0f,0.5f + 5.0f, 1.5f };
+	*/
 
-	return TriangleData({ position1, position2, position3 }, color);
+	glm::vec3 myPositions[3] = {
+	glm::vec3(0.5f - 6.0f, -0.5f + 5.0f, -1.5f),
+	glm::vec3(2.0f - 6.0f, -0.5f + 5.0f, 1.0f),
+	glm::vec3(2.0f - 6.0f,0.5f + 5.0f, 1.5f)
+	};
+
+
+	return TriangleData(myPositions, color);
 }
 
 int main()
 {
 	Application& app = Application::getInstance();
 	app.run();
-	Camera camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	Camera camera = Camera(glm::vec3(0.0f, 0.0f,17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glEnable(GL_DEPTH_TEST);
 
 	Shader shader = Shader("src\\shader.vert", "src\\shader.frag");
@@ -66,26 +85,26 @@ int main()
 	std::vector<AABBBoundingRegion> bbs;
 
 
-	AABBBoundingRegion bounds(glm::vec3(10.0f, 5.2f, -4.0f), glm::vec3(15.0f, 8.0f, 2.0f));
+	AABBBoundingRegion bounds(glm::vec3(-8.0f, -6.0f, -5.0f), glm::vec3(8.0f, 6.0f, 5.0f));
 
 	AABBBoundingRegion testBounds(glm::vec3(12.0f, 6.0f, 1.0f), glm::vec3(13.0f, 7.0f, 0.0f));
 	
 	AABBBoundingRegion testBounds2(glm::vec3(10.0f, 6.0f, -3.0f), glm::vec3(11.0f, 7.0f, -4.0f));
 	
 	//test octree
-	Octree<int, 1> octree(bounds.getMin(), bounds.getMax());
-	octree.addDataToOctree(6, testBounds);
-	octree.addDataToOctree(7, testBounds2);
+	Octree<TriangleData, 1> octree(bounds.getMin(), bounds.getMax());
+	//octree.addDataToOctree(6, testBounds);
+	//octree.addDataToOctree(7, testBounds2);
 	//iteration test
 	auto itBegin = octree.begin();
 	auto itEnd = octree.end();
 
-	
+
 	for (itBegin; itBegin != itEnd; ++itBegin) {
 		if (!itBegin->nodeData.empty()) {
 			for (auto data : itBegin->nodeData)
 			{
-				std::cout <<"data: " << data << std::endl;
+				//std::cout <<"data: " << data << std::endl;
 			}
 		}
 	}
@@ -94,34 +113,24 @@ int main()
 
 	AABBBoundingRegion testingCol(glm::vec3(8.0f, 9.0f, -4.0f), glm::vec3(11.0f, 5.0f, -1.0f));
 
-	auto octreeBounds = octree.getAllBoundingBoxes();
+	//auto octreeBounds = octree.getAllBoundingBoxes();
 
+	/*
 	for (const AABBBoundingRegion& bb : octreeBounds)
 	{
 		renderer.collectAABBdata(bb, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
-	renderer.collectAABBdata(testBounds, glm::vec3(1.0f, 0.0f, 0.0f));
-	renderer.collectAABBdata(testBounds2, glm::vec3(0.0f, 0.0f, 1.0f));
+	*/
+	//renderer.collectAABBdata(testBounds, glm::vec3(1.0f, 0.0f, 0.0f));
+	//renderer.collectAABBdata(testBounds2, glm::vec3(0.0f, 0.0f, 1.0f));
 
-	std::cout << "NumOfBounds:" << octreeBounds.size() << std::endl;
+	//std::cout << "NumOfBounds:" << octreeBounds.size() << std::endl;
 
 	//LINES
 	glm::vec3 startPoint{0.0f, 0.0f, 0.0f};
 	glm::vec3 endPoint{ 0.0f, 0.0f, 0.0f };
 
-	//octree.addDataToOctree(6);
 
-	/*
-	auto t0 = octree.rootNode->nodeBounds;
-	auto t1 = octree.rootNode->childrenNodes[0]->nodeBounds;
-	auto t2 = octree.rootNode->childrenNodes[1]->nodeBounds;
-	auto t3 = octree.rootNode->childrenNodes[2]->nodeBounds;
-	auto t4= octree.rootNode->childrenNodes[3]->nodeBounds;
-	auto t5 = octree.rootNode->childrenNodes[4]->nodeBounds;
-	auto t6 = octree.rootNode->childrenNodes[5]->nodeBounds;
-	auto t7 = octree.rootNode->childrenNodes[6]->nodeBounds;
-	auto t8 = octree.rootNode->childrenNodes[7]->nodeBounds;
-	*/
 
 	while (!glfwWindowShouldClose(app.getWindow().windowHandle))
 	{
@@ -144,23 +153,82 @@ int main()
 
 		if (Keyboard::keyWentDown(GLFW_KEY_T)) {
 			startPoint = camera.position;
-			endPoint = camera.position + (camera.frontVector * 10.0f);
+			endPoint = camera.position + (camera.frontVector * 1000.0f);
 			Ray r(camera.position, camera.frontVector);
 			if (testBounds.intersectsRay(r)) {
 				std::cout << "Ray intersects" << std::endl;
 			}
+			
+			//find data in octree
+			auto resultOctreeNode = octree.findDataInOctree(r);
+			if(resultOctreeNode.first)
+			{
+
+				std::cout << "hit" << std::endl;
+				octree.removeData(resultOctreeNode.first,resultOctreeNode.second);
+				renderer.data.boundingBoxVertices.clear();
+				auto itBegin = octree.begin();
+				auto itEnd = octree.end();
+				for (itBegin; itBegin != itEnd; ++itBegin) {
+					renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+				}
+			}
+
+
+			std::cout << "amount of bounds generated: " << renderer.data.boundingBoxVertices.size()/36 << std::endl;
 		}
 
 		if (Keyboard::keyWentDown(GLFW_KEY_Q) == true)
 		{
-			mesh.addTriangle(createFirstTriangle());
+			TriangleData dataTriangle = createFirstTriangle();
+			mesh.addTriangle(dataTriangle);
+	
+			AABBBoundingRegion bounds(dataTriangle.positions, 3);
+		
+			octree.addDataToOctree(dataTriangle, bounds);
+
+			std::vector<OctreeNode<TriangleData>*> associatedValues;
+
+			for (const auto& entry : octree.leafs) {
+				if (entry.first == dataTriangle) {
+					for (auto value : entry.second)
+					{
+						associatedValues.push_back(value);
+					}
+				}
+			}
+
+			//auto octreeBounds = octree.getAllBoundingBoxes();
+			//renderer.collectAABBdata(bb, glm::vec3(0.0f, 1.0f, 0.0f));
+
+			renderer.data.boundingBoxVertices.clear();
+			auto itBegin = octree.begin();
+			auto itEnd = octree.end();
+			for (itBegin; itBegin != itEnd; ++itBegin) {
+				renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+			}
+
 		}
 		if (Keyboard::keyWentDown(GLFW_KEY_E) == true)
 		{
-			mesh.addTriangle(createSecondTriangle());
+			TriangleData dataTriangle = createSecondTriangle();
+			mesh2.addTriangle(dataTriangle);
+			AABBBoundingRegion bounds(dataTriangle.positions, 3);
+
+			octree.addDataToOctree(dataTriangle, bounds);
+
+			//auto octreeBounds = octree.getAllBoundingBoxes();
+			//renderer.collectAABBdata(bb, glm::vec3(0.0f, 1.0f, 0.0f));
+			renderer.data.boundingBoxVertices.clear();
+			auto itBegin = octree.begin();
+			auto itEnd = octree.end();
+			for (itBegin; itBegin != itEnd; ++itBegin) {
+				renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+			}
 		}
 		if(Keyboard::keyWentDown(GLFW_KEY_B) == true)
 		{
+			/*
 			std::vector<glm::vec3> vecPositions;
 
 			for (const auto& triangle : mesh.triangles)
@@ -171,6 +239,7 @@ int main()
 			}
 			AABBBoundingRegion bound(vecPositions);
 			bbs.push_back(bound);
+			*/
 		}
 		renderer.drawMesh(mesh);
 		renderer.drawMesh(mesh2);

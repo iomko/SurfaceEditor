@@ -3,19 +3,34 @@
 
 #include "Ray.h"
 
+#include <array>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class AABBBoundingRegion
 {
 public:
-	AABBBoundingRegion(const std::vector<glm::vec3>& vertices)
+	AABBBoundingRegion(const glm::vec3* positionsArray, size_t arraySize)
 	{
-		/*
-		minVector = maxVector = vertices[0];
-		for (const auto& vertex : vertices) {
-			minVector = glm::min(minVector, vertex);
-			maxVector = glm::max(maxVector, vertex);
+		glm::vec3 minVector = positionsArray[0];
+		glm::vec3 maxVector = positionsArray[0];
+
+		for (size_t i = 0; i < arraySize; ++i) {
+			minVector.x = glm::min(minVector.x, positionsArray[i].x);
+			minVector.y = glm::min(minVector.y, positionsArray[i].y);
+			minVector.z = glm::min(minVector.z, positionsArray[i].z);
+
+			maxVector.x = glm::max(maxVector.x, positionsArray[i].x);
+			maxVector.y = glm::max(maxVector.y, positionsArray[i].y);
+			maxVector.z = glm::max(maxVector.z, positionsArray[i].z);
 		}
-		*/
+
+		bounds[0] = minVector;
+		bounds[1] = maxVector;
 	}
+
 	AABBBoundingRegion(const glm::vec3& min, const glm::vec3& max){
 		//construct min and max in case that min and max doesnt correspond to the actual min and max
 		this->bounds[0].x = glm::min(min.x, max.x);
@@ -118,15 +133,65 @@ public:
 		}
 		return *this;
 	}
-	/*
-	bool operator==(const AABBBoundingRegion& lhs, const AABBBoundingRegion& rhs) {
-		return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
+
+	static bool rayTriangleIntersect(const glm::vec3 &orig, const glm::vec3 &dir, const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, float &t)
+	{
+		// compute the plane's normal
+		glm::vec3 v0v1 = v1 - v0;
+		glm::vec3 v0v2 = v2 - v0;
+		// no need to normalize
+		glm::vec3 N = glm::cross(v0v1, v0v2); // N
+		float area2 = N.length();
+ 
+		// Step 1: finding P
+    
+		// check if the ray and plane are parallel.
+		float NdotRayDirection = glm::dot(N, dir);
+		if (fabs(NdotRayDirection) < 1e-6) // almost 0
+			return false; // they are parallel, so they don't intersect! 
+
+		// compute d parameter using equation 2
+		float d = -glm::dot(N, v0);
+		// compute t (equation 3)
+		t = -(glm::dot(N, orig) + d) / NdotRayDirection;
+    
+		// check if the triangle is behind the ray
+		if (t < 0) return false; // the triangle is behind
+ 
+		// compute the intersection point using equation 1
+		glm::vec3 P = orig + t * dir;
+ 
+		// Step 2: inside-outside test
+		glm::vec3 C; // vector perpendicular to triangle's plane
+ 
+		// edge 0
+		glm::vec3 edge0 = v1 - v0; 
+		glm::vec3 vp0 = P - v0;
+		C = glm::cross(edge0, vp0);
+		if (glm::dot(N,C) < 0) return false; // P is on the right side
+ 
+		// edge 1
+		glm::vec3 edge1 = v2 - v1; 
+		glm::vec3 vp1 = P - v1;
+		C = glm::cross(edge1, vp1);
+		if (glm::dot(N, C) < 0)  return false; // P is on the right side
+ 
+		// edge 2
+		glm::vec3 edge2 = v0 - v2; 
+		glm::vec3 vp2 = P - v2;
+		C = glm::cross(edge2, vp2);
+		if (glm::dot(N, C) < 0) return false; // P is on the right side;
+
+		return true; // this ray hits the triangle
+	}
+	
+	bool operator==(const AABBBoundingRegion& other) const {
+		return this->getMin() == other.getMin() && this->getMax() == other.getMax();
 	}
 
-	bool operator!=(const AABBBoundingRegion& lhs, const AABBBoundingRegion& rhs) {
-		return !(lhs == rhs);
+	bool operator!=(const AABBBoundingRegion& other) const {
+		return !(*this == other);
 	}
-	*/
 
 private:
 	glm::vec3 bounds[2];

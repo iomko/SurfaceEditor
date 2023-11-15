@@ -120,5 +120,8 @@
     <ClInclude Include="src\Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\TestClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

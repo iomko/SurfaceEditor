@@ -32,7 +32,7 @@ public:
     Application& operator=(const Application&) = delete;
 
 private:
-    Application() : window(800, 600, "SurfaceEditor"){}
+    Application() : window(1000, 800, "SurfaceEditor"){}
     Window window;
     Renderer renderer;
 };

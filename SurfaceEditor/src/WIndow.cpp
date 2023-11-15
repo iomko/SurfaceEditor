@@ -32,7 +32,7 @@ bool Window::initialize()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, this->screenWidth, this->screenHeight);
 	return true;
 }
 
@@ -43,7 +43,7 @@ void Window::terminate()
 
 void Window::cleanUp()
 {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
