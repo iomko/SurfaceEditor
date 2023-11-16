@@ -12,7 +12,7 @@ public:
     using PointerType = typename ValueType*;
     using ReferenceType = typename ValueType&;
 
-
+    PointerType current;
     OctreeIterator() = default;
     OctreeIterator(PointerType node) : current(node){}
 
@@ -55,22 +55,17 @@ public:
         return !(*this == other);
 	}
 
-public:
-    PointerType current;
 };
-
 
 
 template<class T, size_t Threshold>
 class Octree
 {
-//nezabudni ho dat na private
 public:
     std::unordered_map<T, std::vector<OctreeNode<T>*>> leafs;
     using ValueType = OctreeNode<T>;
     using OctreeIterator = OctreeIterator<Octree<T, Threshold>>;
     OctreeNode<T>* rootNode;
-public:
 
     Octree(glm::vec3 minVector, glm::vec3 maxVector) : rootNode(new OctreeNode<T>(minVector, maxVector, Threshold, 0, 0))
     {}
@@ -81,7 +76,6 @@ public:
 
     OctreeIterator begin() {
         if (rootNode == nullptr) {
-            // If the tree is empty, return end iterator
             return end();
         }
 
@@ -102,14 +96,7 @@ public:
 
     void addDataToOctree(T data, const AABBBoundingRegion& dataBounds)
     {
-        rootNode->addData(data, Threshold, dataBounds, this->rootNode, this->leafs);
-    }
-
-    std::vector<AABBBoundingRegion> getAllBoundingBoxes()
-    {
-        std::vector<AABBBoundingRegion> allBoundingBoxes;
-        getAllBoundingBoxesHelper(rootNode, allBoundingBoxes);
-        return allBoundingBoxes;
+        rootNode->addData(data, Threshold, dataBounds, this->leafs);
     }
 
     std::pair<OctreeNode<T>*,TriangleData> findDataInOctree(const Ray& ray) {
@@ -119,6 +106,9 @@ public:
         
         if (rootNode->nodeBounds.intersectsRay(ray)) {
             rootNode->findData(ray, hitOctreeLiefs);
+        } else
+        {
+            return std::pair(nullptr, returnTriangleData);
         }
         //pridat lambda funkciu na to aby to fungovalo univerzalnejsie, zatial necham na triangleData
         float minDistance = std::numeric_limits<float>::max();
@@ -146,16 +136,10 @@ public:
 
     void removeData(OctreeNode<T>* node, T data)
     {
-        
-        //new implementation
-        //unikatni parenti
         std::vector<OctreeNode<T>*> parents;
-		// Find the key in the map
 		auto it = leafs.find(data);
 
-		// Check if the key is found
 		if (it != leafs.end()) {
-			// Loop through all values associated with the key
 			for (OctreeNode<T>* octree_node : it->second) {
                 octree_node->nodeData.erase(std::remove(octree_node->nodeData.begin(), octree_node->nodeData.end(), data), octree_node->nodeData.end());
                 --octree_node->dataCount;
@@ -181,45 +165,7 @@ public:
     }
 
     void cleanAndRetrieveData() {
-        /*
-        OctreeIterator::operator ++
-        //postOrderTraversal
-        OctreeNode<T>* currentNode = rootNode;
-        //takze najskor musime ist na prveho laveho leafa
-        while (currentNode->isLeaf == false) {
-            currentNode = currentNode->childrenNodes[0];
-        }
         
-        
-		//ak nie je leaf tak chod na prveho childrena
-		if (current->isLeaf == false) {
-			current = current->childrenNodes[0];
-		}
-		//ak je leaf tak si musime accesnut nasledujuceho neighbour childrena
-		else {
-			if (current->accessNeighbourChild() == nullptr) {
-				do {
-					current = current->parentNode;
-				} while (current->parentNode->accessNeighbourChild() == nullptr);
-			}
-			current = current->accessNeighbourChild();
-		}
-		return *this;
-        */
-    }
-
-private:
-    void getAllBoundingBoxesHelper(OctreeNode<T>* node, std::vector<AABBBoundingRegion>& boundingBoxes)
-    {
-        if (node == nullptr) {
-            return;
-        }
-
-    	boundingBoxes.push_back(node->nodeBounds);
-
-        for (size_t i = 0; i < 8; ++i) {
-            getAllBoundingBoxesHelper(node->childrenNodes[i], boundingBoxes);
-        }
     }
 };
 
