@@ -48,7 +48,7 @@ TriangleData createSecondTriangle()
 
 int main()
 {
-	Application& app = Application::getInstance();
+	Application app(800, 600, "SurfaceEditor");
 	app.run();
 	Camera camera = Camera(glm::vec3(0.0f, 0.0f,17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glEnable(GL_DEPTH_TEST);

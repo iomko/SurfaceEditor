@@ -1,38 +1,48 @@
 #pragma once
 #include "Renderer.h"
 #include "Window.h"
+#include "Event.h"
+#include "KeyEvent.h"
 
 class Application
 {
 public:
-    static Application& getInstance()
-    {
-        static Application instance;
-        return instance;
-    }
+	Application(int width, int height, const std::string& title)
+		: window(width, height, title)
+	{
+		window.setEventFunc(std::bind(&Application::onEvent, this, std::placeholders::_1));
+		window.initialize();
+	}
 
-    // Access the window instance
-    Window& getWindow()
-    {
-        return window;
-    }
+	// Access the window instance
+	Window& getWindow()
+	{
+		return window;
+	}
 
-    void close()
-    {
-        window.terminate();
-    }
+	void close()
+	{
+		window.terminate();
+	}
 
-    void run()
-    {
-        window.setCallBackFunctions();
-        glfwSetInputMode(window.windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
+	void onEvent(Event& event)
+	{
+		std::cout << event.getName() << std::endl;
+		EventDispatcher dispatcher(event);
+		dispatcher.dispatch<KeyPressEvent>([](Event& eventType){std::cout << "OUYEE" << std::endl;});
+	}
 
-    Application(const Application&) = delete;
-    Application& operator=(const Application&) = delete;
+	void test()
+	{
+		std::cout << "test" << std::endl;
+	}
+
+	void run()
+	{
+		window.setCallBackFunctions();
+		//glfwSetInputMode(window.windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
 
 private:
-    Application() : window(1000, 800, "SurfaceEditor"){}
-    Window window;
-    Renderer renderer;
+	Window window;
 };

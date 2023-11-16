@@ -136,9 +136,7 @@ public:
 
     void removeData(OctreeNode<T>* node, T data)
     {
-        std::vector<OctreeNode<T>*> parents;
 		auto it = leafs.find(data);
-
 		if (it != leafs.end()) {
 			for (OctreeNode<T>* octree_node : it->second) {
                 octree_node->nodeData.erase(std::remove(octree_node->nodeData.begin(), octree_node->nodeData.end(), data), octree_node->nodeData.end());

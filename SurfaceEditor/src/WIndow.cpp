@@ -1,12 +1,12 @@
 #include "Mouse.h"
 #include "Window.h"
 
+#include "WindowEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
 
-Window::Window(int width, int height, const std::string& title)
-	:screenWidth(width), screenHeight(height), screenTitle(title)
-{
-	initialize();
-}
+
+Window::Window(int width, int height, const std::string& title) : screenWidth(width), screenHeight(height), screenTitle(title){}
 
 bool Window::initialize()
 {
@@ -33,6 +33,8 @@ bool Window::initialize()
 #endif
 
 	glViewport(0, 0, this->screenWidth, this->screenHeight);
+
+	this->setCallBackFunctions();
 	return true;
 }
 
@@ -67,11 +69,88 @@ void Window::frameBufferSizeCallBack(GLFWwindow* window, int width, int height)
 
 void Window::setCallBackFunctions()
 {
-	glfwSetKeyCallback(windowHandle, Keyboard::keyCallback);
-	glfwSetCursorPosCallback(windowHandle, Mouse::cursorPositionCallBack);
-	glfwSetFramebufferSizeCallback(windowHandle, frameBufferSizeCallBack);
-	glfwSetScrollCallback(windowHandle, Mouse::mouseScrollCallBack);
-	glfwSetMouseButtonCallback(windowHandle, Mouse::mouseButtonCallBack);
+	glfwSetWindowUserPointer(windowHandle, this);
+
+	glfwSetFramebufferSizeCallback(this->windowHandle, [](GLFWwindow* window, int width, int height) {
+		Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+		instance->screenWidth = width;
+		instance->screenHeight = height;
+		WindowResizeEvent event(width, height);
+
+		instance->eventFunc(event);
+		});
+
+	glfwSetWindowCloseCallback(this->windowHandle, [](GLFWwindow* window)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+			WindowCloseEvent event;
+			instance->eventFunc(event);
+		});
+
+	glfwSetKeyCallback(this->windowHandle, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				KeyPressEvent event(key);
+				instance->eventFunc(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				KeyReleaseEvent event(key);
+				instance->eventFunc(event);
+				break;
+			}
+			case GLFW_REPEAT:
+			{
+				KeyPressEvent event(key);
+				instance->eventFunc(event);
+				break;
+			}
+			default:;
+			}
+		});
+
+	glfwSetCursorPosCallback(this->windowHandle, [](GLFWwindow* window, double xpos, double ypos)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+			MouseMoveEvent event(xpos, ypos);
+			instance->eventFunc(event);
+		});
+
+	glfwSetScrollCallback(this->windowHandle, [](GLFWwindow* window, double xoffset, double yoffset)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+			MouseScrollEvent event(xoffset, yoffset);
+			instance->eventFunc(event);
+		});
+
+	glfwSetMouseButtonCallback(this->windowHandle, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				MouseButtonPressEvent event(button);
+				instance->eventFunc(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				MouseButtonReleaseEvent event(button);
+				instance->eventFunc(event);
+				break;
+			}
+			default:;
+			}
+		});
 }
 
 void Window::processLookAtDirection(Camera& camera)
@@ -114,5 +193,11 @@ void Window::processKeys(Camera& camera, float& deltaTime)
 		camera.updateCameraPosition(CameraMovement::RIGHT, movementSpeed);
 	}
 }
+
+void Window::setEventFunc(std::function<void(Event&)> func)
+{
+	this->eventFunc = func;
+}
+
 
 

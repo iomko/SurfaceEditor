@@ -169,9 +169,12 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\ElementBufferObject.h" />
+    <ClInclude Include="src\Event.h" />
     <ClInclude Include="src\Keyboard.h" />
+    <ClInclude Include="src\KeyEvent.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Mouse.h" />
+    <ClInclude Include="src\MouseEvent.h" />
     <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\OctreeNode.h" />
     <ClInclude Include="src\Ray.h" />
@@ -183,6 +186,7 @@
     <ClInclude Include="src\VertexArrayObject.h" />
     <ClInclude Include="src\VertexBufferObject.h" />
     <ClInclude Include="src\Window.h" />
+    <ClInclude Include="src\WindowEvent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
