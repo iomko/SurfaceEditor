@@ -120,6 +120,7 @@
     <ClInclude Include="src\Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< Updated upstream
     <ClInclude Include="src\TestClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -135,5 +136,7 @@
     <ClInclude Include="src\WindowEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+=======
+>>>>>>> Stashed changes
   </ItemGroup>
 </Project>

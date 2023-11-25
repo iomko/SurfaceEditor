@@ -18,6 +18,8 @@
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+bool drawBB = true;
+
 //testing triangles for now
 TriangleData createFirstTriangle()
 {
@@ -99,19 +101,22 @@ int main()
 			auto resultOctreeNode = octree.findDataInOctree(r);
 			if(resultOctreeNode.first)
 			{
-
 				std::cout << "hit" << std::endl;
 				octree.removeData(resultOctreeNode.first,resultOctreeNode.second);
-				renderer.data.boundingBoxVertices.clear();
-				auto itBegin = octree.begin();
-				auto itEnd = octree.end();
-				for (itBegin; itBegin != itEnd; ++itBegin) {
-					renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+				if(drawBB)
+				{
+					renderer.data.boundingBoxVertices.clear();
+					auto itBegin = octree.begin();
+					auto itEnd = octree.end();
+					for (itBegin; itBegin != itEnd; ++itBegin) {
+						renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+					}
 				}
+				std::cout << "amount of bounds generated: " << renderer.data.boundingBoxVertices.size() / 36 << std::endl;
 			}
 
 
-			std::cout << "amount of bounds generated: " << renderer.data.boundingBoxVertices.size()/36 << std::endl;
+			
 		}
 
 		if (Keyboard::keyWentDown(GLFW_KEY_Q) == true)
@@ -134,13 +139,15 @@ int main()
 				}
 			}
 
-			renderer.data.boundingBoxVertices.clear();
-			auto itBegin = octree.begin();
-			auto itEnd = octree.end();
-			for (itBegin; itBegin != itEnd; ++itBegin) {
-				renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+			if(drawBB)
+			{
+				renderer.data.boundingBoxVertices.clear();
+				auto itBegin = octree.begin();
+				auto itEnd = octree.end();
+				for (itBegin; itBegin != itEnd; ++itBegin) {
+					renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+				}
 			}
-
 		}
 		if (Keyboard::keyWentDown(GLFW_KEY_E) == true)
 		{
@@ -150,17 +157,23 @@ int main()
 
 			octree.addDataToOctree(dataTriangle, bounds);
 
-			renderer.data.boundingBoxVertices.clear();
-			auto itBegin = octree.begin();
-			auto itEnd = octree.end();
-			for (itBegin; itBegin != itEnd; ++itBegin) {
-				renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+			if(drawBB)
+			{
+				renderer.data.boundingBoxVertices.clear();
+				auto itBegin = octree.begin();
+				auto itEnd = octree.end();
+				for (itBegin; itBegin != itEnd; ++itBegin) {
+					renderer.collectAABBdata(itBegin->nodeBounds, glm::vec3(0.0f, 1.0f, 0.0f));
+				}
 			}
 		}
 		
 		renderer.drawMesh(mesh);
 		renderer.drawLine(startPoint, endPoint);
-		renderer.drawBoundingBoxes();
+		if(drawBB)
+		{
+			renderer.drawBoundingBoxes();
+		}
 		shader.unbind();
 		app.getWindow().createNewFrame();
 	}

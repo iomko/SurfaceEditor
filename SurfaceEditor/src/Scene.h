@@ -21,8 +21,6 @@ private:
 public:
 	void renderScene(const Camera& camera)
 	{
-		//na to aby sme vykreslili scenu tak musime prejst cez vsetky renderovacie komponenty, ktore sa nachadzaju v scene
-		//najskor prejdeme vsetkymi meshami
 		for (const auto meshOctreePair &: meshOctreePairs)
 		{
 			
