@@ -13,6 +13,10 @@
 #include "Octree.h"
 #include "TriangleData.h"
 #include "Renderer.h"
+#include "TestLayer.h"
+#include "ImGuiLayer.h"
+
+#include "Input.h"
 
 
 float deltaTime = 0.0f;
@@ -51,7 +55,8 @@ TriangleData createSecondTriangle()
 int main()
 {
 	Application app(800, 600, "SurfaceEditor");
-	app.run();
+	TestLayer* testLayer = new TestLayer();
+	app.onAddLayer(testLayer);
 	Camera camera = Camera(glm::vec3(0.0f, 0.0f,17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glEnable(GL_DEPTH_TEST);
 
@@ -91,6 +96,8 @@ int main()
 		shader.setMat4("view", view);
 		glm::mat4 model = glm::mat4(1.0f);
 		shader.setMat4("model", model);
+
+		app.run();
 
 		if (Keyboard::keyWentDown(GLFW_KEY_T)) {
 			startPoint = camera.position;

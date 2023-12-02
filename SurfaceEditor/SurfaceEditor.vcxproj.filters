@@ -1,142 +1,78 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="Linking\include\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Linking\include\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\ElementBufferObject.cpp" />
+    <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Keyboard.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Mouse.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\VertexArrayObject.cpp" />
+    <ClCompile Include="src\VertexBufferObject.cpp" />
+    <ClCompile Include="src\WIndow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WIndow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Keyboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Mouse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VertexBufferObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VertexArrayObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ElementBufferObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="glfw3.dll" />
-    <None Include="src\shader.vert" />
-    <None Include="src\shader.frag" />
+    <ClInclude Include="Linking\include\glad\glad.h" />
+    <ClInclude Include="Linking\include\GLFW\glfw3.h" />
+    <ClInclude Include="Linking\include\GLFW\glfw3native.h" />
+    <ClInclude Include="Linking\include\imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="Linking\include\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="Linking\include\imgui\imconfig.h" />
+    <ClInclude Include="Linking\include\imgui\imgui.h" />
+    <ClInclude Include="Linking\include\imgui\imgui_internal.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
+    <ClInclude Include="Linking\include\KHR\khrplatform.h" />
+    <ClInclude Include="src\AABBBoundingRegion.h" />
+    <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\ElementBufferObject.h" />
+    <ClInclude Include="src\Event.h" />
+    <ClInclude Include="src\ImGuiLayer.h" />
+    <ClInclude Include="src\Keyboard.h" />
+    <ClInclude Include="src\KeyEvent.h" />
+    <ClInclude Include="src\Layer.h" />
+    <ClInclude Include="src\LayerStack.h" />
+    <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\Mouse.h" />
+    <ClInclude Include="src\MouseEvent.h" />
+    <ClInclude Include="src\Octree.h" />
+    <ClInclude Include="src\OctreeNode.h" />
+    <ClInclude Include="src\Ray.h" />
+    <ClInclude Include="src\Renderer.h" />
+    <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\TestLayer.h" />
+    <ClInclude Include="src\TriangleData.h" />
+    <ClInclude Include="src\VertexArrayObject.h" />
+    <ClInclude Include="src\VertexBufferObject.h" />
+    <ClInclude Include="src\Window.h" />
+    <ClInclude Include="src\WindowEvent.h" />
+    <ClInclude Include="src\Input.h" />
+    <ClInclude Include="src\UIManagerLayer.h" />
+    <ClInclude Include="src\ToolBarLayer.h" />
+    <ClInclude Include="src\IObservable.h" />
+    <ClInclude Include="src\IObserver.h" />
+    <ClInclude Include="src\ViewPortLayer.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />
-    <Library Include="Linking\lib\GLFW\glfw3_mt.lib" />
     <Library Include="Linking\lib\GLFW\glfw3dll.lib" />
+    <Library Include="Linking\lib\GLFW\glfw3_mt.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Linking\include\glad\glad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Linking\include\GLFW\glfw3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Linking\include\GLFW\glfw3native.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Linking\include\KHR\khrplatform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Mouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexArrayObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexBufferObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ElementBufferObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TriangleData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Octree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\OctreeNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AABBBoundingRegion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-<<<<<<< Updated upstream
-    <ClInclude Include="src\TestClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Event.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\KeyEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MouseEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-=======
->>>>>>> Stashed changes
+    <None Include="glfw3.dll" />
+    <None Include="src\shader.frag" />
+    <None Include="src\shader.vert" />
   </ItemGroup>
 </Project>

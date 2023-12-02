@@ -113,6 +113,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,6 +131,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,9 +143,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Linking\include\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Linking\include\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Linking\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\ElementBufferObject.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\ImGuiLayer.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
@@ -164,26 +176,44 @@
     <ClInclude Include="Linking\include\glad\glad.h" />
     <ClInclude Include="Linking\include\GLFW\glfw3.h" />
     <ClInclude Include="Linking\include\GLFW\glfw3native.h" />
+    <ClInclude Include="Linking\include\imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="Linking\include\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="Linking\include\imgui\imconfig.h" />
+    <ClInclude Include="Linking\include\imgui\imgui.h" />
+    <ClInclude Include="Linking\include\imgui\imgui_internal.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\ElementBufferObject.h" />
     <ClInclude Include="src\Event.h" />
+    <ClInclude Include="src\ImGuiLayer.h" />
+    <ClInclude Include="src\Input.h" />
+    <ClInclude Include="src\IObservable.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="src\KeyEvent.h" />
+    <ClInclude Include="src\Layer.h" />
+    <ClInclude Include="src\LayerStack.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Mouse.h" />
     <ClInclude Include="src\MouseEvent.h" />
+    <ClInclude Include="src\IObserver.h" />
     <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\OctreeNode.h" />
     <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\TestLayer.h" />
+    <ClInclude Include="src\ToolBarLayer.h" />
     <ClInclude Include="src\TriangleData.h" />
+    <ClInclude Include="src\UIManagerLayer.h" />
     <ClInclude Include="src\VertexArrayObject.h" />
     <ClInclude Include="src\VertexBufferObject.h" />
+    <ClInclude Include="src\ViewPortLayer.h" />
     <ClInclude Include="src\Window.h" />
     <ClInclude Include="src\WindowEvent.h" />
   </ItemGroup>

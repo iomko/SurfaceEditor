@@ -17,6 +17,7 @@ private:
 	std::vector<Shader> shaders;
 	Shader& activeShader;
 	//meshes
+public:
 	std::vector<std::pair<Mesh, Octree>> meshOctreePairs;
 public:
 	void renderScene(const Camera& camera)

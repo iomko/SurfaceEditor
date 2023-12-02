@@ -51,6 +51,11 @@ public:
 		return !(*this == other);
 	}
 
+    AABBBoundingRegion getBounds()
+    {
+        return this->nodeBounds;
+    }
+
     void addData(T data, size_t threshold, const AABBBoundingRegion& dataBounds, std::unordered_map<T, std::vector<OctreeNode<T>*>>& map)
     {
 
