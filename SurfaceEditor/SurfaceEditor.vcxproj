@@ -112,9 +112,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,9 +129,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,22 +149,64 @@
     <ClCompile Include="Linking\include\imgui\imgui_draw.cpp" />
     <ClCompile Include="Linking\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="Linking\include\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\ElementBufferObject.cpp" />
+    <ClCompile Include="src\Core\LayerSystem.ixx" />
+    <ClCompile Include="src\Gui\ImGuiLayer.ixx" />
+    <ClCompile Include="src\Patterns\Observer.ixx" />
+    <ClCompile Include="src\Patterns\Observers.ixx" />
+    <ClCompile Include="src\primitives\Cube.ixx" />
+    <ClCompile Include="src\primitives\Geometry.ixx" />
+    <ClCompile Include="src\primitives\Primitive.ixx" />
+    <ClCompile Include="src\Renderer\Buffers.cpp" />
+    <ClCompile Include="src\Renderer\Buffers.ixx" />
+    <ClCompile Include="src\DataStructures\DataStructures.ixx" />
+    <ClCompile Include="src\Events\Event.ixx" />
+    <ClCompile Include="src\Events\EventSystem.ixx" />
+    <ClCompile Include="src\Events\KeyEvent.ixx" />
+    <ClCompile Include="src\Core\Layer.cpp" />
+    <ClCompile Include="src\Core\Layer.ixx" />
+    <ClCompile Include="src\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Renderer\Shader.ixx" />
+    <ClCompile Include="src\Events\MouseEvent.ixx" />
+    <ClCompile Include="src\DataStructures\Octree.ixx" />
+    <ClCompile Include="src\Scene\Camera.cpp" />
     <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Keyboard.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Mouse.cpp" />
-    <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\VertexArrayObject.cpp" />
-    <ClCompile Include="src\VertexBufferObject.cpp" />
-    <ClCompile Include="src\WIndow.cpp" />
+    <ClCompile Include="src\Gui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Events\Keyboard.cpp" />
+    <ClCompile Include="src\Core\main.cpp" />
+    <ClCompile Include="src\Events\Mouse.cpp" />
+    <ClCompile Include="src\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Core\Window.cpp" />
+    <ClCompile Include="src\Events\WindowEvent.ixx" />
+    <ClCompile Include="src\Scene\Camera.ixx" />
+    <ClCompile Include="src\Scene\Scene.ixx" />
+    <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
+    <ClCompile Include="src\WindowsPlatformUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
-    <None Include="src\shader.frag" />
-    <None Include="src\shader.vert" />
+    <None Include="src\Callbacks\ApplyTransformationMatrix.CallBack.h" />
+    <None Include="src\Renderer\blit.frag" />
+    <None Include="src\Renderer\dilate.frag" />
+    <None Include="src\Renderer\fragColTest.frag" />
+    <None Include="src\Renderer\linesShader.frag" />
+    <None Include="src\Renderer\linesShader.geom" />
+    <None Include="src\Renderer\linesShader.vert" />
+    <None Include="src\Renderer\meshShader.frag" />
+    <None Include="src\Renderer\meshShader.geom" />
+    <None Include="src\Renderer\meshShader.vert" />
+    <None Include="src\Renderer\normals.frag" />
+    <None Include="src\Renderer\normals.geom" />
+    <None Include="src\Renderer\normals.vert" />
+    <None Include="src\Renderer\outlining.frag" />
+    <None Include="src\Renderer\outlining.vert" />
+    <None Include="src\Renderer\pointsShader.frag" />
+    <None Include="src\Renderer\pointsShader.vert" />
+    <None Include="src\Renderer\quad.vert" />
+    <None Include="src\Renderer\shader.frag" />
+    <None Include="src\Renderer\shader.geom" />
+    <None Include="src\Renderer\shader.vert" />
+    <None Include="src\Renderer\singleColor.frag" />
+    <None Include="src\Renderer\singleColor.vert" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />
@@ -173,6 +214,17 @@
     <Library Include="Linking\lib\GLFW\glfw3_mt.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Linking\include\CDT\CDT.h" />
+    <ClInclude Include="Linking\include\CDT\CDT.hpp" />
+    <ClInclude Include="Linking\include\CDT\CDTUtils.h" />
+    <ClInclude Include="Linking\include\CDT\CDTUtils.hpp" />
+    <ClInclude Include="Linking\include\CDT\KDTree.h" />
+    <ClInclude Include="Linking\include\CDT\LocatorKDTree.h" />
+    <ClInclude Include="Linking\include\CDT\portable_nth_element.hpp" />
+    <ClInclude Include="Linking\include\CDT\predicates.h" />
+    <ClInclude Include="Linking\include\CDT\remove_at.hpp" />
+    <ClInclude Include="Linking\include\CDT\Triangulation.h" />
+    <ClInclude Include="Linking\include\CDT\Triangulation.hpp" />
     <ClInclude Include="Linking\include\glad\glad.h" />
     <ClInclude Include="Linking\include\GLFW\glfw3.h" />
     <ClInclude Include="Linking\include\GLFW\glfw3native.h" />
@@ -186,36 +238,71 @@
     <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
-    <ClInclude Include="src\Application.h" />
-    <ClInclude Include="src\Camera.h" />
-    <ClInclude Include="src\ElementBufferObject.h" />
-    <ClInclude Include="src\Event.h" />
-    <ClInclude Include="src\ImGuiLayer.h" />
-    <ClInclude Include="src\Input.h" />
-    <ClInclude Include="src\IObservable.h" />
-    <ClInclude Include="src\Keyboard.h" />
-    <ClInclude Include="src\KeyEvent.h" />
-    <ClInclude Include="src\Layer.h" />
-    <ClInclude Include="src\LayerStack.h" />
+    <ClInclude Include="src\BaseImporter.h" />
+    <ClInclude Include="src\Callbacks\AddPlaneCallback.h" />
+    <ClInclude Include="src\Callbacks\DeselectMeshCallBack.h" />
+    <ClInclude Include="src\Callbacks\ExportMeshesCallBack.h" />
+    <ClInclude Include="src\Callbacks\ImportMeshesCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectionCallBacks\FacesDataTransfer.h" />
+    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectFaceCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectVertexCallBack.h" />
+    <ClInclude Include="src\Callbacks\ObjectTransformCallBack.h" />
+    <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformAddPlaneCallBack.h" />
+    <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformSelectMeshCallBack.h" />
+    <ClInclude Include="src\Callbacks\TransformMeshCallBack.h" />
+    <ClInclude Include="src\Callbacks\VertexModeChangeCallBack.h" />
+    <ClInclude Include="src\Commands\BasicSculptToolCommand.h" />
+    <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
+    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectMeshCallBack.h" />
+    <ClInclude Include="src\Callbacks\ToolBarLayerCallBack.h" />
+    <ClInclude Include="src\Commands\AddPlaneCommand.h" />
+    <ClInclude Include="src\Commands\CommandRegistry.h" />
+    <ClInclude Include="src\Commands\ExportMeshesCommand.h" />
+    <ClInclude Include="src\Commands\ImportMeshesCommand.h" />
+    <ClInclude Include="src\Commands\TransformMeshCommand.h" />
+    <ClInclude Include="src\Commands\ObjectTransformationCommand.h" />
+    <ClInclude Include="src\Commands\SelectFaceCommand.h" />
+    <ClInclude Include="src\Commands\SelectMeshCommand.h" />
+    <ClInclude Include="src\Commands\SelectVertexCommand.h" />
+    <ClInclude Include="src\Gui\ImportExportLayer.h" />
+    <ClInclude Include="src\WindowsFileDialogs.h" />
+    <ClInclude Include="src\Gui\AdditionLayer.h" />
+    <ClInclude Include="src\Gui\ToolBarLayer.h" />
+    <ClInclude Include="src\Gui\TransformLayer.h" />
+    <ClInclude Include="src\BaseExporter.h" />
+    <ClInclude Include="src\OBJExporter.h" />
+    <ClInclude Include="src\OBJImporter.h" />
+    <ClInclude Include="src\Patterns\Command.h" />
+    <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\Core\Input.h" />
+    <ClInclude Include="src\GeometryAlgorithms\NgonPlanarTriangulator.h" />
+    <ClInclude Include="src\GeometryAlgorithms\PolygonTriangulator.h" />
+    <ClInclude Include="src\GeometryAlgorithms\TriangleTriangulator.h" />
+    <ClInclude Include="src\glm_comparisons.h" />
+    <ClInclude Include="src\DataStructures\HalfEdge.h" />
+    <ClInclude Include="src\Events\Keyboard.h" />
+    <ClInclude Include="src\Events\Mouse.h" />
+    <ClInclude Include="src\HalfEdgePosition.h" />
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\Mouse.h" />
-    <ClInclude Include="src\MouseEvent.h" />
-    <ClInclude Include="src\IObserver.h" />
-    <ClInclude Include="src\Octree.h" />
-    <ClInclude Include="src\OctreeNode.h" />
+    <ClInclude Include="src\MeshSelectionsManager.h" />
+    <ClInclude Include="src\Callbacks\Callback.h" />
+    <ClInclude Include="src\Patterns\Observer.h" />
+    <ClInclude Include="src\primitives2\Primitive.h" />
+    <ClInclude Include="src\ProjectionTest.h" />
     <ClInclude Include="src\Ray.h" />
-    <ClInclude Include="src\Renderer.h" />
-    <ClInclude Include="src\Scene.h" />
-    <ClInclude Include="src\Shader.h" />
-    <ClInclude Include="src\TestLayer.h" />
-    <ClInclude Include="src\ToolBarLayer.h" />
+    <ClInclude Include="src\RayIntersectionAlg.h" />
+    <ClInclude Include="src\Renderer\Framebuffer.h" />
+    <ClInclude Include="src\Renderer\Renderer.h" />
+    <ClInclude Include="src\Renderer\VertexDataStructs.h" />
+    <ClInclude Include="src\Geometry\Mesh2.h" />
+    <ClInclude Include="src\Geometry\Triangle.h" />
+    <ClInclude Include="src\SceneManager.h" />
+    <ClInclude Include="src\ShortcutRegistry.h" />
+    <ClInclude Include="src\ViewPortHolder.h" />
+    <ClInclude Include="src\Scene\SceneViewsHandler.h" />
     <ClInclude Include="src\TriangleData.h" />
-    <ClInclude Include="src\UIManagerLayer.h" />
-    <ClInclude Include="src\VertexArrayObject.h" />
-    <ClInclude Include="src\VertexBufferObject.h" />
-    <ClInclude Include="src\ViewPortLayer.h" />
-    <ClInclude Include="src\Window.h" />
-    <ClInclude Include="src\WindowEvent.h" />
+    <ClInclude Include="src\Core\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

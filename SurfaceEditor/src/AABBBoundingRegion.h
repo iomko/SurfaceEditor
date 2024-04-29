@@ -12,6 +12,27 @@
 class AABBBoundingRegion
 {
 public:
+	//templated version
+	template <typename IteratorBegin, typename IteratorEnd, typename GetX, typename GetY, typename GetZ>
+	AABBBoundingRegion(IteratorBegin begin, IteratorEnd end, GetX xPosition, GetY yPosition, GetZ zPosition)
+	{
+		glm::vec3 minVector = glm::vec3(xPosition(*begin), yPosition(*begin), zPosition(*begin));
+		glm::vec3 maxVector = glm::vec3(xPosition(*begin), yPosition(*begin), zPosition(*begin));
+
+		for (IteratorBegin it = begin; it != end; ++it) {
+			minVector.x = glm::min(minVector.x, xPosition(*it));
+			minVector.y = glm::min(minVector.y, yPosition(*it));
+			minVector.z = glm::min(minVector.z, zPosition(*it));
+
+			maxVector.x = glm::max(maxVector.x, xPosition(*it));
+			maxVector.y = glm::max(maxVector.y, yPosition(*it));
+			maxVector.z = glm::max(maxVector.z, zPosition(*it));
+		}
+
+		bounds[0] = minVector;
+		bounds[1] = maxVector;
+	}
+
 	AABBBoundingRegion(const glm::vec3* positionsArray, size_t arraySize)
 	{
 		glm::vec3 minVector = positionsArray[0];
