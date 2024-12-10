@@ -10,55 +10,37 @@ import LayerSystem.Layer;
 class Application
 {
 public:
-	Application(int width, int height, const std::string& title)
+	static Application& getInstance(int width = 800, int height = 600, const std::string& title = "Application")
 	{
-		m_window = new Window(width, height, title);
-		m_window->setEventFunc(std::bind(&Application::onEvent, this, std::placeholders::_1));
-		m_window->initialize();
-		m_imGuiLayer = new ImGuiLayer("ImGuiLayer");
-		m_imGuiLayer->onAttach();
-		m_layerStack.addOverlay(m_imGuiLayer);
-		glfwSetInputMode(m_window->getWindowHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		static Application instance(width, height, title);
+		return instance;
 	}
 
 	static Window& getWindow()
 	{
+		if (!m_window) {
+			throw std::runtime_error("Application window is not initialized!");
+		}
 		return *m_window;
 	}
 
 	void close()
 	{
-		m_window->terminate();
-		m_window = nullptr;
+		if (m_window) {
+			m_window->terminate();
+			delete m_window;
+			m_window = nullptr;
+		}
 	}
 
-	void onAddLayer(Layer* layer)
+	LayerStack& getLayerStack()
 	{
-		layer->onAttach();
-		m_layerStack.addLayer(layer);
-	}
-
-	void onAddOverlay(Layer* overlay)
-	{
-		overlay->onAttach();
-		m_layerStack.addOverlay(overlay);
-	}
-
-	void onRemoveLayer(Layer* layer)
-	{
-		layer->onDetach();
-		m_layerStack.removeLayer(layer);
-	}
-
-	void onRemoveOverlay(Layer* overlay)
-	{
-		overlay->onDetach();
-		m_layerStack.removeOverlay(overlay);
+		return m_layerStack;
 	}
 
 	void onEvent(Event& event)
 	{
-		for(auto layerIt = m_layerStack.end(); layerIt != m_layerStack.begin();)
+		for (auto layerIt = m_layerStack.end(); layerIt != m_layerStack.begin();)
 		{
 			(*--layerIt)->onEvent(event);
 			if (event.isHandled)
@@ -80,6 +62,25 @@ public:
 	}
 
 private:
+	Application(int width, int height, const std::string& title)
+	{
+		m_window = new Window(width, height, title);
+		m_window->setEventFunc(std::bind(&Application::onEvent, this, std::placeholders::_1));
+		m_window->initialize();
+		m_imGuiLayer = new ImGuiLayer("ImGuiLayer");
+		m_imGuiLayer->onAttach();
+		m_layerStack.addOverlay(m_imGuiLayer);
+		glfwSetInputMode(m_window->getWindowHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	~Application()
+	{
+		close(); // Ensure resources are cleaned up
+	}
+
+	Application(const Application&) = delete;
+	Application& operator=(const Application&) = delete;
+
 	inline static Window* m_window = nullptr;
 	LayerStack m_layerStack;
 	ImGuiLayer* m_imGuiLayer = nullptr;

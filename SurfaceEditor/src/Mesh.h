@@ -161,15 +161,19 @@ public:
 	//co musi mat octree, je samozrejme Face*, taktiez ale aj start a end indexy
 
 
+	//MeshMaterialStructure
 	std::map<Material*, VectorData> m_materialIDVertexDataMap;
-
 	VectorData m_combinedVertexDataMatVector;
 
-	std::string m_meshID;
+
 	Material* m_defaultMaterial;
+
 
 	std::vector<FaceData> m_facesData;
 
+	std::string m_meshID;
+
+	//mesh by nemal priamo vediet o tychto triangulators, su to len triedy, ktore sa pouzivaju docasne. Neskor ich uz netreba
 	PolygonTriangulator* m_triangleTriangulator;
 	PolygonTriangulator* m_polygonTriangulator;
 
@@ -178,6 +182,7 @@ public:
 	bool m_buildSuccessful = false;
 public:
 
+	//nemusi brat defaultMaterial
 	Mesh(Material* defaultMaterial , std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices = std::vector<int>(), const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
 		m_defaultMaterial = defaultMaterial;
@@ -192,11 +197,14 @@ public:
 		//setRenderingData();
 	}
 
+	//bolo vybudovanie celeho mesha successfull
 	bool isBuildSuccessful()
 	{
 		return m_buildSuccessful;
 	}
 
+
+	//tato metoda trianguluje jednotlive faces a taktiez prideli jednotlivym faces materialy, Tak aby sme mohli tiež rychlo pristupit k jednotlivym faces daneho materialu v danom meshi
 	bool buildMeshData(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices = std::vector<int>(), const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
 		size_t startIndexOfTrianglesInFace = 0;
@@ -259,6 +267,7 @@ public:
 		return triangulationSuccess;
 	}
 
+
 	void setInitialDataForVertex(VectorData& combinedVertexDataMat, VectorData& materialVertexDataMat, const Element& elementData, const glm::vec3& vertexAfterTriangulation, const glm::vec3& polygonNormal)
 	{
 		combinedVertexDataMat.m_materialIDIndexMap.push_back({ elementData.material, elementData.index, elementData.deleted });
@@ -268,7 +277,8 @@ public:
 		materialVertexDataMat.m_vertexData.push_back({ vertexAfterTriangulation, polygonNormal });
 	}
 
-
+	//pomocna metoda
+	//treba tuto metodu dat do nejakej triedy PolygonOperations
 	float calculateSignedAreaOf2DPolygon(const std::vector<glm::vec2>& vertices) {
 		float area = 0.0;
 		size_t j = 1;
@@ -279,6 +289,8 @@ public:
 		return area / 2.0;
 	}
 
+	//pomocna metoda
+	//treba tuto metodu dat do nejakej triedy VectorOperationFuncs
 	bool arePointsCoplanar(const PointList& points, double threshold = 1e-6) {
 		// Compute the best-fitting plane
 		Plane_3 plane;
@@ -309,7 +321,8 @@ public:
 	}
 
 
-
+	//pomocna metoda
+	//Do fittingOperations
 	std::tuple<Eigen::Vector3d, Eigen::Vector3d, double> calculateLeastSquaresFittingPlane(const std::vector<Eigen::Vector3d>& points) {
 		// Calculate centroid
 		Eigen::Vector3d centroid = Eigen::Vector3d::Zero();
@@ -345,6 +358,7 @@ public:
 		return std::make_tuple(centroid, normal, error);
 	}
 
+	//treba tuto metodu dat do nejakej triedy PolygonOperations
 	void triangulate2DPolygon(std::vector<int>& polygon, const std::vector<glm::vec2>& vertices, std::vector<glm::vec2>& accumulatedPointsData)
 	{
 		//musime vytvorit std::vector<Vertex_handle> vertices
@@ -377,7 +391,7 @@ public:
 		}
 	}
 
-
+	//treba tuto metodu dat do nejakej triedy VectorOperations
 	float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b) {
 		float dotProduct = glm::dot(a, b);
 
@@ -391,12 +405,14 @@ public:
 		return angleDegrees;
 	}
 
+	//treba tuto metodu dat do nejakej triedy VectorOperations
 	glm::vec3 reflectVector(const glm::vec3& vector, const glm::vec3& normal)
 	{
 		glm::vec3 reflectedVector = vector - 2.0f * glm::dot(vector, normal) * normal;
 		return reflectedVector;
 	}
 
+	//treba tuto metodu dat do nejakej triedy PolygonOperations
 	void calculateAngleTypesOfVertices(const std::vector<int>& polygon, const PolygonOrientation& polygonOrientation, const std::vector<glm::vec3>& vertices, const glm::vec3& polygonNormal, std::map<int, AngleType>& returnedAngleTypes)
 	{
 		for (int i = 0; i < polygon.size(); ++i)
@@ -459,7 +475,7 @@ public:
 		}
 	}
 
-
+	//treba tuto metodu dat do nejakej triedy PolygonOperations
 	bool calculatePolygonNormal(const std::vector<int>& polygon, std::map<int, AngleType>& angleTypesMap, const PolygonOrientation& polygonOrientation, const std::vector<glm::vec3>& vertices, glm::vec3& returnedNormal) {
 		bool calculatedNormal = false;
 		for (int i = 0; i < polygon.size(); ++i)
@@ -873,11 +889,13 @@ public:
 		return true;
 	}
 
+	//toto by mal byt ako command
 	void assignMaterialToMesh(Material* material)
 	{
 		
 	}
 
+	//toto by malo byt ako separatny command a nie metoda priamo v meshi
 	void assignMaterialToSelectedFaces(Material* material, std::vector<HalfEdgeDS::Face*>& selectedFaces)
 	{
 		std::map<Material*, StartEndMovedElements> startEndMovedElementsMap;
@@ -1064,6 +1082,7 @@ public:
 
 	}
 
+	//taktiez ako nejaky command, ktory nam umozni vymazat jednotlive, alebo teda mala by to byt nejaka helper funkcia vyuzivana v commande deleteSelectedFaces
 	void deleteMaterialsOfSelectedFaces(std::vector<HalfEdgeDS::Face*>& selectedFaces)
 	{
 
@@ -1214,6 +1233,7 @@ private:
 	}
 	*/
 
+	//helper pri assignovani materialu (teda pri vymazavani materialu
 	void assignMovedElementsOfDeletedFaces(const VectorData& currentVectorData,const std::vector<StartEndOfElement>& startAndEndOfDeletedFaces, std::vector<MovedElement>& movedElements)
 	{
 		size_t moveElementByAmount = 0;

@@ -253,7 +253,7 @@ public:
         OctreeNode<T>* closestHitNode = nullptr;
         float minHitDistance = std::numeric_limits<float>::max();
         std::vector<OctreeNode<T>*> hitOctreeLiefs;
-        
+
         if (rootNode->nodeBounds.intersectsRay(ray)) {
             rootNode->findData(ray, hitOctreeLiefs);
         }

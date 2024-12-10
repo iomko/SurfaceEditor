@@ -265,6 +265,7 @@
     <ClInclude Include="src\Commands\SelectMeshCommand.h" />
     <ClInclude Include="src\Commands\SelectVertexCommand.h" />
     <ClInclude Include="src\Gui\ImportExportLayer.h" />
+    <ClInclude Include="src\Scene\EditorSettings.h" />
     <ClInclude Include="src\WindowsFileDialogs.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
     <ClInclude Include="src\Gui\ToolBarLayer.h" />

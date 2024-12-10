@@ -92,6 +92,10 @@ void Renderer::init() {
 	data.AABB_vbo.unbind();
 }
 
+//mame tu zbytocne dve verzie drawMesh metody, jednu, ktora vyuziva position, normal a isHighlighted
+//a druhu ktora vyuziva len position a color
+//pricom momentalne vyuzivame len drawMeshDefault
+//zatial pre jednoduchost pouzivajme len jednu drawMesh metodu
 void Renderer::drawMeshDefault(const std::vector<MeshVert>& mesh)
 {
 	// Binding VAO, VBO, EBO
@@ -119,6 +123,7 @@ void Renderer::drawMesh(std::vector<MeshVertex>& mesh) {
 	data.Mesh_vbo.unbind();
 }
 
+//tato metoda tu nema co robit, 
 void Renderer::collectAABBdata(const AABBBoundingRegion& aabb, const glm::vec3& vertexColor) {
 	//left side
 	glm::vec3 bottomUpLeft = aabb.getMin();
@@ -186,6 +191,8 @@ void Renderer::collectAABBdata(const AABBBoundingRegion& aabb, const glm::vec3& 
 	data.boundingBoxVertices.insert(data.boundingBoxVertices.end(), std::begin(AABB_vertices), std::end(AABB_vertices));
 }
 
+//toto tu teoreticky mozem nechat, ale mozno to pomenovat inac napr drawBox, alebo nieco take
+//a mala by ta metoda brat nejaky parameter nech ich dokaze vykreslit
 void Renderer::drawBoundingBoxes() {
 	// Binding VAO, VBO, EBO
 	data.AABB_vao.bind();
@@ -241,6 +248,7 @@ void Renderer::drawPoints(std::vector<MeshPoint>& points)
 	data.Point_vbo.unbind();
 }
 
+//nema tu co robit
 void Renderer::deleteAABBBuffer()
 {
 	data.boundingBoxVertices.clear();

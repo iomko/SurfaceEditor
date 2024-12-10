@@ -12,11 +12,8 @@ export enum class CameraMovement
 	RIGHT
 };
 
-
-export class Camera
+export struct CameraState
 {
-public:
-	Camera(glm::vec3 position, glm::vec3 target = glm::vec3(0.0, 0.0, 0.0), glm::vec3 worldUp = glm::vec3(0.0, 1.0, 0.0));
 	glm::vec3 position;
 	glm::vec3 frontVector;
 	glm::vec3 rightVector;
@@ -27,11 +24,19 @@ public:
 	float yaw = -90.0f;
 	float pitch = 0.0f;
 	float zoom = 45.0f;
+};
 
-	void updateCameraDirection(double diffMousePositionX, double diffMousePositionY, float movementSensitivity = 0.1f);
-	void updateCameraPosition(CameraMovement movementDirection, float amount);
+export class Camera
+{
+public:
+	Camera(glm::vec3 position, glm::vec3 target = glm::vec3(0.0, 0.0, 0.0), glm::vec3 worldUp = glm::vec3(0.0, 1.0, 0.0));
+
+	void updateCameraDirection(double diffMousePositionX, double diffMousePositionY);
+	void updateCameraPosition(CameraMovement movementDirection);
 	void updateCameraVectors();
-	void updateCameraZoom(float amount);
 
-	Ray m_cameraRay;
+	CameraState getState();
+private:
+	CameraState m_state;
+	//Ray m_cameraRay;
 };

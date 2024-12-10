@@ -5,33 +5,33 @@
 class OBJImporter : public BaseImporter
 {
 public:
-	bool open(const std::string& filePath) override
+
+	void setFilePath(const std::string& filePath)
 	{
 		m_filePath = filePath;
-		
-		if (std::filesystem::exists(filePath)) {
-			std::cout << "File exists: " << filePath << std::endl;
-			return true;
-		}
-		else {
-			std::cerr << "Error: File does not exist: " << filePath << std::endl;
-			return false;
-		}
 	}
+
 	bool read() override
 	{
+		if (!std::filesystem::exists(m_filePath)) {
+			std::cerr << "Error: File does not exist: " << m_filePath << std::endl;
+			return false;
+		}
+
+		std::cout << "File exists: " << m_filePath << std::endl;
+
+		std::ifstream file(m_filePath);
+		if (!file.is_open()) {
+			std::cerr << "Error: Failed to open file: " << m_filePath << std::endl;
+			return false;
+		}
+
 
         std::vector<glm::vec3> vertices;
         std::vector<std::vector<int>> polygonsIndices;
         std::vector<glm::vec3> normals;
         std::vector<int> polygonNormalIndices;
 
-        
-        std::ifstream file(m_filePath);
-        if (!file.is_open()) {
-            std::cerr << "Error: Failed to open file: " << m_filePath << std::endl;
-            return false;
-        }
 
         bool isFirstAddedMesh = true;
         std::string line;

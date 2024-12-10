@@ -5,11 +5,14 @@ module;
 export module Geometry.Primitive.Cube;
 import Geometry.Primitive;
 
+//nema co robit v tejto triede
+//skor by som vsetky tieto VertexData dal do jednej spolocnej triedy, ktora sa vyuziva v triede Renderer
 export struct CubeVertex
 {
 	glm::vec3 position;
 	glm::vec3 color;
 };
+
 
 export class Cube : public Mesh2
 {

@@ -19,12 +19,20 @@ export class ViewPortLayer : public Layer
 {
 private:
 	float m_deltaTime = 0.0f;
+
+	//ano viewPort proste musi mat pridelenu nejaku vlastnu kameru
 	Camera* m_activeCamera = nullptr;
+	//vsetky viewporty budu vediet o jednej scene. //to znamena, ze akonahle nieco vymazem z jedneho viewportu, tak sa to
+	//musi vymazat aj v tom druhom viewporte.
 	Scene* m_scene = nullptr;
 
+	//blbost
 	std::unordered_set<HalfEdgeDS::HalfEdgeMesh*> m_selectedMeshesID;
 
 public:
+	//takto rozhodne to minimalne chcem zgrupnut tieto shadre
+	//ale nie je to zly napad si uchovavat pre jednotlive viewporty rozdielne shadre. Kedze v jednom viewporte sa nam mozu inac vykreslit objekty
+	//ako v druhom viewporte.
 	Shader* m_meshShader = nullptr;
 	Shader* m_normalsShader = nullptr;
 	Shader* m_shaderSingleColor = nullptr;
@@ -34,21 +42,24 @@ public:
 	Shader* m_shaderBlit = nullptr;
 	Shader* m_shaderDilation = nullptr;
 
+	//kazdy viewPort by taktiez mal mat nejaku referenciu na Renderera, alebo by sme mohli spravi to, že budeme mat nejakeho
+	//Rendering
+
 public:
 
-
+	//takto viewport musi vediet o svojej velkosti okna. Avsak nie o celkovej SCR_WIDTH a SCR_HEIGHT celeho glfw okna
 	const unsigned int SCR_WIDTH = 1600;
 	const unsigned int SCR_HEIGHT = 900;
 
 
-
+	//toto rozhodne musi ist prec
 	struct SimpleRenderTarget {
 		unsigned int fbo{ 0 };               /// framebuffer id
 		unsigned int colorTexId{ 0 };        /// colour buffer id
 		unsigned int depthStencilTexId{ 0 }; /// depth and stencil buffer id
 	};
 
-
+	//aj toto pojde prec
 	SimpleRenderTarget createRenderTarget() {
 		unsigned int fbo;
 		glGenFramebuffers(1, &fbo);
@@ -87,10 +98,12 @@ public:
 		return rt;
 	}
 
+	//aj toto pojde prec
 	SimpleRenderTarget m_targetA;
 	SimpleRenderTarget m_targetB;
 	
-
+	//toto je blbost lebo ja nechcem pre rozne viewPortLayere si uchovavat currentSelectedCommand zvlast
+	//kedze vsetky budu pouzivat rovnaky currentSelectedCommand
 	Command* m_currentSelectedCommand = nullptr;
 public:
 	ViewPortLayer(const std::string& name, Camera* m_active_camera, Scene* scene)
@@ -108,20 +121,24 @@ public:
 
 	}
 
+	// v poriadku
 	Camera* getCamera()
 	{
 		return m_activeCamera;
 	}
 
+	// v poriadku
 	Scene* getScene()
 	{
 		return m_scene;
 	}
 
+
 	void onUpdate() override
 	{
 		updateCameraMovement();
 	}
+
 	//unhide later
 	void render()
 	{
@@ -130,11 +147,13 @@ public:
 
 	}
 
+	//toto musi ist prec
 	void updateDeltaTime(float deltaTime)
 	{
 		m_deltaTime = deltaTime;
 	}
 
+	// no toto tu nejakym sposobom musi fungovat
 	void updateCameraDirection(Event& event)
 	{
 		if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
@@ -144,30 +163,33 @@ public:
 		}
 	}
 
+	//aj toto tu musi fungovat
 	void updateCameraMovement()
 	{
 		const float movementSpeed = 50.0f * m_deltaTime;
 		if (Input::isKeyPressed(GLFW_KEY_W) == true)
 		{
-			m_activeCamera->updateCameraPosition(CameraMovement::FORWARD, movementSpeed);
+			m_activeCamera->updateCameraPosition(CameraMovement::FORWARD);
 			//std::cout << "camera moved forward" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_S) == true)
 		{
-			m_activeCamera->updateCameraPosition(CameraMovement::BACKWARD, movementSpeed);
+			m_activeCamera->updateCameraPosition(CameraMovement::BACKWARD);
 			//std::cout << "camera moved backward" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_A) == true)
 		{
-			m_activeCamera->updateCameraPosition(CameraMovement::LEFT, movementSpeed);
+			m_activeCamera->updateCameraPosition(CameraMovement::LEFT);
 			//std::cout << "camera moved left" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_D) == true)
 		{
-			m_activeCamera->updateCameraPosition(CameraMovement::RIGHT, movementSpeed);
+			m_activeCamera->updateCameraPosition(CameraMovement::RIGHT);
 			//std::cout << "camera moved right" << std::endl;
 		}
 	}
+
+
 	void onEvent(Event& event) override
 	{
 		if (event.getType() == EventType::MouseButtonPress)
@@ -188,7 +210,7 @@ public:
 		}
 	}
 
-	//unhide later
+	//toto musi ist prec
 	void deleteSelectedFacesOfSelectedMeshes()
 	{
 		/*
@@ -264,7 +286,7 @@ public:
 
 	}
 	*/
-	//unhide later
+	//toto musi ist prec
 	HalfEdgeDS::Face* deselectFace(const Ray& ray)
 	{
 		
@@ -287,7 +309,7 @@ public:
 		*/
 		return retrievedFace;
 	}
-	//unhide later
+	//toto musi ist prec
 	HalfEdgeDS::Face* selectFace(const Ray& ray)
 	{
 		
@@ -315,7 +337,7 @@ public:
 		*/
 		return retrievedFace;
 	}
-	//unhide later
+	//toto musi ist prec
 	HalfEdgeDS::HalfEdgeMesh* selectMesh(const Ray& ray)
 	{
 		
@@ -331,7 +353,7 @@ public:
 		*/
 		return retrievedMesh;
 	}
-	//unhide later
+	//toto musi ist prec
 	HalfEdgeDS::HalfEdgeMesh* deselectMesh(const Ray& ray)
 	{
 		HalfEdgeDS::HalfEdgeMesh* retrievedMesh = nullptr;

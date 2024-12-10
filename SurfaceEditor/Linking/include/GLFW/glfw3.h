@@ -1732,7 +1732,7 @@ typedef struct GLFWimage
 
 /*! @brief Gamepad input state
  *
- *  This describes the input state of a gamepad.
+ *  This describes the input m_state of a gamepad.
  *
  *  @sa @ref gamepad
  *  @sa @ref glfwGetGamepadState
@@ -4276,8 +4276,8 @@ GLFWAPI int glfwGetKeyScancode(int key);
 /*! @brief Returns the last reported state of a keyboard key for the specified
  *  window.
  *
- *  This function returns the last state reported for the specified key to the
- *  specified window.  The returned state is one of `GLFW_PRESS` or
+ *  This function returns the last m_state reported for the specified key to the
+ *  specified window.  The returned m_state is one of `GLFW_PRESS` or
  *  `GLFW_RELEASE`.  The action `GLFW_REPEAT` is only reported to the key callback.
  *
  *  If the @ref GLFW_STICKY_KEYS input mode is enabled, this function returns
@@ -4315,8 +4315,8 @@ GLFWAPI int glfwGetKey(GLFWwindow* window, int key);
 /*! @brief Returns the last reported state of a mouse button for the specified
  *  window.
  *
- *  This function returns the last state reported for the specified mouse button
- *  to the specified window.  The returned state is one of `GLFW_PRESS` or
+ *  This function returns the last m_state reported for the specified mouse button
+ *  to the specified window.  The returned m_state is one of `GLFW_PRESS` or
  *  `GLFW_RELEASE`.
  *
  *  If the @ref GLFW_STICKY_MOUSE_BUTTONS input mode is enabled, this function
@@ -4553,7 +4553,7 @@ GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor);
  *  The scancode of a key is specific to that platform or sometimes even to that
  *  machine.  Scancodes are intended to allow users to bind keys that don't have
  *  a GLFW key token.  Such keys have `key` set to `GLFW_KEY_UNKNOWN`, their
- *  state is not saved and so it cannot be queried with @ref glfwGetKey.
+ *  m_state is not saved and so it cannot be queried with @ref glfwGetKey.
  *
  *  Sometimes GLFW needs to generate synthetic key events, in which case the
  *  scancode may be zero.
@@ -4899,7 +4899,7 @@ GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count);
 
 /*! @brief Returns the state of all buttons of the specified joystick.
  *
- *  This function returns the state of all buttons of the specified joystick.
+ *  This function returns the m_state of all buttons of the specified joystick.
  *  Each element in the array is either `GLFW_PRESS` or `GLFW_RELEASE`.
  *
  *  For backward compatibility with earlier versions that did not have @ref
@@ -4940,7 +4940,7 @@ GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count);
 
 /*! @brief Returns the state of all hats of the specified joystick.
  *
- *  This function returns the state of all hats of the specified joystick.
+ *  This function returns the m_state of all hats of the specified joystick.
  *  Each element in the array is one of the following values:
  *
  *  Name                  | Value
@@ -5249,7 +5249,7 @@ GLFWAPI const char* glfwGetGamepadName(int jid);
 
 /*! @brief Retrieves the state of the specified joystick remapped as a gamepad.
  *
- *  This function retrieves the state of the specified joystick remapped to
+ *  This function retrieves the m_state of the specified joystick remapped to
  *  an Xbox-like gamepad.
  *
  *  If the specified joystick is not present or does not have a gamepad mapping

@@ -1,86 +1,78 @@
 module;
+#include <iostream>
+#include <ostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "EditorSettings.h"
 module Camera;
 
-Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp) : m_cameraRay(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0))
+
+Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 {
-	this->position = position;
-	this->frontVector = glm::normalize(target - position);
-	this->rightVector = glm::cross(this->frontVector, worldUp);
-	this->upVector = glm::cross(rightVector, frontVector);
-	this->worldUp = worldUp;
-	this->lookAtMatrix = glm::lookAt(this->position, this->position + this->frontVector, this->worldUp);
+	m_state.position = position;
+	m_state.frontVector = glm::normalize(target - position);
+	m_state.rightVector = glm::cross(m_state.frontVector, worldUp);
+	m_state.upVector = glm::cross(m_state.rightVector, m_state.frontVector);
+	m_state.worldUp = worldUp;
+	m_state.lookAtMatrix = glm::lookAt(m_state.position, m_state.position + m_state.frontVector, m_state.worldUp);
 }
 
-void Camera::updateCameraDirection(double diffMousePositionX, double diffMousePositionY, float movementSensitivity)
+void Camera::updateCameraDirection(double diffMousePositionX, double diffMousePositionY)
 {
-	yaw += (float)(diffMousePositionX) * movementSensitivity;
+	m_state.yaw += (float)(diffMousePositionX) * EditorSettings::CameraSettings::m_rotationSensitivity;
 	// -diffMousePositionY (because MouseDY is inverted)
-	pitch += (float)(-diffMousePositionY) * movementSensitivity;
+	m_state.pitch += (float)(-diffMousePositionY) * EditorSettings::CameraSettings::m_rotationSensitivity;
 
-	if (pitch > 89.0f)
+	if (m_state.pitch > 89.0f)
 	{
-		pitch = 89.0f;
+		m_state.pitch = 89.0f;
 	}
-	if (pitch < -89.0f)
+	if (m_state.pitch < -89.0f)
 	{
-		pitch = -89.0f;
+		m_state.pitch = -89.0f;
 	}
+
 	glm::vec3 direction;
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	frontVector = glm::normalize(direction);
+	direction.x = cos(glm::radians(m_state.yaw)) * cos(glm::radians(m_state.pitch));
+	direction.y = sin(glm::radians(m_state.pitch));
+	direction.z = sin(glm::radians(m_state.yaw)) * cos(glm::radians(m_state.pitch));
+	m_state.frontVector = glm::normalize(direction);
 
 	this->updateCameraVectors();
 }
 
-void Camera::updateCameraPosition(CameraMovement movementDirection, float amount)
+void Camera::updateCameraPosition(CameraMovement movementDirection)
 {
-	if(movementDirection == CameraMovement::FORWARD)
+	if (movementDirection == CameraMovement::FORWARD)
 	{
-		this->position += amount * frontVector;
+		m_state.position += EditorSettings::CameraSettings::m_movementSensitivity * m_state.frontVector;
 	}
-	if(movementDirection == CameraMovement::BACKWARD)
+	if (movementDirection == CameraMovement::BACKWARD)
 	{
-		this->position -= amount * frontVector;
+		m_state.position -= EditorSettings::CameraSettings::m_movementSensitivity * m_state.frontVector;
 	}
-	if(movementDirection == CameraMovement::LEFT)
+	if (movementDirection == CameraMovement::LEFT)
 	{
-		this->position -= glm::normalize(glm::cross(this->frontVector, this->upVector)) * amount;
-		//this->position += -this->rightVector * amount;
+		m_state.position += -m_state.rightVector * EditorSettings::CameraSettings::m_movementSensitivity;
 	}
-	if(movementDirection == CameraMovement::RIGHT)
+	if (movementDirection == CameraMovement::RIGHT)
 	{
-		this->position += glm::normalize(glm::cross(this->frontVector, this->upVector)) * amount;
-		//this->position += this->rightVector * amount;
+		m_state.position += m_state.rightVector * EditorSettings::CameraSettings::m_movementSensitivity;
 	}
 
-	//updateLookAtMatrix
-	this->lookAtMatrix = glm::lookAt(this->position, this->position + this->frontVector, this->worldUp);
+	// Update LookAt matrix
+	m_state.lookAtMatrix = glm::lookAt(m_state.position, m_state.position + m_state.frontVector, m_state.worldUp);
 }
-
 
 void Camera::updateCameraVectors()
 {
-	this->rightVector = glm::cross(this->frontVector, worldUp);
-	this->upVector = glm::cross(rightVector, frontVector);
-	this->lookAtMatrix = glm::lookAt(this->position, this->position + this->frontVector, this->worldUp);
+	m_state.rightVector = glm::cross(m_state.frontVector, m_state.worldUp);
+	m_state.upVector = glm::cross(m_state.rightVector, m_state.frontVector);
+	m_state.lookAtMatrix = glm::lookAt(m_state.position, m_state.position + m_state.frontVector, m_state.worldUp);
 }
 
-void Camera::updateCameraZoom(float amount)
+CameraState Camera::getState()
 {
-	zoom -= (float)amount;
-
-	if (zoom < 1.0f)
-	{
-		zoom = 1.0f;
-	}
-
-	if (zoom > 45.0f)
-	{
-		zoom = 45.0f;
-	}
-	
+	return m_state;
 }

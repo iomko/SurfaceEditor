@@ -12,7 +12,7 @@ class ViewPortHolder : public Layer, public Observer
 {
 public:
 
-	
+	//renderFlags budu nahradene nejakym RenderSettings pre kazdy ViewPortLayer zvlast
 	struct MeshRenderingFlags
 	{
 		bool RENDER_NORMALS = true;
@@ -21,6 +21,7 @@ public:
 		bool RENDER_FACES = true;
 	};
 
+	
 	struct MeshRenderingShaderData
 	{
 		MeshRenderingShaderData(Shader point_shader, Shader edge_shader, Shader normal_shader,
@@ -45,6 +46,7 @@ public:
 		std::vector<MeshPoint> m_points;
 	};
 
+	//toto pojde prec
 	std::map<Mesh*, std::tuple<MeshRenderingFlags, MeshRenderingShaderData, MeshRenderingVAOData>> m_meshesShaderData;
 	
 public:
@@ -54,7 +56,8 @@ public:
 		m_viewPortLayer = viewPortLayer;
 	}
 
-
+	//viewPortHolder nemá rendrova meshes, o vykreslovanie sa stará Renderer a k nemu bude pridelený nejaký RendererManager, ktorý bude spravova moju
+	//scenu a bude ju vykreslova pre každý viewPortLayer
 	void renderMeshes()
 	{
 		glViewport(0, 0, m_viewPortLayer->SCR_WIDTH, m_viewPortLayer->SCR_HEIGHT);

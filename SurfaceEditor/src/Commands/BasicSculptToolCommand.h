@@ -87,7 +87,8 @@ public:
                     const auto& thirdVertex = faceMeshPair.first->m_combinedVertexDataMatVector.m_vertexData.at(i + 2).position;
 
                     float amountToBeMultiplied;
-                    if (AABBBoundingRegion::rayTriangleIntersect(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, amountToBeMultiplied))
+
+                    if(Ray::intersectsTriangle(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, amountToBeMultiplied))
                     {
                         return std::make_pair(true, amountToBeMultiplied);
                     }

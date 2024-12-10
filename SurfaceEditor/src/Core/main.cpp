@@ -51,7 +51,7 @@ namespace glm
 }
 
 
-Ray getCameraRay(glm::vec3& cameraPosition, glm::vec3& cameraFrontVector)
+Ray getCameraRay(const glm::vec3& cameraPosition, const glm::vec3& cameraFrontVector)
 {
 	return Ray(cameraPosition, cameraFrontVector);
 }
@@ -96,7 +96,8 @@ Ray calculateMousePickingRay(Camera& camera, glm::mat4& perspectiveMat, glm::mat
 	glm::vec3 rayPosition = glm::vec3(worldSpace);
 	glm::vec3 normalizedRayPosition = glm::normalize(rayPosition);
 
-	glm::vec3 rayStart = camera.position;
+	
+	glm::vec3 rayStart = camera.getState().position;
 
 
 
@@ -317,101 +318,15 @@ const unsigned int SCR_HEIGHT = 900;
 
 int main()
 {
-	//PROJECTION TEST
-
-	//PROJECTION TEST
-
-
-	//testMaterialov!
-	
-	Material* defaultMaterial = new Material("default");
-
-	//dva materialy
-	//blue
-	Material* blueMaterial = new Material("blue");
-
-	//red
-	Material* redMaterial = new Material("red");
-
-	//novy assignuty Material
-	Material* material3 = new Material("3");
-
-	//jeden mesh s 5 faceami
-
-
-	std::vector<glm::vec3> meshVerts;
-
-	std::vector<std::vector<int>> polygonsIndices;
-	std::vector<PolygonOrientation> polygonOrientations;
-
-
-	//firstPoly
-	//meshVerts.push_back({ 5.38461 , 2.49756 , 0.0}); //0
-	//meshVerts.push_back({ 10.7969 , -6.18571 , 0.0}); //1
-	//meshVerts.push_back({ 3.59558 , -3.68423 , 0.0}); //2
-	//meshVerts.push_back({ 1.60165 , -1.69653 , 0.0}); //3
-
-	//secondPoly
-	//meshVerts.push_back({ -2.01404 , -8.78555 , 0.0}); //4
-	//meshVerts.push_back({ -6.17731 , -5.06843 , 0.0}); //5
-
-	//thirdPoly
-	//meshVerts.push_back({ -8.15201 , -2.79399 , 0.0}); //6
-	//meshVerts.push_back({ -6.77999 , 0.257219 , 0.0}); //7
-	//meshVerts.push_back({ -1.93392 , 2.98111 , 0.0}); //8
-
-
-	//firstPoly
-	//polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	//polygonsIndices.push_back({ 3, 0, 1, 2 });
-	//secondPoly
-	//polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	//polygonsIndices.push_back({ 3, 5, 4, 2 });
-	//thirdPoly
-	//polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	//polygonsIndices.push_back({ 3, 8, 7, 6, 5 });
-
-	
-	meshVerts.push_back({ 5.0 , 5.0 , 5.0 }); //0
-	meshVerts.push_back({ 10.0 , 5.0 , 5.0}); //1
-	meshVerts.push_back({ 7.5 , 10.0 , 5.0 }); //2
-	meshVerts.push_back({ 12.5, 10.0, 5.0 }); //3
-	meshVerts.push_back({ 15.0, 5.0, 5.0 }); //4
-	meshVerts.push_back({ 20.0, 5.0, 5.0}); //5
-	meshVerts.push_back({ 17.5, 10.0, 5.0 }); //6
-	meshVerts.push_back({ 15.0, 15.0, 5.0 }); //7
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 0, 1, 2 });
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 1, 3, 2 });
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 1, 4, 3 });
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 4, 6, 3 });
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 4, 5, 6 });
-
-	polygonOrientations.push_back(PolygonOrientation::CLOCKWISE);
-	polygonsIndices.push_back({ 3, 6, 7 });
-
-
-
-
-	//FIRST STEP
-	Mesh* mesh = new Mesh(defaultMaterial, polygonsIndices, meshVerts);
-
-
 
 	
 
-	Application app(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
+	//Application app(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
+	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
 	Camera camera = Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	Ray ray = getCameraRay(camera.position, camera.frontVector);
+
+	
+	Ray ray = getCameraRay(camera.getState().position, camera.getState().frontVector);
 	std::vector<LineVertex> rayLine;
 
 
@@ -443,16 +358,13 @@ int main()
 	Scene scene;
 
 
-	
-	//pridaj mesh
-	//scene.addMesh2(mesh);
 
 	//access
 	//scene.accessNeighbouringVertsAndFacesOfVertex(&mesh->m_halfEdgeMesh->m_vertices.at(0));
 
 
 	//ToolBarLayer toolBarLayer(ToolBarLayer("ToolBarLayer"));
-	//app.onAddLayer(&toolBarLayer);
+	//app.getLayerStack().addLayer(&toolBarLayer);
 	
 
 	//viewPortLayer
@@ -464,7 +376,7 @@ int main()
 	viewPortLayer->m_linesShader = &linesShader;
 	viewPortLayer->m_shaderBlit = &shaderBlit;
 	viewPortLayer->m_shaderDilation = &shaderDilation;
-	app.onAddLayer(viewPortLayer);
+	app.getLayerStack().addLayer(viewPortLayer);
 
 	ViewPortHolder* viewPortHolder = new ViewPortHolder(viewPortLayer);
 	PlaneProperties planeProperties;
@@ -474,7 +386,7 @@ int main()
 
 	//ImporExportLayer
 	ImportExportLayer* importExportLayer = new ImportExportLayer(viewPortHolder, "importExportLayer");
-	app.onAddLayer(importExportLayer);
+	app.getLayerStack().addLayer(importExportLayer);
 
 	//importMeshesCommand
 
@@ -518,7 +430,7 @@ int main()
 
 
 	ToolBarLayer toolBarLayer(viewPortHolder, "ToolBarLayer");
-	app.onAddLayer(&toolBarLayer);
+	app.getLayerStack().addLayer(&toolBarLayer);
 
 	ToolBarLayerCallBack toolBarLayerCallBack(viewPortHolder, &toolBarLayer);
 	viewPortHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
@@ -560,10 +472,10 @@ int main()
 
 	//AdditionLayer
 	AdditionLayer additionLayer("AdditionLayer");
-	app.onAddLayer(&additionLayer);
+	app.getLayerStack().addLayer(&additionLayer);
 
 	//TransformLayer
-	app.onAddLayer(&transformLayer);
+	app.getLayerStack().addLayer(&transformLayer);
 
 
 	for (auto& entry : scene.m_meshFaceOctreesMap) {
@@ -626,10 +538,11 @@ int main()
 
 		float nearPlane = 1.0f;
 		float farPlane = 1000.0f;
-		projection = glm::perspective(glm::radians(camera.zoom), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), nearPlane, farPlane);
+		projection = glm::perspective(glm::radians(camera.getState().zoom), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), nearPlane, farPlane);
 		linesShader.setMat4("u_projection", projection);
 
-		glm::mat4 view = camera.lookAtMatrix;
+
+		glm::mat4 view = camera.getState().lookAtMatrix;
 		linesShader.setMat4("u_view", view);
 		
 		//linesShader.setMat4("u_model", model);
@@ -665,10 +578,8 @@ int main()
 		//pointsShader.setMat4("u_model", model);
 		pointsShader.unbind();
 
-
 		//ray = getCameraRay(camera.position, camera.frontVector);
 		ray = calculateMousePickingRay(camera, projection, view, app.getWindow());
-		camera.m_cameraRay = ray;
 
 
 		if (Input::isKeyDown(GLFW_KEY_C))
@@ -692,7 +603,7 @@ int main()
 			for (const auto selectedMesh : viewPortHolder->m_selectedMeshes)
 			{
 				selectedMesh->m_meshID = std::to_string(currentMeshIndex);
-				objExporter.setMesh(selectedMesh);
+				objExporter.parseMesh(selectedMesh);
 				++currentMeshIndex;
 			}
 			objExporter.write();

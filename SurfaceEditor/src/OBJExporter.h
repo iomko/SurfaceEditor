@@ -1,42 +1,41 @@
 #pragma once
 #include "BaseExporter.h"
 #include <filesystem>
+
 class OBJExporter : public BaseExporter
 {
 public:
-	bool open(const std::string& filePath) override
-	{
-		m_filePath = filePath;
-		std::ofstream file(m_filePath);
-
-		if (file.is_open()) {
-			std::cout << "File created: " << filePath << std::endl;
-			file.close();
-			return true;
-		}
-		else {
-			std::cerr << "Error: Failed to create file: " << filePath << std::endl;
-			return false;
-		}
-	}
-
 	bool write() override
 	{
 		return writeMeshData();
 	}
 
-	void setMesh(Mesh* mesh) override
+	void parseMesh(Mesh* mesh) override
 	{
 		m_meshes.push_back(mesh);
 	}
 
+	void setFilePath(const std::string& filePath)
+	{
+		m_filePath = filePath;
+	}
+
+private:
 	bool writeMeshData()
 	{
-		std::ofstream outputFile(m_filePath, std::ios::app);
-		if (!outputFile.is_open()) {
-			std::cerr << "Error: Failed to open output file for writing: " << m_filePath << std::endl;
+		if (m_meshes.empty()) {
+			std::cerr << "Error: No meshes to export." << std::endl;
 			return false;
 		}
+
+		std::ofstream outputFile(m_filePath);
+		if (!outputFile.is_open()) {
+			std::cerr << "Error: Failed to create or open file for writing: " << m_filePath << std::endl;
+			return false;
+		}
+
+		std::cout << "File created: " << m_filePath << std::endl;
+
 		std::ostringstream outputVectorStringStream;
 		std::map<HalfEdgeDS::VertexIndex, int> vertexIndexMap;
 		std::ostringstream outputNormalStringStream;
@@ -44,23 +43,33 @@ public:
 		std::ostringstream outputFaceStringStream;
 		int currentVertexIndexInt = 1;
 		int currentFaceIndexInt = 1;
+
 		for (const auto& mesh : m_meshes)
 		{
+			outputFile << "o " << mesh->m_meshID << std::endl;
+
+			// Write vertices
 			for (auto& vertex : mesh->m_halfEdgeMesh->m_vertices)
 			{
-				outputVectorStringStream << "v " << vertex.getPosition().x << " " << vertex.getPosition().y << " " << vertex.getPosition().z << std::endl;
+				outputVectorStringStream << "v " << vertex.getPosition().x << " "
+					<< vertex.getPosition().y << " "
+					<< vertex.getPosition().z << std::endl;
 				vertexIndexMap[vertex.getHalfEdge()->getVertexIndex()] = currentVertexIndexInt;
 				++currentVertexIndexInt;
 			}
-			outputFile << "o " << mesh->m_meshID << std::endl;
+
+			// Write normals and faces
 			for (const auto& faceData : mesh->m_facesData)
 			{
 				auto normalIndexIt = normalIndexMap.find(faceData.normal);
 				if (normalIndexIt == normalIndexMap.end()) {
-					outputNormalStringStream << "vn " << faceData.normal.x << " " << faceData.normal.y << " " << faceData.normal.z << std::endl;
-					normalIndexMap.insert(std::make_pair(faceData.normal, currentFaceIndexInt));
+					outputNormalStringStream << "vn " << faceData.normal.x << " "
+						<< faceData.normal.y << " "
+						<< faceData.normal.z << std::endl;
+					normalIndexMap[faceData.normal] = currentFaceIndexInt;
 					++currentFaceIndexInt;
 				}
+
 				HalfEdgeDS::Face& currentFace = mesh->m_halfEdgeMesh->m_faces.at(faceData.faceIndex);
 				outputFaceStringStream << "f ";
 				for (auto faceVertexIt = currentFace.faceVertexBegin(); faceVertexIt != currentFace.faceVertexEnd(); ++faceVertexIt) {
@@ -70,20 +79,24 @@ public:
 				}
 				outputFaceStringStream << std::endl;
 			}
+
+			// Write to file
 			outputFile << outputVectorStringStream.str();
 			outputFile << outputNormalStringStream.str();
 			outputFile << outputFaceStringStream.str();
+
+			// Clear buffers for next mesh
 			vertexIndexMap.clear();
 			normalIndexMap.clear();
 			outputVectorStringStream.str("");
 			outputNormalStringStream.str("");
 			outputFaceStringStream.str("");
 		}
+
 		outputFile.close();
 		return true;
 	}
 
 	std::string m_filePath;
-
 	std::vector<Mesh*> m_meshes;
 };

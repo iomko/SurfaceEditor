@@ -21,10 +21,13 @@ public:
         //select Mesh
         Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
 
-        Ray ray = m_viewPortHolder->m_viewPortLayer->getCamera()->m_cameraRay;
+		glm::vec3 cameraDirection = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().frontVector;
+		glm::vec3 cameraPosition = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().position;
+
+		Ray cameraRay(cameraPosition, cameraDirection);
 
 
-        const auto& octreeAlg = [](const std::pair<Mesh*, HalfEdgeDS::Face*>& faceMeshPair, const Ray& ray)->std::pair<bool, float>
+        const auto& octreeAlg = [](const std::pair<Mesh*, HalfEdgeDS::Face*>& faceMeshPair, const Ray& cameraRay)->std::pair<bool, float>
             {
                 size_t faceIndex = std::distance(faceMeshPair.first->getMeshData()->m_faces.begin(), faceMeshPair.second->getHalfEdge()->getFace());
                 size_t faceStartIndex = faceMeshPair.first->m_facesData.at(faceIndex).startIndex;
@@ -37,7 +40,8 @@ public:
                     const auto& thirdVertex = faceMeshPair.first->m_combinedVertexDataMatVector.m_vertexData.at(i + 2).position;
 
                     float amountToBeMultiplied;
-                    if (AABBBoundingRegion::rayTriangleIntersect(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, amountToBeMultiplied))
+
+                    if(Ray::intersectsTriangle(cameraRay.origin, cameraRay.direction, firstVertex, secondVertex, thirdVertex, amountToBeMultiplied))
                     {
                         return std::make_pair(true, amountToBeMultiplied);
                     }
@@ -51,7 +55,7 @@ public:
         Mesh* retMesh = nullptr;
         for (auto& meshFaceOctree : scene->m_meshFaceOctreesMap)
         {
-            const auto& octreeRetData = meshFaceOctree.second.findDataInOctree(ray, octreeAlg);
+            const auto& octreeRetData = meshFaceOctree.second.findDataInOctree(cameraRay, octreeAlg);
 
             const auto& octreeNode = std::get<0>(octreeRetData);
             const auto& mesh = std::get<1>(octreeRetData).first;

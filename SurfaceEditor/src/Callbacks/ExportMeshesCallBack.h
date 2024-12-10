@@ -21,14 +21,14 @@ public:
 	{
 		OBJExporter objExporter;
 		bool fileOpened = false;
-		fileOpened = objExporter.open(m_exportMeshesCommand->m_filePathMeshes);
+		objExporter.setFilePath(m_exportMeshesCommand->m_filePathMeshes);
 		if(fileOpened)
 		{
 			int currentMeshIndex = 0;
 			for (const auto selectedMesh : m_viewPortHolder->m_selectedMeshes)
 			{
 				selectedMesh->m_meshID = std::to_string(currentMeshIndex);
-				objExporter.setMesh(selectedMesh);
+				objExporter.parseMesh(selectedMesh);
 				++currentMeshIndex;
 			}
 

@@ -17,6 +17,7 @@ public:
 	bool isHandled = false;
 };
 
+/*
 export class EventDispatcher
 {
 public:
@@ -32,3 +33,4 @@ public:
 private:
 	Event& m_event;
 };
+*/

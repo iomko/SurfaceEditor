@@ -131,6 +131,7 @@
     <ClInclude Include="src\Commands\ImportMeshesCommand.h" />
     <ClInclude Include="src\Commands\ExportMeshesCommand.h" />
     <ClInclude Include="src\Callbacks\ExportMeshesCallBack.h" />
+    <ClInclude Include="src\Scene\EditorSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

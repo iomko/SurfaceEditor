@@ -129,7 +129,7 @@ struct ImGuiDockRequest;            // Docking system dock/undock queued request
 struct ImGuiDockNode;               // Docking system node (hold a list of Windows OR two child dock nodes)
 struct ImGuiDockNodeSettings;       // Storage for a dock node in .ini file (we preserve those even if the associated dock node isn't active during the session)
 struct ImGuiGroupData;              // Stacked storage data for BeginGroup()/EndGroup()
-struct ImGuiInputTextState;         // Internal state of the currently focused/edited text input box
+struct ImGuiInputTextState;         // Internal m_state of the currently focused/edited text input box
 struct ImGuiInputTextDeactivateData;// Short term storage to backup text of a deactivating InputText() while another is stealing active id
 struct ImGuiLastItemData;           // Status storage for last submitted items
 struct ImGuiLocEntry;               // A localization entry.
@@ -840,8 +840,8 @@ enum ImGuiItemStatusFlags_
     ImGuiItemStatusFlags_HoveredRect        = 1 << 0,   // Mouse position is within item rectangle (does NOT mean that the window is in correct z-order and can be hovered!, this is only one part of the most-common IsItemHovered test)
     ImGuiItemStatusFlags_HasDisplayRect     = 1 << 1,   // g.LastItemData.DisplayRect is valid
     ImGuiItemStatusFlags_Edited             = 1 << 2,   // Value exposed by item was edited in the current frame (should match the bool return value of most widgets)
-    ImGuiItemStatusFlags_ToggledSelection   = 1 << 3,   // Set when Selectable(), TreeNode() reports toggling a selection. We can't report "Selected", only state changes, in order to easily handle clipping with less issues.
-    ImGuiItemStatusFlags_ToggledOpen        = 1 << 4,   // Set when TreeNode() reports toggling their open state.
+    ImGuiItemStatusFlags_ToggledSelection   = 1 << 3,   // Set when Selectable(), TreeNode() reports toggling a selection. We can't report "Selected", only m_state changes, in order to easily handle clipping with less issues.
+    ImGuiItemStatusFlags_ToggledOpen        = 1 << 4,   // Set when TreeNode() reports toggling their open m_state.
     ImGuiItemStatusFlags_HasDeactivated     = 1 << 5,   // Set if the widget/group is able to provide data for the ImGuiItemStatusFlags_Deactivated flag.
     ImGuiItemStatusFlags_Deactivated        = 1 << 6,   // Only valid if ImGuiItemStatusFlags_HasDeactivated is set.
     ImGuiItemStatusFlags_HoveredWindow      = 1 << 7,   // Override the HoveredWindow test to allow cross-window hover testing.
@@ -1098,21 +1098,21 @@ struct IMGUI_API ImGuiMenuColumns
     void        CalcNextTotalWidth(bool update_offsets);
 };
 
-// Internal temporary state for deactivating InputText() instances.
+// Internal temporary m_state for deactivating InputText() instances.
 struct IMGUI_API ImGuiInputTextDeactivatedState
 {
-    ImGuiID            ID;              // widget id owning the text state (which just got deactivated)
+    ImGuiID            ID;              // widget id owning the text m_state (which just got deactivated)
     ImVector<char>     TextA;           // text buffer
 
     ImGuiInputTextDeactivatedState()    { memset(this, 0, sizeof(*this)); }
     void    ClearFreeMemory()           { ID = 0; TextA.clear(); }
 };
-// Internal state of the currently focused/edited text input box
+// Internal m_state of the currently focused/edited text input box
 // For a given item ID, access with ImGui::GetInputTextState()
 struct IMGUI_API ImGuiInputTextState
 {
     ImGuiContext*           Ctx;                    // parent UI context (needs to be set explicitly by parent).
-    ImGuiID                 ID;                     // widget id owning the text state
+    ImGuiID                 ID;                     // widget id owning the text m_state
     int                     CurLenW, CurLenA;       // we need to maintain our buffer length in both UTF-8 and wchar format. UTF-8 length is valid even if TextA is not.
     ImVector<ImWchar>       TextW;                  // edit buffer, we need to persist but can't guarantee the persistence of the user-provided buffer. so we copy into own buffer.
     ImVector<char>          TextA;                  // temporary UTF8 buffer for callbacks and other operations. this is not updated in every code-path! size=capacity.
@@ -1120,7 +1120,7 @@ struct IMGUI_API ImGuiInputTextState
     bool                    TextAIsValid;           // temporary UTF8 buffer is not initially valid before we make the widget active (until then we pull the data from user argument)
     int                     BufCapacityA;           // end-user buffer capacity
     float                   ScrollX;                // horizontal scrolling/offset
-    ImStb::STB_TexteditState Stb;                   // state for stb_textedit.h
+    ImStb::STB_TexteditState Stb;                   // m_state for stb_textedit.h
     float                   CursorAnim;             // timer for cursor blink, reset on every user action so the cursor reappears immediately
     bool                    CursorFollow;           // set when we want scrolling to follow the current cursor position (not always!)
     bool                    SelectedAllMouseLock;   // after a double-click to select all, we ignore further mouse drags to update selection
@@ -1506,7 +1506,7 @@ enum ImGuiActivateFlags_
     ImGuiActivateFlags_None                 = 0,
     ImGuiActivateFlags_PreferInput          = 1 << 0,       // Favor activation that requires keyboard text input (e.g. for Slider/Drag). Default for Enter key.
     ImGuiActivateFlags_PreferTweak          = 1 << 1,       // Favor activation for tweaking with arrows or gamepad (e.g. for Slider/Drag). Default for Space key and if keyboard is not used.
-    ImGuiActivateFlags_TryToPreserveState   = 1 << 2,       // Request widget to preserve state if it can (e.g. InputText will try to preserve cursor/selection)
+    ImGuiActivateFlags_TryToPreserveState   = 1 << 2,       // Request widget to preserve m_state if it can (e.g. InputText will try to preserve cursor/selection)
 };
 
 // Early work-in-progress API for ScrollToItem()
@@ -1551,7 +1551,7 @@ enum ImGuiNavMoveFlags_
     ImGuiNavMoveFlags_IsPageMove            = 1 << 11,  // Identify a PageDown/PageUp request.
     ImGuiNavMoveFlags_Activate              = 1 << 12,  // Activate/select target item.
     ImGuiNavMoveFlags_NoSelect              = 1 << 13,  // Don't trigger selection by not setting g.NavJustMovedTo
-    ImGuiNavMoveFlags_NoSetNavHighlight     = 1 << 14,  // Do not alter the visible state of keyboard vs mouse nav highlight
+    ImGuiNavMoveFlags_NoSetNavHighlight     = 1 << 14,  // Do not alter the visible m_state of keyboard vs mouse nav highlight
 };
 
 enum ImGuiNavLayer
@@ -1585,7 +1585,7 @@ struct ImGuiNavItemData
 enum ImGuiTypingSelectFlags_
 {
     ImGuiTypingSelectFlags_None                 = 0,
-    ImGuiTypingSelectFlags_AllowBackspace       = 1 << 0,   // Backspace to delete character inputs. If using: ensure GetTypingSelectRequest() is not called more than once per frame (filter by e.g. focus state)
+    ImGuiTypingSelectFlags_AllowBackspace       = 1 << 0,   // Backspace to delete character inputs. If using: ensure GetTypingSelectRequest() is not called more than once per frame (filter by e.g. focus m_state)
     ImGuiTypingSelectFlags_AllowSingleCharMode  = 1 << 1,   // Allow "single char" search mode which is activated when pressing the same character multiple times.
 };
 
@@ -2074,7 +2074,7 @@ struct ImGuiContext
     ImGuiMouseSource        InputEventsNextMouseSource;
     ImU32                   InputEventsNextEventId;
 
-    // Windows state
+    // Windows m_state
     ImVector<ImGuiWindow*>  Windows;                            // Windows, sorted in display order, back to front
     ImVector<ImGuiWindow*>  WindowsFocusOrder;                  // Root windows, sorted in focus order, back to front.
     ImVector<ImGuiWindow*>  WindowsTempSortBuffer;              // Temporary buffer used in EndFrame() to reorder windows so parents are kept before their child
@@ -2094,7 +2094,7 @@ struct ImGuiContext
     ImVec2                  WheelingWindowWheelRemainder;
     ImVec2                  WheelingAxisAvg;
 
-    // Item/widgets state and tracking information
+    // Item/widgets m_state and tracking information
     ImGuiID                 DebugHookIdInfo;                    // Will call core hooks: DebugHookIdInfo() from GetID functions, used by ID Stack Tool [next HoveredId/ActiveId to not pull in an extra cache-line]
     ImGuiID                 HoveredId;                          // Hovered widget, filled during the frame
     ImGuiID                 HoveredIdPreviousFrame;
@@ -2109,7 +2109,7 @@ struct ImGuiContext
     bool                    ActiveIdAllowOverlap;               // Active widget allows another widget to steal active id (generally for overlapping widgets, but not always)
     bool                    ActiveIdNoClearOnFocusLoss;         // Disable losing active id if the active id window gets unfocused.
     bool                    ActiveIdHasBeenPressedBefore;       // Track whether the active id led to a press (this is to allow changing between PressOnClick and PressOnRelease without pressing twice). Used by range_select branch.
-    bool                    ActiveIdHasBeenEditedBefore;        // Was the value associated to the widget Edited over the course of the Active state.
+    bool                    ActiveIdHasBeenEditedBefore;        // Was the value associated to the widget Edited over the course of the Active m_state.
     bool                    ActiveIdHasBeenEditedThisFrame;
     ImVec2                  ActiveIdClickOffset;                // Clicked offset from upper-left corner, if applicable (currently only set by ButtonBehavior)
     ImGuiWindow*            ActiveIdWindow;
@@ -2273,12 +2273,12 @@ struct ImGuiContext
     ImGuiID                 HoverItemUnlockedStationaryId;      // Mouse has once been stationary on this item. Only reset after departing the item.
     ImGuiID                 HoverWindowUnlockedStationaryId;    // Mouse has once been stationary on this window. Only reset after departing the window.
 
-    // Mouse state
+    // Mouse m_state
     ImGuiMouseCursor        MouseCursor;
     float                   MouseStationaryTimer;               // Time the mouse has been stationary (with some loose heuristic)
     ImVec2                  MouseLastValidPos;
 
-    // Widget state
+    // Widget m_state
     ImGuiInputTextState     InputTextState;
     ImGuiInputTextDeactivatedState InputTextDeactivatedState;
     ImFont                  InputTextPasswordFont;
@@ -2598,7 +2598,7 @@ struct IMGUI_API ImGuiWindowTempData
     int                     TreeDepth;              // Current tree depth.
     ImU32                   TreeJumpToParentOnPopMask; // Store a copy of !g.NavIdIsAlive for TreeDepth 0..31.. Could be turned into a ImU64 if necessary.
     ImVector<ImGuiWindow*>  ChildWindows;
-    ImGuiStorage*           StateStorage;           // Current persistent per-window storage (store e.g. tree node open/close state)
+    ImGuiStorage*           StateStorage;           // Current persistent per-window storage (store e.g. tree node open/close m_state)
     ImGuiOldColumns*        CurrentColumns;         // Current columns set
     int                     CurrentTableIdx;        // Current table index (into g.Tables)
     ImGuiLayoutType         LayoutType;
@@ -3356,7 +3356,7 @@ namespace ImGui
     // - Input ownership is automatically released on the frame after a key is released. Therefore:
     //   - for ownership registration happening as a result of a down/press event, the SetKeyOwner() call may be done once (common case).
     //   - for ownership registration happening ahead of a down/press event, the SetKeyOwner() call needs to be made every frame (happens if e.g. claiming ownership on hover).
-    // - SetItemKeyOwner() is a shortcut for common simple case. A custom widget will probably want to call SetKeyOwner() multiple times directly based on its interaction state.
+    // - SetItemKeyOwner() is a shortcut for common simple case. A custom widget will probably want to call SetKeyOwner() multiple times directly based on its interaction m_state.
     // - This is marked experimental because not all widgets are fully honoring the Set/Test idioms. We will need to move forward step by step.
     //   Please open a GitHub Issue to submit your usage scenario or if there's a use case you need solved.
     IMGUI_API ImGuiID           GetKeyOwner(ImGuiKey key);
@@ -3585,7 +3585,7 @@ namespace ImGui
     IMGUI_API const char*   FindRenderedTextEnd(const char* text, const char* text_end = NULL); // Find the optional ## from which we stop displaying text.
     IMGUI_API void          RenderMouseCursor(ImVec2 pos, float scale, ImGuiMouseCursor mouse_cursor, ImU32 col_fill, ImU32 col_border, ImU32 col_shadow);
 
-    // Render helpers (those functions don't access any ImGui state!)
+    // Render helpers (those functions don't access any ImGui m_state!)
     IMGUI_API void          RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float scale = 1.0f);
     IMGUI_API void          RenderBullet(ImDrawList* draw_list, ImVec2 pos, ImU32 col);
     IMGUI_API void          RenderCheckMark(ImDrawList* draw_list, ImVec2 pos, ImU32 col, float sz);
@@ -3623,7 +3623,7 @@ namespace ImGui
     IMGUI_API bool          TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end = NULL);
     IMGUI_API void          TreePushOverrideID(ImGuiID id);
     IMGUI_API void          TreeNodeSetOpen(ImGuiID id, bool open);
-    IMGUI_API bool          TreeNodeUpdateNextOpen(ImGuiID id, ImGuiTreeNodeFlags flags);   // Return open state. Consume previous SetNextItemOpen() data, if any. May return true when logging.
+    IMGUI_API bool          TreeNodeUpdateNextOpen(ImGuiID id, ImGuiTreeNodeFlags flags);   // Return open m_state. Consume previous SetNextItemOpen() data, if any. May return true when logging.
     IMGUI_API void          SetNextItemSelectionUserData(ImGuiSelectionUserData selection_user_data);
 
     // Template functions are instantiated in imgui_widgets.cpp for a finite number of types.
@@ -3650,7 +3650,7 @@ namespace ImGui
     IMGUI_API bool          TempInputText(const ImRect& bb, ImGuiID id, const char* label, char* buf, int buf_size, ImGuiInputTextFlags flags);
     IMGUI_API bool          TempInputScalar(const ImRect& bb, ImGuiID id, const char* label, ImGuiDataType data_type, void* p_data, const char* format, const void* p_clamp_min = NULL, const void* p_clamp_max = NULL);
     inline bool             TempInputIsActive(ImGuiID id)       { ImGuiContext& g = *GImGui; return (g.ActiveId == id && g.TempInputId == id); }
-    inline ImGuiInputTextState* GetInputTextState(ImGuiID id)   { ImGuiContext& g = *GImGui; return (id != 0 && g.InputTextState.ID == id) ? &g.InputTextState : NULL; } // Get input text state if active
+    inline ImGuiInputTextState* GetInputTextState(ImGuiID id)   { ImGuiContext& g = *GImGui; return (id != 0 && g.InputTextState.ID == id) ? &g.InputTextState : NULL; } // Get input text m_state if active
 
     // Color
     IMGUI_API void          ColorTooltip(const char* text, const float* col, ImGuiColorEditFlags flags);

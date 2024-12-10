@@ -24,6 +24,7 @@ struct MeshPoint
     float isHighlighted = 0.0f;
 };
 
+//Staci pouzivat len bud MeshVertex alebo MeshVert
 struct MeshVert
 {
     glm::vec3 position;
@@ -31,6 +32,7 @@ struct MeshVert
     float isHighlited = 0.0f;
 };
 
+//toto asi momentalne nevyuzivame
 struct HalfEdgeTriangle
 {
     std::array<glm::vec3, 3> positions;
