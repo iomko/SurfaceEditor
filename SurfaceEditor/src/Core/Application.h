@@ -3,8 +3,9 @@
 
 #include "Window.h"
 #include <iostream>
-import LayerSystem.Layer.ImGuiLayer;
-import LayerSystem.Layer;
+
+#include "Layer.h"
+#include "../Gui/ImGuiLayer.h"
 
 
 class Application

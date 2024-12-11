@@ -13,6 +13,7 @@ export struct CubeVertex
 	glm::vec3 color;
 };
 
+/*
 
 export class Cube : public Mesh2
 {
@@ -76,3 +77,4 @@ public:
 		addTriangle({ bottomDownRight, bottomDownLeft, upperDownLeft });
 	}
 };
+*/

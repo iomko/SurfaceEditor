@@ -7,6 +7,26 @@ module;
 module Renderer.Shader;
 
 
+Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geometryShaderPath)
+{
+	unsigned int vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
+	unsigned int fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+	unsigned int geometryShaderID = 0;
+
+	if (!geometryShaderPath.empty()) {
+		geometryShaderID = compileShader(geometryShaderPath, GL_GEOMETRY_SHADER);
+	}
+
+	createAndlinkProgram(vertexShaderID, fragmentShaderID, geometryShaderID);
+
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+	if (geometryShaderID) {
+		glDeleteShader(geometryShaderID);
+	}
+}
+
+/*
 Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
 {
 	unsigned int vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
@@ -30,6 +50,7 @@ Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentS
 	glDeleteShader(fragmentShaderID);
 	glDeleteShader(geometryShaderID);
 }
+*/
 
 void Shader::bind()
 {
@@ -41,6 +62,30 @@ void Shader::unbind()
 	glUseProgram(0);
 }
 
+void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID, unsigned int geometryShaderID)
+{
+	id = glCreateProgram();
+
+	// Pripojíme vertex a fragment shader (a volite¾ne geometry shader)
+	glAttachShader(id, vertexShaderID);
+	glAttachShader(id, fragmentShaderID);
+	if (geometryShaderID != 0) {
+		glAttachShader(id, geometryShaderID);
+	}
+
+	glLinkProgram(id);
+
+	int success;
+	char infoLog[512];
+
+	glGetProgramiv(id, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(id, 512, nullptr, infoLog);
+		std::cout << "Program linking failed: " << infoLog << std::endl;
+	}
+}
+
+/*
 void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID)
 {
 	id = glCreateProgram();
@@ -75,6 +120,7 @@ void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int frag
 		glGetProgramInfoLog(id, 512, nullptr, infoLog);
 	}
 }
+*/
 
 std::string Shader::loadShaderSrc(const std::string& shaderPath)
 {

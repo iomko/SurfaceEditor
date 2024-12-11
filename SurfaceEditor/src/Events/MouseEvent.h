@@ -1,7 +1,7 @@
-export module EventSystem.Event.MouseEvent;
-import EventSystem.Event;
+#pragma once
+#include "Event.h"
 
-export class MouseScrollEvent : public Event
+class MouseScrollEvent : public Event
 {
 public:
 	MouseScrollEvent(double xOffset, double yOffset)
@@ -27,7 +27,7 @@ private:
 };
 
 
-export class MouseMoveEvent : public Event
+class MouseMoveEvent : public Event
 {
 public:
 	MouseMoveEvent(double xPos, double yPos)
@@ -52,7 +52,7 @@ private:
 	double yPos;
 };
 
-export class MouseButtonPressEvent : public Event
+class MouseButtonPressEvent : public Event
 {
 public:
 	MouseButtonPressEvent(int buttonCode)
@@ -75,7 +75,7 @@ private:
 	int buttonCode;
 };
 
-export class MouseButtonReleaseEvent : public Event
+class MouseButtonReleaseEvent : public Event
 {
 public:
 	MouseButtonReleaseEvent(int buttonCode)

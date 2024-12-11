@@ -18,27 +18,17 @@
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Renderer\Buffers.ixx" />
     <ClCompile Include="src\Renderer\Buffers.cpp" />
-    <ClCompile Include="src\Events\EventSystem.ixx" />
-    <ClCompile Include="src\Core\Layer.ixx" />
     <ClCompile Include="src\Core\Layer.cpp" />
     <ClCompile Include="src\DataStructures\DataStructures.ixx" />
     <ClCompile Include="src\DataStructures\Octree.ixx" />
-    <ClCompile Include="src\Events\KeyEvent.ixx" />
-    <ClCompile Include="src\Events\Event.ixx" />
-    <ClCompile Include="src\Events\MouseEvent.ixx" />
-    <ClCompile Include="src\Events\WindowEvent.ixx" />
-    <ClCompile Include="src\Core\LayerSystem.ixx" />
-    <ClCompile Include="src\Gui\ImGuiLayer.ixx" />
     <ClCompile Include="src\Renderer\Shader.ixx" />
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
     <ClCompile Include="src\Scene\Scene.ixx" />
     <ClCompile Include="src\Patterns\Observer.ixx" />
-    <ClCompile Include="src\Patterns\Observers.ixx" />
     <ClCompile Include="src\primitives\Geometry.ixx" />
     <ClCompile Include="src\primitives\Primitive.ixx" />
     <ClCompile Include="src\primitives\Cube.ixx" />
     <ClCompile Include="src\Renderer\Renderer.cpp" />
-    <ClCompile Include="src\Scene\Camera.ixx" />
     <ClCompile Include="src\WindowsPlatformUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -78,11 +68,10 @@
     <ClInclude Include="Linking\include\CDT\Triangulation.h" />
     <ClInclude Include="Linking\include\CDT\Triangulation.hpp" />
     <ClInclude Include="src\DataStructures\HalfEdge.h" />
-    <ClInclude Include="src\glm_comparisons.h" />
+    <ClInclude Include="src\glm_overrides.h" />
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\MeshSelectionsManager.h" />
     <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\RayIntersectionAlg.h" />
     <ClInclude Include="src\ProjectionTest.h" />
     <ClInclude Include="src\HalfEdgePosition.h" />
     <ClInclude Include="src\Patterns\Command.h" />
@@ -132,6 +121,18 @@
     <ClInclude Include="src\Commands\ExportMeshesCommand.h" />
     <ClInclude Include="src\Callbacks\ExportMeshesCallBack.h" />
     <ClInclude Include="src\Scene\EditorSettings.h" />
+    <ClInclude Include="src\Events\MouseEvent.h" />
+    <ClInclude Include="src\Events\Event.h" />
+    <ClInclude Include="src\Events\KeyEvent.h" />
+    <ClInclude Include="src\Events\WindowEvent.h" />
+    <ClInclude Include="src\Events\EventSystem.h" />
+    <ClInclude Include="src\Core\Layer.h" />
+    <ClInclude Include="src\Gui\ImGuiLayer.h" />
+    <ClInclude Include="src\PolygonOperations.h" />
+    <ClInclude Include="src\PolygonTraits.h" />
+    <ClInclude Include="src\VectorOperations.h" />
+    <ClInclude Include="src\NumberUtils.h" />
+    <ClInclude Include="src\Scene\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

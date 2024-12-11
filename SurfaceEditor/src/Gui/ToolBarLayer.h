@@ -3,7 +3,7 @@
 #include "imgui/imgui.h"
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
-import LayerSystem.Layer;
+#include "Layer.h"
 
 class ToolBarLayer : public Layer, public Observable {
 public:

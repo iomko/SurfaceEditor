@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include "PolygonTriangulator.h"
-#include "../RayIntersectionAlg.h"
+#include "Ray.h"
 
 
 //CGAL defs and includes for least quares fitting
@@ -62,7 +62,7 @@ public:
 			leastSquaresFormatVertices.push_back(Point_3(vertex.x, vertex.y, vertex.z));
 		}
 
-		bool planarNgon = arePointsCoplanar(leastSquaresFormatVertices);
+		bool planarNgon = VectorOperations::areVectorsCoplanar(leastSquaresFormatVertices);
 
 		if (planarNgon)
 		{
@@ -73,19 +73,18 @@ public:
 			std::map<int, AngleType> ngonAngleTypesOfVertices;
 			std::vector<glm::vec2> verticesOfPlaneProjectedNgon;
 			glm::vec3 pointOfProjectedVertex{0.0, 0.0, 0.0};
-			float areaOfNgonProjectedOnZPlane = calculateSignedAreaOf2DNgon(projectedVerticesOnZPlane2D);
+
+			float areaOfNgonProjectedOnZPlane = PolygonOperations::calculateSignedAreaOf2DPolygon(projectedVerticesOnZPlane2D);
 			if (glm::abs(areaOfNgonProjectedOnZPlane) > 0.0001f)
 			{
 				calculateDirectionOfVectorComponentBasedOnArea(projectedNormal.z, areaOfNgonProjectedOnZPlane);
-				calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnZPlane3D, projectedNormal, ngonAngleTypesOfVertices);
+				ngonAngleTypesOfVertices = PolygonOperations::calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnZPlane3D, projectedNormal);
 				triangulatePlaneProjectedNgon(ngonPlanarIndices, projectedVerticesOnZPlane2D, verticesOfPlaneProjectedNgon);
 
 				glm::vec3 directionOfProjectedNormal = projectedNormal;
 				glm::vec3 oppositeDirectionOfProjectedNormal = -projectedNormal;
-				if (!calculateNormalOfNgonBasedOnAngleTypes(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices, ngonNormal))
-				{
-					return false;
-				}
+
+				ngonNormal = PolygonOperations::calculatePolygonNormal(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices);
 
 				for (const auto& planeProjectedVertex : verticesOfPlaneProjectedNgon)
 				{
@@ -101,19 +100,20 @@ public:
 
 			} else
 			{
-				float areaOfNgonProjectedOnYPlane = calculateSignedAreaOf2DNgon(projectedVerticesOnYPlane2D);
+
+				float areaOfNgonProjectedOnYPlane = PolygonOperations::calculateSignedAreaOf2DPolygon(projectedVerticesOnYPlane2D);
 				if(glm::abs(areaOfNgonProjectedOnYPlane) > 0.0001f)
 				{
+					
+
 					calculateDirectionOfVectorComponentBasedOnArea(projectedNormal.y, areaOfNgonProjectedOnYPlane);
-					calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnYPlane3D, projectedNormal, ngonAngleTypesOfVertices);
+					ngonAngleTypesOfVertices = PolygonOperations::calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnYPlane3D, projectedNormal);
 					triangulatePlaneProjectedNgon(ngonPlanarIndices, projectedVerticesOnYPlane2D, verticesOfPlaneProjectedNgon);
 
 					glm::vec3 directionOfProjectedNormal = projectedNormal;
 					glm::vec3 oppositeDirectionOfProjectedNormal = -projectedNormal;
-					if (!calculateNormalOfNgonBasedOnAngleTypes(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices, ngonNormal))
-					{
-						return false;
-					}
+
+					ngonNormal = PolygonOperations::calculatePolygonNormal(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices);
 
 					for (const auto& planeProjectedVertex : verticesOfPlaneProjectedNgon)
 					{
@@ -129,20 +129,17 @@ public:
 
 				} else
 				{
-					float areaOfNgonProjectedOnXPlane = calculateSignedAreaOf2DNgon(projectedVerticesOnZPlane2D);
+					float areaOfNgonProjectedOnXPlane = PolygonOperations::calculateSignedAreaOf2DPolygon(projectedVerticesOnZPlane2D);
 					if(glm::abs(areaOfNgonProjectedOnXPlane) > 0.0001f)
 					{
 						calculateDirectionOfVectorComponentBasedOnArea(projectedNormal.x, areaOfNgonProjectedOnXPlane);
-						calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnXPlane3D, projectedNormal, ngonAngleTypesOfVertices);
+						ngonAngleTypesOfVertices = PolygonOperations::calculateAngleTypesOfVertices(ngonPlanarIndices, projectedVerticesOnXPlane3D, projectedNormal);
 						triangulatePlaneProjectedNgon(ngonPlanarIndices, projectedVerticesOnXPlane2D, verticesOfPlaneProjectedNgon);
 
 
 						glm::vec3 directionOfProjectedNormal = projectedNormal;
 						glm::vec3 oppositeDirectionOfProjectedNormal = -projectedNormal;
-						if (!calculateNormalOfNgonBasedOnAngleTypes(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices, ngonNormal))
-						{
-							return false;
-						}
+						ngonNormal = PolygonOperations::calculatePolygonNormal(ngonPlanarIndices, ngonPlanarVertices, ngonAngleTypesOfVertices);
 
 						for (const auto& planeProjectedVertex : verticesOfPlaneProjectedNgon)
 						{
@@ -169,22 +166,15 @@ public:
 
 private:
 
-	enum AngleType
-	{
-		CONVEX = 0,
-		CONCAVE = 1,
-		FLAT = 2
-	};
-
 	bool calculateVertexComponentAfterTriangulation(glm::vec3& vertexOnProjectedPlane, glm::vec3& directionOfVertexOnProjectedPlane, glm::vec3& oppositeDirectionOfVertexOnProjectedPlane, 
 		glm::vec3& planeNormal, glm::vec3& planeVertex, glm::vec3& vertexComponentAfterTriangulation)
 	{
 		bool intersectsPlane = true;
 		float amountToBeMultiplied = 0.0;
 		glm::vec3 componentAfterTriangulation{ 0.0, 0.0, 0.0 };
-		if (!RayIntersectionAlg::intersectPlane(planeNormal, planeVertex, vertexOnProjectedPlane, directionOfVertexOnProjectedPlane, amountToBeMultiplied))
+		if (!Ray::intersectPlane(planeNormal, planeVertex, vertexOnProjectedPlane, directionOfVertexOnProjectedPlane, amountToBeMultiplied))
 		{
-			if (!RayIntersectionAlg::intersectPlane(planeNormal, planeVertex, vertexOnProjectedPlane, oppositeDirectionOfVertexOnProjectedPlane, amountToBeMultiplied))
+			if (!Ray::intersectPlane(planeNormal, planeVertex, vertexOnProjectedPlane, oppositeDirectionOfVertexOnProjectedPlane, amountToBeMultiplied))
 			{
 				intersectsPlane = false;
 			} else
@@ -205,50 +195,6 @@ private:
 		return intersectsPlane;
 	}
 
-	bool calculateNormalOfNgonBasedOnAngleTypes(const std::vector<int>& ngonIndices, const std::vector<glm::vec3>& ngonVertices ,std::map<int, AngleType>& ngonAngleTypes, glm::vec3& returnedNormal) {
-		bool calculatedNormal = false;
-		for (int i = 0; i < ngonIndices.size(); ++i)
-		{
-			const auto& ngonIndexVertexPrev = ngonIndices.at((i + (ngonIndices.size() - 1)) % ngonIndices.size());
-			const auto& ngonIndexVertexCur = ngonIndices.at(i % ngonIndices.size());
-			const auto& ngonIndexVertexNext = ngonIndices.at((i + 1) % ngonIndices.size());
-
-			glm::vec3 previousVertex = ngonVertices.at(ngonIndexVertexPrev);
-			glm::vec3 currentVertex = ngonVertices.at(ngonIndexVertexCur);
-			glm::vec3 nextVertex = ngonVertices.at(ngonIndexVertexNext);
-
-			glm::vec3 vectorCurPrev = previousVertex - currentVertex;
-			glm::vec3 vectorCurNext = nextVertex - currentVertex;
-
-			const auto& angleTypesIt = ngonAngleTypes.find(ngonIndexVertexCur);
-
-			if (angleTypesIt != ngonAngleTypes.end())
-			{
-				if (angleTypesIt->second == AngleType::CONCAVE)
-				{
-					returnedNormal = glm::cross(vectorCurPrev, vectorCurNext);
-					calculatedNormal = true;
-				}
-				else if (angleTypesIt->second == AngleType::CONVEX)
-				{
-					returnedNormal = glm::cross(vectorCurNext, vectorCurPrev);
-					calculatedNormal = true;
-				}
-			} else
-			{
-				calculatedNormal = false;
-				return calculatedNormal;
-			}
-
-			if (calculatedNormal)
-			{
-				returnedNormal = glm::normalize(returnedNormal);
-				return calculatedNormal;
-			}
-		}
-		return calculatedNormal;
-	}
-
 	void calculateDirectionOfVectorComponentBasedOnArea(float& vectorComponent, float& areaOfNgon)
 	{
 		if (areaOfNgon < 0.0)
@@ -258,34 +204,6 @@ private:
 		else if (areaOfNgon > 0.0)
 		{
 			vectorComponent = -1.0;
-		}
-	}
-
-	void calculateAngleTypesOfVertices(const std::vector<int>& ngonIndices, const std::vector<glm::vec3>& ngonVertices, const glm::vec3& ngonNormal, std::map<int, AngleType>& returnedAngleTypesOfNgon)
-	{
-		for (int i = 0; i < ngonIndices.size(); ++i)
-		{
-			glm::vec3 previousVertex = ngonVertices.at(ngonIndices.at((i + (ngonIndices.size() - 1)) % ngonIndices.size()));
-			glm::vec3 currentVertex = ngonVertices.at(ngonIndices.at(i % ngonIndices.size()));
-			glm::vec3 nextVertex = ngonVertices.at(ngonIndices.at((i + 1) % ngonIndices.size()));
-
-			glm::vec3 vector_prev_cur = currentVertex - previousVertex;
-			glm::vec3 vector_prev_next = nextVertex - previousVertex;
-
-			const auto& dotProduct = glm::dot(glm::cross(vector_prev_cur, vector_prev_next), ngonNormal);
-
-			if (dotProduct < 0.0f)
-			{
-				returnedAngleTypesOfNgon[ngonIndices.at(i)] = AngleType::CONCAVE;
-			}
-			else if (dotProduct > 0.0f)
-			{
-				returnedAngleTypesOfNgon[ngonIndices.at(i)] = AngleType::CONVEX;
-			}
-			else
-			{
-				returnedAngleTypesOfNgon[ngonIndices.at(i)] = AngleType::FLAT;
-			}
 		}
 	}
 
@@ -317,45 +235,6 @@ private:
 				triangulatedVertices.push_back({ fit->vertex(2)->point().x(), fit->vertex(2)->point().y() });
 			}
 		}
-	}
-
-	float calculateSignedAreaOf2DNgon(const std::vector<glm::vec2>& vertices) {
-		float area = 0.0;
-		size_t j = 1;
-		for (size_t i = 0; i < vertices.size(); i++, j++) {
-			j = j % vertices.size();
-			area += (vertices.at(j).x - vertices.at(i).x) * (vertices.at(j).y + vertices.at(i).y);
-		}
-		return area / 2.0;
-	}
-
-	bool arePointsCoplanar(const PointList& points, double threshold = 1e-6) {
-		// Compute the best-fitting plane
-		Plane_3 plane;
-		linear_least_squares_fitting_3(points.begin(), points.end(),
-			plane, CGAL::Dimension_tag<0>());
-
-		// Compute the normal vector of the fitted plane
-		auto normal = plane.orthogonal_vector();
-
-		// Get the residuals (errors) from the fitting process
-		std::vector<double> residuals;
-		residuals.reserve(points.size());
-		for (const auto& point : points) {
-			// Compute the signed distance of the point to the plane
-			double distance = (point - plane.point()) * normal; // Dot product
-			residuals.push_back(std::abs(distance));
-		}
-
-		// Compute the mean squared error
-		double meanSquaredError = 0.0;
-		for (const auto& residual : residuals) {
-			meanSquaredError += residual * residual;
-		}
-		meanSquaredError /= residuals.size();
-
-		// Check if the mean squared error is below the threshold
-		return meanSquaredError <= threshold;
 	}
 
 };

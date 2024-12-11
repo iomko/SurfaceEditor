@@ -1,7 +1,8 @@
-export module LayerSystem.Layer.ImGuiLayer;
-import LayerSystem.Layer;
+#pragma once
 
-export class ImGuiLayer : public Layer
+#include "../Core/Layer.h"
+
+class ImGuiLayer : public Layer
 {
 public:
 	explicit ImGuiLayer(const std::string& name)

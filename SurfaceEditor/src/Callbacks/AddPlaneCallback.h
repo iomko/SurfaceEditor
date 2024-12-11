@@ -148,7 +148,7 @@ private:
         }
         //
 
-        Mesh* mesh = new Mesh(new Material(m_viewPortHolder->m_viewPortLayer->m_meshShader), planeIndices, planeVertices);
+        Mesh* mesh = new Mesh(new Material(m_viewPortHolder->m_viewPortLayer->m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
 
 		mesh->m_meshID = std::to_string(m_viewPortHolder->m_currentMeshId);
         return mesh;

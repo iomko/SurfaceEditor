@@ -1,11 +1,13 @@
-module;
+#pragma once
+
+#include "ImGuiLayer.h"
+
 #include "../Core/Application.h"
 #include "GLFW/glfw3.h"
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
-module LayerSystem.Layer.ImGuiLayer;
-//import GuiLayers;
+#include "../Gui/ImGuiLayer.h"
 
 
 void ImGuiLayer::onAttach()

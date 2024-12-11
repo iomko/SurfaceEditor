@@ -1,7 +1,7 @@
-export module EventSystem.Event.KeyEvent;
-import EventSystem.Event;
+#pragma once
+#include "Event.h"
 
-export class KeyEvent : public Event
+class KeyEvent : public Event
 {
 public:
 	KeyEvent(int keyCode)
@@ -12,7 +12,7 @@ protected:
 	int keyCode;
 };
 
-export class KeyPressEvent : public KeyEvent
+class KeyPressEvent : public KeyEvent
 {
 public:
 	KeyPressEvent(int keyCode) : KeyEvent(keyCode) {}
@@ -30,7 +30,7 @@ public:
 	virtual ~KeyPressEvent() override = default;
 };
 
-export class KeyReleaseEvent : public KeyEvent
+class KeyReleaseEvent : public KeyEvent
 {
 public:
 	KeyReleaseEvent(int keyCode) : KeyEvent(keyCode) {}

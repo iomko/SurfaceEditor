@@ -6,16 +6,18 @@
 #include <GLFW\glfw3.h>
 #include <string>
 #include "../Events/Keyboard.h"
-
-import EventSystem;
-import Camera;
+#include "../Events/EventSystem.h"
+#include "../Scene/Camera.h"
 
 class Window
 {
 public:
 	Window(int width, int height, const std::string& title);
 	void terminate();
-	void clear();
+	void clearColorBuffer(float r, float g, float b, float a);
+	void clearDepthBuffer();
+	void clearStencilBuffer();
+	void clearAllBuffers(float r, float g, float b, float a);
 	void update();
 	bool initialize();
 	std::string getScreenTitle();

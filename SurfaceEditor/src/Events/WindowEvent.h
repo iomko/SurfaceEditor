@@ -1,12 +1,18 @@
-export module EventSystem.Event.WindowEvent;
-import EventSystem.Event;
+#pragma once
+#include "Event.h"
 
-export class WindowCloseEvent : public Event
+class WindowCloseEvent : public Event
 {
 public:
 	WindowCloseEvent() = default;
 
 	virtual ~WindowCloseEvent() override = default;
+
+	static EventType getStaticType()
+	{
+		return EventType::WindowClose;
+	}
+
 	virtual EventType getType() override
 	{
 		return EventType::WindowClose;
@@ -17,7 +23,7 @@ public:
 	}
 };
 
-export class WindowResizeEvent : public Event
+class WindowResizeEvent : public Event
 {
 public:
 	WindowResizeEvent(int width, int height)
@@ -27,6 +33,12 @@ public:
 	}
 
 	virtual ~WindowResizeEvent() override = default;
+
+	static EventType getStaticType()
+	{
+		return EventType::WindowResize;
+	}
+
 	virtual EventType getType() override
 	{
 		return EventType::WindowResize;

@@ -3,6 +3,7 @@
 #include "Triangle.h"
 #include "../Renderer/VertexDataStructs.h"
 
+/*
 class Mesh2
 {
 private:
@@ -42,3 +43,4 @@ public:
     }
     virtual void calculateData() = 0;
 };
+*/

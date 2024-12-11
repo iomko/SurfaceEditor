@@ -7,7 +7,7 @@
 #include "imgui/imgui_internal.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/TransformMeshCommand.h"
-import LayerSystem.Layer;
+#include "../Core/Layer.h"
 
 class TransformLayer : public Layer, public Observer {
 public:

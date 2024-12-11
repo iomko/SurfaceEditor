@@ -2,7 +2,7 @@
 #include "Window.h"
 #include "Input.h"
 
-import EventSystem;
+#include "../Events/EventSystem.h"
 
 
 Window::Window(int width, int height, const std::string& title) : m_screenWidth(width), m_screenHeight(height), m_screenTitle(title){}
@@ -12,9 +12,25 @@ void Window::terminate()
 	glfwTerminate();
 }
 
-void Window::clear()
+void Window::clearColorBuffer(float r, float g, float b, float a)
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Window::clearDepthBuffer()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void Window::clearStencilBuffer()
+{
+	glClear(GL_STENCIL_BUFFER_BIT);
+}
+
+void Window::clearAllBuffers(float r, float g, float b, float a)
+{
+	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 

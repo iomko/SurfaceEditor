@@ -1,10 +1,9 @@
-module;
+#pragma once
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "../Ray.h"
-export module Camera;
 
-export enum class CameraMovement
+enum class CameraMovement
 {
 	FORWARD,
 	BACKWARD,
@@ -12,7 +11,7 @@ export enum class CameraMovement
 	RIGHT
 };
 
-export struct CameraState
+struct CameraState
 {
 	glm::vec3 position;
 	glm::vec3 frontVector;
@@ -26,7 +25,7 @@ export struct CameraState
 	float zoom = 45.0f;
 };
 
-export class Camera
+class Camera
 {
 public:
 	Camera(glm::vec3 position, glm::vec3 target = glm::vec3(0.0, 0.0, 0.0), glm::vec3 worldUp = glm::vec3(0.0, 1.0, 0.0));
@@ -38,5 +37,4 @@ public:
 	CameraState getState();
 private:
 	CameraState m_state;
-	//Ray m_cameraRay;
 };

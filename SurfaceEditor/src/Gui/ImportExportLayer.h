@@ -1,5 +1,5 @@
 #pragma once
-import LayerSystem.Layer;
+#include "../Core/Layer.h"
 #include "imgui/imgui.h"
 #include "../WindowsFileDialogs.h"
 #include "../Commands/CommandRegistry.h"

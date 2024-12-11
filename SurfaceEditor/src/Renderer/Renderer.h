@@ -39,12 +39,10 @@ class Renderer {
 public:
     static void init();
     static void drawPoints(std::vector<MeshPoint>& points);
-    static void drawMesh(std::vector<MeshVertex>& mesh);
-    static void drawMeshDefault(const std::vector<MeshVert>& mesh);
+    static void drawMesh(const std::vector<MeshVertex>& mesh);
     static void collectAABBdata(const AABBBoundingRegion& aabb, const glm::vec3& vertexColor);
     static void drawBoundingBoxes();
     static void drawLines(std::vector<LineVertex>& lines);
-    static void drawLine(const glm::vec3& startPoint, const glm::vec3& endPoint);
     //temporary
     static void deleteAABBBuffer();
 };

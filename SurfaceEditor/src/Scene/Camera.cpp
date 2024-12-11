@@ -1,11 +1,10 @@
-module;
+#include "Camera.h"
 #include <iostream>
 #include <ostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "EditorSettings.h"
-module Camera;
 
 
 Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)

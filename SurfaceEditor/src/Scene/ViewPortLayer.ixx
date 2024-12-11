@@ -11,23 +11,19 @@ module;
 //#include "../Mesh.h"
 
 export module LayerSystem.Layer.ViewPortLayer;
-import LayerSystem.Layer;
+#include "../Core/Layer.h"
+#include "../Scene/Camera.h"
 import Scene;
-import Camera;
 
 export class ViewPortLayer : public Layer
 {
 private:
 	float m_deltaTime = 0.0f;
 
-	//ano viewPort proste musi mat pridelenu nejaku vlastnu kameru
 	Camera* m_activeCamera = nullptr;
 	//vsetky viewporty budu vediet o jednej scene. //to znamena, ze akonahle nieco vymazem z jedneho viewportu, tak sa to
 	//musi vymazat aj v tom druhom viewporte.
 	Scene* m_scene = nullptr;
-
-	//blbost
-	std::unordered_set<HalfEdgeDS::HalfEdgeMesh*> m_selectedMeshesID;
 
 public:
 	//takto rozhodne to minimalne chcem zgrupnut tieto shadre
@@ -50,57 +46,6 @@ public:
 	//takto viewport musi vediet o svojej velkosti okna. Avsak nie o celkovej SCR_WIDTH a SCR_HEIGHT celeho glfw okna
 	const unsigned int SCR_WIDTH = 1600;
 	const unsigned int SCR_HEIGHT = 900;
-
-
-	//toto rozhodne musi ist prec
-	struct SimpleRenderTarget {
-		unsigned int fbo{ 0 };               /// framebuffer id
-		unsigned int colorTexId{ 0 };        /// colour buffer id
-		unsigned int depthStencilTexId{ 0 }; /// depth and stencil buffer id
-	};
-
-	//aj toto pojde prec
-	SimpleRenderTarget createRenderTarget() {
-		unsigned int fbo;
-		glGenFramebuffers(1, &fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-		SimpleRenderTarget rt;
-		rt.fbo = fbo;
-
-		{
-			unsigned int texId;
-			glGenTextures(1, &texId);
-			glBindTexture(GL_TEXTURE_2D, texId);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA,
-				GL_UNSIGNED_BYTE, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-				texId, 0);
-			rt.colorTexId = texId;
-		}
-
-		{
-			unsigned int texId;
-			glGenTextures(1, &texId);
-			glBindTexture(GL_TEXTURE_2D, texId);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, SCR_WIDTH, SCR_HEIGHT, 0,
-				GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-				GL_TEXTURE_2D, texId, 0);
-
-			rt.depthStencilTexId = texId;
-		}
-
-		return rt;
-	}
-
-	//aj toto pojde prec
-	SimpleRenderTarget m_targetA;
-	SimpleRenderTarget m_targetB;
 	
 	//toto je blbost lebo ja nechcem pre rozne viewPortLayere si uchovavat currentSelectedCommand zvlast
 	//kedze vsetky budu pouzivat rovnaky currentSelectedCommand
@@ -111,49 +56,27 @@ public:
 	{
 		Renderer::init();
 
-		m_targetA = createRenderTarget();
-		m_targetB = createRenderTarget();
-
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cout << "Framebuffer not complete!" << std::endl;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	}
 
-	// v poriadku
 	Camera* getCamera()
 	{
 		return m_activeCamera;
 	}
 
-	// v poriadku
 	Scene* getScene()
 	{
 		return m_scene;
 	}
-
 
 	void onUpdate() override
 	{
 		updateCameraMovement();
 	}
 
-	//unhide later
-	void render()
-	{
-
-
-
-	}
-
-	//toto musi ist prec
-	void updateDeltaTime(float deltaTime)
-	{
-		m_deltaTime = deltaTime;
-	}
-
-	// no toto tu nejakym sposobom musi fungovat
 	void updateCameraDirection(Event& event)
 	{
 		if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
@@ -163,7 +86,6 @@ public:
 		}
 	}
 
-	//aj toto tu musi fungovat
 	void updateCameraMovement()
 	{
 		const float movementSpeed = 50.0f * m_deltaTime;
@@ -208,168 +130,6 @@ public:
 		{
 			updateCameraDirection(event);
 		}
-	}
-
-	//toto musi ist prec
-	void deleteSelectedFacesOfSelectedMeshes()
-	{
-		/*
-		std::vector<HalfEdgeDS::HalfEdgeMesh*> potentiallyDeletedMeshesID;
-		for (const auto& meshID : m_selectedMeshesID)
-		{
-			// Create a list of faces to erase
-			std::vector<HalfEdgeDS::Face*> facesToDelete;
-
-			const auto& facesOfMesh = m_scene->m_meshesFaceOctreeMap.find(meshID);
-			//but we need to only go through selected faces of that mesh.
-			for (auto& selectedFace : meshID->getSelectedFaces())
-			{
-				const auto& octreesIDsAssociatedWithFace = facesOfMesh->second.find(selectedFace)->second;
-
-				for (const auto& octreeID : octreesIDsAssociatedWithFace)
-				{
-					auto& foundOctree = m_scene->m_halfEdgeMeshOctrees.find(octreeID)->second;
-
-					foundOctree.removeData(selectedFace);
-					if (foundOctree.leafs.empty())
-					{
-						//ak je octree prazdny tak ho vymazat z m_halfEdgeMeshOctrees
-						m_scene->m_halfEdgeMeshOctrees.erase(octreeID);
-					}
-				}
-				facesToDelete.push_back(selectedFace);
-			}
-
-			// Erase collected faces
-			for (const auto& face : facesToDelete)
-			{
-				face->getMesh().eraseSelectedFace(face);
-				facesOfMesh->second.erase(face);
-			}
-			if (facesOfMesh->second.empty())
-			{
-				potentiallyDeletedMeshesID.push_back(meshID);
-			}
-		}
-		for (const auto& meshID : potentiallyDeletedMeshesID)
-		{
-			m_selectedMeshesID.erase(meshID);
-		}
-		*/
-	}
-
-	/*
-	void deleteSelectedMeshes()
-	{
-		for (const auto& meshID : m_selectedMeshesID)
-		{
-			const auto& faceOctreesIter = m_scene->m_meshesFaceOctreeMap.find(meshID)->second;
-			
-			for (const auto& faceOctrees : faceOctreesIter) {
-
-				for (const auto& octreeID : faceOctrees.second)
-				{
-					auto& foundOctree = m_scene->m_halfEdgeMeshOctrees.find(octreeID)->second;
-					foundOctree.removeData(faceOctrees.first);
-					if(foundOctree.leafs.empty())
-					{
-						m_scene->m_halfEdgeMeshOctrees.erase(octreeID);
-					}
-				}
-			}
-			m_scene->m_meshesFaceOctreeMap.erase(meshID);
-		}
-		if(!m_selectedMeshesID.empty())
-		{
-			m_selectedMeshesID.clear();
-		}
-
-	}
-	*/
-	//toto musi ist prec
-	HalfEdgeDS::Face* deselectFace(const Ray& ray)
-	{
-		
-		HalfEdgeDS::Face* retrievedFace = nullptr;
-		/*
-		findFace(ray, retrievedFace);
-
-		if (retrievedFace != nullptr)
-		{
-			auto itMesh = m_selectedMeshesID.find(&retrievedFace->getMesh());
-			if (itMesh != m_selectedMeshesID.end()) {
-				auto erased = retrievedFace->getMesh().eraseFaceFromSelectedFaces(retrievedFace);
-				if(erased)
-				{
-					retrievedFace->getMesh().unmarkFace(retrievedFace, glm::vec3(0.5, 0.5, 0.5));
-				}
-			}
-			
-		}
-		*/
-		return retrievedFace;
-	}
-	//toto musi ist prec
-	HalfEdgeDS::Face* selectFace(const Ray& ray)
-	{
-		
-		//bolo by dobre prechadzat len cez octrees priradene selectnutym meshom. //zatial nebudem brat na toto ohlad a budem prechadzat cez vsetky octrees v scene
-		HalfEdgeDS::Face* retrievedFace = nullptr;
-		/*
-		findFace(ray, retrievedFace);
-
-		if (retrievedFace != nullptr)
-		{
-			auto itMesh = m_selectedMeshesID.find(&retrievedFace->getMesh());
-
-			if (itMesh != m_selectedMeshesID.end()) {
-
-				auto added = retrievedFace->getMesh().addFaceToSelectedFaces(retrievedFace);
-				if(added)
-				{
-					retrievedFace->getMesh().markFace(retrievedFace, glm::vec3(1.0f, 0.7f, 0.2f));
-				}
-			} else
-			{
-				retrievedFace = nullptr;
-			}
-		}
-		*/
-		return retrievedFace;
-	}
-	//toto musi ist prec
-	HalfEdgeDS::HalfEdgeMesh* selectMesh(const Ray& ray)
-	{
-		
-		HalfEdgeDS::HalfEdgeMesh* retrievedMesh = nullptr;
-		/*
-		findMesh(ray, retrievedMesh);
-
-		if(retrievedMesh != nullptr)
-		{
-			m_selectedMeshesID.insert(retrievedMesh);
-			retrievedMesh->markSelectedFaces(glm::vec3(1.0f, 0.7f, 0.2f));
-		}
-		*/
-		return retrievedMesh;
-	}
-	//toto musi ist prec
-	HalfEdgeDS::HalfEdgeMesh* deselectMesh(const Ray& ray)
-	{
-		HalfEdgeDS::HalfEdgeMesh* retrievedMesh = nullptr;
-		/*
-		findMesh(ray, retrievedMesh);
-
-		if(retrievedMesh != nullptr)
-		{
-			auto it = m_selectedMeshesID.find(retrievedMesh);
-			if (it != m_selectedMeshesID.end()) {
-				retrievedMesh->unmarkSelectedFaces(glm::vec3(0.5, 0.5, 0.5));
-				m_selectedMeshesID.erase(it);
-			}
-		}
-		*/
-		return retrievedMesh;
 	}
 
 };

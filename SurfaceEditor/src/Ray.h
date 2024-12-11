@@ -1,7 +1,8 @@
-#ifndef RAY_H
-#define RA_H
+#pragma once
 
 #include <glm/glm.hpp>
+#include "Scene/Camera.h"
+#include "Core/Window.h"
 
 class Ray {
 public:
@@ -13,6 +14,45 @@ public:
 		sign[1] = (this->inverseDirection.y < 0);
 		sign[2] = (this->inverseDirection.z < 0);
 	}
+
+	static Ray fromMousePos(Camera& camera, const glm::mat4& perspectiveMat, glm::mat4& viewMat, Window& window)
+	{
+		double mouseX, mouseY;
+		glfwGetCursorPos(window.getWindowHandle(), &mouseX, &mouseY);
+
+		auto normalizedXCoord = (2.0 * mouseX) / window.getScreenWidth() - 1.0;
+		auto normalizedYCoord = 1.0 - (2.0 * mouseY) / window.getScreenHeight();
+
+		glm::vec4 clip = glm::vec4(normalizedXCoord, normalizedYCoord, -1.0, 1.0);
+
+		glm::mat4 inversePerspective = glm::inverse(perspectiveMat);
+		glm::vec4 cameraSpace = inversePerspective * clip;
+		cameraSpace[2] = -1.0;
+		cameraSpace[3] = 0.0;
+
+		glm::vec4 worldSpace = glm::inverse(viewMat) * cameraSpace;
+
+		glm::vec3 rayPosition = glm::vec3(worldSpace);
+		glm::vec3 normalizedRayPosition = glm::normalize(rayPosition);
+
+
+		glm::vec3 rayStart = camera.getState().position;
+
+
+		return Ray(rayStart, normalizedRayPosition);
+	}
+
+	static bool intersectPlane(const glm::vec3& n, const glm::vec3& p0, const glm::vec3& l0, const glm::vec3& l, float& t)
+    {
+        float denom = glm::dot(n, l);
+        if (abs(denom) > 0.0001f) // your favorite epsilon
+        {
+            t = glm::dot((p0 - l0), n) / denom;
+            if (t >= 0) return true; // you might want to allow an epsilon here too
+        }
+        return false;
+        
+    }
 
 	static bool intersectsTriangle(const glm::vec3& orig, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t)
 	{
@@ -71,4 +111,3 @@ public:
 	glm::vec3 inverseDirection;
 	int sign[3];
 };
-#endif

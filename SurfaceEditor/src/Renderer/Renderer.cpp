@@ -36,10 +36,10 @@ void Renderer::init() {
 	//MESH
 	data.Mesh_vao.bind();
 	data.Mesh_vbo.bind();
-	data.Mesh_vbo.createData(nullptr, (3 * 1000000) * sizeof(MeshVert), GL_DYNAMIC_DRAW);
-	data.Mesh_vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVert), (void*)offsetof(MeshVert, position));
-	data.Mesh_vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVert), (void*)offsetof(MeshVert, normal));
-	data.Mesh_vao.addVertexBufferLayout(2, 1, GL_FLOAT, GL_FALSE, sizeof(MeshVert), (void*)offsetof(MeshVert, isHighlited));
+	data.Mesh_vbo.createData(nullptr, (3 * 1000000) * sizeof(MeshVertex), GL_DYNAMIC_DRAW);
+	data.Mesh_vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, position));
+	data.Mesh_vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, normal));
+	data.Mesh_vao.addVertexBufferLayout(2, 1, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, isHighlited));
 	data.Mesh_vao.unbind();
 	data.Mesh_vbo.unbind();
 
@@ -92,25 +92,8 @@ void Renderer::init() {
 	data.AABB_vbo.unbind();
 }
 
-//mame tu zbytocne dve verzie drawMesh metody, jednu, ktora vyuziva position, normal a isHighlighted
-//a druhu ktora vyuziva len position a color
-//pricom momentalne vyuzivame len drawMeshDefault
-//zatial pre jednoduchost pouzivajme len jednu drawMesh metodu
-void Renderer::drawMeshDefault(const std::vector<MeshVert>& mesh)
+void Renderer::drawMesh(const std::vector<MeshVertex>& mesh)
 {
-	// Binding VAO, VBO, EBO
-	data.Mesh_vao.bind();
-	data.Mesh_vbo.bind();
-
-	data.Mesh_vbo.updateData(mesh.data(), mesh.size() * sizeof(MeshVert), 0);
-	glDrawArrays(GL_TRIANGLES, 0, mesh.size());
-
-	// Unbinding VAO, VBO
-	data.Mesh_vao.unbind();
-	data.Mesh_vbo.unbind();
-}
-
-void Renderer::drawMesh(std::vector<MeshVertex>& mesh) {
 	// Binding VAO, VBO, EBO
 	data.Mesh_vao.bind();
 	data.Mesh_vbo.bind();

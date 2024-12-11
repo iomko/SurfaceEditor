@@ -1,9 +1,11 @@
-export module LayerSystem.Layer;
-import EventSystem.Event;
-import <string>;
-import <vector>;
+#pragma once
 
-export class Layer
+#include <string>;
+#include <vector>;
+
+#include "../Events/EventSystem.h"
+
+class Layer
 {
 public:
 	virtual ~Layer() {}
@@ -18,7 +20,7 @@ private:
 	std::string m_name;
 };
 
-export class LayerStack
+class LayerStack
 {
 public:
 	void addLayer(Layer* layer);

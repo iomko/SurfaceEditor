@@ -1,4 +1,4 @@
-module LayerSystem.Layer;
+#include "Layer.h"
 
 std::string Layer::getName() { return m_name; }
 
