@@ -11,6 +11,7 @@ module;
 //#include "../Mesh.h"
 
 export module LayerSystem.Layer.ViewPortLayer;
+#include "ViewPortShaderSettings.h"
 #include "../Core/Layer.h"
 #include "../Scene/Camera.h"
 import Scene;
@@ -26,31 +27,17 @@ private:
 	Scene* m_scene = nullptr;
 
 public:
-	//takto rozhodne to minimalne chcem zgrupnut tieto shadre
-	//ale nie je to zly napad si uchovavat pre jednotlive viewporty rozdielne shadre. Kedze v jednom viewporte sa nam mozu inac vykreslit objekty
-	//ako v druhom viewporte.
-	Shader* m_meshShader = nullptr;
-	Shader* m_normalsShader = nullptr;
-	Shader* m_shaderSingleColor = nullptr;
-	Shader* m_pointsShader = nullptr;
-	Shader* m_linesShader = nullptr;
-
-	Shader* m_shaderBlit = nullptr;
-	Shader* m_shaderDilation = nullptr;
-
-	//kazdy viewPort by taktiez mal mat nejaku referenciu na Renderera, alebo by sme mohli spraviù to, ûe budeme mat nejakeho
 	//Rendering
-
-public:
+	ViewPortShaderSettings m_shaderSettings;
 
 	//takto viewport musi vediet o svojej velkosti okna. Avsak nie o celkovej SCR_WIDTH a SCR_HEIGHT celeho glfw okna
 	const unsigned int SCR_WIDTH = 1600;
 	const unsigned int SCR_HEIGHT = 900;
 	
-	//toto je blbost lebo ja nechcem pre rozne viewPortLayere si uchovavat currentSelectedCommand zvlast
+	//nechcem pre rozne viewPortLayere si uchovavat currentSelectedCommand zvlast
 	//kedze vsetky budu pouzivat rovnaky currentSelectedCommand
 	Command* m_currentSelectedCommand = nullptr;
-public:
+
 	ViewPortLayer(const std::string& name, Camera* m_active_camera, Scene* scene)
 		: Layer(name), m_activeCamera(m_active_camera), m_scene(scene)
 	{

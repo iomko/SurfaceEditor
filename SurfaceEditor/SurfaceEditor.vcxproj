@@ -150,9 +150,6 @@
     <ClCompile Include="Linking\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="Linking\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Patterns\Observer.ixx" />
-    <ClCompile Include="src\primitives\Cube.ixx" />
-    <ClCompile Include="src\primitives\Geometry.ixx" />
-    <ClCompile Include="src\primitives\Primitive.ixx" />
     <ClCompile Include="src\Renderer\Buffers.cpp" />
     <ClCompile Include="src\Renderer\Buffers.ixx" />
     <ClCompile Include="src\DataStructures\DataStructures.ixx" />
@@ -163,14 +160,11 @@
     <ClCompile Include="src\Scene\Camera.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Gui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Events\Keyboard.cpp" />
     <ClCompile Include="src\Core\main.cpp" />
-    <ClCompile Include="src\Events\Mouse.cpp" />
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Scene\Scene.ixx" />
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
-    <ClCompile Include="src\WindowsPlatformUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
@@ -267,6 +261,7 @@
     <ClInclude Include="src\PolygonOperations.h" />
     <ClInclude Include="src\Scene\Camera.h" />
     <ClInclude Include="src\Scene\EditorSettings.h" />
+    <ClInclude Include="src\Scene\ViewPortShaderSettings.h" />
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\WindowsFileDialogs.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
@@ -283,27 +278,17 @@
     <ClInclude Include="src\GeometryAlgorithms\TriangleTriangulator.h" />
     <ClInclude Include="src\glm_overrides.h" />
     <ClInclude Include="src\DataStructures\HalfEdge.h" />
-    <ClInclude Include="src\Events\Keyboard.h" />
-    <ClInclude Include="src\Events\Mouse.h" />
-    <ClInclude Include="src\HalfEdgePosition.h" />
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\MeshSelectionsManager.h" />
     <ClInclude Include="src\Callbacks\Callback.h" />
     <ClInclude Include="src\Patterns\Observer.h" />
-    <ClInclude Include="src\primitives2\Primitive.h" />
-    <ClInclude Include="src\ProjectionTest.h" />
     <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
     <ClInclude Include="src\Renderer\VertexDataStructs.h" />
-    <ClInclude Include="src\Geometry\Mesh2.h" />
-    <ClInclude Include="src\Geometry\Triangle.h" />
     <ClInclude Include="src\SceneManager.h" />
-    <ClInclude Include="src\ShortcutRegistry.h" />
     <ClInclude Include="src\ViewPortHolder.h" />
     <ClInclude Include="src\Scene\SceneViewsHandler.h" />
-    <ClInclude Include="src\TriangleData.h" />
     <ClInclude Include="src\Core\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

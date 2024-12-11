@@ -11,9 +11,7 @@
     <ClCompile Include="src\Scene\Camera.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Gui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Events\Keyboard.cpp" />
     <ClCompile Include="src\Core\main.cpp" />
-    <ClCompile Include="src\Events\Mouse.cpp" />
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Renderer\Buffers.ixx" />
@@ -25,11 +23,7 @@
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
     <ClCompile Include="src\Scene\Scene.ixx" />
     <ClCompile Include="src\Patterns\Observer.ixx" />
-    <ClCompile Include="src\primitives\Geometry.ixx" />
-    <ClCompile Include="src\primitives\Primitive.ixx" />
-    <ClCompile Include="src\primitives\Cube.ixx" />
     <ClCompile Include="src\Renderer\Renderer.cpp" />
-    <ClCompile Include="src\WindowsPlatformUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Linking\include\glad\glad.h" />
@@ -46,14 +40,9 @@
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
     <ClInclude Include="src\Core\Application.h" />
-    <ClInclude Include="src\Events\Keyboard.h" />
-    <ClInclude Include="src\Events\Mouse.h" />
     <ClInclude Include="src\Ray.h" />
-    <ClInclude Include="src\TriangleData.h" />
     <ClInclude Include="src\Core\Window.h" />
     <ClInclude Include="src\Core\Input.h" />
-    <ClInclude Include="src\Geometry\Triangle.h" />
-    <ClInclude Include="src\Geometry\Mesh2.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
     <ClInclude Include="src\Renderer\VertexDataStructs.h" />
     <ClInclude Include="Linking\include\CDT\CDT.h" />
@@ -70,14 +59,10 @@
     <ClInclude Include="src\DataStructures\HalfEdge.h" />
     <ClInclude Include="src\glm_overrides.h" />
     <ClInclude Include="src\Material.h" />
-    <ClInclude Include="src\MeshSelectionsManager.h" />
     <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\ProjectionTest.h" />
-    <ClInclude Include="src\HalfEdgePosition.h" />
     <ClInclude Include="src\Patterns\Command.h" />
     <ClInclude Include="src\Scene\SceneViewsHandler.h" />
     <ClInclude Include="src\Commands\AddPlaneCommand.h" />
-    <ClInclude Include="src\primitives2\Primitive.h" />
     <ClInclude Include="src\SceneManager.h" />
     <ClInclude Include="src\GeometryAlgorithms\PolygonTriangulator.h" />
     <ClInclude Include="src\GeometryAlgorithms\NgonPlanarTriangulator.h" />
@@ -92,7 +77,6 @@
     <ClInclude Include="src\Gui\ToolBarLayer.h" />
     <ClInclude Include="src\Callbacks\ToolBarLayerCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectMeshCallBack.h" />
-    <ClInclude Include="src\ShortcutRegistry.h" />
     <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
     <ClInclude Include="src\Callbacks\DeselectMeshCallBack.h" />
     <ClInclude Include="src\Commands\SelectFaceCommand.h" />
@@ -133,6 +117,7 @@
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\NumberUtils.h" />
     <ClInclude Include="src\Scene\Camera.h" />
+    <ClInclude Include="src\Scene\ViewPortShaderSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

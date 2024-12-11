@@ -5,8 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../Core/Application.h"
-#include "../Events/Mouse.h"
-#include "../TriangleData.h"
 #include "../Core/Input.h"
 #include "../AABBBoundingRegion.h"
 #include "Input.h"
@@ -22,7 +20,6 @@ import DataStructures;
 //import LayerSystem.Layer.ImGuiLayer;
 import Scene;
 //import Patterns.Observer;
-import Geometry.Primitive.Cube;
 
 
 
@@ -61,7 +58,6 @@ Ray getCameraRay(const glm::vec3& cameraPosition, const glm::vec3& cameraFrontVe
 
 #include "../Commands/BasicSculptToolCommand.h"
 
-#include "../ShortcutRegistry.h"
 
 //TRANSFORMLAYER
 #include "../Gui/TransformLayer.h"
@@ -136,13 +132,12 @@ int main()
 
 	//viewPortLayer
 	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer", &camera, &scene);
-	viewPortLayer->m_meshShader = &meshShader;
-	viewPortLayer->m_normalsShader = &normalsShader;
-	viewPortLayer->m_shaderSingleColor = &shaderSingleColor;
-	viewPortLayer->m_pointsShader = &pointsShader;
-	viewPortLayer->m_linesShader = &linesShader;
-	viewPortLayer->m_shaderBlit = &shaderBlit;
-	viewPortLayer->m_shaderDilation = &shaderDilation;
+	
+	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
+	viewPortLayer->m_shaderSettings.m_normalsShader = &normalsShader;
+	viewPortLayer->m_shaderSettings.m_shaderSingleColor = &shaderSingleColor;
+	viewPortLayer->m_shaderSettings.m_pointsShader = &pointsShader;
+	viewPortLayer->m_shaderSettings.m_linesShader = &linesShader;
 	app.getLayerStack().addLayer(viewPortLayer);
 
 	ViewPortHolder* viewPortHolder = new ViewPortHolder(viewPortLayer);
@@ -230,13 +225,6 @@ int main()
 	BasicSculptToolCommand basicSculptToolCommand(viewPortHolder);
 
 
-	
-
-	//SHORTCUTREGISTRY
-	
-	ShortcutRegistry::registerShortcut({ GLFW_KEY_B, GLFW_KEY_A, GLFW_KEY_C }, selectMeshCommand);
-
-
 	//AdditionLayer
 	AdditionLayer additionLayer("AdditionLayer");
 	app.getLayerStack().addLayer(&additionLayer);
@@ -253,8 +241,6 @@ int main()
 			Renderer::collectAABBdata(octreeNode.getBounds(), glm::vec3{ 0.0,1.0,0.0 });
 		}
 	}
-
-	
 
 	//toolBarLayer.addObserver(&viewPortLayer);
 	glm::mat4 model = glm::mat4(1.0f);

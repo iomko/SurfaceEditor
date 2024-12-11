@@ -148,7 +148,7 @@ private:
         }
         //
 
-        Mesh* mesh = new Mesh(new Material(m_viewPortHolder->m_viewPortLayer->m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
+        Mesh* mesh = new Mesh(new Material(m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
 
 		mesh->m_meshID = std::to_string(m_viewPortHolder->m_currentMeshId);
         return mesh;
@@ -160,9 +160,8 @@ private:
 
 		ViewPortHolder::MeshRenderingFlags flags{ true, true, true, true };
 
-
-		ViewPortHolder::MeshRenderingShaderData shaderData(*m_viewPortHolder->m_viewPortLayer->m_pointsShader, *m_viewPortHolder->m_viewPortLayer->m_linesShader,
-			*m_viewPortHolder->m_viewPortLayer->m_normalsShader, *m_viewPortHolder->m_viewPortLayer->m_meshShader);
+		ViewPortHolder::MeshRenderingShaderData shaderData(*m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_pointsShader, *m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_linesShader,
+			*m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_normalsShader, *m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_meshShader);
 
 		ViewPortHolder::MeshRenderingVAOData vaoData;
 

@@ -629,11 +629,6 @@ public:
 
         }
     }
-    
-    
-
-
-
 
 	void undo()
 	{
