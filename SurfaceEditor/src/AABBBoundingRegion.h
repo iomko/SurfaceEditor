@@ -118,6 +118,15 @@ public:
 		}
 		return *this;
 	}
+
+	bool operator<(const AABBBoundingRegion& other) const {
+		if (getMin().x != other.getMin().x) return getMin().x < other.getMin().x;
+		if (getMin().y != other.getMin().y) return getMin().y < other.getMin().y;
+		if (getMin().z != other.getMin().z) return getMin().z < other.getMin().z;
+		if (getMax().x != other.getMax().x) return getMax().x < other.getMax().x;
+		if (getMax().y != other.getMax().y) return getMax().y < other.getMax().y;
+		return getMax().z < other.getMax().z;
+	}
 	
 	bool operator==(const AABBBoundingRegion& other) const {
 		return this->getMin() == other.getMin() && this->getMax() == other.getMax();

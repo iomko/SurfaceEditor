@@ -2,33 +2,23 @@
 #include <iostream>
 
 #include "Callback.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
 #include "../AABBBoundingRegion.h"
 #include "../Core/Input.h"
 
 class DeselectMeshCallBack : public Callback
 {
 public:
-    DeselectMeshCallBack(ViewPortHolder* viewPortHolder)
+    virtual void execute() override
     {
-        m_viewPortHolder = viewPortHolder;
-    }
 
-    void execute() override
-    {
+        Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
         //select Mesh
-        Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
 
-        glm::vec3 cameraDirection = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().frontVector;
-        glm::vec3 cameraPosition = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().position;
+        glm::vec3 cameraDirection = ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_activeCamera->getState().frontVector;
+        glm::vec3 cameraPosition = ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_activeCamera->getState().position;
 
         Ray cameraRay(cameraPosition, cameraDirection);
-
-
-        if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            std::cout << "SELECTMESHCALLBACKCLICK" << std::endl;
-        }
 
         const auto& octreeAlg = [](const std::pair<Mesh*, HalfEdgeDS::Face*>& faceMeshPair, const Ray& cameraRay)->std::pair<bool, float>
             {
@@ -80,17 +70,17 @@ public:
 
         if (retMesh != nullptr)
         {
-
+            
             //to znamena ze sme na nejaky mesh klikli
-            m_viewPortHolder->m_selectedMeshes.erase(retMesh);
+            ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes.erase(retMesh);
         }
         else
         {
             //vtedy vymazem vsetky selectedMeshes
-            m_viewPortHolder->m_selectedMeshes.clear();
+            ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes.clear();
         }
 
-        for (const auto& entry : m_viewPortHolder->m_selectedMeshes) {
+        for (const auto& entry : ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes) {
             Mesh* mesh = entry;
 
             std::cout << "SelectedMesh ID: " << mesh->m_meshID << std::endl;
@@ -99,6 +89,4 @@ public:
         std::cout << "-------------------------------------------------------" << std::endl;
 
     }
-private:
-    ViewPortHolder* m_viewPortHolder;
 };

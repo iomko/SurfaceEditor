@@ -4,25 +4,18 @@
 #include "../Patterns/Observer.h"
 #include "../Patterns/Command.h"
 
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
+#include "CmdProperties/CmdProperties.h"
+
 
 class ExportMeshesCommand : public Observable, public Command {
 public:
-    ExportMeshesCommand(ViewPortHolder* viewPortHolder)
-    {
-        addObserver(viewPortHolder);
-    }
+	virtual void execute(const Params& params) override {
+		notifyObservers(params);
+	}
 
-    virtual void execute() override {
-        notifyObservers();
-    }
+	void undo() override {
+	}
 
-    virtual void undo() override {
-
-    }
-
-    static constexpr std::string_view getCommandName() noexcept { return "ExportMeshesCommand"; }
-
-public:
-    std::string m_filePathMeshes = "";
+	static constexpr std::string_view getCommandName() noexcept { return "ExportMeshesCommand"; }
 };

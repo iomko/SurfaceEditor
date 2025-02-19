@@ -1,26 +1,16 @@
 #pragma once
-
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
 
-class SelectVertexCommand : public Observable, public Command
-{
+class SelectVertexCommand : public Observable, public Command {
 public:
-    SelectVertexCommand(ViewPortHolder* viewPortHolder)
-    {
-        addObserver(viewPortHolder);
-    }
+	virtual void execute() override {
+		notifyObservers();
+	}
 
-    void execute() override
-    {
-        notifyObservers();
-    }
-    void undo() override
-    {
+	void undo() override {
+	}
 
-    }
-
-    static constexpr std::string_view getCommandName() noexcept { return "SelectVertexCommand"; }
-
+	static constexpr std::string_view getCommandName() noexcept { return "SelectVertexCommand"; }
 };

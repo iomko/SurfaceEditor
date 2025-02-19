@@ -35,7 +35,7 @@ Ray getCameraRay(const glm::vec3& cameraPosition, const glm::vec3& cameraFrontVe
 #include "../DataStructures/HalfEdge.h"
 
 //#include "../Patterns/Observer.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
 #include "../Commands/AddPlaneCommand.h"
 #include "../Callbacks/AddPlaneCallback.h"
 //#include "../Commands/CommandRegistry.h"
@@ -131,98 +131,118 @@ int main()
 	
 
 	//viewPortLayer
-	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer", &camera, &scene);
-	
+	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
+	viewPortLayer->m_activeCamera = &camera;
+
+	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
-	viewPortLayer->m_shaderSettings.m_normalsShader = &normalsShader;
-	viewPortLayer->m_shaderSettings.m_shaderSingleColor = &shaderSingleColor;
-	viewPortLayer->m_shaderSettings.m_pointsShader = &pointsShader;
-	viewPortLayer->m_shaderSettings.m_linesShader = &linesShader;
+	viewPortLayer->m_shaderSettings.m_normalShader = &normalsShader;
+	viewPortLayer->m_shaderSettings.m_pointShader = &pointsShader;
+	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
 	app.getLayerStack().addLayer(viewPortLayer);
 
-	ViewPortHolder* viewPortHolder = new ViewPortHolder(viewPortLayer);
-	PlaneProperties planeProperties;
+	ViewPortsHolder* viewPortsHolder = new ViewPortsHolder("viewPortsHolderLayer");
+	viewPortsHolder->addViewPortLayer(viewPortLayer);
+	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
+
+	viewPortsHolder->m_scene = &scene;
+	ViewPortsHolderContext::m_viewPortsHolder = viewPortsHolder;
+
+	AddPlaneParams planeProperties;
 	planeProperties.m_size = 50.0f;
 	planeProperties.m_subdivisionLevel = 4;
 
 
 	//ImporExportLayer
-	ImportExportLayer* importExportLayer = new ImportExportLayer(viewPortHolder, "importExportLayer");
+	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer");
 	app.getLayerStack().addLayer(importExportLayer);
 
 	//importMeshesCommand
 
-	CommandRegistry::registerCommand<ImportMeshesCommand>(viewPortHolder);
+	CommandRegistry::registerCommand<ImportMeshesCommand>();
 	ImportMeshesCommand* importMeshesCommand = CommandRegistry::getCommand<ImportMeshesCommand>();
 
-	ImportMeshesCallBack importMeshesCallBack(viewPortHolder, importMeshesCommand);
-	viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
+	ImportMeshesCallBack importMeshesCallBack;
+	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
 
-	CommandRegistry::registerCommand<ExportMeshesCommand>(viewPortHolder);
+	importMeshesCommand->addObserver(&importMeshesCallBack);
+	importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
+
+	CommandRegistry::registerCommand<ExportMeshesCommand>();
 	ExportMeshesCommand* exportMeshesCommand = CommandRegistry::getCommand<ExportMeshesCommand>();
 
-	ExportMeshesCallBack exportMeshesCallBack(viewPortHolder, exportMeshesCommand);
-	viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
+	ExportMeshesCallBack exportMeshesCallBack;
+	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
 
-	CommandRegistry::registerCommand<AddPlaneCommand>(viewPortHolder, planeProperties);
+	exportMeshesCommand->addObserver(&exportMeshesCallBack);
+	exportMeshesCallBack.observe(exportMeshesCommand, &exportMeshesCallBack);
+
+	CommandRegistry::registerCommand<AddPlaneCommand>();
 	AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
 	
-	AddPlaneCallback addPlaneCallBack(viewPortHolder, addPlaneCommand);
-	viewPortHolder->observe(addPlaneCommand, &addPlaneCallBack);
+	AddPlaneCallback addPlaneCallBack;
+	//viewPortHolder->observe(addPlaneCommand, &addPlaneCallBack);
 
-	SelectMeshCallBack selectMeshCallBack(viewPortHolder);
-	CommandRegistry::registerCommand<SelectMeshCommand>(viewPortHolder);
+	addPlaneCommand->addObserver(&addPlaneCallBack);
+	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+
+	SelectMeshCallBack selectMeshCallBack;
+	CommandRegistry::registerCommand<SelectMeshCommand>();
 	SelectMeshCommand* selectMeshCommand = CommandRegistry::getCommand<SelectMeshCommand>();
-	viewPortHolder->observe(selectMeshCommand, &selectMeshCallBack);
 
-	DeselectMeshCallBack deselectMeshCallBack(viewPortHolder);
-	CommandRegistry::registerCommand<DeselectMeshCommand>(viewPortHolder);
+	selectMeshCommand->addObserver(&selectMeshCallBack);
+	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
+	//viewPortHolder->observe(selectMeshCommand, &selectMeshCallBack);
+
+	
+	DeselectMeshCallBack deselectMeshCallBack;
+	CommandRegistry::registerCommand<DeselectMeshCommand>();
 	DeselectMeshCommand* deselectMeshCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
-	viewPortHolder->observe(deselectMeshCommand, &deselectMeshCallBack);
-
-	SelectFaceCallBack selectFaceCallBack(viewPortHolder);
-	CommandRegistry::registerCommand<SelectFaceCommand>(viewPortHolder);
+	viewPortsHolder->observe(deselectMeshCommand, &deselectMeshCallBack);
+	
+	SelectFaceCallBack selectFaceCallBack;
+	CommandRegistry::registerCommand<SelectFaceCommand>();
 	SelectFaceCommand* selectFaceCommand = CommandRegistry::getCommand<SelectFaceCommand>();
-	viewPortHolder->observe(selectFaceCommand, &selectFaceCallBack);
+	viewPortsHolder->observe(selectFaceCommand, &selectFaceCallBack);
 
-	SelectVertexCallBack selectVertexCallBack(viewPortHolder);
-	CommandRegistry::registerCommand<SelectVertexCommand>(viewPortHolder);
+	SelectVertexCallBack selectVertexCallBack;
+	CommandRegistry::registerCommand<SelectVertexCommand>();
 	SelectVertexCommand* selectVertexCommand = CommandRegistry::getCommand<SelectVertexCommand>();
-	viewPortHolder->observe(selectVertexCommand, &selectVertexCallBack);
+	viewPortsHolder->observe(selectVertexCommand, &selectVertexCallBack);
 
-
-	ToolBarLayer toolBarLayer(viewPortHolder, "ToolBarLayer");
+	ToolBarLayer toolBarLayer("ToolBarLayer");
 	app.getLayerStack().addLayer(&toolBarLayer);
 
-	ToolBarLayerCallBack toolBarLayerCallBack(viewPortHolder, &toolBarLayer);
-	viewPortHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
+	ToolBarLayerCallBack toolBarLayerCallBack;
+	//viewPortHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
+
+	toolBarLayer.addObserver(&toolBarLayerCallBack);
+	toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
+
+	//toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
+
 
 	//Transform Layer
-	TransformLayer transformLayer(viewPortHolder, "TransformLayer");
+	//TransformLayer transformLayer(viewPortHolder, "TransformLayer");
 
-	TransformAddPlaneCallBack transformAddPlaneCallBack(&transformLayer, &addPlaneCallBack);
+	//TransformAddPlaneCallBack transformAddPlaneCallBack(&transformLayer, &addPlaneCallBack);
 
-	//potrebujem tomuto TransformLayeru pridat observable
-	//ma observovat AddPlaneCallBack
-	//ma observovat dalej aj SelectMeshCallBack
-
-	selectMeshCallBack.addObserver(&transformLayer);
-	TransformSelectMeshCallBack transformSelectMeshCallBack(&transformLayer, &selectMeshCallBack);
-	transformLayer.observe(&selectMeshCallBack, &transformSelectMeshCallBack);
-
-	addPlaneCallBack.addObserver(&transformLayer);
-	transformLayer.observe(&addPlaneCallBack, &transformAddPlaneCallBack);
+	//selectMeshCallBack.addObserver(&transformLayer);
+	//TransformSelectMeshCallBack transformSelectMeshCallBack(&transformLayer, &selectMeshCallBack);
+	//transformLayer.observe(&selectMeshCallBack, &transformSelectMeshCallBack);
+	//addPlaneCallBack.addObserver(&transformLayer);
+	//transformLayer.observe(&addPlaneCallBack, &transformAddPlaneCallBack);
 
 
-	CommandRegistry::registerCommand<TransformMeshCommand>(viewPortHolder);
+	CommandRegistry::registerCommand<TransformMeshCommand>();
 	TransformMeshCommand* transformMeshCommand = CommandRegistry::getCommand<TransformMeshCommand>();
-	TransformMeshCallBack transformMeshCallBack(viewPortHolder,transformMeshCommand);
-	viewPortHolder->observe(transformMeshCommand, &transformMeshCallBack);
+	TransformMeshCallBack transformMeshCallBack;
+	viewPortsHolder->observe(transformMeshCommand, &transformMeshCallBack);
 
-
+	
 
 	//SCULPT TOOL
-	BasicSculptToolCommand basicSculptToolCommand(viewPortHolder);
+	BasicSculptToolCommand basicSculptToolCommand;
 
 
 	//AdditionLayer
@@ -230,15 +250,16 @@ int main()
 	app.getLayerStack().addLayer(&additionLayer);
 
 	//TransformLayer
-	app.getLayerStack().addLayer(&transformLayer);
+	//app.getLayerStack().addLayer(&transformLayer);
 
+	scene.m_rendererData.aabbData.clearAABBData();
 
 	for (auto& entry : scene.m_meshFaceOctreesMap) {
 		const glm::vec3& key = entry.first;
 		Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 		for (auto& octreeNode : octree) {
 			octreeNode.getBounds();
-			Renderer::collectAABBdata(octreeNode.getBounds(), glm::vec3{ 0.0,1.0,0.0 });
+			scene.m_rendererData.aabbData.collectAABBData(octreeNode.getBounds());
 		}
 	}
 
@@ -270,9 +291,6 @@ int main()
 	linesShader.bind();
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
-
-
-
 
 
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
@@ -344,27 +362,26 @@ int main()
 
 		}
 
-
 		if(Input::isKeyDown(GLFW_KEY_T))
 		{
 			//viewPortLayer.deleteSelectedMeshes();
 			//delete them from renderer aswell!
-			Renderer::deleteAABBBuffer();
+			scene.m_rendererData.aabbData.clearAABBData();
 
-			int numberOfOctrees = 0;
 			for (auto& entry : scene.m_meshFaceOctreesMap) {
-				++numberOfOctrees;
 				const glm::vec3& key = entry.first;
 				Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 				for (auto& octreeNode : octree) {
 					octreeNode.getBounds();
-					Renderer::collectAABBdata(octreeNode.getBounds(), glm::vec3{ 0.0,1.0,0.0 });
+					scene.m_rendererData.aabbData.collectAABBData(octreeNode.getBounds());
 				}
 			}
 
 		}
 
-		glViewport(0, 0, viewPortLayer->SCR_WIDTH, viewPortLayer->SCR_HEIGHT);
+
+		glViewport(0, 0, ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_screenSettings.SCR_WIDTH,
+			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_screenSettings.SCR_HEIGHT);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glStencilMask(0xFF);
@@ -373,8 +390,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 
-		for (auto& [mesh, tuple] : viewPortHolder->m_meshesShaderData)
-		{
+		for (auto& [mesh, faceMap] : viewPortsHolder->m_scene->m_meshesFaceOctreeMap) {
+
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			//chcem zapisovat do depth bufferu
@@ -387,27 +404,35 @@ int main()
 			glDisable(GL_STENCIL_TEST);
 
 			//mesh shader
-			std::get<1>(tuple).FaceShader.bind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->bind();
 			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
-			std::get<1>(tuple).FaceShader.unbind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->unbind();
 
 			//for normals
-			std::get<1>(tuple).NormalShader.bind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->bind();
 			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
-			std::get<1>(tuple).NormalShader.unbind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->unbind();
 
+			/*
 			//points
-			std::get<1>(tuple).PointShader.bind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_pointShader->bind();
 			Renderer::drawPoints(std::get<2>(tuple).m_points);
-			std::get<1>(tuple).PointShader.unbind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_pointShader->unbind();
 
 			//lines
-			std::get<1>(tuple).EdgeShader.bind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
 			Renderer::drawBoundingBoxes();
 			Renderer::drawLines(std::get<2>(tuple).m_edges);
-			std::get<1>(tuple).EdgeShader.unbind();
+			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
+			*/
 
 		}
+		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
+		for (const auto& [region, vertices] : scene.m_rendererData.aabbData.vaoDataMap) {
+			
+			Renderer::drawBox(vertices);
+		}
+		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
 
 		app.run();
 

@@ -3,6 +3,7 @@
 #include "../SelectionCallBacks/SelectMeshCallBack.h"
 #include "../../Gui/TransformLayer.h"
 
+/*
 class TransformSelectMeshCallBack : public Callback
 {
 public:
@@ -24,3 +25,4 @@ private:
 	TransformLayer* m_transformLayer;
 	SelectMeshCallBack* m_selectMeshCallBack;
 };
+*/

@@ -1,30 +1,18 @@
 #pragma once
 #include <string_view>
-
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
+#include "CmdProperties/CmdProperties.h"
 
-class TransformMeshCommand : public Observable, public Command
-{
+class TransformMeshCommand : public Observable, public Command {
 public:
-    TransformMeshCommand(ViewPortHolder* viewPortHolder)
-    {
-        addObserver(viewPortHolder);
-    }
+	virtual void execute(const Params& params) override {
+		notifyObservers(params);
+	}
 
-    void execute() override
-    {
-        notifyObservers();
-    }
-    void undo() override
-    {
+	void undo() override {
+	}
 
-    }
-
-    static constexpr std::string_view getCommandName() noexcept { return "TransformMeshCommand"; }
-
-public:
-    glm::mat4 m_modelMatrix;
-    Mesh* m_transformedMesh;
+	static constexpr std::string_view getCommandName() noexcept { return "TransformMeshCommand"; }
 };

@@ -3,6 +3,7 @@
 #include "../AddPlaneCallback.h"
 #include "../../Gui/TransformLayer.h"
 
+/*
 class TransformAddPlaneCallBack : public Callback
 {
 public:
@@ -30,3 +31,4 @@ private:
 	TransformLayer* m_transformLayer;
 	AddPlaneCallback* m_addPlaneCallBack;
 };
+*/

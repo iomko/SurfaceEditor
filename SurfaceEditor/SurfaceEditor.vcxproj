@@ -222,6 +222,8 @@
     <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
+    <ClInclude Include="src\Commands\CmdProperties\CmdProperties.h" />
+    <ClInclude Include="src\Commands\VertexModeChangeCommand.h" />
     <ClInclude Include="src\NumberUtils.h" />
     <ClInclude Include="src\PolygonTraits.h" />
     <ClInclude Include="src\BaseImporter.h" />
@@ -232,7 +234,6 @@
     <ClInclude Include="src\Callbacks\SelectionCallBacks\FacesDataTransfer.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectFaceCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectVertexCallBack.h" />
-    <ClInclude Include="src\Callbacks\ObjectTransformCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformAddPlaneCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformSelectMeshCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformMeshCallBack.h" />
@@ -246,7 +247,6 @@
     <ClInclude Include="src\Commands\ExportMeshesCommand.h" />
     <ClInclude Include="src\Commands\ImportMeshesCommand.h" />
     <ClInclude Include="src\Commands\TransformMeshCommand.h" />
-    <ClInclude Include="src\Commands\ObjectTransformationCommand.h" />
     <ClInclude Include="src\Commands\SelectFaceCommand.h" />
     <ClInclude Include="src\Commands\SelectMeshCommand.h" />
     <ClInclude Include="src\Commands\SelectVertexCommand.h" />
@@ -261,7 +261,9 @@
     <ClInclude Include="src\PolygonOperations.h" />
     <ClInclude Include="src\Scene\Camera.h" />
     <ClInclude Include="src\Scene\EditorSettings.h" />
-    <ClInclude Include="src\Scene\ViewPortShaderSettings.h" />
+    <ClInclude Include="src\Scene\SceneRendererData.h" />
+    <ClInclude Include="src\Scene\ViewPortLayerRenderSettings.h" />
+    <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\WindowsFileDialogs.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
@@ -287,7 +289,7 @@
     <ClInclude Include="src\Renderer\Renderer.h" />
     <ClInclude Include="src\Renderer\VertexDataStructs.h" />
     <ClInclude Include="src\SceneManager.h" />
-    <ClInclude Include="src\ViewPortHolder.h" />
+    <ClInclude Include="src\ViewPortsHolder.h" />
     <ClInclude Include="src\Scene\SceneViewsHandler.h" />
     <ClInclude Include="src\Core\Window.h" />
   </ItemGroup>

@@ -3,26 +3,23 @@
 
 #include "FacesDataTransfer.h"
 #include "../Callback.h"
-#include "../../ViewPortHolder.h"
+#include "../../ViewPortsHolder.h"
 #include "../../AABBBoundingRegion.h"
 
 class SelectFaceCallBack : public Callback
 {
 public:
-    SelectFaceCallBack(ViewPortHolder* viewPortHolder)
-    {
-        m_viewPortHolder = viewPortHolder;
-    }
 
-    void execute() override
+    virtual void execute() override
     {
         std::cout << "SELECTFACECALLBACK" << std::endl;
 
         //select Mesh
-        Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
+        Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
 
-		glm::vec3 cameraDirection = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().frontVector;
-		glm::vec3 cameraPosition = m_viewPortHolder->m_viewPortLayer->getCamera()->getState().position;
+
+		glm::vec3 cameraDirection = ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_activeCamera->getState().frontVector;
+		glm::vec3 cameraPosition = ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_activeCamera->getState().position;
 
 		Ray cameraRay(cameraPosition, cameraDirection);
 
@@ -79,24 +76,24 @@ public:
 
             //tu sa pozrem ci ten retMesh sa nachadza v selectedMeshes
 
-            auto selectedMeshesIter = m_viewPortHolder->m_selectedMeshes.find(retMesh);
+            auto selectedMeshesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes.find(retMesh);
 
-            if(selectedMeshesIter != m_viewPortHolder->m_selectedMeshes.end())
+            if(selectedMeshesIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes.end())
             {
 	            //tak sa este pozriem ci existuje v mojej m_selectedFaces
 
-                auto selectedFacesIter = m_viewPortHolder->m_selectedFaces.find(retMesh);
+                auto selectedFacesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(retMesh);
 
-                if(selectedFacesIter == m_viewPortHolder->m_selectedFaces.end())
+                if(selectedFacesIter == ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.end())
                 {
 	                //tak vytvorim novy set a pridam do selectedFaces
 					std::set<HalfEdgeDS::Face*> facesSet;
 					facesSet.insert(retFace);
-					m_viewPortHolder->m_selectedFaces.insert(std::make_pair(retMesh, facesSet));
+                    ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.insert(std::make_pair(retMesh, facesSet));
 
-                    auto selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                    auto selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
-                    if(selectedVerticesIter == m_viewPortHolder->m_selectedVertices.end())
+                    if(selectedVerticesIter == ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.end())
                     {
 	                    //tak vtedy tam ten zaznam vytvorim
 
@@ -107,15 +104,17 @@ public:
                             newSelectedVertices.insert(vertex);
                             //taktiez upravim renderingData
 
-                            auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                            if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                            /*
+                            auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+                            if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                                 ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                                 vaoData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
                             }
+                            */
 
                             //retMesh->m_meshRenderingData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
                         }
-                        m_viewPortHolder->m_selectedVertices.emplace(retMesh, newSelectedVertices);
+                        ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.emplace(retMesh, newSelectedVertices);
 
                         //akurat ze teraz este musim prejst cez vsetky vertices prave pridaneho facu
                         //a poznamenat si, ktore faces su temporarne (pridat ked sa prepneme do vertex modu)
@@ -125,8 +124,8 @@ public:
                             std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> neighboringFacesVerticesIndices = accessNeighbouringVertsAndFacesOfSelectedVertex(selectedVertex);
 
 
-                            selectedFacesIter = m_viewPortHolder->m_selectedFaces.find(retMesh);
-                            selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                            selectedFacesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(retMesh);
+                            selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
                             for (const auto& faceIndex : neighboringFacesVerticesIndices.second)
                             {
@@ -184,11 +183,13 @@ public:
                             selectedVerticesIter->second.insert(vertex);
                             //taktiez upravim renderingData
 
-                            auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                            if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                            /*
+                            auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+                            if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                                 ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                                 vaoData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
                             }
+                            */
 
                             //retMesh->m_meshRenderingData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
 
@@ -197,8 +198,8 @@ public:
                             std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> neighboringFacesVerticesIndices = accessNeighbouringVertsAndFacesOfSelectedVertex(vertex);
 
 
-                            selectedFacesIter = m_viewPortHolder->m_selectedFaces.find(retMesh);
-                            selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                            selectedFacesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(retMesh);
+                            selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
                             for (const auto& faceIndex : neighboringFacesVerticesIndices.second)
                             {
@@ -274,9 +275,9 @@ public:
 					selectedFacesIter->second.insert(retFace);
 
 
-                    auto selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                    auto selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
-                    if (selectedVerticesIter == m_viewPortHolder->m_selectedVertices.end())
+                    if (selectedVerticesIter == ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.end())
                     {
                         //tak vtedy tam ten zaznam vytvorim
                         std::set<HalfEdgeDS::Vertex*> newSelectedVertices;
@@ -286,11 +287,13 @@ public:
                             newSelectedVertices.insert(vertex);
                             //taktiez upravim renderingData
 
-                            auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                            if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                            /*
+                            auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+                            if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                                 ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                                 vaoData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
                             }
+                            */
 
                             //retMesh->m_meshRenderingData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
 
@@ -300,8 +303,8 @@ public:
                             std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> neighboringFacesVerticesIndices = accessNeighbouringVertsAndFacesOfSelectedVertex(vertex);
 
 
-                            selectedFacesIter = m_viewPortHolder->m_selectedFaces.find(retMesh);
-                            selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                            selectedFacesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(retMesh);
+                            selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
                             for (const auto& faceIndex : neighboringFacesVerticesIndices.second)
                             {
@@ -351,7 +354,7 @@ public:
 
 
                         }
-                        m_viewPortHolder->m_selectedVertices.emplace(retMesh, newSelectedVertices);
+                        ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.emplace(retMesh, newSelectedVertices);
 
 
                     }
@@ -363,11 +366,13 @@ public:
                             selectedVerticesIter->second.insert(vertex);
                             //taktiez upravim renderingData
 
-                            auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                            if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                            /*
+                            auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+                            if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                                 ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                                 vaoData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
                             }
+                            */
 
                             //retMesh->m_meshRenderingData.m_points.at(vertex->getHalfEdge()->getVertexIndex()).isHighlighted = 1.0f;
 
@@ -376,8 +381,8 @@ public:
                             std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> neighboringFacesVerticesIndices = accessNeighbouringVertsAndFacesOfSelectedVertex(vertex);
 
 
-                            selectedFacesIter = m_viewPortHolder->m_selectedFaces.find(retMesh);
-                            selectedVerticesIter = m_viewPortHolder->m_selectedVertices.find(retMesh);
+                            selectedFacesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(retMesh);
+                            selectedVerticesIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(retMesh);
 
                             for (const auto& faceIndex : neighboringFacesVerticesIndices.second)
                             {
@@ -452,12 +457,12 @@ public:
             } else
             {
 	            //tak vymazeem vsetky selectedFaces
-                for (const auto& selectedMesh : m_viewPortHolder->m_selectedMeshes)
+                for (const auto& selectedMesh : ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes)
                 {
-                    auto selectedFacesOfSelectedMeshIter = m_viewPortHolder->m_selectedFaces.find(selectedMesh);
-                    auto selectedVerticesOfSelectedMeshIter = m_viewPortHolder->m_selectedVertices.find(selectedMesh);
+                    auto selectedFacesOfSelectedMeshIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(selectedMesh);
+                    auto selectedVerticesOfSelectedMeshIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(selectedMesh);
 
-                    if (selectedFacesOfSelectedMeshIter != m_viewPortHolder->m_selectedFaces.end()) {
+                    if (selectedFacesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.end()) {
 
 
                         for (HalfEdgeDS::Face* currentFace : selectedFacesOfSelectedMeshIter->second) {
@@ -485,13 +490,13 @@ public:
 
                     }
 
-                    if (selectedFacesOfSelectedMeshIter != m_viewPortHolder->m_selectedFaces.end()) {
-                        m_viewPortHolder->m_selectedFaces.erase(selectedFacesOfSelectedMeshIter);
+                    if (selectedFacesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.end()) {
+                        ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.erase(selectedFacesOfSelectedMeshIter);
                     }
 
 
                     //taktiez vymazem vsetky vertices
-                    if (selectedVerticesOfSelectedMeshIter != m_viewPortHolder->m_selectedVertices.end()) {
+                    if (selectedVerticesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.end()) {
 
                         //taktiez upravim renderingData
 
@@ -500,12 +505,13 @@ public:
                             //taktiez upravim renderingData
                             HalfEdgeDS::VertexIndex vertexIndex = currentVertex->getHalfEdge()->getVertexIndex();
 
-
-                            auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                            if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                            /*
+                            auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+                            if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                                 ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                                 vaoData.m_points.at(vertexIndex).isHighlighted = 0.0f;
                             }
+                            */
 
                             //selectedMesh->m_meshRenderingData.m_points.at(vertexIndex).isHighlighted = 0.0f;
 
@@ -513,7 +519,7 @@ public:
 
 
 
-                        m_viewPortHolder->m_selectedVertices.erase(selectedVerticesOfSelectedMeshIter);
+                        ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.erase(selectedVerticesOfSelectedMeshIter);
                     }
                 }
 
@@ -528,13 +534,13 @@ public:
 
             //tak prejdem cez vsetky selectedMeshes a vymazem dane selectedFaces
 
-            for(const auto& selectedMesh : m_viewPortHolder->m_selectedMeshes)
+            for(const auto& selectedMesh : ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes)
             {
 
-                auto selectedFacesOfSelectedMeshIter = m_viewPortHolder->m_selectedFaces.find(selectedMesh);
-                auto selectedVerticesOfSelectedMeshIter = m_viewPortHolder->m_selectedVertices.find(selectedMesh);
+                auto selectedFacesOfSelectedMeshIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.find(selectedMesh);
+                auto selectedVerticesOfSelectedMeshIter = ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.find(selectedMesh);
 
-                if (selectedFacesOfSelectedMeshIter != m_viewPortHolder->m_selectedFaces.end()) {
+                if (selectedFacesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.end()) {
 
 
                     for (HalfEdgeDS::Face* currentFace : selectedFacesOfSelectedMeshIter->second) {
@@ -562,12 +568,12 @@ public:
 
                 }
 
-                if (selectedFacesOfSelectedMeshIter != m_viewPortHolder->m_selectedFaces.end()) {
-                    m_viewPortHolder->m_selectedFaces.erase(selectedFacesOfSelectedMeshIter);
+                if (selectedFacesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.end()) {
+                    ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces.erase(selectedFacesOfSelectedMeshIter);
                 }
 
                 //taktiez vymazem vsetky vertices
-                if (selectedVerticesOfSelectedMeshIter != m_viewPortHolder->m_selectedVertices.end()) {
+                if (selectedVerticesOfSelectedMeshIter != ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.end()) {
 
                     //taktiez upravim renderingData
 
@@ -576,12 +582,13 @@ public:
                         //taktiez upravim renderingData
                         HalfEdgeDS::VertexIndex vertexIndex = currentVertex->getHalfEdge()->getVertexIndex();
 
-
-                        auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(retMesh);
-                        if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                        /*
+						auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(retMesh);
+						if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                             ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                             vaoData.m_points.at(vertexIndex).isHighlighted = 0.0f;
                         }
+                        */
 
                         //selectedMesh->m_meshRenderingData.m_points.at(vertexIndex).isHighlighted = 0.0f;
 
@@ -589,7 +596,7 @@ public:
 
 
 
-                    m_viewPortHolder->m_selectedVertices.erase(selectedVerticesOfSelectedMeshIter);
+                    ViewPortsHolderContext::m_viewPortsHolder->m_selectedVertices.erase(selectedVerticesOfSelectedMeshIter);
                 }
 
             }
@@ -603,7 +610,7 @@ public:
         //prejdi cez vsetky selektnute meshe a faces a vypis ich
 
 
-        for (const auto& entry : m_viewPortHolder->m_selectedFaces) {
+        for (const auto& entry : ViewPortsHolderContext::m_viewPortsHolder->m_selectedFaces) {
             std::cout << "SelectedMesh ID: " << entry.first->m_meshID << std::endl;
             for (HalfEdgeDS::Face* face : entry.second) {
                 std::cout << "---SelectedFace ID: " << face->getHalfEdge()->getFaceIndex() << std::endl;
@@ -734,7 +741,4 @@ public:
         return std::make_pair(returnedVerticesIndices, returnedFacesIndices);
     }
 
-
-private:
-    ViewPortHolder* m_viewPortHolder;
 };

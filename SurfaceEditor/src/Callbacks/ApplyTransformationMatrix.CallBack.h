@@ -3,21 +3,12 @@
 #include <glm/mat4x4.hpp>
 
 #include "../Patterns/Observer.h"
-#include "../ViewPortHolder.h"
-
+#include "../ViewPortsHolder.h"
 
 class ApplyTransformationCallBack : public Callback {
 public:
-    ApplyTransformationCallBack(ViewPortHolder* viewPortHolder)
-    {
-        m_viewPortHolder = viewPortHolder;
-    }
-
-
-
     virtual void execute() override
     {
-        
         m_modelMatrix = glm::mat4(1.0f);
 
         // Apply scaling
@@ -29,10 +20,9 @@ public:
         // Apply translation
         m_modelMatrix = glm::translate(m_modelMatrix, m_translation);
 
-
-
-        auto it = m_viewPortHolder->m_meshesShaderData.find(m_currentMesh);
-        if (it != m_viewPortHolder->m_meshesShaderData.end()) {
+        /*
+        auto it = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(m_currentMesh);
+        if (it != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
             // Get the tuple containing MeshRenderingShaderData
             auto& shaderDataTuple = it->second;
 
@@ -54,30 +44,8 @@ public:
             shaderData.PointShader.setMat4("u_model", m_modelMatrix);
             shaderData.PointShader.unbind();
         }
-
-
-        /*
-        m_viewPortHolder->m_viewPortLayer->m_meshShader->bind();
-        m_viewPortHolder->m_viewPortLayer->m_meshShader->setMat4("u_model", m_modelMatrix);
-        m_viewPortHolder->m_viewPortLayer->m_meshShader->unbind();
-
-        m_viewPortHolder->m_viewPortLayer->m_normalsShader->bind();
-        m_viewPortHolder->m_viewPortLayer->m_normalsShader->setMat4("u_model", m_modelMatrix);
-        m_viewPortHolder->m_viewPortLayer->m_normalsShader->unbind();
-
-        m_viewPortHolder->m_viewPortLayer->m_pointsShader->bind();
-        m_viewPortHolder->m_viewPortLayer->m_pointsShader->setMat4("u_model", m_modelMatrix);
-        m_viewPortHolder->m_viewPortLayer->m_pointsShader->unbind();
-
-        m_viewPortHolder->m_viewPortLayer->m_shaderSingleColor->bind();
-        m_viewPortHolder->m_viewPortLayer->m_shaderSingleColor->setMat4("u_model", m_modelMatrix);
-        m_viewPortHolder->m_viewPortLayer->m_shaderSingleColor->unbind();
-
-        m_viewPortHolder->m_viewPortLayer->m_linesShader->bind();
-        m_viewPortHolder->m_viewPortLayer->m_linesShader->setMat4("u_model", m_modelMatrix);
-        m_viewPortHolder->m_viewPortLayer->m_linesShader->unbind();
-
         */
+
     }
 
     void setTranslationVector(const glm::vec3& translation)
@@ -105,7 +73,6 @@ public:
 
     glm::mat4 m_modelMatrix = glm::mat4(1.0f);
 
-    ViewPortHolder* m_viewPortHolder;
     glm::vec3 m_translation{1.0f, 1.0f, 1.0f};
     glm::vec3 m_rotationAngle{0.0f, 1.0f, 0.0f};
     float m_rotationAngleDegree = 0;

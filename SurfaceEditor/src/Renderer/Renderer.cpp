@@ -70,17 +70,6 @@ void Renderer::init() {
 	glBindVertexArray(0);
 
 
-	/*
-	//Mesh
-	data.Mesh_vao.bind();
-	data.Mesh_vbo.bind();
-	data.Mesh_vbo.createData(nullptr, (3 * 1000) * sizeof(MeshVertex), GL_DYNAMIC_DRAW);
-	data.Mesh_vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)0);
-	data.Mesh_vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, color));
-	data.Mesh_vao.unbind();
-	data.Mesh_vbo.unbind();
-	*/
-
 	//AABB
 	data.AABB_vao.bind();
 	data.AABB_vbo.bind();
@@ -106,89 +95,25 @@ void Renderer::drawMesh(const std::vector<MeshVertex>& mesh)
 	data.Mesh_vbo.unbind();
 }
 
-//tato metoda tu nema co robit, 
-void Renderer::collectAABBdata(const AABBBoundingRegion& aabb, const glm::vec3& vertexColor) {
-	//left side
-	glm::vec3 bottomUpLeft = aabb.getMin();
-	glm::vec3 bottomDownLeft = glm::vec3(aabb.getMin().x, aabb.getMin().y, aabb.getMax().z);
-	glm::vec3 upperDownLeft = glm::vec3(aabb.getMin().x, aabb.getMax().y, aabb.getMax().z);
-	glm::vec3 upperUpLeft = glm::vec3(aabb.getMin().x, aabb.getMax().y, aabb.getMin().z);
-	//right side
-	glm::vec3 bottomUpRight = glm::vec3(aabb.getMax().x, aabb.getMin().y, aabb.getMin().z);
-	glm::vec3 bottomDownRight = glm::vec3(aabb.getMax().x, aabb.getMin().y, aabb.getMax().z);
-	glm::vec3 upperDownRight = aabb.getMax();
-	glm::vec3 upperUpRight = glm::vec3(aabb.getMax().x, aabb.getMax().y, aabb.getMin().z);
-
-	AABBVertex AABB_vertices[] = {
-		//
-		{bottomUpLeft, vertexColor},
-		{bottomDownLeft, vertexColor},
-		{upperDownLeft, vertexColor},
-		{upperDownLeft, vertexColor},
-		{upperUpLeft, vertexColor},
-		{bottomUpLeft, vertexColor},
-
-		//
-
-		{upperUpLeft, vertexColor},
-		{upperDownLeft, vertexColor},
-		{upperDownRight, vertexColor},
-		{upperDownRight, vertexColor},
-		{upperUpRight, vertexColor},
-		{upperUpLeft, vertexColor},
-
-		//
-		{upperUpRight, vertexColor},
-		{upperDownRight, vertexColor},
-		{bottomDownRight, vertexColor},
-		{bottomDownRight, vertexColor},
-		{bottomUpRight, vertexColor},
-		{upperUpRight, vertexColor},
-
-		//
-		{bottomUpRight, vertexColor},
-		{bottomDownRight, vertexColor},
-		{bottomDownLeft, vertexColor},
-		{bottomDownLeft, vertexColor},
-		{bottomUpLeft, vertexColor},
-		{bottomUpRight, vertexColor},
-
-		//
-		{upperUpLeft, vertexColor},
-		{upperUpRight, vertexColor},
-		{bottomUpRight, vertexColor},
-		{bottomUpRight, vertexColor},
-		{bottomUpLeft, vertexColor},
-		{upperUpLeft, vertexColor},
-
-		//
-		{upperDownLeft, vertexColor},
-		{upperDownRight, vertexColor},
-		{bottomDownRight, vertexColor},
-		{bottomDownRight, vertexColor},
-		{bottomDownLeft, vertexColor},
-		{upperDownLeft, vertexColor}
-
-	};
-
-	data.boundingBoxVertices.insert(data.boundingBoxVertices.end(), std::begin(AABB_vertices), std::end(AABB_vertices));
-}
-
 //toto tu teoreticky mozem nechat, ale mozno to pomenovat inac napr drawBox, alebo nieco take
-//a mala by ta metoda brat nejaky parameter nech ich dokaze vykreslit
-void Renderer::drawBoundingBoxes() {
+//a mala by ta metoda brat nejaky parameter nech ich dokaze 
+
+void Renderer::drawBox(const std::vector<AABBVertex>& box)
+{
 	// Binding VAO, VBO, EBO
 	data.AABB_vao.bind();
 	data.AABB_vbo.bind();
 	//data.AABB_ebo.bind();
 
+	data.AABB_vbo.updateData(box.data(), box.size() * sizeof(AABBVertex), 0);
 
-	data.AABB_vbo.updateData(data.boundingBoxVertices.data(), data.boundingBoxVertices.size() * sizeof(AABBVertex), 0);
+	//data.AABB_vbo.updateData(data.boundingBoxVertices.data(), data.boundingBoxVertices.size() * sizeof(AABBVertex), 0);
 
 	// Draw all AABBs in a single call
 	//glDrawElements(GL_LINES, data.maxIndexCount, GL_UNSIGNED_INT, 0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawArrays(GL_TRIANGLES, 0, data.boundingBoxVertices.size());
+	//glDrawArrays(GL_TRIANGLES, 0, data.boundingBoxVertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, box.size());
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Unbinding VAO, VBO, EBO
@@ -229,10 +154,4 @@ void Renderer::drawPoints(std::vector<MeshPoint>& points)
 	// Unbinding VAO, VBO
 	data.Point_vao.unbind();
 	data.Point_vbo.unbind();
-}
-
-//nema tu co robit
-void Renderer::deleteAABBBuffer()
-{
-	data.boundingBoxVertices.clear();
 }

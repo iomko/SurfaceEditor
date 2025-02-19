@@ -32,7 +32,6 @@ struct RendererData {
     static const unsigned int maxVertexCount = 36 * maxBoxCount;
     static const unsigned int maxIndexCount = 24 * maxBoxCount;
 
-    std::vector<AABBVertex> boundingBoxVertices;
 };
 
 class Renderer {
@@ -40,9 +39,6 @@ public:
     static void init();
     static void drawPoints(std::vector<MeshPoint>& points);
     static void drawMesh(const std::vector<MeshVertex>& mesh);
-    static void collectAABBdata(const AABBBoundingRegion& aabb, const glm::vec3& vertexColor);
-    static void drawBoundingBoxes();
+    static void drawBox(const std::vector<AABBVertex>& box);
     static void drawLines(std::vector<LineVertex>& lines);
-    //temporary
-    static void deleteAABBBuffer();
 };

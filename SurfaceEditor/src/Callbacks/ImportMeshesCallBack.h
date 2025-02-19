@@ -1,33 +1,26 @@
 #pragma once
 #include "Callback.h"
-
-#include "../ViewPortHolder.h"
-#include "../Commands/ImportMeshesCommand.h"
-
 #include "../OBJImporter.h"
 #include <random>
 
-class ImportMeshesCallBack : public Callback, public Observable
+class ImportMeshesCallBack : public Callback, public Observer
 {
 public:
-	ImportMeshesCallBack(ViewPortHolder* viewPortHolder, ImportMeshesCommand* importMeshesCommand)
+	virtual void execute(const Params& cmdParams) override
 	{
-		m_viewPortHolder = viewPortHolder;
-		m_importMeshesCommand = importMeshesCommand;
-	}
+		const ImportExportMeshesParams& castedCmdParams = static_cast<const ImportExportMeshesParams&>(cmdParams);
 
-	//zobere importovane meshe z importera prida ich do Octree struktury
-	virtual void execute() override
-	{
 		OBJImporter objImporter;
-		objImporter.setFilePath(m_importMeshesCommand->m_filePathMeshes);
+		objImporter.setFilePath(castedCmdParams.m_filePathMeshes);
 		objImporter.read();
 		
 		for(const auto& importedMesh : objImporter.getMeshes())
 		{
-			Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
 			
-			createMeshRenderingData(importedMesh);
+
+			Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+			
+			createMeshRenderingData(castedCmdParams, importedMesh);
 
 			scene->m_meshesFaceOctreeMap.find(importedMesh);
 			auto meshesFaceOctreeIt = scene->m_meshesFaceOctreeMap.find(importedMesh);
@@ -101,24 +94,23 @@ public:
 
 	}
 private:
-	ViewPortHolder* m_viewPortHolder;
-	ImportMeshesCommand* m_importMeshesCommand;
-
 
 	//ale toto nebudeme potrebovat
 	//potrebujeme to nahradit niecim inym.
 
 	//Mesh by v sebe nemal mat este navyse informacie o 
 	//pripravi pre mesh rendering data potrebne na vykreslenie
-	void createMeshRenderingData(Mesh* mesh)
+	void createMeshRenderingData(const ImportExportMeshesParams& cmdParams, Mesh* mesh)
 	{
-		auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(mesh);
+		/*
+		auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(mesh);
 
 		ViewPortHolder::MeshRenderingFlags flags{ true, true, true, true };
 
+		
 
-		ViewPortHolder::MeshRenderingShaderData shaderData(*m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_pointsShader, *m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_linesShader,
-			*m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_normalsShader, *m_viewPortHolder->m_viewPortLayer->m_shaderSettings.m_meshShader);
+		ViewPortHolder::MeshRenderingShaderData shaderData(*ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_pointsShader, *ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_linesShader,
+			*ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_normalsShader, *ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_meshShader);
 
 		ViewPortHolder::MeshRenderingVAOData vaoData;
 
@@ -132,7 +124,7 @@ private:
 			//endPoint.y += 0.005f;
 
 
-			if (meshesShaderIt == m_viewPortHolder->m_meshesShaderData.end()) {
+			if (meshesShaderIt == ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
 				vaoData.m_edges.push_back({ startPoint, false });
 				vaoData.m_edges.push_back({ endPoint, false });
 			}
@@ -146,10 +138,12 @@ private:
 		}
 
 
-		if (meshesShaderIt == m_viewPortHolder->m_meshesShaderData.end())
+		if (meshesShaderIt == ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end())
 		{
-			m_viewPortHolder->m_meshesShaderData.emplace(mesh, std::make_tuple(flags, shaderData, vaoData));
+			ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.emplace(mesh, std::make_tuple(flags, shaderData, vaoData));
 		}
+
+		*/
 	}
 
 };

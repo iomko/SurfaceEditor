@@ -1,3 +1,5 @@
+
+/*
 module;
 #include <unordered_set>
 
@@ -11,35 +13,30 @@ module;
 //#include "../Mesh.h"
 
 export module LayerSystem.Layer.ViewPortLayer;
-#include "ViewPortShaderSettings.h"
+#include "ViewPortLayerRenderSettings.h"
+#include "ViewPortLayerScreenSettings.h"
 #include "../Core/Layer.h"
 #include "../Scene/Camera.h"
+#include "../ViewPortsHolderContext.h"
 import Scene;
 
 export class ViewPortLayer : public Layer
 {
 private:
 	float m_deltaTime = 0.0f;
-
-	Camera* m_activeCamera = nullptr;
-	//vsetky viewporty budu vediet o jednej scene. //to znamena, ze akonahle nieco vymazem z jedneho viewportu, tak sa to
-	//musi vymazat aj v tom druhom viewporte.
-	Scene* m_scene = nullptr;
-
 public:
 	//Rendering
-	ViewPortShaderSettings m_shaderSettings;
-
-	//takto viewport musi vediet o svojej velkosti okna. Avsak nie o celkovej SCR_WIDTH a SCR_HEIGHT celeho glfw okna
-	const unsigned int SCR_WIDTH = 1600;
-	const unsigned int SCR_HEIGHT = 900;
+	ViewPortLayerRenderSettings m_shaderSettings;
+	ViewPortLayerScreenSettings m_screenSettings;
+	Camera* m_activeCamera = nullptr;
 	
 	//nechcem pre rozne viewPortLayere si uchovavat currentSelectedCommand zvlast
 	//kedze vsetky budu pouzivat rovnaky currentSelectedCommand
-	Command* m_currentSelectedCommand = nullptr;
+	//Command* m_currentSelectedCommand = nullptr;
+	//Params* m_currentSelectedCommandParams = nullptr;
 
-	ViewPortLayer(const std::string& name, Camera* m_active_camera, Scene* scene)
-		: Layer(name), m_activeCamera(m_active_camera), m_scene(scene)
+	ViewPortLayer(const std::string& name)
+		: Layer(name)
 	{
 		Renderer::init();
 
@@ -47,16 +44,6 @@ public:
 			std::cout << "Framebuffer not complete!" << std::endl;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	Camera* getCamera()
-	{
-		return m_activeCamera;
-	}
-
-	Scene* getScene()
-	{
-		return m_scene;
 	}
 
 	void onUpdate() override
@@ -101,14 +88,23 @@ public:
 
 	void onEvent(Event& event) override
 	{
+		//zatial toto bude basic onEvent, tak ako keby som pracoval len s jedným viewPortLayerom zatial
 		if (event.getType() == EventType::MouseButtonPress)
 		{
-			
 			if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 			{
-				if (m_currentSelectedCommand != nullptr)
+				if(ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand != nullptr)
 				{
-					m_currentSelectedCommand->execute();
+					if(ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams != nullptr)
+					{
+						ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand->execute();
+						event.isHandled = true;
+					} else
+					{
+						ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand->execute(
+							*ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams);
+						event.isHandled = true;
+					}
 				}
 			}
 		}
@@ -120,3 +116,4 @@ public:
 	}
 
 };
+*/

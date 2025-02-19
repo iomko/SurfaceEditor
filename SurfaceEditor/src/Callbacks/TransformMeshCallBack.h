@@ -5,21 +5,16 @@
 class TransformMeshCallBack : public Callback
 {
 public:
-	TransformMeshCallBack(ViewPortHolder* viewPortHolder, TransformMeshCommand* transformMeshCommand)
-	{
-		m_viewPortHolder = viewPortHolder;
-		m_transformMeshCommand = transformMeshCommand;
-	}
-
 	void applyModelMatrix(HalfEdgeDS::Vertex* vertex, const glm::mat4& modelMatrix) {
 		glm::vec4 transformedPosition = modelMatrix * glm::vec4(vertex->getPosition(), 1.0f);
 
 		vertex->setPosition(glm::vec3(transformedPosition));
 	}
 
-
-	virtual void execute() override
+	virtual void execute(const Params& cmdParams) override
 	{
+		const TransformMeshParams& castedCmdParams = static_cast<const TransformMeshParams&>(cmdParams);
+
 		//v octree budem tento mesh uchovavat ako std::pair<Mesh*, Face*>
 		std::map <Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
 		std::map <glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
@@ -27,7 +22,7 @@ public:
 		//v tomto mojom pripade staci len najst mesh v m_meshesFaceOctreeMap
 
 
-		auto meshesFaceOctreeIt = m_meshesFaceOctreeMap.find(m_transformMeshCommand->m_transformedMesh);
+		auto meshesFaceOctreeIt = m_meshesFaceOctreeMap.find(castedCmdParams.m_transformedMesh);
 
 		if(meshesFaceOctreeIt != m_meshesFaceOctreeMap.end())
 		{
@@ -44,13 +39,13 @@ public:
 					auto octreeIdOctreeIt = m_meshFaceOctreesMap.find(currentOctreeId);
 					if(octreeIdOctreeIt != m_meshFaceOctreesMap.end())
 					{
-						octreeIdOctreeIt->second.removeData(std::make_pair(m_transformMeshCommand->m_transformedMesh, currentFace));
+						octreeIdOctreeIt->second.removeData(std::make_pair(castedCmdParams.m_transformedMesh, currentFace));
 						//je to vymazane z m_meshFaceOctreesMap
 						//teraz sa pozriet ci je ten octree prazdny
 
 						if (octreeIdOctreeIt->second.rootNode->dataCount == 0)
 						{
-							m_viewPortHolder->m_viewPortLayer->getScene()->m_meshFaceOctreesMap.erase(currentOctreeId);
+							ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.erase(currentOctreeId);
 						}
 					}
 				}
@@ -59,7 +54,7 @@ public:
 				//na to aby sme ju mohli pridat naspat tak potrebujem vynasobit danu vertexu s mojou transformaciou
 
 				
-				m_transformMeshCommand->m_modelMatrix;
+				castedCmdParams.m_modelMatrix;
 
 				//takze musim prechadzat cez vsetky vertices danej faci
 
@@ -68,22 +63,20 @@ public:
 					HalfEdgeDS::Vertex* currentVertex = &faceVerticesIt.operator*();
 
 					//musim urobit transformaciu
-					applyModelMatrix(currentVertex, m_transformMeshCommand->m_modelMatrix);
+					
+					applyModelMatrix(currentVertex, castedCmdParams.m_modelMatrix);
 				}
 
 				//teraz ta currentFace ma zmenene vertices
 
 				//a uz ju len treba pridat
 
-
-
-				Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
-
+				Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
 
 
 				//potrebujem ziskat boundind box daneho facu
 
-				auto& faceVerts = m_transformMeshCommand->m_transformedMesh->m_halfEdgeMesh->getVerticesFromFace(currentFace->getHalfEdge()->getFace());
+				auto& faceVerts = castedCmdParams.m_transformedMesh->m_halfEdgeMesh->getVerticesFromFace(currentFace->getHalfEdge()->getFace());
 				AABBBoundingRegion faceBounds(
 					faceVerts.begin(),
 					faceVerts.end(),
@@ -119,7 +112,7 @@ public:
 							if (it != scene->m_meshFaceOctreesMap.end())
 							{
 								//existuje octree s tymto indexom
-								it->second.addDataToOctree(std::make_pair(m_transformMeshCommand->m_transformedMesh, &(*currentFace)), faceBounds);
+								it->second.addDataToOctree(std::make_pair(castedCmdParams.m_transformedMesh, &(*currentFace)), faceBounds);
 
 							}
 							else
@@ -129,7 +122,7 @@ public:
 								auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
 								auto addedOctree = scene->m_meshFaceOctreesMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
 								//neexistuje octree s tymto indexom
-								addedOctree->second.addDataToOctree(std::make_pair(m_transformMeshCommand->m_transformedMesh, &(*currentFace)), faceBounds);
+								addedOctree->second.addDataToOctree(std::make_pair(castedCmdParams.m_transformedMesh, &(*currentFace)), faceBounds);
 
 							}
 
@@ -139,13 +132,6 @@ public:
 					}
 				}
 
-
-
-
-
-
-
-
 			}
 
 		}
@@ -153,8 +139,4 @@ public:
 
 
 	}
-
-private:
-	ViewPortHolder* m_viewPortHolder;
-	TransformMeshCommand* m_transformMeshCommand;
 };

@@ -1,4 +1,5 @@
 module;
+#include "SceneRendererData.h"
 #include "../NumberUtils.h"
 #include "../Mesh.h"
 #include "../AABBBoundingRegion.h"
@@ -7,10 +8,10 @@ export module Scene;
 
 import DataStructures;
 
-
 export class Scene
 {
 public:
+	SceneRendererData m_rendererData;
 	std::map <Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
 	std::map <glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
 

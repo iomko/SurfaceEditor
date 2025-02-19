@@ -3,19 +3,28 @@
 #include <glm/vec3.hpp>
 
 #include "../Patterns/command.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
+
+/*
+class BasicSculptCommandParams : public Params {
+
+	BasicSculptCommandParams(ViewPortHolder* viewPortHolder)
+	{
+		m_viewPortsHolder = viewPortHolder;
+	}
+	~BasicSculptCommandParams() override {}
+
+	ViewPortHolder* m_viewPortsHolder = nullptr;
+};
+*/
 
 class BasicSculptToolCommand : public Command
 {
 public:
-	BasicSculptToolCommand(ViewPortHolder* viewPortHolder)
-	{
-		m_viewPortHolder = viewPortHolder;
-	}
 
-	void execute()
+	virtual void execute() override
 	{
-
+        
 	}
 
 
@@ -100,8 +109,8 @@ public:
         float minOctreeHitDistance = std::numeric_limits<float>::max();
         HalfEdgeDS::Face* retFace = nullptr;
         Mesh* retMesh = nullptr;
-        
-        for (auto& meshFaceOctree : m_viewPortHolder->m_viewPortLayer->getScene()->m_meshFaceOctreesMap)
+
+        for (auto& meshFaceOctree : ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap)
         {
             const auto& octreeRetData = meshFaceOctree.second.findDataInOctree(ray, octreeAlg);
 
@@ -379,13 +388,13 @@ public:
                 //to znamena ze musim prejst cez vsetky faces daneho vertexu
                 //budem chodit
 
-
-                auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(selectedMesh);
-                if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                /*
+                auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(selectedMesh);
+                if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                     ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                     vaoData.m_points.at(verticesInInsertionOrder.at(currentAdditionVertexIndex)->getHalfEdge()->getVertexIndex()).position = verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition();
                 }
-
+                */
 
                 //selectedMesh->m_meshRenderingData.m_points.at(verticesInInsertionOrder.at(currentAdditionVertexIndex)->getHalfEdge()->getVertexIndex()).position = verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition();
 
@@ -413,13 +422,14 @@ public:
                         const auto& currentEdgeEndingVertex = faceHalfEdgeIt.operator*().getEdge()->getSecondVertex();
 
 
-                        auto meshesShaderIt = m_viewPortHolder->m_meshesShaderData.find(selectedMesh);
-                        if (meshesShaderIt != m_viewPortHolder->m_meshesShaderData.end()) {
+                        /*
+                        auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(selectedMesh);
+                        if (meshesShaderIt != ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
                             ViewPortHolder::MeshRenderingVAOData& vaoData = std::get<2>(meshesShaderIt->second);
                             vaoData.m_edges.at(currentEdgeIndex * 2).point = currentEdgeStartingVertex->getPosition() + (calculatedAverageNormal * 0.005f);
                             vaoData.m_edges.at((currentEdgeIndex * 2) + 1).point = currentEdgeEndingVertex->getPosition() + (calculatedAverageNormal * 0.005f);
                         }
-
+                        */
 
                         //selectedMesh->m_meshRenderingData.m_edges.at(currentEdgeIndex * 2).point = currentEdgeStartingVertex->getPosition() + (calculatedAverageNormal * 0.005f);
                         //selectedMesh->m_meshRenderingData.m_edges.at((currentEdgeIndex * 2) + 1).point = currentEdgeEndingVertex->getPosition() + (calculatedAverageNormal * 0.005f);
@@ -483,7 +493,8 @@ public:
             //std::map <glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
 
              //std::map <Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
-            auto meshFacesOctreeIt = m_viewPortHolder->m_viewPortLayer->getScene()->m_meshesFaceOctreeMap.find(selectedMesh);
+
+            auto meshFacesOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshesFaceOctreeMap.find(selectedMesh);
             for (const auto& octreeDeletedFace : octreeDeletedFaces)
             {
 
@@ -493,9 +504,11 @@ public:
                 {
                     for (const auto& octreeId : faceOctreesIt->second) {
 
-                        auto octreeIdOctreeIt = m_viewPortHolder->m_viewPortLayer->getScene()->m_meshFaceOctreesMap.find(octreeId);
+                        
 
-                        if(octreeIdOctreeIt != m_viewPortHolder->m_viewPortLayer->getScene()->m_meshFaceOctreesMap.end())
+                        auto octreeIdOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.find(octreeId);
+
+                        if(octreeIdOctreeIt != ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.end())
                         {
                             octreeIdOctreeIt->second.removeData(std::make_pair(selectedMesh, octreeDeletedFace));
 						}
@@ -506,7 +519,7 @@ public:
                         }
                         if(octreeIdOctreeIt->second.rootNode->dataCount == 0)
                         {
-                            m_viewPortHolder->m_viewPortLayer->getScene()->m_meshFaceOctreesMap.erase(octreeId); 
+                            ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.erase(octreeId);
                         }
                     }
 
@@ -527,7 +540,7 @@ public:
 
 
 
-                    Scene* scene = m_viewPortHolder->m_viewPortLayer->getScene();
+                    Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
 
 
 
@@ -619,12 +632,6 @@ public:
                 //avsak
                 
 
-
-
-
-
-
-
             }
 
         }
@@ -636,7 +643,4 @@ public:
 	}
 
 	static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
-
-private:
-	ViewPortHolder* m_viewPortHolder;
 };

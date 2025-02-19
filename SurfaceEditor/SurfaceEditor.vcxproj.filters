@@ -69,7 +69,7 @@
     <ClInclude Include="src\GeometryAlgorithms\TriangleTriangulator.h" />
     <ClInclude Include="src\Patterns\Observer.h" />
     <ClInclude Include="src\Callbacks\Callback.h" />
-    <ClInclude Include="src\ViewPortHolder.h" />
+    <ClInclude Include="src\ViewPortsHolder.h" />
     <ClInclude Include="src\Callbacks\AddPlaneCallback.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
     <ClInclude Include="src\Commands\CommandRegistry.h" />
@@ -88,8 +88,6 @@
     <ClInclude Include="src\Callbacks\VertexModeChangeCallBack.h" />
     <ClInclude Include="src\Commands\BasicSculptToolCommand.h" />
     <ClInclude Include="src\Gui\TransformLayer.h" />
-    <ClInclude Include="src\Callbacks\ObjectTransformCallBack.h" />
-    <ClInclude Include="src\Commands\ObjectTransformationCommand.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformAddPlaneCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformSelectMeshCallBack.h" />
     <ClInclude Include="src\Commands\TransformMeshCommand.h" />
@@ -117,7 +115,11 @@
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\NumberUtils.h" />
     <ClInclude Include="src\Scene\Camera.h" />
-    <ClInclude Include="src\Scene\ViewPortShaderSettings.h" />
+    <ClInclude Include="src\Scene\ViewPortLayerRenderSettings.h" />
+    <ClInclude Include="src\Commands\CmdProperties\CmdProperties.h" />
+    <ClInclude Include="src\Commands\VertexModeChangeCommand.h" />
+    <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />
+    <ClInclude Include="src\Scene\SceneRendererData.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

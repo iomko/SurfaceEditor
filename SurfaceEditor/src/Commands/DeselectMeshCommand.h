@@ -1,24 +1,16 @@
 #pragma once
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
-#include "../ViewPortHolder.h"
+#include "../ViewPortsHolder.h"
 
-class DeselectMeshCommand : public Observable, public Command
-{
+class DeselectMeshCommand : public Observable, public Command {
 public:
-    DeselectMeshCommand(ViewPortHolder* viewPortHolder)
-    {
-        addObserver(viewPortHolder);
-    }
+	virtual void execute() override {
+		notifyObservers();
+	}
 
-    void execute() override
-    {
-        notifyObservers();
-    }
-    void undo() override
-    {
+	void undo() override {
+	}
 
-    }
-
-    static constexpr std::string_view getCommandName() noexcept { return "DeselectMeshCommand"; }
+	static constexpr std::string_view getCommandName() noexcept { return "DeselectMeshCommand"; }
 };

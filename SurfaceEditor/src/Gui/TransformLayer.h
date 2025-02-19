@@ -9,6 +9,7 @@
 #include "../Commands/TransformMeshCommand.h"
 #include "../Core/Layer.h"
 
+/*
 class TransformLayer : public Layer, public Observer {
 public:
 
@@ -182,3 +183,5 @@ public:
     std::map<Mesh*, TransformationSettings> m_meshSettings;
     Mesh* m_lastSelectedMesh = nullptr;
 };
+
+*/
