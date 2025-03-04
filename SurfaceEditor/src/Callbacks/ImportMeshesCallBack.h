@@ -22,16 +22,18 @@ public:
 			
 			createMeshRenderingData(castedCmdParams, importedMesh);
 
-			scene->m_meshesFaceOctreeMap.find(importedMesh);
-			auto meshesFaceOctreeIt = scene->m_meshesFaceOctreeMap.find(importedMesh);
+			scene->meshFaceOctreeCoordsMap.find(importedMesh);
+			auto meshesFaceOctreeIt = scene->meshFaceOctreeCoordsMap.find(importedMesh);
 
-			if (meshesFaceOctreeIt == scene->m_meshesFaceOctreeMap.end()) {
-				auto& faceOctreesMap = scene->m_meshesFaceOctreeMap[importedMesh];
+			if (meshesFaceOctreeIt == scene->meshFaceOctreeCoordsMap.end()) {
+				auto& faceOctreesMap = scene->meshFaceOctreeCoordsMap[importedMesh];
 
 
-				for (auto faceIter = importedMesh->m_halfEdgeMesh->faceIterBegin(); faceIter != importedMesh->m_halfEdgeMesh->faceIterEnd(); ++faceIter)
+				for (auto faceIter = importedMesh->m_halfEdgeStructure->faceIterBegin(); faceIter != importedMesh->m_halfEdgeStructure->faceIterEnd(); ++faceIter)
 				{
-					auto& faceVerts = importedMesh->m_halfEdgeMesh->getVerticesFromFace(faceIter);
+					std::vector<HalfEdgeDS::Vertex> faceVerts;
+					importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter, faceVerts);
+					//auto& faceVerts = importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter);
 					AABBBoundingRegion faceBounds(
 						faceVerts.begin(),
 						faceVerts.end(),
@@ -58,8 +60,9 @@ public:
 							{
 								glm::vec3 currentIndexBound = { x,y,z };
 								//teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
-								auto it = scene->m_meshFaceOctreesMap.find(currentIndexBound);
-								if (it != scene->m_meshFaceOctreesMap.end())
+
+								auto it = scene->coordsOctreeMap.find(currentIndexBound);
+								if (it != scene->coordsOctreeMap.end())
 								{
 									//existuje octree s tymto indexom
 									it->second.addDataToOctree(std::make_pair(importedMesh, &(*faceIter)), faceBounds);
@@ -70,7 +73,7 @@ public:
 									//SceneUtilities::calculateOctreeBounds()
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
-									auto addedOctree = scene->m_meshFaceOctreesMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+									auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
 									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, &(*faceIter)), faceBounds);
 
@@ -116,7 +119,7 @@ private:
 
 
 		//edges
-		for (auto& edge : mesh->m_halfEdgeMesh->m_edges)
+		for (auto& edge : mesh->m_halfEdgeStructure->m_edges)
 		{
 			glm::vec3 startPoint = (*edge.getFirstVertex()).getPosition();
 			//startPoint.y += 0.005f;
@@ -132,7 +135,7 @@ private:
 		}
 
 		//vertices
-		for (auto& vertex : mesh->m_halfEdgeMesh->m_vertices)
+		for (auto& vertex : mesh->m_halfEdgeStructure->m_vertices)
 		{
 			vaoData.m_points.push_back({ vertex.getPosition(), false });
 		}

@@ -4,6 +4,9 @@
 #include "../Commands/CommandRegistry.h"
 
 #include "../ViewPortsHolder.h"
+#include "../Callbacks/InitMeshVaoDataCallBack.h"
+#include "../Callbacks/AddMeshIntoSceneCallBack.h"
+#include "../Commands/CmdProperties/CmdProperties.h"
 
 #include <random>
 
@@ -13,84 +16,19 @@ public:
 	virtual void execute(const Params& cmdParams) override
 	{
 		const AddPlaneParams& castedCmdParams = static_cast<const AddPlaneParams&>(cmdParams);
-
 		Mesh* mesh = createPlaneVertexData(castedCmdParams);
-		//createPlaneRenderingData(mesh, castedCmdParams);
+		m_addedPlane = mesh;
 
-		AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
+		//CALL CALLBACK TO CREATE VAO DATA FO NEWLY ADDED MESH
+		//ZAVOLAJ CALLBACK NA VYTVORENIE VAO DAT PRE NOVO PRIDANY MESH
+		InitMeshVaoDataCallBack initMeshVaoDataCallBack;
+		MeshParams meshParams;
+		meshParams.m_mesh = mesh; //VYTVOR PARAMETRE KTORE BUDU POSLANE DO CALLBACKU
+		initMeshVaoDataCallBack.execute(meshParams); //ZAVOLANIE CALLBACKU NA VYTVORENIE VAO DAT
 
-		//nejako musim ziskat tento viewPortHolder
-		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
-
-
-		scene->m_meshesFaceOctreeMap.find(mesh);
-		auto meshesFaceOctreeIt = scene->m_meshesFaceOctreeMap.find(mesh);
-
-		if (meshesFaceOctreeIt == scene->m_meshesFaceOctreeMap.end()) {
-			auto& faceOctreesMap = scene->m_meshesFaceOctreeMap[mesh];
-
-
-			for (auto faceIter = mesh->m_halfEdgeMesh->faceIterBegin(); faceIter != mesh->m_halfEdgeMesh->faceIterEnd(); ++faceIter)
-			{
-				auto& faceVerts = mesh->m_halfEdgeMesh->getVerticesFromFace(faceIter);
-				AABBBoundingRegion faceBounds(
-					faceVerts.begin(),
-					faceVerts.end(),
-					[](HalfEdgeDS::Vertex& p) { return p.getPosition().x; },
-					[](HalfEdgeDS::Vertex& p) { return p.getPosition().y; },
-					[](HalfEdgeDS::Vertex& p) { return p.getPosition().z; }
-				);
-
-				//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
-
-				//calculate the X,Y,Z for MinBound
-
-
-				//glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(scene->voxelSize, faceBounds.getMin());
-				glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(faceBounds.getMin(), scene);
-				glm::vec3 voxelIndexMaxBound = SceneUtilities::getVoxelIndex(faceBounds.getMax(), scene);
-
-
-				for (int x = voxelIndexMinBound.x; x <= voxelIndexMaxBound.x; ++x)
-				{
-					for (int y = voxelIndexMinBound.y; y <= voxelIndexMaxBound.y; ++y)
-					{
-						for (int z = voxelIndexMinBound.z; z <= voxelIndexMaxBound.z; ++z)
-						{
-							glm::vec3 currentIndexBound = { x,y,z };
-							//teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
-							auto it = scene->m_meshFaceOctreesMap.find(currentIndexBound);
-							if (it != scene->m_meshFaceOctreesMap.end())
-							{
-								//existuje octree s tymto indexom
-								it->second.addDataToOctree(std::make_pair(mesh, &(*faceIter)), faceBounds);
-
-							}
-							else
-							{
-								//SceneUtilities::calculateOctreeBounds()
-								//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
-								auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
-								auto addedOctree = scene->m_meshFaceOctreesMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
-								//neexistuje octree s tymto indexom
-								addedOctree->second.addDataToOctree(std::make_pair(mesh, &(*faceIter)), faceBounds);
-
-							}
-
-							HalfEdgeDS::Face* facePointer = &(*faceIter);
-							glm::vec3 octreeIndex = currentIndexBound;
-							// Now add the entry to the inner map
-							faceOctreesMap[facePointer].push_back(octreeIndex);
-						}
-					}
-				}
-
-
-			}
-
-			m_addedPlane = mesh;
-		}
-
+		//CALL CALLBACK TO ADD NEWLY ADDED MESH INTO SCENE
+		AddMeshIntoSceneCallBack addMeshIntoSceneCallBack;
+		addMeshIntoSceneCallBack.execute(meshParams);
 	}
 private:
 
@@ -147,52 +85,6 @@ private:
 		mesh->m_meshID = std::to_string(ViewPortsHolderContext::m_viewPortsHolder->m_currentMeshId);
 		return mesh;
 	}
-
-	/*
-	void createPlaneRenderingData(Mesh* mesh, const AddPlaneParams& cmdParams)
-	{
-		
-		auto meshesShaderIt = ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.find(mesh);
-
-		ViewPortHolder::MeshRenderingFlags flags{ true, true, true, true };
-
-
-		
-
-		ViewPortHolder::MeshRenderingShaderData shaderData(*ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_pointsShader, *ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_linesShader,
-			*ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_normalsShader, *ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_meshShader);
-
-		ViewPortHolder::MeshRenderingVAOData vaoData;
-
-
-		//edges
-		for (auto& edge : mesh->m_halfEdgeMesh->m_edges)
-		{
-			glm::vec3 startPoint = (*edge.getFirstVertex()).getPosition();
-			startPoint.y += 0.005f;
-			glm::vec3 endPoint = (*edge.getSecondVertex()).getPosition();
-			endPoint.y += 0.005f;
-
-
-			if (meshesShaderIt == ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end()) {
-				vaoData.m_edges.push_back({ startPoint, false });
-				vaoData.m_edges.push_back({ endPoint, false });
-			}
-
-		}
-
-		//vertices
-		for (auto& vertex : mesh->m_halfEdgeMesh->m_vertices)
-		{
-			vaoData.m_points.push_back({ vertex.getPosition(), false });
-		}
-
-		if (meshesShaderIt == ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.end())
-		{
-			ViewPortsHolderContext::m_viewPortsHolder->m_meshesShaderData.emplace(mesh, std::make_tuple(flags, shaderData, vaoData));
-		}
-	}
-	*/
 
 public:
 	Mesh* m_addedPlane = nullptr;

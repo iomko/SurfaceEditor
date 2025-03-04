@@ -4,38 +4,24 @@
 
 #include "../Patterns/command.h"
 #include "../ViewPortsHolder.h"
-
-/*
-class BasicSculptCommandParams : public Params {
-
-	BasicSculptCommandParams(ViewPortHolder* viewPortHolder)
-	{
-		m_viewPortsHolder = viewPortHolder;
-	}
-	~BasicSculptCommandParams() override {}
-
-	ViewPortHolder* m_viewPortsHolder = nullptr;
-};
-*/
+#include "../Callbacks/SelectFaceCallBack.h"
 
 class BasicSculptToolCommand : public Command
 {
 public:
 
-	virtual void execute() override
-	{
-        
-	}
+    virtual void execute() override
+    {
 
+    }
 
     glm::vec3 computeAverageNormal(const std::vector<glm::vec3>& normals) {
         glm::vec3 sum(0.0f);
-        float size = normals.size();  // Casting to float here
+        float size = normals.size();
         for (const auto& normal : normals) {
             sum += normal;
         }
 
-        // Compute the average
         glm::vec3 averageNormal = sum / size;
 
         return glm::normalize(averageNormal);
@@ -47,92 +33,28 @@ public:
         return std::make_pair(isInside, distance);
     }
 
-    /*
-    float calculateBrushScalingFactor(float distance, float radius, float brushStrength) {
-        float scalingFactor = 1.0f / (1.0f + distance / radius);
-        scalingFactor *= brushStrength;
-        return scalingFactor;
-    }
-    */
-
     float logarithmicInterpolation(float edge0, float edge1, float x) {
         // Scale, bias and saturate x to 0..1 range
         x = std::max(0.0f, std::min((x - edge0) / (edge1 - edge0), 1.0f));
-        // Evaluate logarithmic function
         return log(x * (exp(1) - 1) + 1) / log(exp(1));
     }
 
     float smoothstep(float edge0, float edge1, float x) {
         // Scale, bias and saturate x to 0..1 range
         x = std::max(0.0f, std::min((x - edge0) / (edge1 - edge0), 1.0f));
-        // Evaluate polynomial
         return x * x * (3 - 2 * x);
         //return x * x * x * (x * (x * 6 - 15) + 10);
     }
 
-
     float calculateBrushScalingFactor(float distance, float radius, float brushStrength) {
-        float t = 1.0f - (distance / radius); // Map distance to [0, 1] range
-        t = std::clamp(t, 0.0f, 1.0f); // Ensure t stays within [0, 1]
+        float t = 1.0f - (distance / radius);
+        t = std::clamp(t, 0.0f, 1.0f);
 
-        float scalingFactor = smoothstep(0.0f, 1.0f, t); // Use smoothstep for interpolation
+        float scalingFactor = smoothstep(0.0f, 1.0f, t);
         scalingFactor *= brushStrength;
-        
+
         return scalingFactor;
     }
-
-    const std::pair<std::pair<Mesh*, HalfEdgeDS::Face*>, glm::vec3>& selectFace(const Ray& ray)
-    {
-        const auto& octreeAlg = [](const std::pair<Mesh*, HalfEdgeDS::Face*>& faceMeshPair, const Ray& ray)->std::pair<bool, float>
-            {
-                size_t faceIndex = std::distance(faceMeshPair.first->getMeshData()->m_faces.begin(), faceMeshPair.second->getHalfEdge()->getFace());
-                size_t faceStartIndex = faceMeshPair.first->m_facesData.at(faceIndex).startIndex;
-                size_t faceEndIndex = faceMeshPair.first->m_facesData.at(faceIndex).endIndex;
-                for (int i = faceStartIndex; i < faceEndIndex; i += 3)
-                {
-                    //musime vytvorit trojuholniky
-                    const auto& firstVertex = faceMeshPair.first->m_combinedVertexDataMatVector.m_vertexData.at(i).position;
-                    const auto& secondVertex = faceMeshPair.first->m_combinedVertexDataMatVector.m_vertexData.at(i + 1).position;
-                    const auto& thirdVertex = faceMeshPair.first->m_combinedVertexDataMatVector.m_vertexData.at(i + 2).position;
-
-                    float amountToBeMultiplied;
-
-                    if(Ray::intersectsTriangle(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, amountToBeMultiplied))
-                    {
-                        return std::make_pair(true, amountToBeMultiplied);
-                    }
-
-                }
-                return std::make_pair(false, -1.0f);
-            };
-
-        float minOctreeHitDistance = std::numeric_limits<float>::max();
-        HalfEdgeDS::Face* retFace = nullptr;
-        Mesh* retMesh = nullptr;
-
-        for (auto& meshFaceOctree : ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap)
-        {
-            const auto& octreeRetData = meshFaceOctree.second.findDataInOctree(ray, octreeAlg);
-
-            const auto& octreeNode = std::get<0>(octreeRetData);
-            const auto& mesh = std::get<1>(octreeRetData).first;
-            const auto& face = std::get<1>(octreeRetData).second;
-            const auto& distance = std::get<2>(octreeRetData);
-
-            if (octreeNode != nullptr)
-            {
-                if (distance < minOctreeHitDistance)
-                {
-                    retMesh = mesh;
-                    retFace = face;
-                    minOctreeHitDistance = distance;
-                }
-            }
-        }
-        return std::make_pair(std::make_pair(retMesh, retFace), ray.origin + (glm::normalize(ray.direction) * minOctreeHitDistance));
-    }
-
-
 
     std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> accessNeighbouringVertsAndFacesOfVertex(HalfEdgeDS::Vertex* vertex)
     {
@@ -254,7 +176,7 @@ public:
         return std::make_pair(returnedVerticesIndices, returnedFacesIndices);
     }
 
-
+    /*
     glm::vec3 calculate3DNormalOfHalfEdgeTriangleFace(HalfEdgeDS::Face* face)
     {
         HalfEdgeDS::HalfEdge firstHalfEdge = *face->getHalfEdge();
@@ -273,19 +195,41 @@ public:
         // Normalize the normal vector
         return glm::normalize(normal);
     }
-    
+    */
+
     void applyBrush(Ray& ray, float brushRadius, float brushStrength)
     {
+        SelectFaceParamsIn selectFaceParamsIn;
+        selectFaceParamsIn.ray = ray;
+        SelectFaceParamsOut selectFaceParamsOut;
 
-        auto& selectedFaceHitPointPair = selectFace(ray);
+        SelectFaceCallBack selectFaceCallBack;
+        selectFaceCallBack.execute(selectFaceParamsIn, selectFaceParamsOut);
 
-        if (selectedFaceHitPointPair.first.second != nullptr)
+        glm::vec3 retHitPoint = selectFaceParamsOut.hitPoint;
+        HalfEdgeDS::Face* retFace = selectFaceParamsOut.face;
+        Mesh* retMesh = selectFaceParamsOut.mesh;
+
+
+        if (retFace != nullptr)
         {
             //tak vieme ze sme hitli face
+            Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
 
+            const auto& selectedFace = retFace;
+            Mesh* selectedMesh = retMesh;
 
-            const auto& selectedFace = selectedFaceHitPointPair.first.second;
-            Mesh* selectedMesh = selectedFaceHitPointPair.first.first;
+            //---SCENERENDERERDATA---
+			SceneRendererData::MeshFacesMap& meshFaceMap = scene->m_rendererData.meshData.meshFacesMap;
+			SceneRendererData::MeshFacesMap::iterator meshFacesMapIt = meshFaceMap.find(selectedMesh);
+            SceneRendererData::FaceInfoMap& faceInfoMap = meshFacesMapIt->second;
+
+            //VAO
+            SceneRendererData::MeshVaoDataMap& meshVaoDataMap = scene->m_rendererData.meshData.meshVaoDataMap;
+            SceneRendererData::MeshVaoDataMap::iterator meshVaoDataMapIt = meshVaoDataMap.find(selectedMesh);
+            SceneRendererData::MaterialVertexMap& materialVertexMap = meshVaoDataMapIt->second;
+            //---SCENERENDERERDATA---
+
 
             //musime ist cez vsetky vertices danej faci
             auto faceVertexBegin = selectedFace->faceVertexBegin();
@@ -296,7 +240,7 @@ public:
             HalfEdgeDS::Vertex* closestVertex = nullptr;
             for (auto faceVertexIt = faceVertexBegin; faceVertexIt != faceVertexEnd; ++faceVertexIt)
             {
-                const auto& currentVertexDistance = glm::distance(faceVertexIt.operator*().getPosition(), selectedFaceHitPointPair.second);
+                const auto& currentVertexDistance = glm::distance(faceVertexIt.operator*().getPosition(), retHitPoint);
                 if (currentVertexDistance < minVertexDistance)
                 {
                     minVertexDistance = currentVertexDistance;
@@ -305,16 +249,26 @@ public:
             }
             //nasli sme najblizsi bod a teraz si musime vypocitat normalu ktoru budeme pouzivat, musime tak prejst cez vsetky faces daneho vertexu
 
-            
+
             std::pair<std::vector<HalfEdgeDS::VertexIndex>, std::vector<HalfEdgeDS::FaceIndex>> accessedNeighboringFacesAndVerts = accessNeighbouringVertsAndFacesOfVertex(closestVertex);
 
             //pridaj si normaly jednotlivych facov do vektora
             std::vector<glm::vec3> neighbouringFacesNormals;
             for (const auto& accessedFace : accessedNeighboringFacesAndVerts.second)
             {
-                HalfEdgeDS::FaceIndex faceIndex = accessedFace;
-                //size_t faceIndex = std::distance(selectedMesh->getMeshData()->faceIterBegin(), accessedFace->getHalfEdge()->getFace());
-                neighbouringFacesNormals.push_back(selectedMesh->m_facesData.at(faceIndex).normal);
+                //HalfEdgeDS::FaceIndex faceIndex = accessedFace;
+                //size_t faceIndex = std::distance(selectedMesh->getHalfEdgeStructure()->faceIterBegin(), accessedFace->getHalfEdge()->getFace());
+
+                //tuto na to aby sme mohli accessnut FaceInfo, tak potrebujeme mat k dispozicii Mesh
+                //nasledne mat k dispozicii aj Face*
+                HalfEdgeDS::Face* face = &selectedMesh->m_halfEdgeStructure->m_faces.at(accessedFace);
+
+                SceneRendererData::FaceInfoMap::iterator faceInfoMapIt = faceInfoMap.find(face->getHalfEdge().operator*().getFaceIndex());
+                SceneRendererData::FaceInfo faceInfo = faceInfoMapIt->second;
+
+                neighbouringFacesNormals.push_back(faceInfo.normal);
+
+                //neighbouringFacesNormals.push_back(selectedMesh->m_facesData.at(faceIndex).normal);
             }
 
             //musime vypocitat ich average normalu
@@ -325,7 +279,7 @@ public:
 
             //teraz si zoberem poziciu vektora closesVertex
             //a na nom vytvorim virtualnu gulu, pricom jej polomer je specifikovany a taktiez aj sila brushe
-            const auto& sphereCenter = selectedFaceHitPointPair.second;
+            const auto& sphereCenter = retHitPoint;
             const auto& sphereRadius = brushRadius;
 
 
@@ -352,8 +306,8 @@ public:
 
             std::set<HalfEdgeDS::Face*> octreeDeletedFaces;
 
-            
-            while((currentAdditionVertexIndex <= (verticesInInsertionOrder.size() - 1)) && (!verticesInInsertionOrder.empty()))
+
+            while ((currentAdditionVertexIndex <= (verticesInInsertionOrder.size() - 1)) && (!verticesInInsertionOrder.empty()))
             {
                 //to znamena ze musim s nou pohnut
                 intersectionAmountPair = isPointInsideSphere(verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition(), sphereCenter, sphereRadius);
@@ -373,12 +327,12 @@ public:
 
                 for (auto& accessedVertex : accessedNeighboringFacesAndVerts.first)
                 {
-                    
-                    intersectionAmountPair = isPointInsideSphere(selectedMesh->getMeshData()->m_vertices.at(accessedVertex).getPosition(), sphereCenter, sphereRadius);
+
+                    intersectionAmountPair = isPointInsideSphere(selectedMesh->getHalfEdgeStructure()->m_vertices.at(accessedVertex).getPosition(), sphereCenter, sphereRadius);
                     if (intersectionAmountPair.first)
                     {
-                        if (uniqueSetOfVertices.insert(&selectedMesh->getMeshData()->m_vertices.at(accessedVertex)).second) {
-                            verticesInInsertionOrder.push_back(&selectedMesh->getMeshData()->m_vertices.at(accessedVertex));
+                        if (uniqueSetOfVertices.insert(&selectedMesh->getHalfEdgeStructure()->m_vertices.at(accessedVertex)).second) {
+                            verticesInInsertionOrder.push_back(&selectedMesh->getHalfEdgeStructure()->m_vertices.at(accessedVertex));
                         }
                     }
                 }
@@ -400,20 +354,20 @@ public:
 
                 for (const auto& accessedFace : accessedNeighboringFacesAndVerts.second)
                 {
-                    octreeDeletedFaces.insert(&selectedMesh->getMeshData()->m_faces.at(accessedFace));
+                    octreeDeletedFaces.insert(&selectedMesh->getHalfEdgeStructure()->m_faces.at(accessedFace));
 
                     //musim aktualizovat aj edges a zatial to urobim jednoducho a to takym sposobom ze prejdem cez vsetky edges danej face a updatnim ich
                     //avsak chcelo by to prechadzat len cez tie ktore su susedmi s prave vybranym vertexom
 
-                    auto faceHalfEdgeBegin = selectedMesh->getMeshData()->m_faces.at(accessedFace).faceHalfEdgeBegin();
-                    auto faceHalfEdgeEnd = selectedMesh->getMeshData()->m_faces.at(accessedFace).faceHalfEdgeEnd();
+                    auto faceHalfEdgeBegin = selectedMesh->getHalfEdgeStructure()->m_faces.at(accessedFace).faceHalfEdgeBegin();
+                    auto faceHalfEdgeEnd = selectedMesh->getHalfEdgeStructure()->m_faces.at(accessedFace).faceHalfEdgeEnd();
 
 
 
                     //musime prechadzat cez vsetky halfEdges danej faci
                     for (auto faceHalfEdgeIt = faceHalfEdgeBegin; faceHalfEdgeIt != faceHalfEdgeEnd; ++faceHalfEdgeIt) {
                         // Access the vertex using the iterator
-                        
+
 
                         auto currentEdgeIndex = faceHalfEdgeIt.operator*().getEdgeIndex();
 
@@ -440,8 +394,8 @@ public:
 
 
                     //cheme updatnut vertices
-                    //faceVertexBegin = selectedMesh->getMeshData()->m_faces.at(accessedFace).faceVertexBegin();
-                    //faceVertexEnd = selectedMesh->getMeshData()->m_faces.at(accessedFace).faceVertexEnd();
+                    //faceVertexBegin = selectedMesh->getHalfEdgeStructure()->m_faces.at(accessedFace).faceVertexBegin();
+                    //faceVertexEnd = selectedMesh->getHalfEdgeStructure()->m_faces.at(accessedFace).faceVertexEnd();
 
                     //zbytovne ideme cez vsetky vertices
 
@@ -450,41 +404,62 @@ public:
 
                     //musim teraz prechadzat cez dane faces a najst vertex ktora by sa rovnala vertexPositionBeforeChange
                     //musim si najst zaciatocny IndexFaci a konecny IndexFaci
-                    const auto& faceStartIndex = selectedMesh->m_facesData.at(accessedFace).startIndex;
-                    const auto& faceEndIndex = selectedMesh->m_facesData.at(accessedFace).endIndex;
+
+                    
+                    //tuto musim proste len ziskat faceInfo pre dany accessedFace, to je vsetko
+                    HalfEdgeDS::Face* face = &selectedMesh->m_halfEdgeStructure->m_faces.at(accessedFace);
+					SceneRendererData::FaceInfoMap::iterator faceInfoMapIt = faceInfoMap.find(face->getHalfEdge().operator*().getFaceIndex());
+					SceneRendererData::FaceInfo& faceInfo = faceInfoMapIt->second;
+                    
+                    
                     //new calculated faceNormal
-                    glm::vec3 newCalculatedFaceNormal = calculate3DNormalOfHalfEdgeTriangleFace(&selectedMesh->getMeshData()->m_faces.at(accessedFace));
+                    glm::vec3 newCalculatedFaceNormal = PolygonOperations::computeFaceNormal(face);
                     //updatnut tuto normalu jednak pre VAO vektory ale aj pre facesData v Meshi
-                    selectedMesh->m_facesData.at(accessedFace).normal = newCalculatedFaceNormal;
+                    faceInfo.normal = newCalculatedFaceNormal;
 
-
-
+					const auto& faceStartIndex = faceInfo.startIndex;
+					const auto& faceEndIndex = faceInfo.endIndex;
                     for (int currentFaceIndex = faceStartIndex; currentFaceIndex <= faceEndIndex; ++currentFaceIndex)
                     {
-                        const auto& material = selectedMesh->m_combinedVertexDataMatVector.m_materialIDIndexMap.at(currentFaceIndex).material;
-                        const auto& indexInMaterial = selectedMesh->m_combinedVertexDataMatVector.m_materialIDIndexMap.at(currentFaceIndex).index;
 
+                        //const auto& material = selectedMesh->m_combinedVertexDataMatVector.m_materialIDIndexMap.at(currentFaceIndex).material;
+                        //const auto& indexInMaterial = selectedMesh->m_combinedVertexDataMatVector.m_materialIDIndexMap.at(currentFaceIndex).index;
+
+                        //updatnut faceNormal aj vo VAO datach
+                        SceneRendererData::MaterialVertexMap::iterator materialVertexMapIt = materialVertexMap.find(faceInfo.material);
+                        std::vector<MeshVertex>& materialVertexVector = materialVertexMapIt->second;
+
+                        materialVertexVector.at(currentFaceIndex).normal = newCalculatedFaceNormal;
+
+
+                        if(materialVertexVector.at(currentFaceIndex).position == vertexPositionBeforeChange)
+                        {
+                            materialVertexVector.at(currentFaceIndex).position = verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition();
+                        }
+
+                        //a teraz musim aj aktualizovat jednotlive positions
 
 
                         //aj normalu pre combined vector
-                        selectedMesh->m_combinedVertexDataMatVector.m_vertexData.at(currentFaceIndex).normal = newCalculatedFaceNormal;
+                        //selectedMesh->m_combinedVertexDataMatVector.m_vertexData.at(currentFaceIndex).normal = newCalculatedFaceNormal;
                         //normal taktiez pre material vector
-                        selectedMesh->m_materialIDVertexDataMap.at(material).m_vertexData.at(indexInMaterial).normal = newCalculatedFaceNormal;
+                        //selectedMesh->m_materialIDVertexDataMap.at(material).m_vertexData.at(indexInMaterial).normal = newCalculatedFaceNormal;
 
-
+                        /*
                         if (selectedMesh->m_combinedVertexDataMatVector.m_vertexData.at(currentFaceIndex).position == vertexPositionBeforeChange)
                         {
                             selectedMesh->m_combinedVertexDataMatVector.m_vertexData.at(currentFaceIndex).position = verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition();
                             selectedMesh->m_materialIDVertexDataMap.at(material).m_vertexData.at(indexInMaterial).position = verticesInInsertionOrder.at(currentAdditionVertexIndex)->getPosition();
 
-                        } 
+                        }
+                        */
                     }
 
                 }
-                
+
                 //pridat dalsie
                 ++currentAdditionVertexIndex;
-                
+
             }
 
             //vymazanie z octree
@@ -494,32 +469,30 @@ public:
 
              //std::map <Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
 
-            auto meshFacesOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshesFaceOctreeMap.find(selectedMesh);
+            auto meshFacesOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->meshFaceOctreeCoordsMap.find(selectedMesh);
             for (const auto& octreeDeletedFace : octreeDeletedFaces)
             {
 
                 auto faceOctreesIt = meshFacesOctreeIt->second.find(octreeDeletedFace);
-                
-                if(faceOctreesIt != meshFacesOctreeIt->second.end())
+
+                if (faceOctreesIt != meshFacesOctreeIt->second.end())
                 {
                     for (const auto& octreeId : faceOctreesIt->second) {
 
-                        
+                        auto octreeIdOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->coordsOctreeMap.find(octreeId);
 
-                        auto octreeIdOctreeIt = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.find(octreeId);
-
-                        if(octreeIdOctreeIt != ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.end())
+                        if (octreeIdOctreeIt != ViewPortsHolderContext::m_viewPortsHolder->m_scene->coordsOctreeMap.end())
                         {
                             octreeIdOctreeIt->second.removeData(std::make_pair(selectedMesh, octreeDeletedFace));
-						}
+                        }
                         //po tom co som vymazal tuto facu, sa musim taktiez pozriet ci je dany octree prazdny, lebo ak je tak ho vymazem aj z tej mapy
-                        if(octreeIdOctreeIt->second.rootNode == nullptr)
+                        if (octreeIdOctreeIt->second.rootNode == nullptr)
                         {
                             std::cout << "NULLPTR" << std::endl;
                         }
-                        if(octreeIdOctreeIt->second.rootNode->dataCount == 0)
+                        if (octreeIdOctreeIt->second.rootNode->dataCount == 0)
                         {
-                            ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.erase(octreeId);
+                            ViewPortsHolderContext::m_viewPortsHolder->m_scene->coordsOctreeMap.erase(octreeId);
                         }
                     }
 
@@ -530,9 +503,9 @@ public:
 
 
                     //std::map <Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
-                	//std::map <glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
+                    //std::map <glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
 
-                    
+
 
 
                     //pridanie naspat
@@ -544,9 +517,13 @@ public:
 
 
 
-					//potrebujem ziskat boundind box daneho facu
+                    //potrebujem ziskat boundind box daneho facu
 
-                    auto& faceVerts = selectedMesh->m_halfEdgeMesh->getVerticesFromFace(octreeDeletedFace->getHalfEdge()->getFace());
+                    
+
+					std::vector<HalfEdgeDS::Vertex> faceVerts;
+                    selectedMesh->m_halfEdgeStructure->getVerticesFromFace(octreeDeletedFace->getHalfEdge()->getFace(), faceVerts);
+                    //auto& faceVerts = selectedMesh->m_halfEdgeStructure->getVerticesFromFace(octreeDeletedFace->getHalfEdge()->getFace());
                     AABBBoundingRegion faceBounds(
                         faceVerts.begin(),
                         faceVerts.end(),
@@ -577,8 +554,8 @@ public:
                             {
                                 glm::vec3 currentIndexBound = { x,y,z };
                                 //teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
-                                auto it = scene->m_meshFaceOctreesMap.find(currentIndexBound);
-                                if (it != scene->m_meshFaceOctreesMap.end())
+                                auto it = scene->coordsOctreeMap.find(currentIndexBound);
+                                if (it != scene->coordsOctreeMap.end())
                                 {
                                     //existuje octree s tymto indexom
                                     it->second.addDataToOctree(std::make_pair(selectedMesh, &(*octreeDeletedFace)), faceBounds);
@@ -589,7 +566,7 @@ public:
                                     //SceneUtilities::calculateOctreeBounds()
                                     //auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
                                     auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
-                                    auto addedOctree = scene->m_meshFaceOctreesMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+                                    auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
                                     //neexistuje octree s tymto indexom
                                     addedOctree->second.addDataToOctree(std::make_pair(selectedMesh, &(*octreeDeletedFace)), faceBounds);
 
@@ -601,17 +578,6 @@ public:
                         }
                     }
 
-
-                        
-
-
-                    
-
-
-
-
-
-
                     //vymazat std::vector octrees
 
                     //najskor v druhej mape
@@ -619,28 +585,23 @@ public:
 
                     //to ale znamena vymazat tento zaznam aj v druhej std::map
 
-
-
-
-
-				}
+                }
 
 
                 //teraz som vymazal danu facu v daneho octree
                 //teraz ju potrebujem znovu pridat
 
                 //avsak
-                
 
             }
 
         }
     }
 
-	void undo()
-	{
-		
-	}
+    void undo()
+    {
 
-	static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
+    }
+
+    static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
 };

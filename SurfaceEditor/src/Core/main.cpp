@@ -1,3 +1,7 @@
+#define NOMINMAX  // Prevents Windows.h from defining min/max macros
+#include <Windows.h>
+#include <limits>
+
 #include <iostream>
 #include <vector>
 #include "../Core/Window.h"
@@ -18,7 +22,6 @@ import Renderer.Shader;
 import Renderer.Buffers;
 import DataStructures;
 //import LayerSystem.Layer.ImGuiLayer;
-import Scene;
 //import Patterns.Observer;
 
 
@@ -51,7 +54,6 @@ Ray getCameraRay(const glm::vec3& cameraPosition, const glm::vec3& cameraFrontVe
 #include "../Callbacks/DeselectMeshCallBack.h"
 
 #include "../Commands/SelectFaceCommand.h"
-#include "../Callbacks/SelectionCallBacks/SelectFaceCallBack.h"
 
 #include "../Commands/SelectVertexCommand.h"
 #include "../Callbacks/SelectionCallBacks/SelectVertexCallBack.h"
@@ -123,7 +125,7 @@ int main()
 
 
 	//access
-	//scene.accessNeighbouringVertsAndFacesOfVertex(&mesh->m_halfEdgeMesh->m_vertices.at(0));
+	//scene.accessNeighbouringVertsAndFacesOfVertex(&mesh->m_halfEdgeStructure->m_vertices.at(0));
 
 
 	//ToolBarLayer toolBarLayer(ToolBarLayer("ToolBarLayer"));
@@ -181,8 +183,6 @@ int main()
 	AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
 	
 	AddPlaneCallback addPlaneCallBack;
-	//viewPortHolder->observe(addPlaneCommand, &addPlaneCallBack);
-
 	addPlaneCommand->addObserver(&addPlaneCallBack);
 	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
 
@@ -254,7 +254,9 @@ int main()
 
 	scene.m_rendererData.aabbData.clearAABBData();
 
-	for (auto& entry : scene.m_meshFaceOctreesMap) {
+
+
+	for (auto& entry : scene.coordsOctreeMap) {
 		const glm::vec3& key = entry.first;
 		Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 		for (auto& octreeNode : octree) {
@@ -352,8 +354,7 @@ int main()
 
 		if (Input::isKeyDown(GLFW_KEY_C))
 		{
-			basicSculptToolCommand.applyBrush(ray, 20.0f, 5.0f);
-
+ 			basicSculptToolCommand.applyBrush(ray, 20.0f, 5.0f);
 		}
 
 		if (Input::isKeyDown(GLFW_KEY_V))
@@ -368,7 +369,9 @@ int main()
 			//delete them from renderer aswell!
 			scene.m_rendererData.aabbData.clearAABBData();
 
-			for (auto& entry : scene.m_meshFaceOctreesMap) {
+
+			
+			for (auto& entry : scene.coordsOctreeMap) {
 				const glm::vec3& key = entry.first;
 				Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 				for (auto& octreeNode : octree) {
@@ -390,8 +393,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 
-		for (auto& [mesh, faceMap] : viewPortsHolder->m_scene->m_meshesFaceOctreeMap) {
-
+		for (auto& [mesh, materialVertexMap] : scene.m_rendererData.meshData.meshVaoDataMap)
+		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			//chcem zapisovat do depth bufferu
@@ -403,15 +406,48 @@ int main()
 			glStencilMask(0x00);
 			glDisable(GL_STENCIL_TEST);
 
+
+			for (auto& [material, vertexVector] : materialVertexMap)
+			{
+				// Pass the vertexVector to some method
+				material->getShader()->bind();
+				Renderer::drawMesh(vertexVector);
+				material->getShader()->unbind();
+			}
+		}
+
+		
+
+		for (auto& [mesh, faceMap] : viewPortsHolder->m_scene->meshFaceOctreeCoordsMap) {
+
+			/*
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			//chcem zapisovat do depth bufferu
+			glEnable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
+			glDepthFunc(GL_LESS);
+
+			//nechcem zapisovat do stencil bufferu
+			glStencilMask(0x00);
+			glDisable(GL_STENCIL_TEST);
+
+			//DRAW MESHES
+
+
 			//mesh shader
 			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->bind();
 			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
 			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->unbind();
 
+			*/
+
+			/*
 			//for normals
 			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->bind();
 			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
 			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->unbind();
+			*/
 
 			/*
 			//points
@@ -427,6 +463,9 @@ int main()
 			*/
 
 		}
+
+
+
 		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
 		for (const auto& [region, vertices] : scene.m_rendererData.aabbData.vaoDataMap) {
 			

@@ -5,14 +5,49 @@
 
 #include "../Renderer/VertexDataStructs.h"
 #include "../AABBBoundingRegion.h"
+#include "../Mesh.h"
 
 class SceneRendererData
 {
 public:
-	// Struct for AABB VAO Data
+	struct FaceInfo
+	{
+		glm::vec3 normal;
+		size_t startIndex;
+		size_t endIndex;
+		size_t indexInMaterial;
+		Material* material;
+	};
+
+	using MaterialVertexMap = std::map<Material*, std::vector<MeshVertex>>;
+	using MeshVaoDataMap = std::map<Mesh*, MaterialVertexMap>;
+
+	//using FaceInfoMap = std::map<HalfEdgeDS::Face*, FaceInfo>;
+	using FaceInfoMap = std::map<HalfEdgeDS::FaceIndex, FaceInfo>;
+	using MeshFacesMap = std::map<Mesh*, FaceInfoMap>;
+
+	//using MaterialFacesMap = std::map<Material*, std::vector<HalfEdgeDS::Face*>>;
+	using MaterialFacesMap = std::map<Material*, std::vector<HalfEdgeDS::FaceIndex>>;
+	using MeshMaterialsMap = std::map<Mesh*, MaterialFacesMap>;
+
+	struct MeshData
+	{
+		//pre Mesh VAO
+		MeshVaoDataMap meshVaoDataMap;
+
+		//pre Mesh
+		MeshFacesMap meshFacesMap;
+		MeshMaterialsMap meshMaterialsMap;
+		//std::map<HalfEdgeDS::Face*, FaceInfo> faceInfoMap;
+	};
+
 	struct AABBData {
 		std::map<AABBBoundingRegion, std::vector<AABBVertex>> vaoDataMap;
 
+
+		//t·to trieda SceneRendererData by skÙr mala sl˙ûiù ako
+		//len tak˝ holder, Ëiûe metÛdy ako clearAABBData a collectAABBData
+		//by som presunul niekde inde.
 		void clearAABBData()
 		{
 			vaoDataMap.clear();
@@ -93,4 +128,5 @@ public:
 	};
 
 	AABBData aabbData;
+	MeshData meshData;
 };

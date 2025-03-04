@@ -84,6 +84,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -98,6 +99,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -163,7 +165,6 @@
     <ClCompile Include="src\Core\main.cpp" />
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
-    <ClCompile Include="src\Scene\Scene.ixx" />
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +223,9 @@
     <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
+    <ClInclude Include="src\Callbacks\AddMeshIntoSceneCallBack.h" />
+    <ClInclude Include="src\Callbacks\InitMeshVaoDataCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectFaceCallBack.h" />
     <ClInclude Include="src\Commands\CmdProperties\CmdProperties.h" />
     <ClInclude Include="src\Commands\VertexModeChangeCommand.h" />
     <ClInclude Include="src\NumberUtils.h" />
@@ -232,7 +236,6 @@
     <ClInclude Include="src\Callbacks\ExportMeshesCallBack.h" />
     <ClInclude Include="src\Callbacks\ImportMeshesCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\FacesDataTransfer.h" />
-    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectFaceCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectVertexCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformAddPlaneCallBack.h" />
     <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformSelectMeshCallBack.h" />
@@ -261,6 +264,7 @@
     <ClInclude Include="src\PolygonOperations.h" />
     <ClInclude Include="src\Scene\Camera.h" />
     <ClInclude Include="src\Scene\EditorSettings.h" />
+    <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneRendererData.h" />
     <ClInclude Include="src\Scene\ViewPortLayerRenderSettings.h" />
     <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />

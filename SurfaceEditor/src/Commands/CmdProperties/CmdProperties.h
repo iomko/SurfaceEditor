@@ -35,3 +35,20 @@ struct AddPlaneParams : public Params
 	float m_size;
 	int m_subdivisionLevel;
 };
+
+struct SelectFaceParamsOut : public Params
+{
+	Mesh* mesh = nullptr;
+	HalfEdgeDS::Face* face = nullptr;
+	glm::vec3 hitPoint;
+};
+
+struct SelectFaceParamsIn : public Params
+{
+	Ray ray;
+};
+
+struct MeshParams : public Params
+{
+	Mesh* m_mesh = nullptr;
+};

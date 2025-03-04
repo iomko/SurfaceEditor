@@ -45,7 +45,7 @@ public:
 
 						if (octreeIdOctreeIt->second.rootNode->dataCount == 0)
 						{
-							ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_meshFaceOctreesMap.erase(currentOctreeId);
+							ViewPortsHolderContext::m_viewPortsHolder->m_scene->coordsOctreeMap.erase(currentOctreeId);
 						}
 					}
 				}
@@ -76,7 +76,9 @@ public:
 
 				//potrebujem ziskat boundind box daneho facu
 
-				auto& faceVerts = castedCmdParams.m_transformedMesh->m_halfEdgeMesh->getVerticesFromFace(currentFace->getHalfEdge()->getFace());
+				std::vector<HalfEdgeDS::Vertex> faceVerts;
+				castedCmdParams.m_transformedMesh->m_halfEdgeStructure->getVerticesFromFace(currentFace->getHalfEdge()->getFace(), faceVerts);
+				//auto& faceVerts = castedCmdParams.m_transformedMesh->m_halfEdgeStructure->getVerticesFromFace(currentFace->getHalfEdge()->getFace());
 				AABBBoundingRegion faceBounds(
 					faceVerts.begin(),
 					faceVerts.end(),
@@ -108,8 +110,8 @@ public:
 						{
 							glm::vec3 currentIndexBound = { x,y,z };
 							//teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
-							auto it = scene->m_meshFaceOctreesMap.find(currentIndexBound);
-							if (it != scene->m_meshFaceOctreesMap.end())
+							auto it = scene->coordsOctreeMap.find(currentIndexBound);
+							if (it != scene->coordsOctreeMap.end())
 							{
 								//existuje octree s tymto indexom
 								it->second.addDataToOctree(std::make_pair(castedCmdParams.m_transformedMesh, &(*currentFace)), faceBounds);
@@ -120,7 +122,7 @@ public:
 								//SceneUtilities::calculateOctreeBounds()
 								//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 								auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
-								auto addedOctree = scene->m_meshFaceOctreesMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+								auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
 								//neexistuje octree s tymto indexom
 								addedOctree->second.addDataToOctree(std::make_pair(castedCmdParams.m_transformedMesh, &(*currentFace)), faceBounds);
 

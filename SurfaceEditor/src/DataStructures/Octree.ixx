@@ -113,24 +113,26 @@ public:
 
     }
 
-    void findData(const Ray& ray, std::vector<OctreeNode<T>*>& acumulatedOctreeNodes) {
-        if (nodeBounds.intersectsRay(ray)) {
-            if (isLeaf) {
-                if (depth < maxDepth) {
-                    return;
-                }
-                else {
-                    acumulatedOctreeNodes.push_back(this);
-                }
-            }
-            else {
-                for (OctreeNode<T>* child : childrenNodes) {
-                    child->findData(ray, acumulatedOctreeNodes);
-                }
-            }
-        }
-        return;
-    }
+	template <typename QueryShape>
+	void findData(
+		const QueryShape& queryShape,
+		const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
+		std::vector<OctreeNode<T>*>& accumulatedOctreeNodes)
+	{
+		if (octreeBoundsIntersectAlg(nodeBounds, queryShape)) {
+			if (isLeaf) {
+				if (depth < maxDepth) {
+					return;
+				}
+				accumulatedOctreeNodes.push_back(this);
+			}
+			else {
+				for (OctreeNode<T>* child : childrenNodes) {
+					child->findData(queryShape, octreeBoundsIntersectAlg, accumulatedOctreeNodes);
+				}
+			}
+		}
+	}
 
 };
 
@@ -244,10 +246,59 @@ public:
     {
         rootNode->addData(data, dataBounds, this->leafs);
     }
-    //unhide later
 
-    //potreboval by som aby mi pouzivatel zadal aky algoritmus mam urobit ked mu dam k dispozicii data v octreeNode a ray
+	template <typename QueryShape>
+    void findNodesInOctree(
+        const QueryShape& queryShape,
+        const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
+        std::vector<OctreeNode<T>*>& accumulatedOctreeNodes)
+    {
+		if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
+			rootNode->findData(queryShape, octreeBoundsIntersectAlg, accumulatedOctreeNodes);
+		}
+    }
 
+	template <typename QueryShape>
+	std::vector<std::pair<OctreeNode<T>*, std::vector<T>>> findDataInOctree(
+		const QueryShape& queryShape,
+		const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
+		const std::function<bool(const T&, const QueryShape&)>& dataIntersectAlg)
+	{
+		std::vector<std::pair<OctreeNode<T>*, std::vector<T>>> results;
+		std::vector<OctreeNode<T>*> hitOctreeLeaves;
+
+		if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
+			rootNode->findData(queryShape, octreeBoundsIntersectAlg, hitOctreeLeaves);
+		}
+
+        int leafNodeIndex = 0;
+		for (const auto& leaf : hitOctreeLeaves) {
+
+            for (const auto& data : leaf->nodeData)
+            {
+                if(dataIntersectAlg(data, queryShape))
+                {
+                    if(results.empty())
+                    {
+                        results.emplace_back(std::make_pair(leaf, std::vector<T>()));
+                        results.at(leafNodeIndex).second.emplace_back(data);
+                    } else
+                    {
+                        results.at(leafNodeIndex).second.emplace_back(data);
+                    }
+                }
+
+            }
+            if(!results.at(leafNodeIndex).second.empty())
+            {
+                ++leafNodeIndex;
+            }
+		}
+
+		return results;
+	}
+
+    /*
     std::tuple<OctreeNode<T>*, T, float> findDataInOctree(const Ray& ray, const std::function<std::pair<bool, float>(const T&, const Ray&)>& algorithm) {
         T returnData;
         OctreeNode<T>* closestHitNode = nullptr;
@@ -256,6 +307,7 @@ public:
 
         if (rootNode->nodeBounds.intersectsRay(ray)) {
             rootNode->findData(ray, hitOctreeLiefs);
+            //rootNode->findData(ray, hitOctreeLiefs);
         }
         for (const auto& hitOctreeLief : hitOctreeLiefs)
         {
@@ -276,6 +328,7 @@ public:
         }
         return std::make_tuple(closestHitNode, returnData, minHitDistance);
     }
+    */
 
     void removeData(T data)
     {

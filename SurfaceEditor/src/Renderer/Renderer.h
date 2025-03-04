@@ -36,7 +36,7 @@ struct RendererData {
 
 class Renderer {
 public:
-    static void init();
+	static void init();
     static void drawPoints(std::vector<MeshPoint>& points);
     static void drawMesh(const std::vector<MeshVertex>& mesh);
     static void drawBox(const std::vector<AABBVertex>& box);

@@ -65,6 +65,42 @@ public:
 		return accumulatedPointsData;
 	}
 
+	static glm::vec3 computeFaceNormal(HalfEdgeDS::Face* face) {
+		auto vertexExtractor = [](HalfEdgeDS::Vertex& v) { return v.getPosition(); };
+		return computeFaceNormal(face->faceVertexBegin(), face->faceVertexEnd(), vertexExtractor);
+	}
+
+	template <typename Iterator, typename Extractor>
+	static glm::vec3 computeFaceNormal(Iterator begin, Iterator end, Extractor extractor) {
+		int numOfVerticesInFace = std::distance(begin, end);
+
+		if (numOfVerticesInFace < 3) {
+			throw std::invalid_argument("A face must have at least three vertices to compute a normal.");
+		}
+
+		if (numOfVerticesInFace == 3) {
+			// Compute face normal for a triangle
+			glm::vec3 vertices[3];
+			int i = 0;
+			for (Iterator it = begin; it != end && i < 3; ++it, ++i) {
+				vertices[i] = extractor(*it);
+			}
+
+			glm::vec3 edge1 = vertices[1] - vertices[0];
+			glm::vec3 edge2 = vertices[2] - vertices[0];
+			glm::vec3 normal = glm::cross(edge1, edge2);
+			return glm::normalize(normal);
+		}
+		else {
+			// Compute face normal for a general polygon
+			glm::vec3 normal(0.0f, 0.0f, 0.0f);
+			//TODO: IMPLEMENT
+
+			return glm::normalize(normal);
+		}
+	}
+
+	/*
 	static glm::vec3 calculatePolygonNormal(const std::vector<int>& polygonIndices,
 		const std::vector<glm::vec3>& vertices, const std::map<int, AngleType>& angleTypesMap)
 	{
@@ -103,6 +139,7 @@ public:
 		return normal;
 	}
 
+	
 	static std::map<int, AngleType> calculateAngleTypesOfVertices(const std::vector<int>& polygonIndices,
 		const std::vector<glm::vec3>& vertices, const glm::vec3& polygonNormal)
 	{
@@ -137,6 +174,7 @@ public:
 
 		return angleTypes;
 	}
+	*/
 
 	static float calculateSignedAreaOf2DPolygon(const std::vector<glm::vec2>& vertices)
 	{

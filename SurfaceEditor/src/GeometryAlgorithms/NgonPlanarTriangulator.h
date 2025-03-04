@@ -37,6 +37,8 @@ class NgonPlanarTriangulator : public PolygonTriangulator
 public:
 	virtual bool calculateTriangulation(const std::vector<int>& ngonPlanarIndices, const std::vector<glm::vec3>& ngonPlanarVertices, std::vector<glm::vec3>& triangulatedNgonPlanarResult, glm::vec3& ngonNormalResult) override
 	{
+		/*
+
 		//vertices in format that will be accepted by least squares fitting in CGAL
 		PointList leastSquaresFormatVertices;
 
@@ -161,6 +163,8 @@ public:
 			}
 
 		}
+
+		*/
 		return false;
 	}
 

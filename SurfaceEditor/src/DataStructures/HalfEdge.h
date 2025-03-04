@@ -156,6 +156,12 @@ namespace HalfEdgeDS
 
 		class FaceVertexIterator {
 		public:
+			using iterator_category = std::forward_iterator_tag;  // Tells std::distance() it's a forward iterator
+			using difference_type = std::ptrdiff_t;
+			using value_type = Vertex;
+			using pointer = Vertex*;
+			using reference = Vertex&;
+
 			FaceVertexIterator(HalfEdge* halfEdge)
 			{
 				m_currentHalfEdge = halfEdge;
@@ -189,6 +195,15 @@ namespace HalfEdgeDS
 
 			bool operator!=(const FaceVertexIterator& other) const {
 				return !(*this == other);
+			}
+
+			friend long distance(FaceVertexIterator begin, FaceVertexIterator end) {
+				int count = 0;
+				while (begin != end) {
+					++begin;
+					++count;
+				}
+				return count;
 			}
 
 		private:
@@ -436,7 +451,18 @@ namespace HalfEdgeDS
 		auto faceIterBegin() { return m_faces.begin(); }
 		auto faceIterEnd() { return m_faces.end(); }
 
+		void getVerticesFromFace(FaceIter face, std::vector<Vertex>& vertices) {
+			vertices.clear();
 
+			HalfEdgeIter halfEdge = face->getHalfEdge();
+			do {
+				VertexIter vertex = halfEdge->getVertex();
+				vertices.push_back(*vertex);
+				halfEdge = halfEdge->getNext();
+			} while (halfEdge != face->getHalfEdge());
+		}
+
+		/*
 		std::vector<Vertex>& getVerticesFromFace(FaceIter face) {
 			std::vector<Vertex> vertices;
 
@@ -449,6 +475,7 @@ namespace HalfEdgeDS
 
 			return vertices;
 		}
+		*/
 
 		void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices)
 		{

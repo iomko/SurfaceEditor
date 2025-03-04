@@ -6,7 +6,6 @@
 
 #include "EditorSettings.h"
 
-
 Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 {
 	m_state.position = position;

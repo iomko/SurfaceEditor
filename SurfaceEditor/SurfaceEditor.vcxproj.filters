@@ -21,7 +21,6 @@
     <ClCompile Include="src\DataStructures\Octree.ixx" />
     <ClCompile Include="src\Renderer\Shader.ixx" />
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
-    <ClCompile Include="src\Scene\Scene.ixx" />
     <ClCompile Include="src\Patterns\Observer.ixx" />
     <ClCompile Include="src\Renderer\Renderer.cpp" />
   </ItemGroup>
@@ -80,7 +79,6 @@
     <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
     <ClInclude Include="src\Callbacks\DeselectMeshCallBack.h" />
     <ClInclude Include="src\Commands\SelectFaceCommand.h" />
-    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectFaceCallBack.h" />
     <ClInclude Include="src\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Commands\SelectVertexCommand.h" />
     <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectVertexCallBack.h" />
@@ -120,6 +118,10 @@
     <ClInclude Include="src\Commands\VertexModeChangeCommand.h" />
     <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />
     <ClInclude Include="src\Scene\SceneRendererData.h" />
+    <ClInclude Include="src\Callbacks\InitMeshVaoDataCallBack.h" />
+    <ClInclude Include="src\Scene\Scene.h" />
+    <ClInclude Include="src\Callbacks\AddMeshIntoSceneCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectFaceCallBack.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

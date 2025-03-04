@@ -3,6 +3,7 @@
 #include "Patterns/Observer.h"
 #include "Patterns/Command.h"
 #include "Core/Layer.h"
+#include "Scene/Scene.h"
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Scene/ViewPortLayerScreenSettings.h"
 
