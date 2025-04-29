@@ -82,7 +82,9 @@ private:
 	Application(const Application&) = delete;
 	Application& operator=(const Application&) = delete;
 
+public:
 	inline static Window* m_window = nullptr;
+private:
 	LayerStack m_layerStack;
 	ImGuiLayer* m_imGuiLayer = nullptr;
 };

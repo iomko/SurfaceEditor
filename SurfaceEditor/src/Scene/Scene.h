@@ -3,8 +3,7 @@
 #include "../Mesh.h"
 #include "../AABBBoundingRegion.h"
 #include "../Scene/Camera.h"
-
-import DataStructures;
+#include "DataStructures/Octree.h"
 
 class Scene
 {
@@ -17,12 +16,8 @@ public:
 	using MeshFacePair = std::pair<Mesh*, HalfEdgeDS::Face*>;
 	using CoordsOctreeMap = std::map<glm::vec3, Octree<MeshFacePair>>;
 
-
 	MeshFaceOctreeCoordsMap meshFaceOctreeCoordsMap;
 	CoordsOctreeMap coordsOctreeMap;
-
-	//std::map<Mesh*, std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>> m_meshesFaceOctreeMap;
-	//std::map<glm::vec3, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>> m_meshFaceOctreesMap;
 
 	Scene(float xSize, float ySize, float zSize)
 		: voxelXSize(xSize), voxelYSize(ySize), voxelZSize(zSize) {}
@@ -32,6 +27,58 @@ public:
 	{
 		return glm::vec3(voxelXSize, voxelYSize, voxelZSize);
 	}
+
+	void deleteMeshFromOctrees(Mesh* mesh)
+	{
+		auto meshFaceOctreeCoordsMapIt = meshFaceOctreeCoordsMap.find(mesh);
+		FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
+
+		for (auto& [face, octreeCoords] : faceOctreeCoordsMap)
+		{
+			for (glm::vec3 octreeCoord : octreeCoords)
+			{
+				auto coordsOctreeMapIt = coordsOctreeMap.find(octreeCoord);
+				Octree<MeshFacePair>& octree = coordsOctreeMapIt->second;
+				octree.removeData(std::make_pair(mesh, face));
+
+				if (octree.isEmpty())
+				{
+					coordsOctreeMap.erase(coordsOctreeMapIt);
+				}
+			}
+		}
+
+		meshFaceOctreeCoordsMap.erase(meshFaceOctreeCoordsMapIt);
+	}
+
+	void deleteFaceFromOctrees(Mesh* mesh, HalfEdgeDS::Face* face)
+	{
+		auto meshFaceOctreeCoordsMapIt = meshFaceOctreeCoordsMap.find(mesh);
+		auto faceOctreeCoordsMapIt = meshFaceOctreeCoordsMapIt->second.find(face);
+		FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
+		std::vector<glm::vec3>& octreesCoords = faceOctreeCoordsMapIt->second;
+
+		for (glm::vec3& coords : octreesCoords)
+		{
+			auto coordsOctreeMapIt = coordsOctreeMap.find(coords);
+			Octree<MeshFacePair>& octree = coordsOctreeMapIt->second;
+			octree.removeData(std::make_pair(mesh, face));
+
+			if(octree.isEmpty())
+			{
+				//tak vieme ze mozeme tento octree cely vymazat zo sceny
+				coordsOctreeMap.erase(coordsOctreeMapIt);
+			}
+		}
+
+		//vymaz to aj z std::map
+		faceOctreeCoordsMap.erase(faceOctreeCoordsMapIt);
+		if(faceOctreeCoordsMap.empty())
+		{
+			meshFaceOctreeCoordsMap.erase(meshFaceOctreeCoordsMapIt);
+		}
+	}
+
 
 private:
 	float voxelXSize;

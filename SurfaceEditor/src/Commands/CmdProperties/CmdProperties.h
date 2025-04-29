@@ -30,6 +30,16 @@ struct ImportExportMeshesParams : public Params
 	std::string m_filePathMeshes = "";
 };
 
+struct FetchSurfaceParams : public Params
+{
+	float m_lowerLeftLon = 0.0f;
+	float m_lowerLeftLat = 0.0f;
+	float m_upperRightLon = 0.0f;
+	float m_upperRightLat = 0.0f;
+
+	std::string m_apiKey = "";
+};
+
 struct AddPlaneParams : public Params
 {
 	float m_size;
@@ -51,4 +61,10 @@ struct SelectFaceParamsIn : public Params
 struct MeshParams : public Params
 {
 	Mesh* m_mesh = nullptr;
+};
+
+struct OctreeNodeDataParams : public Params
+{
+	Scene::MeshFacePair meshFacePair;
+	glm::vec3 hitPoint;
 };

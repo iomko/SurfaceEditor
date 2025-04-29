@@ -3,12 +3,11 @@
 #include <iostream>
 #include <vector>
 #include "../glm_overrides.h"
-
-
+#include <unordered_set>
 #include <map>
 
-#include "../Renderer/VertexDataStructs.h"
-
+using FaceTriangleIndex = int;
+using EdgeLineIndex = int;
 
 namespace HalfEdgeDS
 {
@@ -18,67 +17,29 @@ namespace HalfEdgeDS
 	class Face;
 	class HalfEdgeMesh;
 
-	inline size_t MAX_INDEX_VAL = std::numeric_limits<size_t>::max();
-
-	using HalfEdgeIndex = size_t;
-	using EdgeIndex = size_t;
-	using VertexIndex = size_t;
-	using FaceIndex = size_t;
-
-	using HalfEdgeIter = std::vector<HalfEdge>::iterator;
-	using EdgeIter = std::vector<Edge>::iterator;
-	using VertexIter = std::vector<Vertex>::iterator;
-	using FaceIter = std::vector<Face>::iterator;
-
+	class GraphEdge
+	{
+	public:
+		Vertex* vertex = nullptr;
+		int graphEdgeIndexInVertex = -1;
+		Face* face = nullptr;
+		int graphEdgeIndexInFace = -1;
+	};
 
 	class HalfEdge
 	{
 	public:
 		HalfEdge(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
-		
-		void setNext(HalfEdgeIndex next) { m_next = next; }
-		void setPrevious(HalfEdgeIndex previous) { m_previous = previous; }
-		void setTwin(HalfEdgeIndex twin) { m_twin = twin; }
-		void setVertex(VertexIndex vertex) { m_vertex = vertex; }
-		void setEdge(EdgeIndex edge) { m_edge = edge; }
-		void setFace(FaceIndex face) { m_face = face; }
 
-		HalfEdgeIter getNext();
-		HalfEdgeIter getPrevious();
-		HalfEdgeIter getTwin();
-		VertexIter getVertex();
-		EdgeIter getEdge();
-		FaceIter getFace();
+	public:
+		HalfEdge* m_next = nullptr;
+		HalfEdge* m_previous = nullptr;
+		HalfEdge* m_twin = nullptr;
+		Vertex* m_vertex = nullptr;
+		Edge* m_edge = nullptr;
+		Face* m_face = nullptr;
 
-		HalfEdgeIndex getNextIndex() const { return m_next; }
-		HalfEdgeIndex getPreviousIndex() const { return m_previous; }
-		HalfEdgeIndex getTwinIndex() const { return m_twin; }
-		VertexIndex getVertexIndex() const { return m_vertex; }
-		EdgeIndex getEdgeIndex() const { return m_edge; }
-		FaceIndex getFaceIndex() const { return m_face; }
-
-		HalfEdgeMesh& getMesh() { return m_mesh; }
-
-		bool operator==(const HalfEdge& other) const {
-			return m_next == other.m_next &&
-				m_previous == other.m_previous &&
-				m_twin == other.m_twin &&
-				m_vertex == other.m_vertex &&
-				m_edge == other.m_edge &&
-				m_face == other.m_face;
-		}
-
-		bool operator!=(const HalfEdge& other) const {
-			return !(*this == other);
-		}
-
-	private:
-		HalfEdgeIndex m_next = MAX_INDEX_VAL;
-		HalfEdgeIndex m_previous = MAX_INDEX_VAL;
-		HalfEdgeIndex m_twin = MAX_INDEX_VAL;
-		VertexIndex m_vertex = MAX_INDEX_VAL;
-		EdgeIndex m_edge = MAX_INDEX_VAL;
-		FaceIndex m_face = MAX_INDEX_VAL;
+		int m_halfEdgeIndexInVector = -1;
 
 		HalfEdgeMesh& m_mesh;
 	};
@@ -87,31 +48,16 @@ namespace HalfEdgeDS
 	{
 	public:
 		Vertex(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
-	
-		void setHalfEdge(HalfEdgeIndex halfEdge) { m_halfEdge = halfEdge; }
-		void setPosition(const glm::vec3& position) { m_position = position; }
 
-		HalfEdgeIter getHalfEdge();
-
-		HalfEdgeIndex getHalfEdgeIndex() const { return m_halfEdge; }
-
-		glm::vec3& getPosition() { return m_position; }
-
-		HalfEdgeMesh& getMesh() { return m_mesh; }
-
-		bool operator==(const Vertex& other) const {
-			return m_halfEdge == other.m_halfEdge;
-		}
-
-		bool operator!=(const Vertex& other) const {
-			return !(*this == other);
-		}
-
-	private:
-		HalfEdgeIndex m_halfEdge = MAX_INDEX_VAL;
+	public:
+		HalfEdge* m_halfEdge = nullptr;
 		glm::vec3 m_position{};
-
 		HalfEdgeMesh& m_mesh;
+
+		int m_vertexIndexInVector = -1;
+
+		//graph
+		std::vector<GraphEdge*> m_graphEdges;
 	};
 
 	class Edge
@@ -119,33 +65,14 @@ namespace HalfEdgeDS
 	public:
 		Edge(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
 
-		void setHalfEdge(HalfEdgeIndex halfEdge) { m_halfEdge = halfEdge; }
-		void setFirstVertex(VertexIndex firstVertex) { m_firstVertex = firstVertex; }
-		void setSecondVertex(VertexIndex secondVertex) { m_secondVertex = secondVertex; }
-		
-		HalfEdgeIter getHalfEdge();
-		VertexIter getFirstVertex();
-		VertexIter getSecondVertex();
+	public:
+		HalfEdge* m_halfEdge = nullptr;
+		Vertex* m_firstVertex = nullptr;
+		Vertex* m_secondVertex = nullptr;
 
-		HalfEdgeIndex getHalfEdgeIndex() const { return m_halfEdge; }
-		HalfEdgeIndex getFirstVertexIndex() const { return m_firstVertex; }
-		HalfEdgeIndex getSecondVertexIndex() const { return m_secondVertex; }
+		int m_edgeIndexInVector = -1;
 
-		HalfEdgeMesh& getMesh() { return m_mesh; }
-
-		bool operator==(const Edge& other) const {
-			return m_halfEdge == other.m_halfEdge;
-		}
-
-		bool operator!=(const Edge& other) const {
-			return !(*this == other);
-		}
-
-	private:
-		HalfEdgeIndex m_halfEdge = MAX_INDEX_VAL;
-		VertexIndex m_firstVertex = MAX_INDEX_VAL;
-		VertexIndex m_secondVertex = MAX_INDEX_VAL;
-
+		EdgeLineIndex m_EdgeLineIndex = -1;
 		HalfEdgeMesh& m_mesh;
 	};
 
@@ -156,7 +83,7 @@ namespace HalfEdgeDS
 
 		class FaceVertexIterator {
 		public:
-			using iterator_category = std::forward_iterator_tag;  // Tells std::distance() it's a forward iterator
+			using iterator_category = std::forward_iterator_tag;
 			using difference_type = std::ptrdiff_t;
 			using value_type = Vertex;
 			using pointer = Vertex*;
@@ -173,24 +100,22 @@ namespace HalfEdgeDS
 				{
 					m_startOfHalfEdgeLoop = false;
 				}
-				m_currentHalfEdge = &m_currentHalfEdge->getNext().operator*();
 
+				m_currentHalfEdge = m_currentHalfEdge->m_next;
 				return *this;
 			}
 
-			Vertex& operator*() {
-				return m_currentHalfEdge->getVertex().operator*();
+			Vertex& operator*()
+			{
+				return *m_currentHalfEdge->m_vertex;
 			}
 
 			bool operator==(const FaceVertexIterator& other) const {
-				if (m_startOfHalfEdgeLoop)
-				{
+				if (m_startOfHalfEdgeLoop) {
 					return false;
 				}
-				else
-				{
-					return m_currentHalfEdge == other.m_currentHalfEdge;
-				}
+
+				return m_currentHalfEdge == other.m_currentHalfEdge;
 			}
 
 			bool operator!=(const FaceVertexIterator& other) const {
@@ -207,11 +132,9 @@ namespace HalfEdgeDS
 			}
 
 		private:
-			HalfEdge* m_currentHalfEdge;
+			HalfEdge* m_currentHalfEdge = nullptr;
 			bool m_startOfHalfEdgeLoop;
 		};
-
-
 
 		
 		class FaceHalfEdgeIterator {
@@ -227,8 +150,8 @@ namespace HalfEdgeDS
 				{
 					m_startOfHalfEdgeLoop = false;
 				}
-				m_currentHalfEdge = &m_currentHalfEdge->getNext().operator*();
 
+				m_currentHalfEdge = m_currentHalfEdge->m_next;
 				return *this;
 			}
 
@@ -256,183 +179,40 @@ namespace HalfEdgeDS
 			bool m_startOfHalfEdgeLoop;
 		};
 
-		FaceHalfEdgeIterator faceHalfEdgeBegin() { return FaceHalfEdgeIterator(&getHalfEdge().operator*()); }
-		FaceHalfEdgeIterator faceHalfEdgeEnd() { return FaceHalfEdgeIterator(&getHalfEdge().operator*()); }
-		
+		FaceHalfEdgeIterator faceHalfEdgeBegin() { return FaceHalfEdgeIterator(m_halfEdge); }
+		FaceHalfEdgeIterator faceHalfEdgeEnd() { return FaceHalfEdgeIterator(m_halfEdge); }
 
-		FaceVertexIterator faceVertexBegin() { return FaceVertexIterator(&getHalfEdge().operator*()); }
-		FaceVertexIterator faceVertexEnd() { return FaceVertexIterator(&getHalfEdge().operator*()); }
+		FaceVertexIterator faceVertexBegin() { return FaceVertexIterator(m_halfEdge); }
+		FaceVertexIterator faceVertexEnd() { return FaceVertexIterator(m_halfEdge); }
 
-
-		void setHalfEdge(HalfEdgeIndex halfEdge) { m_halfEdge = halfEdge; }
-		
-		HalfEdgeIter getHalfEdge();
-
-		HalfEdgeIndex getHalfEdgeIndex() const { return m_halfEdge; }
-
-		HalfEdgeMesh& getMesh() { return m_mesh; }
-
-	private:
-		HalfEdgeIndex m_halfEdge = MAX_INDEX_VAL;
+	public:
+		HalfEdge* m_halfEdge = nullptr;
 		HalfEdgeMesh& m_mesh;
+
+		//selection
+		bool m_selected = false;
+		int m_selectionIndex = -1;
+
+		int m_faceIndexInVector = -1;
+
+		//graph
+		std::vector<GraphEdge*> m_graphEdges;
+		Material* material = nullptr;
+		std::vector<FaceTriangleIndex> faceTriangleIndices;
 	};
+
+	struct FaceTriangle
+	{
+		int indexInVAO = -1;
+		Face* face = nullptr;
+		int indexInFace = -1;
+	};
+
 
 
 	class HalfEdgeMesh
 	{
 	private:
-
-		struct PolygonBuildVariablesState {
-			FaceIndex faceIndexOfCurrentPolygon;
-			size_t currentVertexIndexInPolygon;
-			size_t previousVertexIndexInPolygon;
-			HalfEdgeIndex firstHalfEdgeIndexInCurrentPolygon;
-			VertexIndex firstVertexIndexInCurrentPolygon;
-			bool firstVertexInPolygon;
-			bool firstHalfEdgeInPolygon;
-			bool isFaceConnectedToHalfEdge;
-
-			HalfEdgeIndex currentHalfEdgeIndexInPolygon;
-			HalfEdgeIndex currentTwinHalfEdgeIndexInPolygon;
-			HalfEdgeIndex previousHalfEdgeIndexInPolygon;
-			EdgeIndex currentEdgeIndexInPolygon;
-		};
-
-		VertexIndex addNewVertex()
-		{
-			m_vertices.emplace_back(std::move(Vertex(*this)));
-			VertexIndex vertexIndex = m_vertices.size() - 1;
-			return vertexIndex;
-		}
-
-		HalfEdgeIndex addNewHalfEdge()
-		{
-			m_halfEdges.emplace_back(std::move(HalfEdge(*this)));
-			HalfEdgeIndex halfEdgeIndex = m_halfEdges.size() - 1;
-			return halfEdgeIndex;
-		}
-
-		FaceIndex addNewFace()
-		{
-			m_faces.emplace_back(std::move(Face(*this)));
-			FaceIndex faceIndex = m_faces.size() - 1;
-			return faceIndex;
-		}
-
-		EdgeIndex addNewEdge()
-		{
-			m_edges.emplace_back(std::move(Edge(*this)));
-			EdgeIndex edgeIndex = m_edges.size() - 1;
-			return edgeIndex;
-		}
-
-		void setPositionOfVertex(VertexIndex vertexIndex, const glm::vec3& vertexPosition)
-		{
-			m_vertices.at(vertexIndex).setPosition(vertexPosition);
-		}
-
-		void setVariablesForAddedPolygon(PolygonBuildVariablesState& buildState)
-		{
-			buildState.faceIndexOfCurrentPolygon = addNewFace();
-			buildState.currentVertexIndexInPolygon = MAX_INDEX_VAL;
-			buildState.previousVertexIndexInPolygon = MAX_INDEX_VAL;
-			buildState.firstHalfEdgeIndexInCurrentPolygon = MAX_INDEX_VAL;
-			buildState.firstVertexIndexInCurrentPolygon = MAX_INDEX_VAL;
-			buildState.firstVertexInPolygon = true;
-			buildState.firstHalfEdgeInPolygon = true;
-			buildState.isFaceConnectedToHalfEdge = false;
-
-			buildState.currentHalfEdgeIndexInPolygon = MAX_INDEX_VAL;
-			buildState.previousHalfEdgeIndexInPolygon = MAX_INDEX_VAL;
-			buildState.currentEdgeIndexInPolygon = MAX_INDEX_VAL;
-		}
-
-		HalfEdgeIndex findTwinOfHalfEdge(std::map<std::pair<glm::vec3, glm::vec3>, int>& halfEdgeMap, const glm::vec3& firstVertex, const glm::vec3& secondVertex)
-		{
-			auto halfEdgeFirstTwinIt = halfEdgeMap.find({ std::make_pair(firstVertex, secondVertex)});
-			auto halfEdgeSecondTwinIt = halfEdgeMap.find({ std::make_pair(secondVertex, firstVertex) });
-
-			HalfEdgeIndex halfEdgeTwinIndex = MAX_INDEX_VAL;
-			if (halfEdgeFirstTwinIt != halfEdgeMap.end())
-			{
-				halfEdgeTwinIndex = halfEdgeFirstTwinIt->second;
-			}
-			else if (halfEdgeSecondTwinIt != halfEdgeMap.end())
-			{
-				halfEdgeTwinIndex = halfEdgeSecondTwinIt->second;
-			}
-			return halfEdgeTwinIndex;
-		}
-
-		//DATA FOR HALFEDGE
-		void setVertexDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, VertexIndex vertexIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setVertex(vertexIndex);
-		}
-
-		void setFaceDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, FaceIndex faceIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setFace(faceIndex);
-		}
-
-		void setTwinDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, HalfEdgeIndex twinHalfEdgeIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setTwin(twinHalfEdgeIndex);
-			m_halfEdges.at(twinHalfEdgeIndex).setTwin(halfEdgeIndex);
-		}
-
-		void setPreviousDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, HalfEdgeIndex previousHalfEdgeIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setPrevious(previousHalfEdgeIndex);
-		}
-
-		void setNextDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, HalfEdgeIndex nextHalfEdgeIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setNext(nextHalfEdgeIndex);
-		}
-
-		void setEdgeDataForHalfEdge(HalfEdgeIndex halfEdgeIndex, EdgeIndex edgeIndex)
-		{
-			m_halfEdges.at(halfEdgeIndex).setEdge(edgeIndex);
-		}
-
-		EdgeIndex getEdgeDataOfHalfEdge(HalfEdgeIndex halfEdgeIndex)
-		{
-			return m_halfEdges.at(halfEdgeIndex).getEdgeIndex();
-		}
-		//
-
-		//DATA FOR EDGE
-		void setVerticesDataForEdge(EdgeIndex edgeIndex, VertexIndex firstVertex, VertexIndex secondVertex)
-		{
-			m_edges.at(edgeIndex).setFirstVertex(firstVertex);
-			m_edges.at(edgeIndex).setSecondVertex(secondVertex);
-		}
-
-		void setHalfEdgeDataForEdge(EdgeIndex edgeIndex, HalfEdgeIndex halfEdgeIndex)
-		{
-			m_edges.at(edgeIndex).setHalfEdge(halfEdgeIndex);
-		}
-		//
-
-		//DATA FOR FACE
-		void setHalfEdgeDataForFace(FaceIndex faceIndex, HalfEdgeIndex halfEdgeIndex)
-		{
-			m_faces.at(faceIndex).setHalfEdge(halfEdgeIndex);
-		}
-		//
-
-		//DATA FOR VERTEX
-		HalfEdgeIndex getHalfEdgeDataOfVertex(VertexIndex vertexIndex)
-		{
-			return m_vertices.at(vertexIndex).getHalfEdgeIndex();
-		}
-
-		void setHalfEdgeDataForVertex(VertexIndex vertexIndex, HalfEdgeIndex halfEdgeIndex)
-		{
-			m_vertices.at(vertexIndex).setHalfEdge(halfEdgeIndex);
-		}
-		//
 
 	public:
 		HalfEdgeMesh()
@@ -451,256 +231,176 @@ namespace HalfEdgeDS
 		auto faceIterBegin() { return m_faces.begin(); }
 		auto faceIterEnd() { return m_faces.end(); }
 
-		void getVerticesFromFace(FaceIter face, std::vector<Vertex>& vertices) {
+		void getVerticesFromFace(Face* face, std::vector<Vertex>& vertices) {
 			vertices.clear();
-
-			HalfEdgeIter halfEdge = face->getHalfEdge();
+			
+			HalfEdge* halfEdge = face->m_halfEdge;
 			do {
-				VertexIter vertex = halfEdge->getVertex();
+				Vertex* vertex = halfEdge->m_vertex;
 				vertices.push_back(*vertex);
-				halfEdge = halfEdge->getNext();
-			} while (halfEdge != face->getHalfEdge());
+				halfEdge = halfEdge->m_next;
+
+			} while (halfEdge != face->m_halfEdge);
 		}
 
-		/*
-		std::vector<Vertex>& getVerticesFromFace(FaceIter face) {
-			std::vector<Vertex> vertices;
-
-			HalfEdgeIter halfEdge = face->getHalfEdge();
-			do {
-				VertexIter vertex = halfEdge->getVertex();
-				vertices.push_back(*vertex);
-				halfEdge = halfEdge->getNext();
-			} while (halfEdge != face->getHalfEdge());
-
-			return vertices;
+		template <typename T, typename Vector>
+		T* createObject(Vector& storageVector) {
+			auto newObject = new T(*this);
+			storageVector.emplace_back(newObject);
+			return newObject;
 		}
-		*/
+
+		template <typename T, typename Key, typename Map>
+		T* findObject(const Key& key, Map& helperMap) {
+			auto it = helperMap.find(key);
+			return (it != helperMap.end()) ? it->second : nullptr;
+		}
+
+		template <typename T, typename Key, typename Map, typename Vector>
+		T* findOrCreateObject(const Key& key, Map& helperMap, Vector& storageVector, bool* outWasCreated = nullptr) {
+			auto it = helperMap.find(key);
+			if (it != helperMap.end()) {
+				if (outWasCreated) *outWasCreated = false;
+				return it->second;
+			}
+
+			auto newObject = new T(*this);
+			helperMap[key] = newObject;
+			storageVector.emplace_back(newObject);
+			if (outWasCreated) *outWasCreated = true;
+			return newObject;
+		}
+
+		void buildGraph()
+		{
+			//---GO_THROUGH_ALL_FACES---
+			for (Face* face : m_faces)
+			{
+				HalfEdge* halfEdge = face->m_halfEdge;
+				do {
+					//---ACCESS_EACH_VERTEX_OF_FACE---
+					Vertex* vertex = halfEdge->m_vertex;
+					halfEdge = halfEdge->m_next;
+
+					//---CREATE_GRAPH_EDGE---
+					GraphEdge* graphEdge = new GraphEdge();
+					graphEdge->vertex = vertex;
+					graphEdge->graphEdgeIndexInVertex = vertex->m_graphEdges.size();
+
+					graphEdge->face = face;
+					graphEdge->graphEdgeIndexInFace = face->m_graphEdges.size();
+
+					vertex->m_graphEdges.emplace_back(graphEdge);
+					face->m_graphEdges.emplace_back(graphEdge);
+
+				} while (halfEdge != face->m_halfEdge);
+			}
+
+			std::cout << "Graph built" << std::endl;
+		}
 
 		void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices)
 		{
+			//HELPER_MAPS_FOR_BUILD
+			std::map<std::pair<glm::vec3, glm::vec3>, HalfEdge*> helperHalfEdgeMap;
+			std::map<glm::vec3, Vertex*> helperVertexMap;
 
-			std::map<glm::vec3, int> vertexMap;
-			std::map<std::pair<glm::vec3, glm::vec3>, int> halfEdgeMap;
-			PolygonBuildVariablesState polygonState{};
-
-			for (const std::vector<int>& polygon : polygons)
+			for (const std::vector<int>& polygonIndices : polygons)
 			{
-				setVariablesForAddedPolygon(polygonState);
+				//---FACE_CREATION---
+				Face* face = createObject<Face>(m_faces);
+				face->m_faceIndexInVector = m_faces.size() - 1;
 
-				for (auto& vertIndexInLoop : polygon)
+				
+				for(int i = 0; i <= polygonIndices.size()-1; ++i)
 				{
-					auto vertexIt = vertexMap.find(vertices.at(vertIndexInLoop));
-					if (!polygonState.firstVertexInPolygon)
+					glm::vec3 firstVertexPos = vertices.at(polygonIndices.at((i) % polygonIndices.size()));
+					glm::vec3 secondVertexPos = vertices.at(polygonIndices.at((i + 1) % polygonIndices.size()));
+
+					//---HALF_EDGE_CREATION
+					bool newHalfEdgeCreated = false;
+					HalfEdge* halfEdge = 
+						findOrCreateObject<HalfEdge>(std::make_pair(firstVertexPos, secondVertexPos), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+					if (newHalfEdgeCreated) halfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
+
+					//---VERTEX_CREATION---
+					bool newVertexCreated = false;
+					Vertex* firstVertex = findOrCreateObject<Vertex>(firstVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
+					if(newVertexCreated) firstVertex->m_vertexIndexInVector = m_vertices.size() - 1;
+					Vertex* secondVertex = findOrCreateObject<Vertex>(secondVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
+					if (newVertexCreated) secondVertex->m_vertexIndexInVector = m_vertices.size() - 1;
+
+					//---VERTEX_INITIALIZATION---
+					if (firstVertex && !firstVertex->m_halfEdge) { firstVertex->m_position = firstVertexPos, firstVertex->m_halfEdge = halfEdge; }
+
+					//---FACE_INITIALIZATION---
+					if (face && !face->m_halfEdge) face->m_halfEdge = halfEdge;
+
+					//---HALF_EDGE_INITIALIZATION---
+						//---SET_STARTING_VERTEX---
+					halfEdge->m_vertex = firstVertex;
+					//halfEdge->setVertex(firstVertex);
+
+						//---SET_TWIN_HALF_EDGE---
+					HalfEdge* twinHalfEdge = findObject<HalfEdge>(std::make_pair(secondVertexPos, firstVertexPos), helperHalfEdgeMap);
+
+						//---SET_EDGE---
+					Edge* edge = nullptr;
+					if(twinHalfEdge)
 					{
-						polygonState.previousVertexIndexInPolygon = polygonState.currentVertexIndexInPolygon;
-					}
-					if (vertexIt == vertexMap.end())
+						halfEdge->m_twin = twinHalfEdge;
+						twinHalfEdge->m_twin = halfEdge;
+						edge = twinHalfEdge->m_edge;
+					} else
 					{
-						VertexIndex vertexIndex = addNewVertex();
-						setPositionOfVertex(vertexIndex, vertices.at(vertIndexInLoop));
-						polygonState.currentVertexIndexInPolygon = vertexIndex;
-
-						vertexMap.insert({ vertices.at(vertIndexInLoop), polygonState.currentVertexIndexInPolygon });
+						//---EDGE_CREATION---
+						edge = createObject<Edge>(m_edges);
+						edge->m_edgeIndexInVector = m_edges.size() - 1;
 					}
-					else
+					halfEdge->m_edge = edge;
+
+						//---SET_NEXT_HALF_EDGE
+					glm::vec3 nextFirstVertex =  vertices.at(polygonIndices.at((i + 1) % polygonIndices.size()));
+					glm::vec3 nextSecondVertex = vertices.at(polygonIndices.at((i + 2) % polygonIndices.size()));
+					HalfEdge* nextHalfEdge = 
+						findOrCreateObject<HalfEdge>(std::make_pair(nextFirstVertex, nextSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+					halfEdge->m_next = nextHalfEdge;
+
+					if (newHalfEdgeCreated) nextHalfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
+
+						//---SET_PREVIOUS_HALF_EDGE
+					glm::vec3 previousFirstVertex = vertices.at(polygonIndices.at((i - 1 + polygonIndices.size()) % polygonIndices.size()));
+					glm::vec3 previousSecondVertex = vertices.at(polygonIndices.at((i) % polygonIndices.size()));
+					HalfEdge* previousHalfEdge = 
+						findOrCreateObject<HalfEdge>(std::make_pair(previousFirstVertex, previousSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+					halfEdge->m_previous = previousHalfEdge;
+
+					if (newHalfEdgeCreated) previousHalfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
+
+						//---SET_FACE---
+					halfEdge->m_face = face;
+					//---HALF_EDGE_INITIALIZED---
+
+					//---EDGE_INITIALIZATION---
+					if(edge && !edge->m_halfEdge)
 					{
-						polygonState.currentVertexIndexInPolygon = vertexIt->second;
+						edge->m_halfEdge = halfEdge;
+						edge->m_firstVertex = firstVertex;
+						edge->m_secondVertex = secondVertex;
 					}
-					if (polygonState.firstVertexInPolygon)
-					{
-						polygonState.firstVertexInPolygon = false;
-						polygonState.firstVertexIndexInCurrentPolygon = polygonState.currentVertexIndexInPolygon;
-					}
-					else
-					{
-						
-						polygonState.currentHalfEdgeIndexInPolygon = addNewHalfEdge();
-
-						polygonState.currentTwinHalfEdgeIndexInPolygon = findTwinOfHalfEdge(halfEdgeMap, m_vertices.at(polygonState.currentVertexIndexInPolygon).getPosition(), m_vertices.at(polygonState.previousVertexIndexInPolygon).getPosition());
-
-						if(polygonState.currentTwinHalfEdgeIndexInPolygon == MAX_INDEX_VAL)
-						{
-							halfEdgeMap.insert({ std::make_pair(m_vertices.at(polygonState.previousVertexIndexInPolygon).getPosition(), m_vertices.at(polygonState.currentVertexIndexInPolygon).getPosition()), polygonState.currentHalfEdgeIndexInPolygon });
-
-							polygonState.currentEdgeIndexInPolygon = addNewEdge();
-							setHalfEdgeDataForEdge(polygonState.currentEdgeIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-							setVerticesDataForEdge(polygonState.currentEdgeIndexInPolygon, polygonState.currentVertexIndexInPolygon, polygonState.previousVertexIndexInPolygon);
-							setEdgeDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.currentEdgeIndexInPolygon);
-
-							setHalfEdgeDataForVertex(polygonState.previousVertexIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-
-						} else
-						{
-							setTwinDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.currentTwinHalfEdgeIndexInPolygon);
-
-							EdgeIndex twinEdgeIndex = getEdgeDataOfHalfEdge(m_halfEdges.at(polygonState.currentHalfEdgeIndexInPolygon).getTwinIndex());
-
-							setEdgeDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, twinEdgeIndex);
-						}
-
-						setVertexDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.previousVertexIndexInPolygon);
-
-						setFaceDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.faceIndexOfCurrentPolygon);
-
-
-						if (polygonState.firstHalfEdgeInPolygon)
-						{
-							polygonState.firstHalfEdgeInPolygon = false;
-							polygonState.firstHalfEdgeIndexInCurrentPolygon = polygonState.currentHalfEdgeIndexInPolygon;
-						}
-						else
-						{
-							polygonState.previousHalfEdgeIndexInPolygon = m_halfEdges.size() - 2;
-							setNextDataForHalfEdge(polygonState.previousHalfEdgeIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-							setPreviousDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.previousHalfEdgeIndexInPolygon);
-						}
-
-						if (!polygonState.isFaceConnectedToHalfEdge)
-						{
-							setHalfEdgeDataForFace(polygonState.faceIndexOfCurrentPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-							polygonState.isFaceConnectedToHalfEdge = true;
-						}
-
-
-						if (vertIndexInLoop == polygon.at(polygon.size() - 1))
-						{
-							polygonState.previousHalfEdgeIndexInPolygon = polygonState.currentHalfEdgeIndexInPolygon;
-							polygonState.currentHalfEdgeIndexInPolygon = addNewHalfEdge();
-
-							setVertexDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.currentVertexIndexInPolygon);
-
-							if(getHalfEdgeDataOfVertex(polygonState.currentVertexIndexInPolygon) == MAX_INDEX_VAL)
-							{
-								setHalfEdgeDataForVertex(polygonState.currentVertexIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-							}
-
-							setNextDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.firstHalfEdgeIndexInCurrentPolygon);
-
-							polygonState.previousHalfEdgeIndexInPolygon = m_halfEdges.size() - 2;
-							setPreviousDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.previousHalfEdgeIndexInPolygon);
-
-							setPreviousDataForHalfEdge(polygonState.firstHalfEdgeIndexInCurrentPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-
-							setNextDataForHalfEdge(polygonState.previousHalfEdgeIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-							setFaceDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.faceIndexOfCurrentPolygon);
-						
-							polygonState.currentTwinHalfEdgeIndexInPolygon = findTwinOfHalfEdge(halfEdgeMap, m_vertices.at(polygonState.currentVertexIndexInPolygon).getPosition(), m_vertices.at(polygonState.firstVertexIndexInCurrentPolygon).getPosition());
-
-							if (polygonState.currentTwinHalfEdgeIndexInPolygon == MAX_INDEX_VAL)
-							{
-								halfEdgeMap.insert({ std::make_pair(m_vertices.at(polygonState.currentVertexIndexInPolygon).getPosition(), m_vertices.at(polygonState.firstVertexIndexInCurrentPolygon).getPosition()), polygonState.currentHalfEdgeIndexInPolygon });
-
-								polygonState.currentEdgeIndexInPolygon = addNewEdge();
-								setHalfEdgeDataForEdge(polygonState.currentEdgeIndexInPolygon, polygonState.currentHalfEdgeIndexInPolygon);
-								setVerticesDataForEdge(polygonState.currentEdgeIndexInPolygon, polygonState.firstVertexIndexInCurrentPolygon, polygonState.currentVertexIndexInPolygon);
-								setEdgeDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.currentEdgeIndexInPolygon);
-
-							} else
-							{
-								setTwinDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, polygonState.currentTwinHalfEdgeIndexInPolygon);
-
-								EdgeIndex twinEdgeIndex = getEdgeDataOfHalfEdge(m_halfEdges.at(polygonState.currentHalfEdgeIndexInPolygon).getTwinIndex());
-								setEdgeDataForHalfEdge(polygonState.currentHalfEdgeIndexInPolygon, twinEdgeIndex);
-							}
-						}
-					}
-
 				}
-
 			}
-		}
 
+			//---BUILD_GRAPH---
+			buildGraph();
+		}
 
 	public:
-		std::vector<HalfEdge> m_halfEdges;
-		std::vector<Vertex> m_vertices;
-		std::vector<Edge> m_edges;
-		std::vector<Face> m_faces;
+		std::vector<HalfEdge*> m_halfEdges;
+		std::vector<Vertex*> m_vertices;
+		std::vector<Edge*> m_edges;
+		std::vector<Face*> m_faces;
+
+		std::map<Material*, std::vector<FaceTriangle>> m_faceTriangles;
 	};
-
-	//HALFEDGE
-	inline HalfEdgeIter HalfEdge::getNext()
-	{
-		if (m_next == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_next;
-	}
-
-	inline HalfEdgeIter HalfEdge::getPrevious()
-	{
-		if (m_previous == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_previous;
-	}
-
-	inline HalfEdgeIter HalfEdge::getTwin()
-	{
-		if (m_twin == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_twin;
-	}
-	inline VertexIter HalfEdge::getVertex()
-	{
-		if (m_vertex == MAX_INDEX_VAL) {
-			return m_mesh.vertexIterEnd();
-		}
-		return m_mesh.vertexIterBegin() + m_vertex;
-	}
-	inline EdgeIter HalfEdge::getEdge()
-	{
-		if (m_edge == MAX_INDEX_VAL) {
-			return m_mesh.edgeIterEnd();
-		}
-		return m_mesh.edgeIterBegin() + m_edge;
-	}
-	inline FaceIter HalfEdge::getFace()
-	{
-		if (m_face == MAX_INDEX_VAL) {
-			return m_mesh.faceIterEnd();
-		}
-		return m_mesh.faceIterBegin() + m_face;
-	}
-	//VERTEX
-	inline HalfEdgeIter Vertex::getHalfEdge()
-	{
-		if (m_halfEdge == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_halfEdge;
-	}
-	//EDGE
-	inline HalfEdgeIter Edge::getHalfEdge()
-	{
-		if (m_halfEdge == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_halfEdge;
-	}
-	inline VertexIter Edge::getFirstVertex()
-	{
-		if (m_firstVertex == MAX_INDEX_VAL) {
-			return m_mesh.vertexIterEnd();
-		}
-		return m_mesh.vertexIterBegin() + m_firstVertex;
-	}
-	inline VertexIter Edge::getSecondVertex()
-	{
-		if (m_secondVertex == MAX_INDEX_VAL) {
-			return m_mesh.vertexIterEnd();
-		}
-		return m_mesh.vertexIterBegin() + m_secondVertex;
-	}
-	//FACE
-	inline HalfEdgeIter Face::getHalfEdge()
-	{
-		if (m_halfEdge == MAX_INDEX_VAL) {
-			return m_mesh.halfEdgeIterEnd();
-		}
-		return m_mesh.halfEdgeIterBegin() + m_halfEdge;
-	}
-
 }

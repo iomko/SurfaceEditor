@@ -17,6 +17,11 @@ public:
 		sign[2] = (this->inverseDirection.z < 0);
 	}
 
+	static Ray getCameraRay(Camera& camera)
+	{
+		return Ray(camera.getState().position, camera.getState().frontVector);
+	}
+
 	static Ray fromMousePos(Camera& camera, const glm::mat4& perspectiveMat, glm::mat4& viewMat, Window& window)
 	{
 		double mouseX, mouseY;

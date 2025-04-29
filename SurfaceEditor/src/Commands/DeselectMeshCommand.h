@@ -3,7 +3,7 @@
 #include "../Patterns/Observer.h"
 #include "../ViewPortsHolder.h"
 
-class DeselectMeshCommand : public Observable, public Command {
+class DeselectMeshCommand : public Observable, public Command<> {
 public:
 	virtual void execute() override {
 		notifyObservers();

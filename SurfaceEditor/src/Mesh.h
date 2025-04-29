@@ -16,6 +16,9 @@ public:
 	Material* m_defaultMaterial;
 
 	std::string m_meshID;
+	
+	bool m_selected = false;
+	int m_selectionIndex = -1;
 
 	//mesh by nemal priamo vediet o tychto triangulators, su to len triedy, ktore sa pouzivaju docasne. Neskor ich uz netreba
 	PolygonTriangulator* m_polygonTriangulator;

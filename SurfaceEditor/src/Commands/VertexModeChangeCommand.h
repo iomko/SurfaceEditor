@@ -3,7 +3,7 @@
 #include "../Patterns/Observer.h"
 #include "CmdProperties/CmdProperties.h"
 
-class VertexModeChangeCommand : public Observable, public Command {
+class VertexModeChangeCommand : public Observable, public Command<> {
 public:
 	virtual void execute() override {
 		notifyObservers();

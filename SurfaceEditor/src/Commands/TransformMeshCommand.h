@@ -5,9 +5,9 @@
 #include "../ViewPortsHolder.h"
 #include "CmdProperties/CmdProperties.h"
 
-class TransformMeshCommand : public Observable, public Command {
+class TransformMeshCommand : public Observable, public Command<TransformMeshParams> {
 public:
-	virtual void execute(const Params& params) override {
+	virtual void execute(const TransformMeshParams& params) override {
 		notifyObservers(params);
 	}
 

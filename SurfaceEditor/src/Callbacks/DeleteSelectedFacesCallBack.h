@@ -1,0 +1,325 @@
+#pragma once
+#include "Callback.h"
+#include "../ObjectSelectionHolder.h"
+#include "../FaceSelectionManager.h"
+#include "../ViewPortsHolder.h"
+
+class DeleteSelectedFacesCallBack : public Callback<>, public Observer
+{
+public:
+	void execute() override
+	{
+		ObjectSelectionHolder* selectionsHolder = ViewPortsHolderContext::m_objectSelectionHolder;
+		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		std::vector<Mesh*>& selectedMeshes = selectionsHolder->m_meshes;
+
+		for(Mesh* selectedMesh : selectedMeshes)
+		{
+			std::vector<HalfEdgeDS::Face*>& selectedFaces = selectionsHolder->m_faces.find(selectedMesh)->second;
+
+			while(!selectedFaces.empty())
+			{
+				HalfEdgeDS::Face* selectedFace = selectedFaces.back();
+
+				//---DELETE_FROM_OCTREES---
+				scene->deleteFaceFromOctrees(selectedMesh, selectedFace);
+				//---DELETE_FROM_OCTREES---
+
+				//---DELETE_FROM_HALFEDGE_STRUCTURE---
+				deleteFaceVaoData(selectedMesh, selectedFace);
+				deleteFaceMeshData(selectedMesh, selectedFace);
+				//---DELETE_FROM_HALFEDGE_STRUCTURE---
+
+				//---DELETE_FROM_SELECTIONS---
+				if(selectedMesh->m_halfEdgeStructure->m_faces.empty())
+				{
+					MeshSelectionManager::unregisterMesh(*selectionsHolder, selectedMesh);
+				} else
+				{
+					FaceSelectionManager::unregisterFace(*selectionsHolder, selectedFace, selectedMesh);
+				}
+				//---DELETE_FROM_SELECTIONS---
+			}
+		}
+	}
+
+private:
+	template <typename T>
+	void swapWithLastAndPop(std::vector<T>& vector, size_t index) {
+		if (index < vector.size()) {
+			std::swap(vector[index], vector.back());
+			vector.pop_back();
+		}
+	}
+
+	template <typename T>
+	void reverseSubrange(std::vector<T>& vec, size_t startingIndex, size_t endingIndex) {
+		if (startingIndex >= vec.size() || endingIndex >= vec.size() || startingIndex > endingIndex)
+			return;
+		std::reverse(vec.begin() + startingIndex, vec.begin() + endingIndex + 1);
+	}
+
+	void deleteFaceMeshData(Mesh* mesh, HalfEdgeDS::Face* face)
+	{
+		HalfEdgeDS::HalfEdgeMesh* halfEdgeMesh = mesh->m_halfEdgeStructure;
+		//idem postupne cez vsetky vertices
+		HalfEdgeDS::HalfEdge* halfEdge = face->m_halfEdge;
+		do {
+			//do something with the vertex Vertex*
+			//and the halfEdge HalfEdge*
+			HalfEdgeDS::Vertex* vertex = halfEdge->m_vertex;
+
+			HalfEdgeDS::HalfEdge* nextHalfEdge = halfEdge->m_next;
+
+			//potrebujem vymazat graphEdge z m_graphEdges
+
+			//najskor z vertexu
+			HalfEdgeDS::GraphEdge* foundGraphEdge = nullptr;
+			for (HalfEdgeDS::GraphEdge* graphEdge : vertex->m_graphEdges)
+			{
+				if (graphEdge->face == face)
+				{
+					foundGraphEdge = graphEdge;
+					break;
+				}
+			}
+
+			//teraz potrebujem vymazat dany foundGraphEdge
+			//na to aby som to mohol spravit tak
+			if (foundGraphEdge->graphEdgeIndexInVertex != (vertex->m_graphEdges.size() - 1))
+			{
+				vertex->m_graphEdges.back()->graphEdgeIndexInVertex = foundGraphEdge->graphEdgeIndexInVertex;
+
+				swapWithLastAndPop(vertex->m_graphEdges, foundGraphEdge->graphEdgeIndexInVertex);
+			}
+			else
+			{
+				vertex->m_graphEdges.pop_back();
+			}
+
+			if (foundGraphEdge->graphEdgeIndexInFace != (face->m_graphEdges.size() - 1))
+			{
+				face->m_graphEdges.back()->graphEdgeIndexInFace = foundGraphEdge->graphEdgeIndexInFace;
+
+				swapWithLastAndPop(face->m_graphEdges, foundGraphEdge->graphEdgeIndexInFace);
+			}
+			else
+			{
+				face->m_graphEdges.pop_back();
+			}
+
+			//dobre teraz sme vymazali graphData pri danej vertex
+
+			//teraz je potrebne sa pozriet na to ci mame vymazat aj samotny vertex z HalfEdge
+			//alebo nie
+
+			if (vertex->m_graphEdges.empty())
+			{
+				if (vertex->m_vertexIndexInVector != (halfEdgeMesh->m_vertices.size() - 1))
+				{
+					halfEdgeMesh->m_vertices.back()->m_vertexIndexInVector = vertex->m_vertexIndexInVector;
+					swapWithLastAndPop(halfEdgeMesh->m_vertices, vertex->m_vertexIndexInVector);
+				}
+				else
+				{
+					halfEdgeMesh->m_vertices.pop_back();
+				}
+
+
+				//dobre tuto sa vymazala vertex, tym ze sa vymazala tak sme si isty, ze tento vertex
+				//uz nepatri ziadnej inej face
+
+				//preto musime vymazat vertex aj z halfEdge
+				vertex->m_halfEdge->m_vertex = nullptr;
+			}
+			else
+			{
+				//musime najst novy halfEdge ktory bude pripadat vertexu
+				HalfEdgeDS::HalfEdge* neighborFaceHalfEdge = vertex->m_graphEdges.front()->face->m_halfEdge;
+
+				while (neighborFaceHalfEdge->m_vertex != vertex)
+				{
+					HalfEdgeDS::HalfEdge* neighborFaceNextHalfEdge = neighborFaceHalfEdge->m_next;
+					neighborFaceHalfEdge = neighborFaceNextHalfEdge;
+				}
+
+				vertex->m_halfEdge = neighborFaceHalfEdge;
+			}
+
+
+			//---EDGE_DELETION---
+			if (halfEdge->m_twin == nullptr)
+			{
+				//neexistuje twin
+
+				deleteEdgeVaoData(mesh, halfEdge->m_edge);
+
+				//tak vymazeme tento edge
+				//na to aby sme vymazali rychlo edge tak musime vediet o indexe na ktorom sa nachadza
+				//vo vectore
+
+
+				if (halfEdge->m_edge->m_edgeIndexInVector != (halfEdgeMesh->m_edges.size() - 1))
+				{
+					//tak vieme ze sa nenachadzal na konci
+					halfEdgeMesh->m_edges.back()->m_edgeIndexInVector = halfEdge->m_edge->m_edgeIndexInVector;
+					swapWithLastAndPop(halfEdgeMesh->m_edges, halfEdge->m_edge->m_edgeIndexInVector);
+				}
+				else
+				{
+					halfEdgeMesh->m_edges.pop_back();
+				}
+
+			}
+			else
+			{
+				if (halfEdge->m_edge->m_halfEdge == halfEdge)
+				{
+					halfEdge->m_edge->m_halfEdge = halfEdge->m_twin;
+				}
+
+				halfEdge->m_twin->m_twin = nullptr;
+			}
+
+			//---HALF_EDGE_DELETION---
+			if (halfEdge->m_halfEdgeIndexInVector != (halfEdgeMesh->m_halfEdges.size() - 1))
+			{
+				//tak vieme ze sa nenachadzal na konci
+				halfEdgeMesh->m_halfEdges.back()->m_halfEdgeIndexInVector = halfEdge->m_halfEdgeIndexInVector;
+				swapWithLastAndPop(halfEdgeMesh->m_halfEdges, halfEdge->m_halfEdgeIndexInVector);
+			}
+			else
+			{
+				halfEdgeMesh->m_halfEdges.pop_back();
+			}
+
+
+
+			//go next
+			halfEdge = nextHalfEdge;
+		} while (halfEdge != face->m_halfEdge);
+
+		//nakonci uz len vymazem face
+
+		if (face->m_faceIndexInVector != (halfEdgeMesh->m_faces.size() - 1))
+		{
+			halfEdgeMesh->m_faces.back()->m_faceIndexInVector = face->m_faceIndexInVector;
+			swapWithLastAndPop(halfEdgeMesh->m_faces, face->m_faceIndexInVector);
+		}
+		else
+		{
+			halfEdgeMesh->m_faces.pop_back();
+		}
+
+	}
+
+	void deleteEdgeVaoData(Mesh* mesh, HalfEdgeDS::Edge* edge)
+	{
+		SceneRendererData::MeshLinesVaoMap& meshLinesVaoMap = 
+			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_rendererData.meshData.meshLinesVaoMap;
+		auto meshLinesVaoMapIt = meshLinesVaoMap.find(mesh);
+
+		std::vector<LineVertex>& meshLinesVaoVector = meshLinesVaoMapIt->second;
+
+
+		//---VAO_DATA_SWAP---
+		//before
+		if (edge->m_EdgeLineIndex != (meshLinesVaoVector.size() - 4))
+		{
+			reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 4, meshLinesVaoVector.size() - 1);
+			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 3; ++i)
+			{
+				swapWithLastAndPop(meshLinesVaoVector, i);
+			}
+
+			mesh->m_halfEdgeStructure->m_edges.back()->m_EdgeLineIndex = edge->m_EdgeLineIndex;
+
+		} else
+		{
+			for (int i = meshLinesVaoVector.size() - 1; i >= edge->m_EdgeLineIndex; --i)
+			{
+				meshLinesVaoVector.erase(meshLinesVaoVector.begin() + i);
+			}
+
+			if(meshLinesVaoVector.empty())
+			{
+				meshLinesVaoMap.erase(meshLinesVaoMapIt);
+			}
+
+		}
+
+	}
+
+	//tymto vymazeme vao data z meshu
+	void deleteFaceVaoData(Mesh* mesh, HalfEdgeDS::Face* face)
+	{
+		SceneRendererData::MeshFacesVaoMap& meshVaoMap =
+			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_rendererData.meshData.meshFacesVaoMap;
+		auto meshVaoMapIt = meshVaoMap.find(mesh);
+
+		SceneRendererData::MaterialVaoMap& materialMap = meshVaoMapIt->second;
+		auto materialMapIt = materialMap.find(face->material);
+		std::vector<MeshVertex>& facesVao = materialMapIt->second;
+
+		std::map<Material*, std::vector<HalfEdgeDS::FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
+		auto materialTrianglesIt = materialTrianglesMap.find(face->material);
+		std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = materialTrianglesIt->second;
+
+		while (!face->faceTriangleIndices.empty())
+		{
+			FaceTriangleIndex delFaceTriangleIndex = face->faceTriangleIndices.front();
+			HalfEdgeDS::FaceTriangle& delFaceTriangle = faceTriangles.at(delFaceTriangleIndex);
+
+			//before
+			if (delFaceTriangleIndex != faceTriangles.size() - 1)
+			{
+				faceTriangles.back().indexInVAO = delFaceTriangle.indexInVAO;
+
+				//---VAO_DATA_SWAP---
+				reverseSubrange(facesVao, facesVao.size() - 3, facesVao.size() - 1);
+				for (int i = delFaceTriangle.indexInVAO; i <= delFaceTriangle.indexInVAO + 2; ++i)
+				{
+					swapWithLastAndPop(facesVao, i);
+				}
+			}
+			else
+			{
+				for (int i = facesVao.size() - 1; i >= delFaceTriangle.indexInVAO; --i)
+				{
+					facesVao.erase(facesVao.begin() + i);
+				}
+
+				if (facesVao.empty())
+				{
+					materialMap.erase(materialMapIt);
+					if (materialMap.empty())
+					{
+						meshVaoMap.erase(meshVaoMapIt);
+					}
+				}
+
+			}
+
+			HalfEdgeDS::Face* lastTriangleFace = faceTriangles.back().face;
+			lastTriangleFace->faceTriangleIndices.at(faceTriangles.back().indexInFace) = delFaceTriangleIndex;
+
+			//---M_FACE_TRIANGLES_SWAP---
+			swapWithLastAndPop(faceTriangles, delFaceTriangleIndex);
+
+			if (faceTriangles.empty())
+			{
+				materialTrianglesMap.erase(materialTrianglesIt);
+			}
+
+			//before
+
+			if (face->faceTriangleIndices.size() != 1)
+			{
+				faceTriangles.at(face->faceTriangleIndices.back()).indexInFace = 0;
+			}
+
+			//---FACE_TRIANGLE_INDICES_SWAP---
+			swapWithLastAndPop(face->faceTriangleIndices, 0);
+		}
+	}
+};

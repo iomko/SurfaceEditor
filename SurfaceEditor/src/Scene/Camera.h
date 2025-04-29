@@ -25,6 +25,11 @@ struct CameraState
 	float zoom = 45.0f;
 };
 
+struct CameraMatrices {
+	glm::mat4 viewMatrix;
+	glm::mat4 perspectiveMatrix;
+};
+
 class Camera
 {
 public:
@@ -35,6 +40,7 @@ public:
 	void updateCameraVectors();
 
 	CameraState getState();
-private:
+public:
 	CameraState m_state;
+	CameraMatrices m_matrices;
 };

@@ -32,5 +32,5 @@ public:
     }
 
 private:
-    static inline std::unordered_map<std::string_view, Command*> m_commands;
+    static inline std::unordered_map<std::string_view, ICommand*> m_commands;
 };

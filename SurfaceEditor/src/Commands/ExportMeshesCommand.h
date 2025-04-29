@@ -8,13 +8,12 @@
 #include "CmdProperties/CmdProperties.h"
 
 
-class ExportMeshesCommand : public Observable, public Command {
+class ExportMeshesCommand : public Command<ImportExportMeshesParams>, public Observable
+{
 public:
-	virtual void execute(const Params& params) override {
+	virtual void execute(const ImportExportMeshesParams& params) override
+	{
 		notifyObservers(params);
-	}
-
-	void undo() override {
 	}
 
 	static constexpr std::string_view getCommandName() noexcept { return "ExportMeshesCommand"; }

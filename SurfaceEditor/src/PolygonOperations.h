@@ -22,6 +22,11 @@ typedef CDT::Point Point;
 
 #include "PolygonTraits.h"
 
+struct Plane {
+	glm::vec3 point;
+	glm::vec3 normal;
+};
+
 class PolygonOperations
 {
 public:
@@ -66,7 +71,7 @@ public:
 	}
 
 	static glm::vec3 computeFaceNormal(HalfEdgeDS::Face* face) {
-		auto vertexExtractor = [](HalfEdgeDS::Vertex& v) { return v.getPosition(); };
+		auto vertexExtractor = [](HalfEdgeDS::Vertex& v) { return v.m_position; };
 		return computeFaceNormal(face->faceVertexBegin(), face->faceVertexEnd(), vertexExtractor);
 	}
 
@@ -92,9 +97,28 @@ public:
 			return glm::normalize(normal);
 		}
 		else {
-			// Compute face normal for a general polygon
-			glm::vec3 normal(0.0f, 0.0f, 0.0f);
-			//TODO: IMPLEMENT
+			// Compute face normal for a general polygon using Newell's method
+			glm::vec3 normal(0.0f);
+			Iterator it0 = begin;
+			Iterator it1 = begin;
+			++it1;
+
+			for (; it1 != end; ++it0, ++it1) {
+				glm::vec3 v0 = extractor(*it0);
+				glm::vec3 v1 = extractor(*it1);
+
+				normal.x += (v0.y - v1.y) * (v0.z + v1.z);
+				normal.y += (v0.z - v1.z) * (v0.x + v1.x);
+				normal.z += (v0.x - v1.x) * (v0.y + v1.y);
+			}
+
+			// wrap around: last to first
+			glm::vec3 vLast = extractor(*it0);
+			glm::vec3 vFirst = extractor(*begin);
+
+			normal.x += (vLast.y - vFirst.y) * (vLast.z + vFirst.z);
+			normal.y += (vLast.z - vFirst.z) * (vLast.x + vFirst.x);
+			normal.z += (vLast.x - vFirst.x) * (vLast.y + vFirst.y);
 
 			return glm::normalize(normal);
 		}
@@ -176,6 +200,22 @@ public:
 	}
 	*/
 
+	// Vypoèíta plochu polygónu pomocou Shoelace algoritmu
+	static float computePolygonArea(const std::vector<glm::vec2>& vertices) {
+		if (vertices.size() < 3) return 0.0f; // nie je to polygón
+
+		float area = 0.0f;
+		size_t n = vertices.size();
+
+		for (size_t i = 0; i < n; ++i) {
+			const glm::vec2& current = vertices[i];
+			const glm::vec2& next = vertices[(i + 1) % n]; // uzatvori kruh
+			area += (current.x * next.y) - (next.x * current.y);
+		}
+
+		return std::abs(area) * 0.5f;
+	}
+
 	static float calculateSignedAreaOf2DPolygon(const std::vector<glm::vec2>& vertices)
 	{
 		float area = 0.0;
@@ -185,6 +225,53 @@ public:
 			area += (vertices.at(j).x - vertices.at(i).x) * (vertices.at(j).y + vertices.at(i).y);
 		}
 		return area / 2.0;
+	}
+
+	static Plane computePlaneFromPoints(const std::vector<glm::vec3>& vertices, bool& allCoplanar) {
+		constexpr float epsilon = 1e-5f;
+		allCoplanar = false;
+
+		if (vertices.size() < 3) {
+			return Plane{ glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f) }; // fallback/default plane
+		}
+
+		const glm::vec3& p0 = vertices[0];
+		const glm::vec3& p1 = vertices[1];
+		const glm::vec3& p2 = vertices[2];
+
+		glm::vec3 normal = glm::normalize(glm::cross(p1 - p0, p2 - p0));
+		if (glm::length(normal) < epsilon) {
+			return Plane{ p0, normal }; // Degenerate normal, not a valid plane
+		}
+
+		for (size_t i = 3; i < vertices.size(); ++i) {
+			float dist = glm::dot(vertices[i] - p0, normal);
+			if (std::abs(dist) > epsilon) {
+				return Plane{ p0, normal }; // Not coplanar
+			}
+		}
+
+		allCoplanar = true;
+		return Plane{ p0, normal };
+	}
+
+	static glm::vec3 intersectRayWithPlane(const Plane& plane, const glm::vec3& origin, const glm::vec3& direction, bool& hit) {
+		constexpr float epsilon = 1e-5f;
+		hit = false;
+
+		float denom = glm::dot(plane.normal, direction);
+		if (std::abs(denom) < epsilon) {
+			return glm::vec3(0.0f); // No intersection, direction is parallel to plane
+		}
+
+		float t = glm::dot(plane.point - origin, plane.normal) / denom;
+
+		if (t < 0.0f) {
+			return glm::vec3(0.0f); // Intersection is behind the origin
+		}
+
+		hit = true;
+		return origin + t * direction;
 	}
 
 };

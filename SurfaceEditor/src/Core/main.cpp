@@ -1,26 +1,30 @@
-#define NOMINMAX  // Prevents Windows.h from defining min/max macros
-#include <Windows.h>
+﻿#define NOMINMAX  // Prevents Windows.h from defining min/max macros
+
+
 #include <limits>
+#include <Windows.h>
 
 #include <iostream>
 #include <vector>
-#include "../Core/Window.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Input.h"
+#include "../AABBBoundingRegion.h"
 #include "../Core/Application.h"
 #include "../Core/Input.h"
-#include "../AABBBoundingRegion.h"
-#include "Input.h"
+#include "../Core/Window.h"
 #include "../Renderer/Renderer.h"
 //#include "../Mesh.h"
-#include "../Renderer/Framebuffer.h"
+#include "../FunctionComposer.h"
 #include "../PolygonTraits.h"
+#include "../Renderer/Framebuffer.h"
 
 
 import Renderer.Shader;
 import Renderer.Buffers;
-import DataStructures;
+#include "../DataStructures/Octree.h"
+#include "tiff/tiffio.h"
 //import LayerSystem.Layer.ImGuiLayer;
 //import Patterns.Observer;
 
@@ -30,69 +34,283 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 
-Ray getCameraRay(const glm::vec3& cameraPosition, const glm::vec3& cameraFrontVector)
-{
-	return Ray(cameraPosition, cameraFrontVector);
-}
-
 #include "../DataStructures/HalfEdge.h"
 
 //#include "../Patterns/Observer.h"
 #include "../ViewPortsHolder.h"
-#include "../Commands/AddPlaneCommand.h"
 #include "../Callbacks/AddPlaneCallback.h"
+#include "../Commands/AddPlaneCommand.h"
 //#include "../Commands/CommandRegistry.h"
 
 
-#include "../Gui/AdditionLayer.h"
-#include "../Gui/ToolBarLayer.h"
+#include "../Callbacks/DeselectFaceCallBack.h"
+#include "../Callbacks/SelectMeshCallBack.h"
 #include "../Callbacks/ToolBarLayerCallBack.h"
 #include "../Commands/SelectMeshCommand.h"
-#include "../Callbacks/SelectionCallBacks/SelectMeshCallBack.h"
+#include "../Gui/AdditionLayer.h"
+#include "../Gui/RemovalLayer.h"
+#include "../Gui/ToolBarLayer.h"
 
-#include "../Commands/DeselectMeshCommand.h"
 #include "../Callbacks/DeselectMeshCallBack.h"
+#include "../Commands/DeselectMeshCommand.h"
 
+#include "../Commands/DeselectFaceCommand.h"
 #include "../Commands/SelectFaceCommand.h"
 
-#include "../Commands/SelectVertexCommand.h"
-#include "../Callbacks/SelectionCallBacks/SelectVertexCallBack.h"
+#include "../Callbacks/DeleteSelectedFacesCallBack.h"
+#include "../Commands/DeleteSelectedFacesCommand.h"
+
+#include "../Callbacks/DeleteSelectedMeshesCallBack.h"
+#include "../Commands/DeleteSelectedMeshesCommand.h"
 
 #include "../Commands/BasicSculptToolCommand.h"
 
 
-//TRANSFORMLAYER
-#include "../Gui/TransformLayer.h"
-#include "../Callbacks/TransformLayerCallBacks/TransformAddPlaneCallBack.h"
-#include "../Callbacks/TransformLayerCallBacks/TransformSelectMeshCallBack.h"
-
-#include "../Commands/TransformMeshCommand.h"
-#include "../Callbacks/TransformMeshCallBack.h"
 
 //#include "../OBJExporter.h"
 //#include "../OBJImporter.h"
 
 //ImportExportLayer
-#include "../Gui/ImportExportLayer.h"
+#include "../Callbacks/ImportMeshesCallback.h"
 #include "../Commands/ImportMeshesCommand.h"
-#include "../Callbacks/ImportMeshesCallBack.h"
+#include "../Gui/ImportExportLayer.h"
 
+#include "../Callbacks/ExportMeshesCallback.h"
 #include "../Commands/ExportMeshesCommand.h"
-#include "../Callbacks/ExportMeshesCallBack.h"
+
+#include "../Callables/GenFetchedSurfaceVertexDataCallable.h"
+#include "../Callbacks/FetchSurfaceCallBack.h"
+
+//DELAUNAY_TEST
+#include "../DelaunayTest.h"
+#include "../Triangulator.h"
+
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
 
 
+
+//=====TESTING THE FUNCTION_COMPOSER=====
+
+
+//=====PLANE_MESH_DATA=====
+
+//OUTPUT
+
+
+
+class RootInputParams : public Params {
+public:
+	int rootInputValue;
+
+	~RootInputParams()
+	{
+		//toto by sa nemalo zavolat
+		std::cout << "DESTRUCTED Root_Input_Params" << std::endl;
+	}
+};
+	
+
+class RootOutputParams : public Params {
+public:
+	int rootOutputValue;
+
+	~RootOutputParams()
+	{
+		std::cout << "DESTRUCTED Root_Output_Params" << std::endl;
+	}
+};
+
+class Add5OutputParams : public Params {
+public:
+	int add5OutputParams;
+
+	~Add5OutputParams()
+	{
+		std::cout << "DESTRUCTED Add_50_Output_Params" << std::endl;
+	}
+};
+
+class Add100OutputParams : public Params {
+public:
+	int add100OutputParams;
+
+	~Add100OutputParams()
+	{
+		std::cout << "DESTRUCTED Add_100_Output_Params" << std::endl;
+	}
+};
+
+
+//------
+
+// RootCreationSquare - Calculates square of the rootInputValue
+class RootCreationSquare : public Callable<RootInputParams, RootOutputParams> {
+public:
+
+	void invoke(const RootInputParams& input, RootOutputParams& output) override
+	{
+		output.rootOutputValue = input.rootInputValue * input.rootInputValue;
+		std::cout << "CREATING_2" << std::endl;
+		std::cout << "CREATING_2_OUTPUT: " << output.rootOutputValue << std::endl;
+	}
+};
+
+// Add5 - Adds 5 to the rootOutputValue
+class Add5 : public Callable<RootOutputParams, Add5OutputParams> {
+public:
+	void invoke(const RootOutputParams& input, Add5OutputParams& output) override
+	{
+		output.add5OutputParams = input.rootOutputValue + 5;
+		std::cout << "ADDING_5" << std::endl;
+	}
+};
+
+// Divide10 - Divides rootOutputValue by 10 and returns the result
+class Divide10 : public Callable<RootOutputParams, void> {
+public:
+	void invoke(const RootOutputParams& input) override
+	{
+		std::cout << "Divided_By_10: " << input.rootOutputValue / 10 << std::endl;
+	}
+};
+
+// Multiply10 - Multiplies rootOutputValue by 10 and returns the result
+class Multiply10 : public Callable<RootOutputParams, void> {
+public:
+
+	void invoke(const RootOutputParams& input) override
+	{
+		std::cout << "Multiplied_By_10: " << input.rootOutputValue * 10 << std::endl;
+	}
+};
+
+// Subtract10 - Subtracts 10 from rootOutputValue and returns the result
+class Subtract10 : public Callable<RootOutputParams, void> {
+public:
+
+	void invoke(const RootOutputParams& input) override
+	{
+		std::cout << "Subtracted_By_10: " << input.rootOutputValue - 10 << std::endl;
+	}
+};
+
+// Add100 - Adds 100 to add5OutputParams and returns the result
+class Add100 : public Callable<Add5OutputParams, Add100OutputParams> {
+public:
+	void invoke(const Add5OutputParams& input, Add100OutputParams& output) override
+	{
+		output.add100OutputParams = input.add5OutputParams + 100;
+		std::cout << "ADDING_100" << std::endl;
+	}
+};
+
+// Add20 - Adds 20 to add5OutputParams and returns the result
+class Add20 : public Callable<Add5OutputParams, void> {
+public:
+
+	void invoke(const Add5OutputParams& input) override
+	{
+		std::cout << "Added_20: " << input.add5OutputParams + 20 << std::endl;
+	}
+};
+
+// Subtract100 - Subtracts 100 from add100OutputParams and returns the result
+class Subtract100 : public Callable<Add100OutputParams, void> {
+public:
+	void invoke(const Add100OutputParams& input) override
+	{
+		std::cout << "Subtracted_100: " << input.add100OutputParams - 100 << std::endl;
+	}
+};
+
+// Subtract20 - Subtracts 20 from add100OutputParams and returns the result
+class Subtract20 : public Callable<Add100OutputParams, void> {
+public:
+
+	void invoke(const Add100OutputParams& input) override
+	{
+		std::cout << "Subtracted_20: " << input.add100OutputParams - 20 << std::endl;
+	}
+};
+
 int main()
 {
-	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
-	Camera camera = Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	
-	Ray ray = getCameraRay(camera.getState().position, camera.getState().frontVector);
-	std::vector<LineVertex> rayLine;
+
+	std::vector<glm::vec3> delaunayVertices;
+
+	delaunayVertices.emplace_back(glm::vec3(5.38461, 2.49756, 0.0)); //0 - index 0
+	delaunayVertices.emplace_back(glm::vec3(10.7969, -6.18571, 0.0)); //1 - index 1
+	delaunayVertices.emplace_back(glm::vec3(3.59558, -3.68423, 0.0)); //2 - index 2
+	delaunayVertices.emplace_back(glm::vec3(-2.01404, -8.78555, 0.0)); //4 - index 3
+	delaunayVertices.emplace_back(glm::vec3(-6.17731, -5.06843, 0.0)); //5 - index 4
+	delaunayVertices.emplace_back(glm::vec3(1.60165, -1.69653, 0.0)); //3 - index 5
+	delaunayVertices.emplace_back(glm::vec3(5.38461, 2.49756, 0.0)); //0 - index 6
+
+
+	//DELAUNAY_TEST
+	//DelaunayTest::constrainedTest();
+	//DelaunayTest::classicTest();
+
+	Triangulator::triangulatePolygon(delaunayVertices);
+
+	//dobre teraz by som mal otestovat moj novy triangulator
+
+
+
+	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
+
+	//--ADD_PLANE_COMPOSER--
+
+	FunctionComposer addPlaneComposer;
+	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<GenPlaneVertexDataCallable>();
+	addPlaneComposer.addFunc<InitMeshVaoDataCallable>(addPlaneRoot);
+	addPlaneComposer.addFunc<AddMeshIntoSceneCallable>(addPlaneRoot);
+	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
+
+	//---FETCH_SURFACE_COMPOSER---
+	FunctionComposer fetchSurfaceComposer;
+	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<GenFetchedSurfaceVertexDataCallable>();
+	fetchSurfaceComposer.addFunc<InitMeshVaoDataCallable>(fetchSurfaceRoot);
+	fetchSurfaceComposer.addFunc<AddMeshIntoSceneCallable>(fetchSurfaceRoot);
+	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
+
+
+	FunctionComposer composer;
+	auto rootNode = composer.initRoot<RootCreationSquare>();
+
+	//FirstLevel
+	auto add5Node = composer.addFunc<Add5>(rootNode);
+	composer.addFunc<Divide10>(rootNode);
+	composer.addFunc<Multiply10>(rootNode);
+	composer.addFunc<Subtract10>(rootNode);
+
+	//SecondLevel
+	auto add100Node = composer.addFunc<Add100>(add5Node);
+	composer.addFunc<Add20>(add5Node);
+
+	//ThirdLevel
+	composer.addFunc<Subtract100>(add100Node);
+	composer.addFunc<Subtract20>(add100Node);
+
+	RootInputParams rootInputParams;
+	rootInputParams.rootInputValue = 2;
+
+	//composer.execute(rootInputParams);
+	//composer.execute();  
+	//composer.execute(rootInputParams);
+	composer.execute(rootInputParams);
+
+
+
+
+	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
+	Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	Ray ray = Ray::getCameraRay(*camera);
 
 
 
@@ -130,11 +348,11 @@ int main()
 
 	//ToolBarLayer toolBarLayer(ToolBarLayer("ToolBarLayer"));
 	//app.getLayerStack().addLayer(&toolBarLayer);
-	
+
 
 	//viewPortLayer
 	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
-	viewPortLayer->m_activeCamera = &camera;
+	viewPortLayer->m_activeCamera = camera;
 
 	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
@@ -146,9 +364,13 @@ int main()
 	ViewPortsHolder* viewPortsHolder = new ViewPortsHolder("viewPortsHolderLayer");
 	viewPortsHolder->addViewPortLayer(viewPortLayer);
 	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
+	ObjectSelectionHolder* objectSelectionHolder = new ObjectSelectionHolder();
 
 	viewPortsHolder->m_scene = &scene;
 	ViewPortsHolderContext::m_viewPortsHolder = viewPortsHolder;
+	ViewPortsHolderContext::m_objectSelectionHolder = objectSelectionHolder;
+	ViewPortsHolderContext::m_camera = camera;
+	ViewPortsHolderContext::m_window = app.m_window;
 
 	AddPlaneParams planeProperties;
 	planeProperties.m_size = 50.0f;
@@ -164,27 +386,35 @@ int main()
 	CommandRegistry::registerCommand<ImportMeshesCommand>();
 	ImportMeshesCommand* importMeshesCommand = CommandRegistry::getCommand<ImportMeshesCommand>();
 
-	ImportMeshesCallBack importMeshesCallBack;
+	ImportMeshesCallback importMeshesCallback;
 	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
 
-	importMeshesCommand->addObserver(&importMeshesCallBack);
-	importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
+	importMeshesCommand->addObserver(&importMeshesCallback);
+
+	//importMeshesCommand->addObserver(&importMeshesCallBack);
+	importMeshesCallback.observe(importMeshesCommand, &importMeshesCallback);
+	//importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
 
 	CommandRegistry::registerCommand<ExportMeshesCommand>();
 	ExportMeshesCommand* exportMeshesCommand = CommandRegistry::getCommand<ExportMeshesCommand>();
 
-	ExportMeshesCallBack exportMeshesCallBack;
+	ExportMeshesCallback exportMeshesCallback;
 	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
 
-	exportMeshesCommand->addObserver(&exportMeshesCallBack);
-	exportMeshesCallBack.observe(exportMeshesCommand, &exportMeshesCallBack);
+	exportMeshesCommand->addObserver(&exportMeshesCallback);
+	exportMeshesCallback.observe(exportMeshesCommand, &exportMeshesCallback);
 
 	CommandRegistry::registerCommand<AddPlaneCommand>();
 	AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
-	
-	AddPlaneCallback addPlaneCallBack;
+
 	addPlaneCommand->addObserver(&addPlaneCallBack);
 	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+
+	CommandRegistry::registerCommand<FetchSurfaceCommand>();
+	FetchSurfaceCommand* fetchSurfaceCommand = CommandRegistry::getCommand<FetchSurfaceCommand>();
+
+	fetchSurfaceCommand->addObserver(&fetchSurfaceCallBack);
+	fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);
 
 	SelectMeshCallBack selectMeshCallBack;
 	CommandRegistry::registerCommand<SelectMeshCommand>();
@@ -192,29 +422,44 @@ int main()
 
 	selectMeshCommand->addObserver(&selectMeshCallBack);
 	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
-	//viewPortHolder->observe(selectMeshCommand, &selectMeshCallBack);
 
-	
+
 	DeselectMeshCallBack deselectMeshCallBack;
 	CommandRegistry::registerCommand<DeselectMeshCommand>();
 	DeselectMeshCommand* deselectMeshCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
-	viewPortsHolder->observe(deselectMeshCommand, &deselectMeshCallBack);
-	
+
+	deselectMeshCommand->addObserver(&deselectMeshCallBack);
+	deselectMeshCallBack.observe(deselectMeshCommand, &deselectMeshCallBack);
+
 	SelectFaceCallBack selectFaceCallBack;
 	CommandRegistry::registerCommand<SelectFaceCommand>();
 	SelectFaceCommand* selectFaceCommand = CommandRegistry::getCommand<SelectFaceCommand>();
-	viewPortsHolder->observe(selectFaceCommand, &selectFaceCallBack);
+	selectFaceCommand->addObserver(&selectFaceCallBack);
+	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
 
-	SelectVertexCallBack selectVertexCallBack;
-	CommandRegistry::registerCommand<SelectVertexCommand>();
-	SelectVertexCommand* selectVertexCommand = CommandRegistry::getCommand<SelectVertexCommand>();
-	viewPortsHolder->observe(selectVertexCommand, &selectVertexCallBack);
+	DeselectFaceCallBack deselectFaceCallBack;
+	CommandRegistry::registerCommand<DeselectFaceCommand>();
+	DeselectFaceCommand* deselectFaceCommand = CommandRegistry::getCommand<DeselectFaceCommand>();
+	deselectFaceCommand->addObserver(&deselectFaceCallBack);
+	deselectFaceCallBack.observe(deselectFaceCommand, &deselectFaceCallBack);
+
+	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack;
+	CommandRegistry::registerCommand<DeleteSelectedFacesCommand>();
+	DeleteSelectedFacesCommand* deleteSelectedFacesCommand = CommandRegistry::getCommand<DeleteSelectedFacesCommand>();
+	deleteSelectedFacesCommand->addObserver(&deleteSelectedFacesCallBack);
+	deleteSelectedFacesCallBack.observe(deleteSelectedFacesCommand, &deleteSelectedFacesCallBack);
+
+	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack;
+	CommandRegistry::registerCommand<DeleteSelectedMeshesCommand>();
+	DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = CommandRegistry::getCommand<DeleteSelectedMeshesCommand>();
+	deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
+	deleteSelectedMeshesCallBack.observe(deleteSelectedMeshesCommand, &deleteSelectedMeshesCallBack);
 
 	ToolBarLayer toolBarLayer("ToolBarLayer");
 	app.getLayerStack().addLayer(&toolBarLayer);
 
 	ToolBarLayerCallBack toolBarLayerCallBack;
-	//viewPortHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
+	viewPortsHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
 
 	toolBarLayer.addObserver(&toolBarLayerCallBack);
 	toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
@@ -234,13 +479,6 @@ int main()
 	//transformLayer.observe(&addPlaneCallBack, &transformAddPlaneCallBack);
 
 
-	CommandRegistry::registerCommand<TransformMeshCommand>();
-	TransformMeshCommand* transformMeshCommand = CommandRegistry::getCommand<TransformMeshCommand>();
-	TransformMeshCallBack transformMeshCallBack;
-	viewPortsHolder->observe(transformMeshCommand, &transformMeshCallBack);
-
-	
-
 	//SCULPT TOOL
 	BasicSculptToolCommand basicSculptToolCommand;
 
@@ -248,6 +486,10 @@ int main()
 	//AdditionLayer
 	AdditionLayer additionLayer("AdditionLayer");
 	app.getLayerStack().addLayer(&additionLayer);
+
+	//RemovalLayer
+	RemovalLayer removalLayer("RemovalLayer");
+	app.getLayerStack().addLayer(&removalLayer);
 
 	//TransformLayer
 	//app.getLayerStack().addLayer(&transformLayer);
@@ -294,7 +536,6 @@ int main()
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
 
-
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
 
@@ -310,11 +551,10 @@ int main()
 
 		float nearPlane = 1.0f;
 		float farPlane = 1000.0f;
-		projection = glm::perspective(glm::radians(camera.getState().zoom), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), nearPlane, farPlane);
+		projection = glm::perspective(glm::radians(camera->getState().zoom), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), nearPlane, farPlane);
 		linesShader.setMat4("u_projection", projection);
 
-
-		glm::mat4 view = camera.getState().lookAtMatrix;
+		glm::mat4 view = camera->getState().lookAtMatrix;
 		linesShader.setMat4("u_view", view);
 		
 		//linesShader.setMat4("u_model", model);
@@ -350,7 +590,10 @@ int main()
 		//pointsShader.setMat4("u_model", model);
 		pointsShader.unbind();
 
-		ray = Ray::fromMousePos(camera, projection, view, app.getWindow());
+		camera->m_matrices.perspectiveMatrix = projection;
+		camera->m_matrices.viewMatrix = view;
+
+		ray = Ray::fromMousePos(*camera, projection, view, app.getWindow());
 
 		if (Input::isKeyDown(GLFW_KEY_C))
 		{
@@ -392,8 +635,8 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-
-		for (auto& [mesh, materialVertexMap] : scene.m_rendererData.meshData.meshVaoDataMap)
+		
+		for (auto& [mesh, materialVertexMap] : scene.m_rendererData.meshData.meshFacesVaoMap)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -406,7 +649,7 @@ int main()
 			glStencilMask(0x00);
 			glDisable(GL_STENCIL_TEST);
 
-
+			
 			for (auto& [material, vertexVector] : materialVertexMap)
 			{
 				// Pass the vertexVector to some method
@@ -416,54 +659,13 @@ int main()
 			}
 		}
 
-		
-
-		for (auto& [mesh, faceMap] : viewPortsHolder->m_scene->meshFaceOctreeCoordsMap) {
-
-			/*
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			//chcem zapisovat do depth bufferu
-			glEnable(GL_DEPTH_TEST);
-			glDepthMask(GL_TRUE);
-			glDepthFunc(GL_LESS);
-
-			//nechcem zapisovat do stencil bufferu
-			glStencilMask(0x00);
-			glDisable(GL_STENCIL_TEST);
-
-			//DRAW MESHES
-
-
-			//mesh shader
-			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->bind();
-			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
-			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_faceShader->unbind();
-
-			*/
-
-			/*
-			//for normals
-			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->bind();
-			Renderer::drawMesh(mesh->m_combinedVertexDataMatVector.m_vertexData);
-			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_shaderSettings.m_normalShader->unbind();
-			*/
-
-			/*
-			//points
-			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_pointShader->bind();
-			Renderer::drawPoints(std::get<2>(tuple).m_points);
-			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_pointShader->unbind();
-
-			//lines
-			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
-			Renderer::drawBoundingBoxes();
-			Renderer::drawLines(std::get<2>(tuple).m_edges);
-			ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
-			*/
-
+		//RENDER LINES
+		for (auto& [mesh, linesVector] : scene.m_rendererData.meshData.meshLinesVaoMap)
+		{
+			linesShader.bind();
+			Renderer::drawLines(linesVector);
+			linesShader.unbind();
 		}
-
 
 
 		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();

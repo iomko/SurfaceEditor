@@ -23,6 +23,8 @@ public:
 private:
 	bool writeMeshData()
 	{
+		/*
+		/*
 		if (m_meshes.empty()) {
 			std::cerr << "Error: No meshes to export." << std::endl;
 			return false;
@@ -95,32 +97,6 @@ private:
 				}
 			}
 
-
-			/*
-			for (const auto& faceData : mesh->m_facesData)
-			{
-
-
-				auto normalIndexIt = normalIndexMap.find(faceData.normal);
-				if (normalIndexIt == normalIndexMap.end()) {
-					outputNormalStringStream << "vn " << faceData.normal.x << " "
-						<< faceData.normal.y << " "
-						<< faceData.normal.z << std::endl;
-					normalIndexMap[faceData.normal] = currentFaceIndexInt;
-					++currentFaceIndexInt;
-				}
-
-				HalfEdgeDS::Face& currentFace = mesh->m_halfEdgeStructure->m_faces.at(faceData.faceIndex);
-				outputFaceStringStream << "f ";
-				for (auto faceVertexIt = currentFace.faceVertexBegin(); faceVertexIt != currentFace.faceVertexEnd(); ++faceVertexIt) {
-					int vertexIndexInStringStream = vertexIndexMap[faceVertexIt.operator*().getHalfEdge()->getVertexIndex()];
-					int normalIndexInStringStream = normalIndexMap[faceData.normal];
-					outputFaceStringStream << vertexIndexInStringStream << "/0/" << normalIndexInStringStream << " ";
-				}
-				outputFaceStringStream << std::endl;
-			}
-			*/
-
 			// Write to file
 			outputFile << outputVectorStringStream.str();
 			outputFile << outputNormalStringStream.str();
@@ -135,6 +111,7 @@ private:
 		}
 
 		outputFile.close();
+		*/
 		return true;
 	}
 

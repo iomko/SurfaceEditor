@@ -6,6 +6,7 @@
 #include "Scene/Scene.h"
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Scene/ViewPortLayerScreenSettings.h"
+#include "../ObjectSelectionHolder.h"
 
 class ViewPortLayer;
 
@@ -22,7 +23,8 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void addCommandToQueue(Command* command)
+
+	void addCommandToQueue(ICommand* command)
 	{
 		m_commandsQueue.push_back(command);
 	}
@@ -34,12 +36,12 @@ public:
 
 	std::vector<ViewPortLayer*> m_viewPortLayers;
 	ViewPortLayer* m_activeViewPortLayer = nullptr;
-	Command* m_currentCommand = nullptr;
+	ICommand* m_currentCommand = nullptr;
 	Params* m_currentCommandParams = nullptr;
 	std::set<Mesh*> m_selectedMeshes;
 	std::map<Mesh*, std::set<HalfEdgeDS::Face*>> m_selectedFaces;
 	std::map<Mesh*, std::set<HalfEdgeDS::Vertex*>> m_selectedVertices;
-	std::vector<Command*> m_commandsQueue;
+	std::vector<ICommand*> m_commandsQueue;
 	Scene* m_scene = nullptr;
 
 	//temporary
@@ -50,6 +52,9 @@ class ViewPortsHolderContext
 {
 public:
 	static inline ViewPortsHolder* m_viewPortsHolder = nullptr;
+	static inline ObjectSelectionHolder* m_objectSelectionHolder = nullptr;
+	static inline Camera* m_camera = nullptr;
+	static inline Window* m_window = nullptr;
 };
 
 class ViewPortLayer : public Layer
@@ -120,9 +125,10 @@ public:
 		{
 			if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 			{
+				std::cout << "ViewPortsOnButtonPressLEFTEvent" << std::endl;
 				if (ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand != nullptr)
 				{
-					if (ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams != nullptr)
+					if (ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams == nullptr)
 					{
 						ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand->execute();
 						event.isHandled = true;
@@ -144,81 +150,3 @@ public:
 	}
 
 };
-
-
-/*
-class ViewPortHolder : public Layer, public Observer
-{
-public:
-
-	
-	//renderFlags budu nahradene nejakym RenderSettings pre kazdy ViewPortLayer zvlast
-	struct MeshRenderingFlags
-	{
-		bool RENDER_NORMALS = true;
-		bool RENDER_POINTS = true;
-		bool RENDER_EDGES = true;
-		bool RENDER_FACES = true;
-	};
-
-	
-	struct MeshRenderingShaderData
-	{
-		MeshRenderingShaderData(Shader point_shader, Shader edge_shader, Shader normal_shader,
-			const Shader face_shader)
-			: PointShader(point_shader),
-			EdgeShader(edge_shader),
-			NormalShader(normal_shader),
-			FaceShader(face_shader)
-		{
-		}
-
-		Shader PointShader;
-		Shader EdgeShader;
-		Shader NormalShader;
-		Shader FaceShader;
-	};
-
-	struct MeshRenderingVAOData
-	{
-	public:
-		std::vector<LineVertex> m_edges;
-		std::vector<MeshPoint> m_points;
-	};
-	
-	
-	//std::map<Mesh*, std::tuple<MeshRenderingFlags, MeshRenderingShaderData, MeshRenderingVAOData>> m_meshesShaderData;
-	
-public:
-
-	ViewPortHolder(ViewPortLayer* viewPortLayer): Layer("ViewPortHolder")
-	{
-		m_viewPortLayer = viewPortLayer;
-	}
-
-	virtual void onEvent(Event& event) override
-	{
-		//tuto budu prichadzat eventy a ja ich potom nasledne budem moct posielat do viewPortlayeru podla toho co som stlacil,
-		//cize budem 
-	}
-
-	void addCommandToQueue(Command* command)
-	{
-		m_commandsQueue.push_back(command);
-	}
-
-public:
-	//selectedMeshes
-	std::set<Mesh*> m_selectedMeshes;
-	//selectedFaces
-	//nepouzivane pri renderovani
-	std::map<Mesh*, std::set<HalfEdgeDS::Face*>> m_selectedFaces;
-	std::map<Mesh*, std::set<HalfEdgeDS::Vertex*>> m_selectedVertices;
-
-	std::vector<Command*> m_commandsQueue;
-	ViewPortLayer* m_viewPortLayer;
-
-	//temporary
-	size_t m_currentMeshId = 0;
-};
-*/

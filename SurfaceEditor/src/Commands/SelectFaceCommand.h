@@ -3,7 +3,7 @@
 #include "../Patterns/Observer.h"
 #include "../ViewPortsHolder.h"
 
-class SelectFaceCommand : public Observable, public Command {
+class SelectFaceCommand : public Observable, public Command<> {
 public:
 	virtual void execute() override {
 		notifyObservers();

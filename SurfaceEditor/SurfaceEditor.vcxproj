@@ -31,6 +31,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -38,12 +39,14 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -51,6 +54,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -71,12 +75,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\Linking\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)\Linking\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\Linking\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\Linking\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)\Linking\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\Linking\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgInstalledDir>
+    </VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>false</VcpkgEnableManifest>
+    <VcpkgEnabled>true</VcpkgEnabled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +128,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
@@ -120,7 +136,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GLFW\glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tiff\tiff.lib;curl\libcurl_a.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;GLFW\glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,7 +146,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
@@ -140,7 +157,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GLFW\glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tiff\tiff.lib;curl\libcurl_a.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;GLFW\glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -151,6 +170,50 @@
     <ClCompile Include="Linking\include\imgui\imgui_draw.cpp" />
     <ClCompile Include="Linking\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="Linking\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Linking\include\tiff\tif_aux.c" />
+    <ClCompile Include="Linking\include\tiff\tif_close.c" />
+    <ClCompile Include="Linking\include\tiff\tif_codec.c" />
+    <ClCompile Include="Linking\include\tiff\tif_color.c" />
+    <ClCompile Include="Linking\include\tiff\tif_compress.c" />
+    <ClCompile Include="Linking\include\tiff\tif_dir.c" />
+    <ClCompile Include="Linking\include\tiff\tif_dirinfo.c" />
+    <ClCompile Include="Linking\include\tiff\tif_dirread.c" />
+    <ClCompile Include="Linking\include\tiff\tif_dirwrite.c" />
+    <ClCompile Include="Linking\include\tiff\tif_dumpmode.c" />
+    <ClCompile Include="Linking\include\tiff\tif_error.c" />
+    <ClCompile Include="Linking\include\tiff\tif_extension.c" />
+    <ClCompile Include="Linking\include\tiff\tif_fax3.c" />
+    <ClCompile Include="Linking\include\tiff\tif_fax3sm.c" />
+    <ClCompile Include="Linking\include\tiff\tif_flush.c" />
+    <ClCompile Include="Linking\include\tiff\tif_getimage.c" />
+    <ClCompile Include="Linking\include\tiff\tif_hash_set.c" />
+    <ClCompile Include="Linking\include\tiff\tif_jbig.c" />
+    <ClCompile Include="Linking\include\tiff\tif_jpeg.c" />
+    <ClCompile Include="Linking\include\tiff\tif_jpeg_12.c" />
+    <ClCompile Include="Linking\include\tiff\tif_lerc.c" />
+    <ClCompile Include="Linking\include\tiff\tif_luv.c" />
+    <ClCompile Include="Linking\include\tiff\tif_lzma.c" />
+    <ClCompile Include="Linking\include\tiff\tif_lzw.c" />
+    <ClCompile Include="Linking\include\tiff\tif_next.c" />
+    <ClCompile Include="Linking\include\tiff\tif_ojpeg.c" />
+    <ClCompile Include="Linking\include\tiff\tif_open.c" />
+    <ClCompile Include="Linking\include\tiff\tif_packbits.c" />
+    <ClCompile Include="Linking\include\tiff\tif_pixarlog.c" />
+    <ClCompile Include="Linking\include\tiff\tif_predict.c" />
+    <ClCompile Include="Linking\include\tiff\tif_print.c" />
+    <ClCompile Include="Linking\include\tiff\tif_read.c" />
+    <ClCompile Include="Linking\include\tiff\tif_stream.cxx" />
+    <ClCompile Include="Linking\include\tiff\tif_strip.c" />
+    <ClCompile Include="Linking\include\tiff\tif_swab.c" />
+    <ClCompile Include="Linking\include\tiff\tif_thunder.c" />
+    <ClCompile Include="Linking\include\tiff\tif_tile.c" />
+    <ClCompile Include="Linking\include\tiff\tif_version.c" />
+    <ClCompile Include="Linking\include\tiff\tif_warning.c" />
+    <ClCompile Include="Linking\include\tiff\tif_webp.c" />
+    <ClCompile Include="Linking\include\tiff\tif_win32.c" />
+    <ClCompile Include="Linking\include\tiff\tif_write.c" />
+    <ClCompile Include="Linking\include\tiff\tif_zip.c" />
+    <ClCompile Include="Linking\include\tiff\tif_zstd.c" />
     <ClCompile Include="src\Patterns\Observer.ixx" />
     <ClCompile Include="src\Renderer\Buffers.cpp" />
     <ClCompile Include="src\Renderer\Buffers.ixx" />
@@ -166,10 +229,11 @@
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Scene\ViewPortLayer.ixx" />
+    <ClCompile Include="src\TrianglePP\tpp_assert.cpp" />
+    <ClCompile Include="src\TrianglePP\tpp_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
-    <None Include="src\Callbacks\ApplyTransformationMatrix.CallBack.h" />
     <None Include="src\Renderer\blit.frag" />
     <None Include="src\Renderer\dilate.frag" />
     <None Include="src\Renderer\fragColTest.frag" />
@@ -194,9 +258,11 @@
     <None Include="src\Renderer\singleColor.vert" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="Linking\lib\curl\libcurl_a.lib" />
     <Library Include="Linking\lib\GLFW\glfw3.lib" />
     <Library Include="Linking\lib\GLFW\glfw3dll.lib" />
     <Library Include="Linking\lib\GLFW\glfw3_mt.lib" />
+    <Library Include="Linking\lib\tiff\tiff.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Linking\include\CDT\CDT.h" />
@@ -222,28 +288,72 @@
     <ClInclude Include="Linking\include\imgui\imstb_textedit.h" />
     <ClInclude Include="Linking\include\imgui\imstb_truetype.h" />
     <ClInclude Include="Linking\include\KHR\khrplatform.h" />
+    <ClInclude Include="Linking\include\tiff\libport.h" />
+    <ClInclude Include="Linking\include\tiff\libport_config.h" />
+    <ClInclude Include="Linking\include\tiff\t4.h" />
+    <ClInclude Include="Linking\include\tiff\tiff.h" />
+    <ClInclude Include="Linking\include\tiff\tiffconf.h" />
+    <ClInclude Include="Linking\include\tiff\tiffio.h" />
+    <ClInclude Include="Linking\include\tiff\tiffio.hxx" />
+    <ClInclude Include="Linking\include\tiff\tiffiop.h" />
+    <ClInclude Include="Linking\include\tiff\tiffvers.h" />
+    <ClInclude Include="Linking\include\tiff\tif_config.h" />
+    <ClInclude Include="Linking\include\tiff\tif_dir.h" />
+    <ClInclude Include="Linking\include\tiff\tif_fax3.h" />
+    <ClInclude Include="Linking\include\tiff\tif_hash_set.h" />
+    <ClInclude Include="Linking\include\tiff\tif_predict.h" />
+    <ClInclude Include="Linking\include\tiff\uvcode.h" />
+    <ClInclude Include="Linking\include\TPP\dpoint.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_assert.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_delaunay.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_export.h" />
+    <ClInclude Include="Linking\include\TPP\tpp_interface.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_iterators.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_trace.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_triangle_macros.hpp" />
+    <ClInclude Include="Linking\include\TPP\tpp_triangulation_mesh.hpp" />
+    <ClInclude Include="Linking\include\TPP\triangle.h" />
+    <ClInclude Include="Linking\include\TPP\triangle_impl.hpp" />
     <ClInclude Include="src\AABBBoundingRegion.h" />
-    <ClInclude Include="src\Callbacks\AddMeshIntoSceneCallBack.h" />
-    <ClInclude Include="src\Callbacks\InitMeshVaoDataCallBack.h" />
+    <ClInclude Include="src\Callables\AddMeshIntoSceneCallable.h" />
+    <ClInclude Include="src\Callables\Callable.h" />
+    <ClInclude Include="src\Callables\GenPlaneVertexDataCallable.h" />
+    <ClInclude Include="src\Callables\GenFetchedSurfaceVertexDataCallable.h" />
+    <ClInclude Include="src\Callables\InitMeshVaoDataCallable.h" />
+    <ClInclude Include="src\Callables\RetClosestOctreeDataCallable.h" />
+    <ClInclude Include="src\Callbacks\DeleteSelectedFacesCallBack.h" />
+    <ClInclude Include="src\Callbacks\DeselectFaceCallBack.h" />
+    <ClInclude Include="src\Callbacks\FetchSurfaceCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectFaceCallBack.h" />
     <ClInclude Include="src\Commands\CmdProperties\CmdProperties.h" />
+    <ClInclude Include="src\Callbacks\DeleteSelectedMeshesCallBack.h" />
+    <ClInclude Include="src\Commands\DeleteSelectedFacesCommand.h" />
+    <ClInclude Include="src\Commands\DeleteSelectedMeshesCommand.h" />
+    <ClInclude Include="src\Commands\DeselectFaceCommand.h" />
+    <ClInclude Include="src\Commands\FetchSurfaceCommand.h" />
     <ClInclude Include="src\Commands\VertexModeChangeCommand.h" />
+    <ClInclude Include="src\ConversionUtils.h" />
+    <ClInclude Include="src\CurlFileFetcher.h" />
+    <ClInclude Include="src\DataStructures\Octree.h" />
+    <ClInclude Include="src\DelaunayTest.h" />
+    <ClInclude Include="src\DeleteFaceTester.h" />
+    <ClInclude Include="src\FaceSelectionManager.h" />
+    <ClInclude Include="src\FunctionComposer.h" />
+    <ClInclude Include="src\Gui\RemovalLayer.h" />
+    <ClInclude Include="src\TiffGrayscaleMapLoader.h" />
+    <ClInclude Include="src\MeshFromHeightMapTest.h" />
+    <ClInclude Include="src\MeshSelectionManager.h" />
     <ClInclude Include="src\NumberUtils.h" />
+    <ClInclude Include="src\ObjectSelectionHolder.h" />
     <ClInclude Include="src\PolygonTraits.h" />
     <ClInclude Include="src\BaseImporter.h" />
     <ClInclude Include="src\Callbacks\AddPlaneCallback.h" />
     <ClInclude Include="src\Callbacks\DeselectMeshCallBack.h" />
-    <ClInclude Include="src\Callbacks\ExportMeshesCallBack.h" />
-    <ClInclude Include="src\Callbacks\ImportMeshesCallBack.h" />
-    <ClInclude Include="src\Callbacks\SelectionCallBacks\FacesDataTransfer.h" />
-    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectVertexCallBack.h" />
-    <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformAddPlaneCallBack.h" />
-    <ClInclude Include="src\Callbacks\TransformLayerCallBacks\TransformSelectMeshCallBack.h" />
-    <ClInclude Include="src\Callbacks\TransformMeshCallBack.h" />
-    <ClInclude Include="src\Callbacks\VertexModeChangeCallBack.h" />
+    <ClInclude Include="src\Callbacks\ExportMeshesCallback.h" />
+    <ClInclude Include="src\Callbacks\ImportMeshesCallback.h" />
     <ClInclude Include="src\Commands\BasicSculptToolCommand.h" />
     <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
-    <ClInclude Include="src\Callbacks\SelectionCallBacks\SelectMeshCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectMeshCallBack.h" />
     <ClInclude Include="src\Callbacks\ToolBarLayerCallBack.h" />
     <ClInclude Include="src\Commands\AddPlaneCommand.h" />
     <ClInclude Include="src\Commands\CommandRegistry.h" />
@@ -262,17 +372,29 @@
     <ClInclude Include="src\Gui\ImGuiLayer.h" />
     <ClInclude Include="src\Gui\ImportExportLayer.h" />
     <ClInclude Include="src\PolygonOperations.h" />
+    <ClInclude Include="src\ProjectionUtils.h" />
     <ClInclude Include="src\Scene\Camera.h" />
     <ClInclude Include="src\Scene\EditorSettings.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneRendererData.h" />
     <ClInclude Include="src\Scene\ViewPortLayerRenderSettings.h" />
     <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />
+    <ClInclude Include="src\TrianglePP\dpoint.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_assert.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_delaunay.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_export.h" />
+    <ClInclude Include="src\TrianglePP\tpp_interface.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_iterators.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_trace.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_triangle_macros.hpp" />
+    <ClInclude Include="src\TrianglePP\tpp_triangulation_mesh.hpp" />
+    <ClInclude Include="src\TrianglePP\triangle.h" />
+    <ClInclude Include="src\TrianglePP\triangle_impl.hpp" />
+    <ClInclude Include="src\Triangulator.h" />
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\WindowsFileDialogs.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
     <ClInclude Include="src\Gui\ToolBarLayer.h" />
-    <ClInclude Include="src\Gui\TransformLayer.h" />
     <ClInclude Include="src\BaseExporter.h" />
     <ClInclude Include="src\OBJExporter.h" />
     <ClInclude Include="src\OBJImporter.h" />

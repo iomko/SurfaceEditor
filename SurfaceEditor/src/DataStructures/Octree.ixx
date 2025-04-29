@@ -1,6 +1,6 @@
 //Octree.ixx:
 
-
+/*
 module;
 #include "../AABBBoundingRegion.h";
 #include "HalfEdge.h";
@@ -15,7 +15,7 @@ class OctreeNode
 public:
     AABBBoundingRegion nodeBounds;
     size_t depth = 0;
-    size_t maxDepth = 1;
+    size_t maxDepth = 2;
     OctreeNode<T>* parentNode = nullptr;
     bool isLeaf = true;
     bool delProcessed = false;
@@ -201,16 +201,6 @@ public:
 
     Octree(glm::vec3 minVector, glm::vec3 maxVector) : rootNode(new OctreeNode<T>(minVector, maxVector, 0, 0))
     {}
-    /*
-    Octree(Octree<T>&& other) noexcept
-        : rootNode(std::move(other.rootNode)) {}
-    */
-
-    /*
-    bool operator<(const Octree<T>& other) const {
-        return rootNode->nodeBounds.getMin() < other.rootNode->nodeBounds.getMin();
-    }
-    */
 
     Octree(Octree<T>&& other) noexcept
         : rootNode(nullptr), leafs(std::move(other.leafs)) {
@@ -248,7 +238,7 @@ public:
     }
 
 	template <typename QueryShape>
-    void findNodesInOctree(
+    void findMaxDepthNodes(
         const QueryShape& queryShape,
         const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
         std::vector<OctreeNode<T>*>& accumulatedOctreeNodes)
@@ -298,38 +288,6 @@ public:
 		return results;
 	}
 
-    /*
-    std::tuple<OctreeNode<T>*, T, float> findDataInOctree(const Ray& ray, const std::function<std::pair<bool, float>(const T&, const Ray&)>& algorithm) {
-        T returnData;
-        OctreeNode<T>* closestHitNode = nullptr;
-        float minHitDistance = std::numeric_limits<float>::max();
-        std::vector<OctreeNode<T>*> hitOctreeLiefs;
-
-        if (rootNode->nodeBounds.intersectsRay(ray)) {
-            rootNode->findData(ray, hitOctreeLiefs);
-            //rootNode->findData(ray, hitOctreeLiefs);
-        }
-        for (const auto& hitOctreeLief : hitOctreeLiefs)
-        {
-	        for (const auto& data : hitOctreeLief->nodeData)
-	        {
-                const auto& distanceHitPair = algorithm(data, ray);
-                if(distanceHitPair.first)
-                {
-                    if(distanceHitPair.second < minHitDistance)
-                    {
-                        minHitDistance = distanceHitPair.second;
-                        returnData = data;
-                        closestHitNode = hitOctreeLief;
-                    }
-
-                }
-	        }
-        }
-        return std::make_tuple(closestHitNode, returnData, minHitDistance);
-    }
-    */
-
     void removeData(T data)
     {
         auto it = leafs.find(data);
@@ -363,6 +321,4 @@ public:
     }
 };
 
-
-
-
+*/

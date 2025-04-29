@@ -2,10 +2,12 @@
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
 #include "../ViewPortsHolder.h"
+#include "../Commands/CmdProperties/CmdProperties.h"
 
-class SelectMeshCommand : public Observable, public Command {
+class SelectMeshCommand : public Observable, public Command<> {
 public:
-	virtual void execute() override {
+	void execute() override
+	{
 		notifyObservers();
 	}
 

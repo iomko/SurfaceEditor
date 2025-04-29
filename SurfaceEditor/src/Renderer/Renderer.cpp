@@ -26,7 +26,7 @@ void Renderer::init() {
 	//LINE
 	data.Line_vao.bind();
 	data.Line_vbo.bind();
-	data.Line_vbo.createData(nullptr, (1000000*2) * sizeof(LineVertex), GL_DYNAMIC_DRAW);
+	data.Line_vbo.createData(nullptr, (10000000*2) * sizeof(LineVertex), GL_DYNAMIC_DRAW);
 	//data.Line_vbo.createData(nullptr, 2 * sizeof(LineVertex), GL_DYNAMIC_DRAW);
 	data.Line_vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, point));
 	data.Line_vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, isHighlighted));
