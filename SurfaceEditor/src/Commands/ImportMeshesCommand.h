@@ -28,6 +28,6 @@ public:
 	void undo() override {
 	}
 
-	static constexpr std::string_view getCommandName() noexcept { return "ImportMeshesCommand"; }
+	static constexpr std::string_view getToolName() noexcept { return "ImportMeshesCommand"; }
 };
 */

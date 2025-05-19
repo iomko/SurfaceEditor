@@ -16,14 +16,9 @@ public:
 
 		Mesh* mesh = output.meshFacePair.first;
 
-		if(mesh != nullptr)
-		{
-			std::cout << "MESH NICE" << std::endl;
-		}
-
 		MeshSelectionManager::registerMesh(*ViewPortsHolderContext::m_objectSelectionHolder, mesh);
 
-		
+		/*
 		//LOG
 		std::cout << "-----MESH_SELECTIONS-----" << std::endl;
 		for (Mesh* selectedMesh : ViewPortsHolderContext::m_objectSelectionHolder->m_meshes)
@@ -41,5 +36,6 @@ public:
 				std::cout << "------Face: " << selectedFace->m_selectionIndex << std::endl;
 			}
 		}
+		*/
 	}
 };

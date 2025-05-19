@@ -68,3 +68,9 @@ struct OctreeNodeDataParams : public Params
 	Scene::MeshFacePair meshFacePair;
 	glm::vec3 hitPoint;
 };
+
+struct BrushToolParams : public Params
+{
+	float radius;
+	float brushStrength;
+};

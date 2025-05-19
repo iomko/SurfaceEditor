@@ -18,6 +18,7 @@ public:
 		bool fileOpened = false;
 		objExporter.setFilePath(params.m_filePathMeshes);
 
+		/*
 		for (const auto selectedMesh : ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes)
 		{
 			selectedMesh->m_meshID = selectedMesh->m_meshID;
@@ -35,6 +36,7 @@ public:
 		{
 			objExporter.write();
 		}
+		*/
 	}
 };
 

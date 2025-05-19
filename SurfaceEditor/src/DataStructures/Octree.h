@@ -259,6 +259,29 @@ public:
         }
     }
 
+
+	template <typename QueryShape>
+	void findDataInOctree(
+		const QueryShape& queryShape,
+		const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
+		const std::function<bool(const T&, const QueryShape&)>& dataIntersectAlg)
+	{
+		std::vector<OctreeNode<T>*> hitOctreeLeaves;
+
+		if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
+			rootNode->findData(queryShape, octreeBoundsIntersectAlg, hitOctreeLeaves);
+		}
+
+		for (const auto& leaf : hitOctreeLeaves) {
+
+			for (const auto& data : leaf->nodeData)
+			{
+                dataIntersectAlg(data, queryShape);
+			}
+		}
+	}
+
+    /*
     template <typename QueryShape>
     std::vector<std::pair<OctreeNode<T>*, std::vector<T>>> findDataInOctree(
         const QueryShape& queryShape,
@@ -298,37 +321,6 @@ public:
         }
 
         return results;
-    }
-
-    /*
-    std::tuple<OctreeNode<T>*, T, float> findDataInOctree(const Ray& ray, const std::function<std::pair<bool, float>(const T&, const Ray&)>& algorithm) {
-        T returnData;
-        OctreeNode<T>* closestHitNode = nullptr;
-        float minHitDistance = std::numeric_limits<float>::max();
-        std::vector<OctreeNode<T>*> hitOctreeLiefs;
-
-        if (rootNode->nodeBounds.intersectsRay(ray)) {
-            rootNode->findData(ray, hitOctreeLiefs);
-            //rootNode->findData(ray, hitOctreeLiefs);
-        }
-        for (const auto& hitOctreeLief : hitOctreeLiefs)
-        {
-            for (const auto& data : hitOctreeLief->nodeData)
-            {
-                const auto& distanceHitPair = algorithm(data, ray);
-                if(distanceHitPair.first)
-                {
-                    if(distanceHitPair.second < minHitDistance)
-                    {
-                        minHitDistance = distanceHitPair.second;
-                        returnData = data;
-                        closestHitNode = hitOctreeLief;
-                    }
-
-                }
-            }
-        }
-        return std::make_tuple(closestHitNode, returnData, minHitDistance);
     }
     */
 

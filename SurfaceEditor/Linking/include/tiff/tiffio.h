@@ -181,7 +181,7 @@ typedef struct
     int range; /* Size of conversion table */
 #define CIELABTORGB_TABLE_RANGE 1500
     float rstep, gstep, bstep;
-    float X0, Y0, Z0; /* Reference white point */
+    float X0, Y0, Z0; /* Reference white position */
     TIFFDisplay display;
     float Yr2r[CIELABTORGB_TABLE_RANGE + 1]; /* Conversion of Yr to r */
     float Yg2g[CIELABTORGB_TABLE_RANGE + 1]; /* Conversion of Yg to g */

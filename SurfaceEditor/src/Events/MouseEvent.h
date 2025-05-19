@@ -86,6 +86,7 @@ public:
 	{
 		return EventType::MouseButtonRelease;
 	}
+
 	static EventType getStaticType()
 	{
 		return EventType::MouseButtonRelease;

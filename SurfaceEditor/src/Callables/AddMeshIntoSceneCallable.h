@@ -39,7 +39,7 @@ private:
 		if (!isOctreeCreated)
 		{
 			//CREATE NEW OCTREE ON THAT VOXEL COORDS
-			auto [octreeMinBounds, octreeMaxBounds] = SceneUtilities::calculateOctreeBounds(octreeVoxelBounds, scene);
+			auto [octreeMinBounds, octreeMaxBounds] = SceneUtilities::calculateOctreeBounds(octreeVoxelBounds, scene->getVoxelSize());
 
 			//RETRIEVE NEWLY CREATED OCTREE
 			retOctree = &scene->coordsOctreeMap.emplace(
@@ -76,8 +76,8 @@ private:
 				[](HalfEdgeDS::Vertex& p) { return p.m_position.z; }
 			);
 
-			glm::vec3 sceneVoxelMinCoords = SceneUtilities::getVoxelIndex(faceBounds.getMin(), scene);
-			glm::vec3 sceneVoxelMaxCoords = SceneUtilities::getVoxelIndex(faceBounds.getMax(), scene);
+			glm::vec3 sceneVoxelMinCoords = SceneUtilities::getVoxelIndex(faceBounds.getMin(), scene->getVoxelSize());
+			glm::vec3 sceneVoxelMaxCoords = SceneUtilities::getVoxelIndex(faceBounds.getMax(), scene->getVoxelSize());
 
 			for (int x = sceneVoxelMinCoords.x; x <= sceneVoxelMaxCoords.x; ++x)
 			{

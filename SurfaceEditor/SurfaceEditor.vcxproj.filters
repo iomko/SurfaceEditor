@@ -119,8 +119,8 @@
     <ClInclude Include="src\Gui\AdditionLayer.h" />
     <ClInclude Include="src\Commands\CommandRegistry.h" />
     <ClInclude Include="src\Commands\SelectMeshCommand.h" />
-    <ClInclude Include="src\Gui\ToolBarLayer.h" />
-    <ClInclude Include="src\Callbacks\ToolBarLayerCallBack.h" />
+    <ClInclude Include="src\Gui\SelectionLayer.h" />
+    <ClInclude Include="src\Callbacks\SelectionLayerCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectMeshCallBack.h" />
     <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
     <ClInclude Include="src\Callbacks\DeselectMeshCallBack.h" />
@@ -224,6 +224,18 @@
     <ClInclude Include="src\Callbacks\FetchSurfaceCallBack.h" />
     <ClInclude Include="src\Callables\GenFetchedSurfaceVertexDataCallable.h" />
     <ClInclude Include="src\Commands\FetchSurfaceCommand.h" />
+    <ClInclude Include="src\Callbacks\BrushToolCallBack.h" />
+    <ClInclude Include="src\Tools\InteractionHandler.h" />
+    <ClInclude Include="src\Tools\Tool.h" />
+    <ClInclude Include="src\Commands\BrushToolCommand.h" />
+    <ClInclude Include="src\Tools\BrushInteractionHandler.h" />
+    <ClInclude Include="src\Tools\BrushTool.h" />
+    <ClInclude Include="src\Sphere.h" />
+    <ClInclude Include="src\Gui\SculptToolsLayer.h" />
+    <ClInclude Include="src\Tools\ToolRegistry.h" />
+    <ClInclude Include="src\Tools\FaceSelectionTool.h" />
+    <ClInclude Include="src\Tools\SelectionHandler.h" />
+    <ClInclude Include="src\Tools\MeshSelectionTool.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

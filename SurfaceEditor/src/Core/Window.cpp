@@ -161,6 +161,65 @@ void Window::setCallBackFunctions()
 			{
 			case GLFW_PRESS:
 			{
+				if(Input::m_mouseButtonClicked[button] == false)
+				{
+					Input::m_mouseButtonClicked[button] = true;
+				}
+				MouseButtonPressEvent event(button);
+				instance->m_eventFunc(event);
+				Input::m_mouseButtonClicked[button] = false;
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				//Input::m_mouseButtonStates[button] = false;
+				Input::m_mouseButtonClicked[button] = false;
+				MouseButtonReleaseEvent event(button);
+				instance->m_eventFunc(event);
+				break;
+			}
+			default:
+				break;
+			}
+		});
+
+	/*
+	glfwSetMouseButtonCallback(m_windowHandle, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				//Input::m_mouseButtonStates[button] = true;
+				Input::m_mouseButtonClicked[button] = true;
+				MouseButtonPressEvent event(button);
+				instance->m_eventFunc(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				//Input::m_mouseButtonStates[button] = false;
+				MouseButtonReleaseEvent event(button);
+				instance->m_eventFunc(event);
+				break;
+			}
+			default:
+				break;
+			}
+		});
+	*/
+
+	/*
+	glfwSetMouseButtonCallback(m_windowHandle, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
 				MouseButtonPressEvent event(button);
 				instance->m_eventFunc(event);
 				break;
@@ -174,7 +233,7 @@ void Window::setCallBackFunctions()
 			default:;
 			}
 		});
-
+	*/
 }
 
 void Window::setEventFunc(std::function<void(Event&)> func)

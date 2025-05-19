@@ -56,6 +56,8 @@ namespace HalfEdgeDS
 
 		int m_vertexIndexInVector = -1;
 
+		std::vector<Edge*> m_neighbourEdges;
+
 		//graph
 		std::vector<GraphEdge*> m_graphEdges;
 	};
@@ -384,6 +386,10 @@ namespace HalfEdgeDS
 					//---EDGE_INITIALIZATION---
 					if(edge && !edge->m_halfEdge)
 					{
+						//---ADDING_NEIGHBOURING_EDGES---
+						firstVertex->m_neighbourEdges.emplace_back(edge);
+						secondVertex->m_neighbourEdges.emplace_back(edge);
+
 						edge->m_halfEdge = halfEdge;
 						edge->m_firstVertex = firstVertex;
 						edge->m_secondVertex = secondVertex;

@@ -8,6 +8,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/norm.hpp>
+
+#include "Sphere.h"
 
 class AABBBoundingRegion
 {
@@ -69,6 +72,23 @@ public:
 			tmax = tzmax;
 
 		return true;
+	}
+
+	bool intersectsSphere(const Sphere& sphere) const {
+		glm::vec3 closestPoint;
+		const glm::vec3& min = this->getMin();
+		const glm::vec3& max = this->getMax();
+
+		// Clamp each coordinate to the AABB bounds
+		closestPoint.x = glm::clamp(sphere.position.x, min.x, max.x);
+		closestPoint.y = glm::clamp(sphere.position.y, min.y, max.y);
+		closestPoint.z = glm::clamp(sphere.position.z, min.z, max.z);
+
+		// Compute squared distance from sphere center to closest position
+		float distanceSquared = glm::distance2(closestPoint, sphere.position);
+
+		// Check if it's within the radius squared
+		return distanceSquared <= (sphere.radius * sphere.radius);
 	}
 
 	bool intersectsAABB(const AABBBoundingRegion& aabb) const

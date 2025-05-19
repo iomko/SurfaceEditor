@@ -3,6 +3,8 @@
 #include "../Commands/CmdProperties/CmdProperties.h"
 #include "../Callables/Callable.h"
 
+#include <random>
+
 class GenPlaneVertexDataCallable : public Callable<AddPlaneParams, MeshParams>
 {
 public:
@@ -10,7 +12,6 @@ public:
 	{
 		++ViewPortsHolderContext::m_viewPortsHolder->m_currentMeshId;
 
-		
 		float planeSize = input.m_size;
 		int planeSubidivisionLevel = input.m_subdivisionLevel;
 
@@ -18,7 +19,6 @@ public:
 		std::vector<glm::vec3> planeVertices;
 
 		float squareSize = planeSize / planeSubidivisionLevel;
-
 
 		for (int z = 0; z <= planeSubidivisionLevel; ++z)
 		{
@@ -54,12 +54,35 @@ public:
 		mesh->m_meshID = std::to_string(ViewPortsHolderContext::m_viewPortsHolder->m_currentMeshId);
 
 		output.m_mesh = mesh; 
-		
 
-		//output.m_mesh = createTestingMesh();
+		//output.m_mesh = createNewTestMesh();
 	}
 
 private:
+
+	/*
+	Mesh* createNewTestMesh()
+	{
+		std::vector<std::vector<int>> planeIndices;
+		std::vector<glm::vec3> planeVertices;
+
+		planeVertices.emplace_back(glm::vec3(0.0f, -2.53614f, 0.0f)); //0 - index 0
+		planeVertices.emplace_back(glm::vec3(0.0f, 11.6686f, -50.0f)); //1 - index 1
+		planeVertices.emplace_back(glm::vec3(50.0f, 3.13265f, -50.0f)); //2 - index 2
+		planeVertices.emplace_back(glm::vec3(50.0f, 1.31321f, 0.0f)); //3 - index 3
+
+		std::vector<int> firstFace{ 0, 2, 1 };
+		std::vector<int> secondFace{ 0, 3, 2 };
+
+		planeIndices.emplace_back(firstFace);
+		planeIndices.emplace_back(secondFace);
+
+		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
+
+		mesh->m_meshID = "testing_mesh";
+		return mesh;
+	}
+	*/
 
 	Mesh* createTestingMesh()
 	{

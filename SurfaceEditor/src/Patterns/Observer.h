@@ -16,10 +16,16 @@ public:
 		m_observers[observable]->execute();
 	}
 
-	template<typename TParams>
-	void update(Observable* observable, const TParams& observableParams)
+	template<typename IParams, typename OParams>
+	void update(Observable* observable, const IParams& iParams, OParams& oParams)
 	{
-		m_observers[observable]->execute(observableParams);
+		m_observers[observable]->execute(iParams, oParams);
+	}
+
+	template<typename IParams>
+	void update(Observable* observable, const IParams& iParams)
+	{
+		m_observers[observable]->execute(iParams);
 	}
 	void observe(Observable* observable, ICallback* callback)
 	{
@@ -49,11 +55,19 @@ public:
 		}
 	}
 
-	void notifyObservers(const Params& observableParams)
+	void notifyObservers(const Params& iParams)
 	{
 		for (const auto& observer : m_observers)
 		{
-			observer->update(this, observableParams);
+			observer->update(this, iParams);
+		}
+	}
+
+	void notifyObservers(const Params& iParams, Params& oParams)
+	{
+		for (const auto& observer : m_observers)
+		{
+			observer->update(this, iParams, oParams);
 		}
 	}
 public:

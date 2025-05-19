@@ -7,6 +7,11 @@
 class Input
 {
 public:
+	static void resetFrameInput()
+	{
+		for (auto& [button, clicked] : m_mouseButtonClicked)
+			clicked = false;
+	}
 
     static void updateMousePosition()
     {
@@ -14,7 +19,7 @@ public:
         glfwGetCursorPos(Application::getWindow().getWindowHandle(), &xMousePos, &yMousePos);
         m_lastMouseX = xMousePos;
         m_lastMouseY = yMousePos;
-    } 
+    }
     
     static float getMouseDx()
     {
@@ -50,13 +55,33 @@ public:
         auto keyState = glfwGetKey(Application::getWindow().getWindowHandle(), keycode);
         return keyState == GLFW_PRESS || keyState == GLFW_REPEAT;
     }
+    
+	static bool isMouseButtonPressed(int mouse)
+	{
+		auto mouseButtonState = glfwGetMouseButton(Application::getWindow().getWindowHandle(), mouse);
+		return mouseButtonState == GLFW_PRESS;
+	}
 
-    static bool isMouseButtonPressed(int mouse)
-    {
-        auto mouseButtonState = glfwGetMouseButton(Application::getWindow().getWindowHandle(), mouse);
-        return mouseButtonState == GLFW_PRESS;
-    }
+	static bool isMouseButtonClicked(int button)
+	{
+		return m_mouseButtonClicked[button];
+	}
 
+    /*
+	static bool isMouseButtonClicked(int button)
+	{
+		bool clicked = m_mouseButtonClicked[button];
+		m_mouseButtonClicked[button] = false;
+
+        if(clicked == true)
+        {
+            std::cout << "isMouseButtonClicked was Clicked" << std::endl;
+        }
+		return clicked;
+	}
+    */
+
+    /*
     static bool isMouseButtonClicked(int mouse)
     {
         auto mouseButtonState = glfwGetMouseButton(Application::getWindow().getWindowHandle(), mouse);
@@ -65,8 +90,14 @@ public:
         bool wasMouseButtonClicked = !m_mouseButtonStates[mouse] && isMouseButtonPressed;
         m_mouseButtonStates[mouse] = isMouseButtonPressed;
 
+        if(wasMouseButtonClicked)
+        {
+            std::cout << "isClicked" << std::endl;
+        }
+
         return wasMouseButtonClicked;
     }
+    */
 
     static float getMouseX()
     {
@@ -82,9 +113,10 @@ public:
         return yMousePos;
     }
 
-private:
+public:
     inline static std::unordered_map<int, bool> m_keyStates;
-    inline static std::unordered_map<int, bool> m_mouseButtonStates;
+    //inline static std::unordered_map<int, bool> m_mouseButtonStates;
+    inline static std::unordered_map<int, bool> m_mouseButtonClicked;
 
     inline static double m_lastMouseX = 0.0;
     inline static double m_lastMouseY = 0.0;

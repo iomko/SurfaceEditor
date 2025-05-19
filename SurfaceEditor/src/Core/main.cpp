@@ -19,6 +19,8 @@
 #include "../FunctionComposer.h"
 #include "../PolygonTraits.h"
 #include "../Renderer/Framebuffer.h"
+#include "../Callbacks/BrushToolCallBack.h"
+#include "../Gui/SculptToolsLayer.h"
 
 
 import Renderer.Shader;
@@ -40,16 +42,17 @@ float lastFrame = 0.0f;
 #include "../ViewPortsHolder.h"
 #include "../Callbacks/AddPlaneCallback.h"
 #include "../Commands/AddPlaneCommand.h"
+#include "../Tools/ToolRegistry.h"
 //#include "../Commands/CommandRegistry.h"
 
 
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
-#include "../Callbacks/ToolBarLayerCallBack.h"
+#include "../Callbacks/SelectionLayerCallBack.h"
 #include "../Commands/SelectMeshCommand.h"
 #include "../Gui/AdditionLayer.h"
 #include "../Gui/RemovalLayer.h"
-#include "../Gui/ToolBarLayer.h"
+#include "../Gui/SelectionLayer.h"
 
 #include "../Callbacks/DeselectMeshCallBack.h"
 #include "../Commands/DeselectMeshCommand.h"
@@ -65,6 +68,9 @@ float lastFrame = 0.0f;
 
 #include "../Commands/BasicSculptToolCommand.h"
 
+#include "../Commands/BrushToolCommand.h"
+#include "../Tools/BrushTool.h"
+#include "../Tools/FaceSelectionTool.h"
 
 
 //#include "../OBJExporter.h"
@@ -85,6 +91,9 @@ float lastFrame = 0.0f;
 #include "../DelaunayTest.h"
 #include "../Triangulator.h"
 
+//INTERACTION_HANDLER
+#include "../Tools/InteractionHandler.h"
+#include "../Tools/Tool.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -346,7 +355,7 @@ int main()
 	//scene.accessNeighbouringVertsAndFacesOfVertex(&mesh->m_halfEdgeStructure->m_vertices.at(0));
 
 
-	//ToolBarLayer toolBarLayer(ToolBarLayer("ToolBarLayer"));
+	//SelectionLayer toolBarLayer(SelectionLayer("SelectionLayer"));
 	//app.getLayerStack().addLayer(&toolBarLayer);
 
 
@@ -359,7 +368,6 @@ int main()
 	viewPortLayer->m_shaderSettings.m_normalShader = &normalsShader;
 	viewPortLayer->m_shaderSettings.m_pointShader = &pointsShader;
 	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
-	app.getLayerStack().addLayer(viewPortLayer);
 
 	ViewPortsHolder* viewPortsHolder = new ViewPortsHolder("viewPortsHolderLayer");
 	viewPortsHolder->addViewPortLayer(viewPortLayer);
@@ -372,10 +380,13 @@ int main()
 	ViewPortsHolderContext::m_camera = camera;
 	ViewPortsHolderContext::m_window = app.m_window;
 
+
 	AddPlaneParams planeProperties;
 	planeProperties.m_size = 50.0f;
 	planeProperties.m_subdivisionLevel = 4;
 
+	//ViewPortLayer
+	app.getLayerStack().addLayer(viewPortLayer);
 
 	//ImporExportLayer
 	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer");
@@ -420,9 +431,19 @@ int main()
 	CommandRegistry::registerCommand<SelectMeshCommand>();
 	SelectMeshCommand* selectMeshCommand = CommandRegistry::getCommand<SelectMeshCommand>();
 
+	ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand, new SelectionHandler<SelectMeshCommand>());
+
 	selectMeshCommand->addObserver(&selectMeshCallBack);
 	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
 
+	BrushToolCallBack brushToolCallBack;
+	CommandRegistry::registerCommand<BrushToolCommand>();
+	BrushToolCommand* brushToolCommand = CommandRegistry::getCommand<BrushToolCommand>();
+
+	brushToolCommand->addObserver(&brushToolCallBack);
+	brushToolCallBack.observe(brushToolCommand, &brushToolCallBack);
+
+	ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
 
 	DeselectMeshCallBack deselectMeshCallBack;
 	CommandRegistry::registerCommand<DeselectMeshCommand>();
@@ -436,6 +457,8 @@ int main()
 	SelectFaceCommand* selectFaceCommand = CommandRegistry::getCommand<SelectFaceCommand>();
 	selectFaceCommand->addObserver(&selectFaceCallBack);
 	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
+
+	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand, new SelectionHandler<SelectFaceCommand>());
 
 	DeselectFaceCallBack deselectFaceCallBack;
 	CommandRegistry::registerCommand<DeselectFaceCommand>();
@@ -455,14 +478,14 @@ int main()
 	deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
 	deleteSelectedMeshesCallBack.observe(deleteSelectedMeshesCommand, &deleteSelectedMeshesCallBack);
 
-	ToolBarLayer toolBarLayer("ToolBarLayer");
-	app.getLayerStack().addLayer(&toolBarLayer);
+	SelectionLayer selectionLayer("SelectionLayer");
+	app.getLayerStack().addLayer(&selectionLayer);
 
-	ToolBarLayerCallBack toolBarLayerCallBack;
-	viewPortsHolder->observe(&toolBarLayer, &toolBarLayerCallBack);
+	SelectionLayerCallBack selectionLayerCallBack;
+	viewPortsHolder->observe(&selectionLayer, &selectionLayerCallBack);
 
-	toolBarLayer.addObserver(&toolBarLayerCallBack);
-	toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
+	selectionLayer.addObserver(&selectionLayerCallBack);
+	selectionLayerCallBack.observe(&selectionLayer, &selectionLayerCallBack);
 
 	//toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
 
@@ -478,7 +501,6 @@ int main()
 	//addPlaneCallBack.addObserver(&transformLayer);
 	//transformLayer.observe(&addPlaneCallBack, &transformAddPlaneCallBack);
 
-
 	//SCULPT TOOL
 	BasicSculptToolCommand basicSculptToolCommand;
 
@@ -491,8 +513,9 @@ int main()
 	RemovalLayer removalLayer("RemovalLayer");
 	app.getLayerStack().addLayer(&removalLayer);
 
-	//TransformLayer
-	//app.getLayerStack().addLayer(&transformLayer);
+	//SculptToolsLayer
+	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
+	app.getLayerStack().addLayer(&sculptToolsLayer);
 
 	scene.m_rendererData.aabbData.clearAABBData();
 
@@ -606,6 +629,8 @@ int main()
 
 		}
 
+		
+
 		if(Input::isKeyDown(GLFW_KEY_T))
 		{
 			//viewPortLayer.deleteSelectedMeshes();
@@ -649,7 +674,6 @@ int main()
 			glStencilMask(0x00);
 			glDisable(GL_STENCIL_TEST);
 
-			
 			for (auto& [material, vertexVector] : materialVertexMap)
 			{
 				// Pass the vertexVector to some method
@@ -667,7 +691,6 @@ int main()
 			linesShader.unbind();
 		}
 
-
 		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
 		for (const auto& [region, vertices] : scene.m_rendererData.aabbData.vaoDataMap) {
 			
@@ -676,9 +699,10 @@ int main()
 		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
 
 		app.run();
-
 		
 		app.getWindow().update();
+
+		Input::resetFrameInput();
 	}
 
 	app.close();

@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include "../Patterns/Command.h"
 
-
 class CommandRegistry {
 public:
 

@@ -7,7 +7,6 @@
 class TiffGrayscaleMapLoader
 {
 public:
-	// New method for loading 8-bit grayscale TIFF without recalculating
 	static std::vector<uint8_t> load8bit(const char* filename, uint32_t& width, uint32_t& height)
 	{
 		TIFF* tif = TIFFOpen(filename, "r");
@@ -32,7 +31,6 @@ public:
 		std::vector<uint8_t> heightmap8(pixelCount);
 
 		if (TIFFIsTiled(tif)) {
-			// --- TILED IMAGE ---
 			uint32_t tileWidth, tileHeight;
 			TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
 			TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileHeight);
@@ -42,14 +40,12 @@ public:
 			for (uint32_t row = 0; row < height; row += tileHeight) {
 				for (uint32_t col = 0; col < width; col += tileWidth) {
 
-					// Read tile
 					if (TIFFReadTile(tif, tileBuffer.data(), col, row, 0, 0) < 0) {
 						std::cerr << "Failed to read tile at (" << col << ", " << row << ")" << std::endl;
 						TIFFClose(tif);
 						return {};
 					}
 
-					// Copy pixels from tile to final image
 					for (uint32_t ty = 0; ty < tileHeight; ++ty) {
 						for (uint32_t tx = 0; tx < tileWidth; ++tx) {
 							uint32_t x = col + tx;
@@ -64,7 +60,6 @@ public:
 			}
 		}
 		else {
-			// --- STRIPED IMAGE ---
 			std::vector<uint8_t> scanline(width);
 
 			for (uint32_t row = 0; row < height; ++row) {
@@ -74,7 +69,6 @@ public:
 					return {};
 				}
 
-				// Copy pixels directly to heightmap
 				for (uint32_t col = 0; col < width; ++col) {
 					heightmap8[row * width + col] = scanline[col];
 				}
@@ -108,7 +102,7 @@ public:
 		size_t pixelCount = static_cast<size_t>(width) * static_cast<size_t>(height);
 		std::vector<uint16_t> heightmap16(pixelCount);
 
-		uint64_t sumHeight = 0; // Use uint64_t to avoid overflow
+		uint64_t sumHeight = 0;
 
 		if (TIFFIsTiled(tif)) {
 			uint32_t tileWidth, tileHeight;

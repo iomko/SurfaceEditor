@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+
+#include "Sphere.h"
 #include "Scene/Camera.h"
 #include "Core/Window.h"
 
@@ -49,6 +51,18 @@ public:
 		return Ray(rayStart, normalizedRayPosition);
 	}
 
+	static bool intersectsSphere(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const Sphere& sphere)
+	{
+		glm::vec3 L = sphere.position - rayOrigin;
+		float tca = glm::dot(L, rayDir);
+		if (tca < 0) return false;
+
+		float d2 = glm::dot(L, L) - tca * tca;
+		float radius2 = sphere.radius * sphere.radius;
+
+		return d2 <= radius2;
+	}
+
 	static bool intersectPlane(const glm::vec3& n, const glm::vec3& p0, const glm::vec3& l0, const glm::vec3& l, float& t)
 	{
 		float denom = glm::dot(n, l);
@@ -85,7 +99,7 @@ public:
 		// check if the triangle is behind the ray
 		if (t < 0) return false; // the triangle is behind
 
-		// compute the intersection point using equation 1
+		// compute the intersection position using equation 1
 		glm::vec3 P = orig + t * dir;
 
 		// Step 2: inside-outside test

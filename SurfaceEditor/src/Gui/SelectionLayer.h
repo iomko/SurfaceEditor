@@ -5,9 +5,9 @@
 #include "../Commands/CommandRegistry.h"
 #include "Layer.h"
 
-class ToolBarLayer : public Layer, public Observable {
+class SelectionLayer : public Layer, public Observable {
 public:
-    ToolBarLayer(const std::string& name)
+    SelectionLayer(const std::string& name)
         : Layer(name)
     {}
 

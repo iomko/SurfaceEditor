@@ -6,7 +6,7 @@ struct AABBVertex {
 };
 
 struct LineVertex {
-    glm::vec3 point;
+    glm::vec3 position;
     float isHighlighted;
 };
 

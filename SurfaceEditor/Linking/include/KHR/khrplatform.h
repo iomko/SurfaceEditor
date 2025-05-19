@@ -61,7 +61,7 @@
  *    khronos_uintptr_t           unsigned same number of bits as a pointer
  *    khronos_ssize_t             signed   size
  *    khronos_usize_t             unsigned size
- *    khronos_float_t             signed   32 bit floating point
+ *    khronos_float_t             signed   32 bit floating position
  *    khronos_time_ns_t           unsigned 64 bit time in nanoseconds
  *    khronos_utime_nanoseconds_t unsigned time interval or absolute time in
  *                                         nanoseconds

@@ -1,12 +1,14 @@
 #pragma once
 #include <vector>
+
+#include "ObjectSelectionHolder.h"
 #include "Patterns/Observer.h"
 #include "Patterns/Command.h"
 #include "Core/Layer.h"
 #include "Scene/Scene.h"
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Scene/ViewPortLayerScreenSettings.h"
-#include "../ObjectSelectionHolder.h"
+#include "Tools/Tool.h"
 
 class ViewPortLayer;
 
@@ -23,7 +25,6 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-
 	void addCommandToQueue(ICommand* command)
 	{
 		m_commandsQueue.push_back(command);
@@ -36,13 +37,12 @@ public:
 
 	std::vector<ViewPortLayer*> m_viewPortLayers;
 	ViewPortLayer* m_activeViewPortLayer = nullptr;
-	ICommand* m_currentCommand = nullptr;
-	Params* m_currentCommandParams = nullptr;
-	std::set<Mesh*> m_selectedMeshes;
-	std::map<Mesh*, std::set<HalfEdgeDS::Face*>> m_selectedFaces;
-	std::map<Mesh*, std::set<HalfEdgeDS::Vertex*>> m_selectedVertices;
+
 	std::vector<ICommand*> m_commandsQueue;
 	Scene* m_scene = nullptr;
+
+	ITool* m_currentTool = nullptr;
+	Params* m_currentToolParams = nullptr;
 
 	//temporary
 	int m_currentMeshId = 0;
@@ -98,53 +98,63 @@ public:
 		if (Input::isKeyPressed(GLFW_KEY_W) == true)
 		{
 			m_activeCamera->updateCameraPosition(CameraMovement::FORWARD);
-			//std::cout << "camera moved forward" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_S) == true)
 		{
 			m_activeCamera->updateCameraPosition(CameraMovement::BACKWARD);
-			//std::cout << "camera moved backward" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_A) == true)
 		{
 			m_activeCamera->updateCameraPosition(CameraMovement::LEFT);
-			//std::cout << "camera moved left" << std::endl;
 		}
 		if (Input::isKeyPressed(GLFW_KEY_D) == true)
 		{
 			m_activeCamera->updateCameraPosition(CameraMovement::RIGHT);
-			//std::cout << "camera moved right" << std::endl;
 		}
 	}
 
 
 	void onEvent(Event& event) override
 	{
-		//zatial toto bude basic onEvent, tak ako keby som pracoval len s jedným viewPortLayerom zatial
-		if (event.getType() == EventType::MouseButtonPress)
+		ViewPortsHolder* viewPortsHolder = ViewPortsHolderContext::m_viewPortsHolder;
+
+		if (event.getType() == EventType::MouseButtonPress ||
+			event.getType() == EventType::MouseScroll ||
+			event.getType() == EventType::MouseButtonRelease ||
+			event.getType() == EventType::MouseMove)
 		{
-			if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+			ITool* currentTool = viewPortsHolder->m_currentTool;
+			Params* currentToolParams = viewPortsHolder->m_currentToolParams;
+			if(currentTool != nullptr)
 			{
-				std::cout << "ViewPortsOnButtonPressLEFTEvent" << std::endl;
-				if (ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand != nullptr)
+				if (Input::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT))
 				{
-					if (ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams == nullptr)
+					std::cout << "Button_Clicked!" << std::endl;
+					if (currentToolParams != nullptr)
 					{
-						ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand->execute();
-						event.isHandled = true;
+						currentTool->getInteractionHandler()->onBegin(*currentToolParams);
 					}
 					else
 					{
-						ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand->execute(
-							*ViewPortsHolderContext::m_viewPortsHolder->m_currentCommandParams);
-						event.isHandled = true;
+						currentTool->getInteractionHandler()->onBegin();
 					}
 				}
-			}
-		}
 
-		if (event.getType() == EventType::MouseButtonPress || event.getType() == EventType::MouseMove)
-		{
+				if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+				{
+					if (currentToolParams != nullptr)
+					{
+						currentTool->getInteractionHandler()->onUpdate(*currentToolParams);
+					}
+					else
+					{
+						currentTool->getInteractionHandler()->onUpdate();
+					}
+				}
+				event.isHandled = true;
+				//event.isHandled = true; nepotrebujeme riesit isHandled kedze pojde o posledny Layer
+			}
+
 			updateCameraDirection(event);
 		}
 	}

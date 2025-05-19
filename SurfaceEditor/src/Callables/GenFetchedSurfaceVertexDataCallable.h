@@ -60,11 +60,11 @@ class GenFetchedSurfaceVertexDataCallable : public Callable<FetchSurfaceParams, 
 						int fourthVertexIndex = firstVertexIndex + 1;
 
 						//first_triangle
-						std::vector<int> firstTriangleIndices = { firstVertexIndex, secondVertexIndex, thirdVertexIndex };
+						std::vector<int> firstTriangleIndices = { firstVertexIndex, thirdVertexIndex, secondVertexIndex };
 						indices.emplace_back(firstTriangleIndices);
 
 						//second_triangle
-						std::vector<int> secondTriangleIndices = { firstVertexIndex, fourthVertexIndex, secondVertexIndex };
+						std::vector<int> secondTriangleIndices = { firstVertexIndex, secondVertexIndex, fourthVertexIndex };
 						indices.emplace_back(secondTriangleIndices);
 					}
 

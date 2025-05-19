@@ -38,8 +38,8 @@ public:
 		if (ImGui::TreeNode("Add")) {
 			if (ImGui::TreeNode("Mesh")) {
 				if (ImGui::TreeNode("TriangulatedPlane")) {
-					ImGui::SliderInt("Subdivision", &m_subdivision, 1, 50);
-					ImGui::SliderFloat("Size", &m_size, 1.0f, 300.0f, "%.0f");
+					ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
+					ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
 
 					if (ImGui::Button("AddToScene")) {
 						AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();

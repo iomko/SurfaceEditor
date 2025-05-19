@@ -1,7 +1,7 @@
 /*! \file dpoint.hpp
     \brief d-dimensional point class
     
-    A d-dimensional point class which is written carefully using templates. It allows for basic
+    A d-dimensional position class which is written carefully using templates. It allows for basic
     operations on points in any dimension. Orientation tests for 2 and 3 dimensional points are 
     supported using <a href="http://www.cs.berkeley.edu/~jrs/">Jonathan's</a> code. This class 
     forms the building block of other classes like dplane, dsphere etc.
@@ -34,7 +34,7 @@ namespace reviver {
 
 
 // Forward Declaration of the main Point Class
-// Eucledian d-dimensional point. The distance is L_2
+// Eucledian d-dimensional position. The distance is L_2
 
 template<typename NumType, unsigned D>
 class dpoint;
@@ -75,7 +75,7 @@ public:
 
 
 ///////////////////////////////////////////////////////
-// Origin of d-dimensional point
+// Origin of d-dimensional position
 ///////////////////////////////////////////////////////
 template< typename NumType, unsigned D, unsigned I > struct origin
 {
@@ -102,7 +102,7 @@ template <typename NumType, unsigned D> struct origin<NumType, D, 0>
     Uses unrolling of loops using templates.
 */
 ///////////////////////////////////////////////////////
-// Squared Distance of d-dimensional point
+// Squared Distance of d-dimensional position
 ///////////////////////////////////////////////////////
 template< typename NumType, unsigned D, unsigned I > struct Distance
 {
@@ -281,9 +281,9 @@ template <typename NumType, unsigned D> struct Subtract<NumType, D, 0>
 
 
 
-//!   Mutiply scalar with d-dimensional point
+//!   Mutiply scalar with d-dimensional position
 /*!
-      Scalar mulipltication of d-dimensional point with a number using template unrolling.
+      Scalar mulipltication of d-dimensional position with a number using template unrolling.
 */
 template< typename NumType, unsigned D, unsigned I > struct Multiply
 {
@@ -340,7 +340,7 @@ public:
     dpoint(NumType x0,NumType x1,NumType x2){  x[0] = x0;  x[1] = x1; x[2] = x2; };
     //! Array Initialization
     dpoint(NumType ax[]){ for(int i =0; i < D; ++i) x[i] = ax[i]; };
-    //! Initialization from another point : Copy Constructor
+    //! Initialization from another position : Copy Constructor
         dpoint(const dpoint<NumType,D>& p){  Equate<NumType,NumType,D,D-1>::eval((*this),p);	};
 
          

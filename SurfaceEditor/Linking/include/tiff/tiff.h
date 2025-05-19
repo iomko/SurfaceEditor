@@ -155,8 +155,8 @@ typedef enum
     TIFF_SSHORT = 8,     /* !16-bit signed integer */
     TIFF_SLONG = 9,      /* !32-bit signed integer */
     TIFF_SRATIONAL = 10, /* !64-bit signed fraction */
-    TIFF_FLOAT = 11,     /* !32-bit IEEE floating point */
-    TIFF_DOUBLE = 12,    /* !64-bit IEEE floating point */
+    TIFF_FLOAT = 11,     /* !32-bit IEEE floating position */
+    TIFF_DOUBLE = 12,    /* !64-bit IEEE floating position */
     TIFF_IFD = 13,       /* %32-bit unsigned integer (offset) */
     TIFF_LONG8 = 16,     /* BigTIFF 64-bit unsigned integer */
     TIFF_SLONG8 = 17,    /* BigTIFF 64-bit signed integer */
@@ -303,8 +303,8 @@ typedef enum
 #define TIFFTAG_PREDICTOR 317              /* prediction scheme w/ LZW */
 #define PREDICTOR_NONE 1                   /* no prediction scheme used */
 #define PREDICTOR_HORIZONTAL 2             /* horizontal differencing */
-#define PREDICTOR_FLOATINGPOINT 3          /* floating point predictor */
-#define TIFFTAG_WHITEPOINT 318             /* image white point */
+#define PREDICTOR_FLOATINGPOINT 3          /* floating position predictor */
+#define TIFFTAG_WHITEPOINT 318             /* image white position */
 #define TIFFTAG_PRIMARYCHROMATICITIES 319  /* !primary chromaticities */
 #define TIFFTAG_COLORMAP 320               /* RGB map for palette image */
 #define TIFFTAG_HALFTONEHINTS 321          /* !highlight+shadow info */
@@ -333,7 +333,7 @@ typedef enum
 #define TIFFTAG_SAMPLEFORMAT 339           /* !data sample format */
 #define SAMPLEFORMAT_UINT 1                /* !unsigned integer data */
 #define SAMPLEFORMAT_INT 2                 /* !signed integer data */
-#define SAMPLEFORMAT_IEEEFP 3              /* !IEEE floating point data */
+#define SAMPLEFORMAT_IEEEFP 3              /* !IEEE floating position data */
 #define SAMPLEFORMAT_VOID 4                /* !untyped data */
 #define SAMPLEFORMAT_COMPLEXINT 5          /* !complex signed int */
 #define SAMPLEFORMAT_COMPLEXIEEEFP 6       /* !complex ieee floating */
@@ -380,7 +380,7 @@ typedef enum
 #define TIFFTAG_JPEGIFBYTECOUNT 514        /* !JFIF stream length */
 #define TIFFTAG_JPEGRESTARTINTERVAL 515    /* !restart interval length */
 #define TIFFTAG_JPEGLOSSLESSPREDICTORS 517 /* !lossless proc predictor */
-#define TIFFTAG_JPEGPOINTTRANSFORM 518     /* !lossless point transform */
+#define TIFFTAG_JPEGPOINTTRANSFORM 518     /* !lossless position transform */
 #define TIFFTAG_JPEGQTABLES 519            /* !Q matrix offsets */
 #define TIFFTAG_JPEGDCTABLES 520           /* !DCT table offsets */
 #define TIFFTAG_JPEGACTABLES 521           /* !AC coefficient offsets */
@@ -398,7 +398,7 @@ typedef enum
 #define TIFFTAG_TIFFANNOTATIONDATA 32932
 /* tags 32952-32956 are private tags registered to Island Graphics */
 #define TIFFTAG_REFPTS 32953            /* image reference points */
-#define TIFFTAG_REGIONTACKPOINT 32954   /* region-xform tack point */
+#define TIFFTAG_REGIONTACKPOINT 32954   /* region-xform tack position */
 #define TIFFTAG_REGIONWARPCORNERS 32955 /* warp quadrilateral */
 #define TIFFTAG_REGIONAFFINE 32956      /* affine transformation mat */
 /* tags 32995-32999 are private tags registered to SGI */
@@ -526,7 +526,7 @@ typedef enum
 #define TIFFTAG_ANALOGBALANCE 50727        /* &gain applied the stored raw values*/
 #define TIFFTAG_ASSHOTNEUTRAL 50728        /* &selected white balance in linear reference space */
 #define TIFFTAG_ASSHOTWHITEXY 50729        /* &selected white balance in x-y chromaticity coordinates */
-#define TIFFTAG_BASELINEEXPOSURE 50730     /* &how much to move the zero point */
+#define TIFFTAG_BASELINEEXPOSURE 50730     /* &how much to move the zero position */
 #define TIFFTAG_BASELINENOISE 50731        /* &relative noise level */
 #define TIFFTAG_BASELINESHARPNESS 50732    /* &relative amount of sharpening */
 /* TIFFTAG_BAYERGREENSPLIT: &how closely the values of the green pixels in the blue/green rows
@@ -580,7 +580,7 @@ typedef enum
 #define TIFFTAG_SUBTILEBLOCKSIZE 50974            /* &subtile block size */
 #define TIFFTAG_ROWINTERLEAVEFACTOR 50975         /* &number of interleaved fields */
 #define TIFFTAG_PROFILELOOKTABLEDIMS 50981        /* &num of input samples in each dim of default "look" table */
-#define TIFFTAG_PROFILELOOKTABLEDATA 50982        /* &default "look" table for use as starting point */
+#define TIFFTAG_PROFILELOOKTABLEDATA 50982        /* &default "look" table for use as starting position */
 
 /* DNG 1.3.0.0 */
 #define TIFFTAG_OPCODELIST1 51008  /* &opcodes that should be applied to raw image after reading */
@@ -609,7 +609,7 @@ typedef enum
 #define TIFFTAG_ENHANCEPARAMS 51182    /* &a string that documents how the enhanced image data was processed. */
 
 /* DNG 1.6.0.0 */
-#define TIFFTAG_PROFILEGAINTABLEMAP 52525    /* &spatially varying gain tables that can be applied as starting point */
+#define TIFFTAG_PROFILEGAINTABLEMAP 52525    /* &spatially varying gain tables that can be applied as starting position */
 #define TIFFTAG_SEMANTICNAME 52526           /* &a string that identifies the semantic mask */
 #define TIFFTAG_SEMANTICINSTANCEID 52528     /* &a string that identifies a specific instance in a semantic mask */
 #define TIFFTAG_MASKSUBAREA 52536            /* &the crop rectangle of this IFD's mask, relative to the main image */
@@ -883,14 +883,14 @@ typedef enum
 #define GPSTAG_IMGDIRECTIONREF 16      /* Indicates the reference for giving the direction of the image when it is captured. */
 #define GPSTAG_IMGDIRECTION 17         /* Indicates the direction of the image when it was captured. */
 #define GPSTAG_MAPDATUM 18             /* Indicates the geodetic survey data used by the GPS receiver. (e.g. WGS-84) */
-#define GPSTAG_DESTLATITUDEREF 19      /* Indicates whether the latitude of the destination point is north or south latitude. */
-#define GPSTAG_DESTLATITUDE 20         /* Indicates the latitude of the destination point. */
-#define GPSTAG_DESTLONGITUDEREF 21     /* Indicates whether the longitude of the destination point is east or west longitude. */
-#define GPSTAG_DESTLONGITUDE 22        /* Indicates the longitude of the destination point. */
-#define GPSTAG_DESTBEARINGREF 23       /* Indicates the reference used for giving the bearing to the destination point. */
-#define GPSTAG_DESTBEARING 24          /* Indicates the bearing to the destination point. */
-#define GPSTAG_DESTDISTANCEREF 25      /* Indicates the unit used to express the distance to the destination point. */
-#define GPSTAG_DESTDISTANCE 26         /* Indicates the distance to the destination point. */
+#define GPSTAG_DESTLATITUDEREF 19      /* Indicates whether the latitude of the destination position is north or south latitude. */
+#define GPSTAG_DESTLATITUDE 20         /* Indicates the latitude of the destination position. */
+#define GPSTAG_DESTLONGITUDEREF 21     /* Indicates whether the longitude of the destination position is east or west longitude. */
+#define GPSTAG_DESTLONGITUDE 22        /* Indicates the longitude of the destination position. */
+#define GPSTAG_DESTBEARINGREF 23       /* Indicates the reference used for giving the bearing to the destination position. */
+#define GPSTAG_DESTBEARING 24          /* Indicates the bearing to the destination position. */
+#define GPSTAG_DESTDISTANCEREF 25      /* Indicates the unit used to express the distance to the destination position. */
+#define GPSTAG_DESTDISTANCE 26         /* Indicates the distance to the destination position. */
 #define GPSTAG_PROCESSINGMETHOD 27     /* A character string recording the name of the method used for location finding. */
 #define GPSTAG_AREAINFORMATION 28      /* A character string recording the name of the GPS area. */
 #define GPSTAG_DATESTAMP 29            /* A character string recording date and time information relative to UTC (Coordinated Universal Time). */

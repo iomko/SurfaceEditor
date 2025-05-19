@@ -128,7 +128,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>CURL_STATICLIB</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Samuel\Downloads\boost_1_84_0</AdditionalIncludeDirectories>
@@ -321,10 +321,12 @@
     <ClInclude Include="src\Callables\GenFetchedSurfaceVertexDataCallable.h" />
     <ClInclude Include="src\Callables\InitMeshVaoDataCallable.h" />
     <ClInclude Include="src\Callables\RetClosestOctreeDataCallable.h" />
+    <ClInclude Include="src\Callbacks\BrushToolCallBack.h" />
     <ClInclude Include="src\Callbacks\DeleteSelectedFacesCallBack.h" />
     <ClInclude Include="src\Callbacks\DeselectFaceCallBack.h" />
     <ClInclude Include="src\Callbacks\FetchSurfaceCallBack.h" />
     <ClInclude Include="src\Callbacks\SelectFaceCallBack.h" />
+    <ClInclude Include="src\Commands\BrushToolCommand.h" />
     <ClInclude Include="src\Commands\CmdProperties\CmdProperties.h" />
     <ClInclude Include="src\Callbacks\DeleteSelectedMeshesCallBack.h" />
     <ClInclude Include="src\Commands\DeleteSelectedFacesCommand.h" />
@@ -340,6 +342,8 @@
     <ClInclude Include="src\FaceSelectionManager.h" />
     <ClInclude Include="src\FunctionComposer.h" />
     <ClInclude Include="src\Gui\RemovalLayer.h" />
+    <ClInclude Include="src\Gui\SculptToolsLayer.h" />
+    <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\TiffGrayscaleMapLoader.h" />
     <ClInclude Include="src\MeshFromHeightMapTest.h" />
     <ClInclude Include="src\MeshSelectionManager.h" />
@@ -354,7 +358,7 @@
     <ClInclude Include="src\Commands\BasicSculptToolCommand.h" />
     <ClInclude Include="src\Commands\DeselectMeshCommand.h" />
     <ClInclude Include="src\Callbacks\SelectMeshCallBack.h" />
-    <ClInclude Include="src\Callbacks\ToolBarLayerCallBack.h" />
+    <ClInclude Include="src\Callbacks\SelectionLayerCallBack.h" />
     <ClInclude Include="src\Commands\AddPlaneCommand.h" />
     <ClInclude Include="src\Commands\CommandRegistry.h" />
     <ClInclude Include="src\Commands\ExportMeshesCommand.h" />
@@ -379,6 +383,14 @@
     <ClInclude Include="src\Scene\SceneRendererData.h" />
     <ClInclude Include="src\Scene\ViewPortLayerRenderSettings.h" />
     <ClInclude Include="src\Scene\ViewPortLayerScreenSettings.h" />
+    <ClInclude Include="src\Tools\BrushInteractionHandler.h" />
+    <ClInclude Include="src\Tools\BrushTool.h" />
+    <ClInclude Include="src\Tools\InteractionHandler.h" />
+    <ClInclude Include="src\Tools\FaceSelectionTool.h" />
+    <ClInclude Include="src\Tools\MeshSelectionTool.h" />
+    <ClInclude Include="src\Tools\SelectionHandler.h" />
+    <ClInclude Include="src\Tools\Tool.h" />
+    <ClInclude Include="src\Tools\ToolRegistry.h" />
     <ClInclude Include="src\TrianglePP\dpoint.hpp" />
     <ClInclude Include="src\TrianglePP\tpp_assert.hpp" />
     <ClInclude Include="src\TrianglePP\tpp_delaunay.hpp" />
@@ -394,7 +406,7 @@
     <ClInclude Include="src\VectorOperations.h" />
     <ClInclude Include="src\WindowsFileDialogs.h" />
     <ClInclude Include="src\Gui\AdditionLayer.h" />
-    <ClInclude Include="src\Gui\ToolBarLayer.h" />
+    <ClInclude Include="src\Gui\SelectionLayer.h" />
     <ClInclude Include="src\BaseExporter.h" />
     <ClInclude Include="src\OBJExporter.h" />
     <ClInclude Include="src\OBJImporter.h" />

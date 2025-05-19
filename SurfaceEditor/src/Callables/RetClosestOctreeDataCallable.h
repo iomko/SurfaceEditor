@@ -59,11 +59,6 @@ public:
 			octree.findMaxDepthNodes<Ray>(ray, [](const AABBBoundingRegion& region, const Ray& ray)
 			{
 				bool intersects = region.intersectsRay(ray);
-
-				if(intersects)
-				{
-					std::cout << "YES INTERSECTED!" << std::endl;
-				}
 				return intersects;
 			}, octreeNodes);
 			
