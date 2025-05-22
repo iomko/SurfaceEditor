@@ -44,7 +44,7 @@ public:
 					if (ImGui::Button("AddToScene")) {
 						AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
 
-						AddPlaneParams addPlaneCommandParams;
+						PlaneParams addPlaneCommandParams;
 						addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
 						addPlaneCommandParams.m_size = m_size;
 						addPlaneCommand->execute(addPlaneCommandParams);
@@ -74,7 +74,7 @@ public:
 				// Tlaèidlo na naèítanie dát
 				if (ImGui::Button("Fetch and Add to Scene")) {
 
-					FetchSurfaceParams params;
+					OpenTopoParams params;
 					params.m_lowerLeftLon = m_lowerLeftLon;
 					params.m_lowerLeftLat = m_lowerLeftLat;
 					params.m_upperRightLon = m_upperRightLon;

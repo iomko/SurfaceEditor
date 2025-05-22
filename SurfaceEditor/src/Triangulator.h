@@ -5,7 +5,7 @@
 #include "ConversionUtils.h"
 #include "TrianglePP/tpp_interface.hpp"
 #include "ProjectionUtils.h"
-#include "PolygonOperations.h"
+#include "Utils/GeometryUtils.h"
 
 class Triangulator
 {
@@ -32,10 +32,10 @@ private:
 	{
 		glm::vec3 retVertex{};
 		bool hitPlane = false;
-		retVertex = PolygonOperations::intersectRayWithPlane(plane, vertex, vertexNormal, hitPlane);
+		retVertex = utils::geometry::intersectRayPlane(plane, vertex, vertexNormal, hitPlane);
 		if(!hitPlane)
 		{
-			retVertex = PolygonOperations::intersectRayWithPlane(plane, vertex, -vertexNormal, hitPlane);
+			retVertex = utils::geometry::intersectRayPlane(plane, vertex, -vertexNormal, hitPlane);
 		}
 
 		return retVertex;
@@ -73,7 +73,8 @@ public:
 		//---CREATE_PLANE_FROM_VERTICES---
 		//to check if all points are coplanar, for now we will want that
 		bool allPointsCoplanar;
-		Plane plane = PolygonOperations::computePlaneFromPoints(vertices, allPointsCoplanar);
+		
+		Plane plane = utils::geometry::fitPlaneToPoints(vertices, allPointsCoplanar);
 
 		if(allPointsCoplanar)
 		{
@@ -84,7 +85,7 @@ public:
 			auto computeProjectedArea = [&vertices, &projectedVertices](const ProjectionAxis& projectionAxis)
 				{
 					projectedVertices = ProjectionUtils::projectVertices(vertices, projectionAxis);
-					return PolygonOperations::computePolygonArea(projectedVertices);
+					return utils::geometry::computePolygonArea(projectedVertices);
 				};
 
 			if(computeProjectedArea(ProjectionAxis::ZY) > 1e-5f)

@@ -1,18 +1,16 @@
 #pragma once
 
-struct Params {
-	virtual ~Params() = default;
-};
+#include "../Params/OperationParams.h"
 
 struct ICommand {
 	virtual ~ICommand() = default;
 	virtual void execute() = 0;
-	virtual void execute(const Params& iParams) = 0;
-	virtual void execute(const Params& iParams, Params& oParams) = 0;
+	virtual void execute(const OpParams& iParams) = 0;
+	virtual void execute(const OpParams& iParams, OpParams& oParams) = 0;
 	virtual void undo() = 0;
 };
 
-template<typename IParams = Params, typename OParams = Params>
+template<typename IParams = OpParams, typename OParams = OpParams>
 class Command;
 
 template <typename IParams, typename OParams>
@@ -21,10 +19,10 @@ class Command : public ICommand
 public:
 	void undo() override {}
 	void execute() override {}
-	void execute(const Params& iParams) override {}
+	void execute(const OpParams& iParams) override {}
 
 	virtual void execute(const IParams& iParams, OParams& oParams) = 0;
-	void execute(const Params& iParams, Params& oParams) override
+	void execute(const OpParams& iParams, OpParams& oParams) override
 	{
 		const IParams& specificIParams = static_cast<const IParams&>(iParams);
 		OParams& specificOParams = static_cast<OParams&>(oParams);
@@ -33,14 +31,14 @@ public:
 };
 
 template <typename IParams>
-class Command<IParams, Params> : public ICommand {
+class Command<IParams, OpParams> : public ICommand {
 public:
 	void undo() override {}
 	void execute() override{}
-	void execute(const Params& iParams, Params& oParams) override {}
+	void execute(const OpParams& iParams, OpParams& oParams) override {}
 
 	virtual void execute(const IParams& iParams) = 0;
-	void execute(const Params& iParams) override
+	void execute(const OpParams& iParams) override
 	{
 		const IParams& specificIParams = static_cast<const IParams&>(iParams);
 		execute(specificIParams);
@@ -48,10 +46,10 @@ public:
 };
 
 template <>
-class Command<Params> : public ICommand {
+class Command<OpParams> : public ICommand {
 public:
 	void undo() override {}
 	void execute() override = 0;
-	void execute(const Params&) override {}
-	void execute(const Params& iParams, Params& oParams) override{}
+	void execute(const OpParams&) override {}
+	void execute(const OpParams& iParams, OpParams& oParams) override{}
 };

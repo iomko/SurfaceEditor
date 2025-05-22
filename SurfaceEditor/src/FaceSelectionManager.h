@@ -13,11 +13,11 @@ public:
 
 			selectionVector.emplace_back(face);
 
-			SceneRendererData::MeshFacesVaoMap& meshFacesVaoMap =
-				ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_rendererData.meshData.meshFacesVaoMap;
+			SceneRes::MeshFacesVaoMap& meshFacesVaoMap =
+				ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res.meshData.meshFacesVaoMap;
 
 			std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
-			SceneRendererData::MaterialVaoMap& materialVaoMap = meshFacesVaoMap.find(mesh)->second;
+			SceneRes::MaterialVaoMap& materialVaoMap = meshFacesVaoMap.find(mesh)->second;
 			std::vector<MeshVertex>& meshVaoVertices = materialVaoMap.find(face->material)->second;
 
 			for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)

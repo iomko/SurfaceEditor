@@ -1,8 +1,4 @@
 #pragma once
-#include "../Patterns/Command.h"
-#include "../Patterns/Observer.h"
-#include "../ViewPortsHolder.h"
-#include "../Commands/CmdProperties/CmdProperties.h"
 
 class SelectMeshCommand : public Observable, public Command<> {
 public:

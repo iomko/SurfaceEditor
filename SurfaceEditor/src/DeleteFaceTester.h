@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "ViewPortsHolder.h"
-#include "Scene/SceneRendererData.h"
+#include "Scene/SceneRes.h"
 
 class DeleteFaceTester
 {
@@ -168,11 +168,11 @@ public:
 	//tymto vymazeme vao data z meshu
 	static void deleteFaceVaoData(Mesh* mesh, HalfEdgeDS::Face* face)
 	{
-		SceneRendererData::MeshFacesVaoMap& meshVaoMap =
-			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_rendererData.meshData.meshFacesVaoMap;
+		SceneRes::MeshFacesVaoMap& meshVaoMap =
+			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res.meshData.meshFacesVaoMap;
 		auto meshVaoMapIt = meshVaoMap.find(mesh);
 
-		SceneRendererData::MaterialVaoMap& materialMap = meshVaoMapIt->second;
+		SceneRes::MaterialVaoMap& materialMap = meshVaoMapIt->second;
 		auto materialMapIt = materialMap.find(face->material);
 		std::vector<MeshVertex>& facesVao = materialMapIt->second;
 

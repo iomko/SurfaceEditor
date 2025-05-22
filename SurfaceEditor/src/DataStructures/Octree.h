@@ -68,22 +68,22 @@ public:
                 if (childrenNodes[0] == nullptr)
                 {
                     //split nodes
-                    glm::vec3 centerBoundsPosition = nodeBounds.getMin() + ((nodeBounds.getMax() - nodeBounds.getMin()) * (1.0f / 2.0f));
+                    glm::vec3 centerBoundsPosition = nodeBounds.getMinBoundsPos() + ((nodeBounds.getMaxBoundsPos() - nodeBounds.getMinBoundsPos()) * (1.0f / 2.0f));
 
-                    childrenNodes[0] = new OctreeNode<T>(nodeBounds.getMin(), centerBoundsPosition, this->depth + 1, 0, this);
-                    childrenNodes[1] = new OctreeNode<T>(glm::vec3(nodeBounds.getMin().x, nodeBounds.getMin().y, nodeBounds.getMax().z),
+                    childrenNodes[0] = new OctreeNode<T>(nodeBounds.getMinBoundsPos(), centerBoundsPosition, this->depth + 1, 0, this);
+                    childrenNodes[1] = new OctreeNode<T>(glm::vec3(nodeBounds.getMinBoundsPos().x, nodeBounds.getMinBoundsPos().y, nodeBounds.getMaxBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 1, this);
-                    childrenNodes[2] = new OctreeNode<T>(glm::vec3(nodeBounds.getMax().x, nodeBounds.getMin().y, nodeBounds.getMin().z),
+                    childrenNodes[2] = new OctreeNode<T>(glm::vec3(nodeBounds.getMaxBoundsPos().x, nodeBounds.getMinBoundsPos().y, nodeBounds.getMinBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 2, this);
-                    childrenNodes[3] = new OctreeNode<T>(glm::vec3(nodeBounds.getMax().x, nodeBounds.getMin().y, nodeBounds.getMax().z),
+                    childrenNodes[3] = new OctreeNode<T>(glm::vec3(nodeBounds.getMaxBoundsPos().x, nodeBounds.getMinBoundsPos().y, nodeBounds.getMaxBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 3, this);
-                    childrenNodes[4] = new OctreeNode<T>(glm::vec3(nodeBounds.getMin().x, nodeBounds.getMax().y, nodeBounds.getMin().z),
+                    childrenNodes[4] = new OctreeNode<T>(glm::vec3(nodeBounds.getMinBoundsPos().x, nodeBounds.getMaxBoundsPos().y, nodeBounds.getMinBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 4, this);
-                    childrenNodes[5] = new OctreeNode<T>(glm::vec3(nodeBounds.getMin().x, nodeBounds.getMax().y, nodeBounds.getMax().z),
+                    childrenNodes[5] = new OctreeNode<T>(glm::vec3(nodeBounds.getMinBoundsPos().x, nodeBounds.getMaxBoundsPos().y, nodeBounds.getMaxBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 5, this);
-                    childrenNodes[6] = new OctreeNode<T>(glm::vec3(nodeBounds.getMax().x, nodeBounds.getMax().y, nodeBounds.getMin().z),
+                    childrenNodes[6] = new OctreeNode<T>(glm::vec3(nodeBounds.getMaxBoundsPos().x, nodeBounds.getMaxBoundsPos().y, nodeBounds.getMinBoundsPos().z),
                         centerBoundsPosition, this->depth + 1, 6, this);
-                    childrenNodes[7] = new OctreeNode<T>(nodeBounds.getMax(), centerBoundsPosition, this->depth + 1, 7, this);
+                    childrenNodes[7] = new OctreeNode<T>(nodeBounds.getMaxBoundsPos(), centerBoundsPosition, this->depth + 1, 7, this);
 
                 }
                 for (size_t i = 0; i < 8; ++i)
@@ -204,7 +204,7 @@ public:
 
     /*
     bool operator<(const Octree<T>& other) const {
-        return rootNode->nodeBounds.getMin() < other.rootNode->nodeBounds.getMin();
+        return rootNode->nodeBounds.getMinBoundsPos() < other.rootNode->nodeBounds.getMinBoundsPos();
     }
     */
 
@@ -280,49 +280,6 @@ public:
 			}
 		}
 	}
-
-    /*
-    template <typename QueryShape>
-    std::vector<std::pair<OctreeNode<T>*, std::vector<T>>> findDataInOctree(
-        const QueryShape& queryShape,
-        const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
-        const std::function<bool(const T&, const QueryShape&)>& dataIntersectAlg)
-    {
-        std::vector<std::pair<OctreeNode<T>*, std::vector<T>>> results;
-        std::vector<OctreeNode<T>*> hitOctreeLeaves;
-
-        if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
-            rootNode->findData(queryShape, octreeBoundsIntersectAlg, hitOctreeLeaves);
-        }
-
-        int leafNodeIndex = 0;
-        for (const auto& leaf : hitOctreeLeaves) {
-
-            for (const auto& data : leaf->nodeData)
-            {
-                if (dataIntersectAlg(data, queryShape))
-                {
-                    if (results.empty())
-                    {
-                        results.emplace_back(std::make_pair(leaf, std::vector<T>()));
-                        results.at(leafNodeIndex).second.emplace_back(data);
-                    }
-                    else
-                    {
-                        results.at(leafNodeIndex).second.emplace_back(data);
-                    }
-                }
-
-            }
-            if (!results.at(leafNodeIndex).second.empty())
-            {
-                ++leafNodeIndex;
-            }
-        }
-
-        return results;
-    }
-    */
 
     void removeData(T data)
     {

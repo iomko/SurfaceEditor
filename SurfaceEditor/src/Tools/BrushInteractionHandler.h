@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "InteractionHandler.h"
-#include "../Commands/CmdProperties/CmdProperties.h"
+#include "../Params/OperationParams.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/BrushToolCommand.h"
 
@@ -21,30 +21,16 @@ public:
 	}
 	void onUpdate(const BrushToolParams& iParams) override
 	{
-		/*
-		Sphere sphere{ m_currentHitPoint, m_currentRadius };
-		Ray ray = Ray::fromMousePos(*ViewPortsHolderContext::m_camera, ViewPortsHolderContext::m_camera->m_matrices.perspectiveMatrix,
-			ViewPortsHolderContext::m_camera->m_matrices.viewMatrix, *ViewPortsHolderContext::m_window);
-
-		if(!Ray::intersectsSphere(ray.origin, ray.direction, sphere))
-		{
-			BrushToolCommand* brushToolCommand = CommandRegistry::getCommand<BrushToolCommand>();
-			OctreeNodeDataParams oParams;
-			brushToolCommand->execute(iParams, oParams);
-
-			if(oParams.meshFacePair.first != nullptr)
-			{
-				m_currentHitPoint = oParams.hitPoint;
-				m_currentRadius = iParams.radius;
-			}
-		}
-		*/
-		
 		Sphere sphere{ m_currentHitPoint, m_currentRadius };
 
-		RetClosestOctreeDataCallable retClosestDataCallable;
+		Camera* camera = ViewPortsHolderContext::m_camera;
+		Window* window = ViewPortsHolderContext::m_window;
+		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		std::pair<SceneRes::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+
 		OctreeNodeDataParams oParams;
-		retClosestDataCallable.invoke(oParams);
+		oParams.meshFacePair = meshFaceHitPair.first;
+		oParams.hitPoint = meshFaceHitPair.second;
 
 		if(!sphere.containsPoint(oParams.hitPoint))
 		{

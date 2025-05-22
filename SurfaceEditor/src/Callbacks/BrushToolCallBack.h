@@ -1,7 +1,6 @@
 #pragma once
-#include "Callback.h"
 #include "../ViewPortsHolder.h"
-#include "../Callables/RetClosestOctreeDataCallable.h"
+#include "../Utils/InterpolationUtils.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
@@ -10,22 +9,22 @@ public:
 	{
 		const float epsilon = 0.001f;
 		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		Camera* camera = ViewPortsHolderContext::m_camera;
+		Window* window = ViewPortsHolderContext::m_window;
+		std::pair<SceneRes::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+		SceneRes::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
-		RetClosestOctreeDataCallable retClosestOctreeDataCallable;
-		OctreeNodeDataParams closestOctreeDataParams;
-		retClosestOctreeDataCallable.invoke(closestOctreeDataParams);
-
-		Mesh* closestMesh = closestOctreeDataParams.meshFacePair.first;
-		HalfEdgeDS::Face* closestFace = closestOctreeDataParams.meshFacePair.second;
-		glm::vec3 hitPoint = closestOctreeDataParams.hitPoint;
+		glm::vec3 hitPoint = meshFaceHitPair.second;
+		Mesh* closestMesh = meshFacePair.first;
+		HalfEdgeDS::Face* closestFace = meshFacePair.second;
 
 		oParams.hitPoint = hitPoint;
-		oParams.meshFacePair = closestOctreeDataParams.meshFacePair;
+		oParams.meshFacePair = meshFacePair;
 
 		if (closestMesh != nullptr)
 		{
-			SceneRendererData::MaterialVaoMap& materialFacesVaoMap = scene->m_rendererData.meshData.meshFacesVaoMap.find(closestMesh)->second;
-			std::vector<LineVertex>& edgesVaoMap = scene->m_rendererData.meshData.meshLinesVaoMap.find(closestMesh)->second;
+			SceneRes::MaterialVaoMap& materialFacesVaoMap = scene->m_res.meshData.meshFacesVaoMap.find(closestMesh)->second;
+			std::vector<LineVertex>& edgesVaoMap = scene->m_res.meshData.meshLinesVaoMap.find(closestMesh)->second;
 			
 			Sphere sphere{ hitPoint, iParams.radius };
 			HalfEdgeDS::Vertex* closestVertex = findNearestVertex(closestFace, hitPoint);
@@ -99,16 +98,11 @@ private:
 		}
 	}
 
-	float smoothstep(float edge0, float edge1, float x) {
-		x = std::max(0.0f, std::min((x - edge0) / (edge1 - edge0), 1.0f));
-		return x * x * (3 - 2 * x);
-	}
-
 	float calculateBrushScalingFactor(float distance, float radius, float brushStrength) {
 		float t = 1.0f - (distance / radius);
 		t = std::clamp(t, 0.0f, 1.0f);
 
-		float scalingFactor = smoothstep(0.0f, 1.0f, t);
+		float scalingFactor = utils::interpolation::smoothstep(0.0f, 1.0f, t);
 		scalingFactor *= brushStrength;
 
 		return scalingFactor;
@@ -120,21 +114,7 @@ private:
 
 		for (auto* graphEdge : vertex->m_graphEdges)
 		{
-			auto* face = graphEdge->face;
-
-			auto it = face->faceVertexBegin();
-			auto end = face->faceVertexEnd();
-
-			if (std::distance(it, end) < 3)
-				continue;
-			
-			HalfEdgeDS::Vertex* v0 = &((++it).operator*());
-			HalfEdgeDS::Vertex* v1 = &((++it).operator*());
-			HalfEdgeDS::Vertex* v2 = &((++it).operator*());
-
-			glm::vec3 edge1 = v1->m_position - v0->m_position;
-			glm::vec3 edge2 = v2->m_position - v0->m_position;
-			glm::vec3 faceNormal = glm::normalize(glm::cross(edge1, edge2));
+			glm::vec3 faceNormal = utils::geometry::computePolygonNormal(graphEdge->face);
 
 			averageNormal += faceNormal;
 		}
@@ -186,9 +166,9 @@ private:
 				return intersects;
 			};
 
-		for (auto& entry : scene->coordsOctreeMap)
+		for (auto& entry : scene->m_res.coordsOctreeMap)
 		{
-			Octree<Scene::MeshFacePair>& octree = entry.second;
+			Octree<SceneRes::MeshFacePair>& octree = entry.second;
 			octree.findDataInOctree<Sphere>(sphere, octreeBoundsIntersectAlg, dataIntersectAlg);
 		}
 

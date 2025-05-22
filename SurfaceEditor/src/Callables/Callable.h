@@ -1,67 +1,65 @@
 #pragma once
 #include "../Patterns/Command.h"
 
-
-class CallableBase {
+class CallableConcept {
 public:
-	virtual ~CallableBase() = default;
-
-	virtual Params* execute(const Params& input) = 0;
+	virtual ~CallableConcept() = default;
+	virtual OpParams* execute(const OpParams& input) = 0;
 };
 
-template <typename TInputParams, typename TOutputParams>
-class Callable : public CallableBase {
+template <typename IParams, typename OParams>
+class Callable : public CallableConcept {
 public:
-	using InputType = TInputParams;
-	using OutputType = TOutputParams;
+	using IType = IParams;
+	using OType = OParams;
 
-	Params* execute(const Params& input) final override {
-		const auto& in = static_cast<const TInputParams&>(input);
-		auto out = new TOutputParams();
-		this->invoke(in, *out);
-		return out;
+	OpParams* execute(const OpParams& input) final override {
+		const auto& castedInput = static_cast<const IParams&>(input);
+		auto output = new OParams();
+		this->invoke(castedInput, *output);
+		return output;
 	}
 
-	virtual void invoke(const TInputParams& input, TOutputParams& output) = 0;
+	virtual void invoke(const IParams& input, OParams& output) = 0;
 };
 
-template <typename TOutputParams>
-class Callable<void, TOutputParams> : public CallableBase {
+template <typename OParams>
+class Callable<void, OParams> : public CallableConcept {
 public:
-	using InputType = void;
-	using OutputType = TOutputParams;
+	using IType = void;
+	using OType = OParams;
 
-	Params* execute(const Params&) final override {
-		auto out = new TOutputParams();
-		this->invoke(*out);
-		return out;
+	OpParams* execute(const OpParams&) final override {
+		auto output = new OParams();
+		this->invoke(*output);
+		return output;
 	}
-
-	virtual void invoke(TOutputParams& output) = 0;
+	
+	virtual void invoke(OParams& output) = 0;
 };
 
-template <typename TInputParams>
-class Callable<TInputParams, void> : public CallableBase {
+template <typename IParams>
+class Callable<IParams, void> : public CallableConcept {
 public:
-	using InputType = TInputParams;
-	using OutputType = void;
+	using IType = IParams;
+	using OType = void;
 
-	Params* execute(const Params& input) final override {
-		const auto& in = static_cast<const TInputParams&>(input);
-		this->invoke(in);
+	OpParams* execute(const OpParams& input) final override {
+		const auto& castedInput = static_cast<const IParams&>(input);
+		this->invoke(castedInput);
 		return nullptr;
 	}
 
-	virtual void invoke(const TInputParams& input) = 0;
+	virtual void invoke(const IParams& input) = 0;
 };
 
 template <>
-class Callable<void, void> : public CallableBase {
+class Callable<void, void> : public CallableConcept {
 public:
-	using InputType = void;
-	using OutputType = void;
+	using IType = void;
+	using OType = void;
 
-	Params* execute(const Params&) final override {
+	OpParams* execute(const OpParams&) final override {
 		this->invoke();
 		return nullptr;
 	}

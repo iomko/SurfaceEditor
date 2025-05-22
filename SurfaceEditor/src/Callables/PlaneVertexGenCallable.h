@@ -1,17 +1,10 @@
 #pragma once
-#include "../ViewPortsHolder.h"
-#include "../Commands/CmdProperties/CmdProperties.h"
-#include "../Callables/Callable.h"
 
-#include <random>
-
-class GenPlaneVertexDataCallable : public Callable<AddPlaneParams, MeshParams>
+class PlaneVertexGenCallable : public Callable<PlaneParams, MeshParams>
 {
 public:
-	void invoke(const AddPlaneParams& input, MeshParams& output) override
+	void invoke(const PlaneParams& input, MeshParams& output) override
 	{
-		++ViewPortsHolderContext::m_viewPortsHolder->m_currentMeshId;
-
 		float planeSize = input.m_size;
 		int planeSubidivisionLevel = input.m_subdivisionLevel;
 
@@ -24,38 +17,26 @@ public:
 		{
 			for (int x = 0; x <= planeSubidivisionLevel; ++x)
 			{
-				//VERTEX
-				glm::vec3 vertex{ +(-(planeSize / 2)) + (x * squareSize) , 0.0f,  (-(planeSize / 2)) + (z * squareSize) };
-				//0x -> (-(planeSize / 2)) + (x * squareSize);
-				//0z -> (-(planeSize / 2)) + (z * squareSize);
+				glm::vec3 vertex{ (-(planeSize / 2)) + (x * squareSize) , 0.0f,  (-(planeSize / 2)) + (z * squareSize) };
 
 				planeVertices.push_back(vertex);
 
 				if (x != planeSubidivisionLevel && z != planeSubidivisionLevel)
 				{
-					//INDICES
-					int firstIndex = (z * (planeSubidivisionLevel + 1)) + x;
-					int secondIndex = ((z + 1) * (planeSubidivisionLevel + 1)) + x;
-					int thirdIndex = (z * (planeSubidivisionLevel + 1)) + x + 1;
-					int fifthIndex = ((z + 1) * (planeSubidivisionLevel + 1)) + x + 1;
-					//0 -> (z * (planeSubidivisionLevel+1)) + x
-					//5 -> ((z+1) * (planeSubidivisionLevel+1)) + x
-					//1 -> (z * (planeSubidivisionLevel+1)) + x + 1
-					//6 -> ((z+1) * (planeSubidivisionLevel+1)) + x + 1
+					int firstVertexIndex = (z * (planeSubidivisionLevel + 1)) + x;
+					int secondVertexIndex = ((z + 1) * (planeSubidivisionLevel + 1)) + x;
+					int thirdVertexIndex = (z * (planeSubidivisionLevel + 1)) + x + 1;
+					int fourthVertexIndex = ((z + 1) * (planeSubidivisionLevel + 1)) + x + 1;
 
-					planeIndices.push_back({ firstIndex, secondIndex, thirdIndex });
-					planeIndices.push_back({ fifthIndex, thirdIndex, secondIndex });
+					planeIndices.push_back({ firstVertexIndex, secondVertexIndex, thirdVertexIndex });
+					planeIndices.push_back({ fourthVertexIndex, thirdVertexIndex, secondVertexIndex });
 				}
 			}
 		}
 
 		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
 
-		mesh->m_meshID = std::to_string(ViewPortsHolderContext::m_viewPortsHolder->m_currentMeshId);
-
 		output.m_mesh = mesh; 
-
-		//output.m_mesh = createNewTestMesh();
 	}
 
 private:

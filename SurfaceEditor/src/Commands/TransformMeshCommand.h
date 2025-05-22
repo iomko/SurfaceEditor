@@ -1,9 +1,4 @@
 #pragma once
-#include <string_view>
-#include "../Patterns/Command.h"
-#include "../Patterns/Observer.h"
-#include "../ViewPortsHolder.h"
-#include "CmdProperties/CmdProperties.h"
 
 class TransformMeshCommand : public Observable, public Command<TransformMeshParams> {
 public:

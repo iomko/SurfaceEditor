@@ -1,9 +1,4 @@
 #pragma once
-#include <string_view>
-
-#include "../Patterns/Observer.h"
-#include "../Patterns/Command.h"
-
 
 class DeleteSelectedMeshesCommand : public Command<>, public Observable
 {

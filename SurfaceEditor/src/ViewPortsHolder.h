@@ -3,12 +3,11 @@
 
 #include "ObjectSelectionHolder.h"
 #include "Patterns/Observer.h"
-#include "Patterns/Command.h"
-#include "Core/Layer.h"
-#include "Scene/Scene.h"
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Scene/ViewPortLayerScreenSettings.h"
 #include "Tools/Tool.h"
+#include "Core/Input.h"
+#include "Renderer/Renderer.h"
 
 class ViewPortLayer;
 
@@ -42,10 +41,8 @@ public:
 	Scene* m_scene = nullptr;
 
 	ITool* m_currentTool = nullptr;
-	Params* m_currentToolParams = nullptr;
+	OpParams* m_currentToolParams = nullptr;
 
-	//temporary
-	int m_currentMeshId = 0;
 };
 
 class ViewPortsHolderContext
@@ -124,7 +121,7 @@ public:
 			event.getType() == EventType::MouseMove)
 		{
 			ITool* currentTool = viewPortsHolder->m_currentTool;
-			Params* currentToolParams = viewPortsHolder->m_currentToolParams;
+			OpParams* currentToolParams = viewPortsHolder->m_currentToolParams;
 			if(currentTool != nullptr)
 			{
 				if (Input::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT))

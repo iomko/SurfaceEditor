@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include "DataStructures/HalfEdge.h"
 #include "Mesh.h"
 
 class ObjectSelectionHolder

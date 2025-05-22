@@ -1,8 +1,5 @@
 #pragma once
-#include "Callback.h"
 #include "../OBJImporter.h"
-#include <random>
-
 
 class ImportMeshesCallback : public Callback<ImportExportMeshesParams>, public Observer
 {
@@ -21,11 +18,11 @@ public:
 
 			createMeshRenderingData(params, importedMesh);
 
-			scene->meshFaceOctreeCoordsMap.find(importedMesh);
-			auto meshesFaceOctreeIt = scene->meshFaceOctreeCoordsMap.find(importedMesh);
+			scene->m_res.meshFaceOctreeCoordsMap.find(importedMesh);
+			auto meshesFaceOctreeIt = scene->m_res.meshFaceOctreeCoordsMap.find(importedMesh);
 
-			if (meshesFaceOctreeIt == scene->meshFaceOctreeCoordsMap.end()) {
-				auto& faceOctreesMap = scene->meshFaceOctreeCoordsMap[importedMesh];
+			if (meshesFaceOctreeIt == scene->m_res.meshFaceOctreeCoordsMap.end()) {
+				auto& faceOctreesMap = scene->m_res.meshFaceOctreeCoordsMap[importedMesh];
 
 
 				for (auto faceIter = importedMesh->m_halfEdgeStructure->faceIterBegin(); faceIter != importedMesh->m_halfEdgeStructure->faceIterEnd(); ++faceIter)
@@ -33,22 +30,18 @@ public:
 					std::vector<HalfEdgeDS::Vertex> faceVerts;
 					importedMesh->m_halfEdgeStructure->getVerticesFromFace(*faceIter, faceVerts);
 					//auto& faceVerts = importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter);
-					AABBBoundingRegion faceBounds(
-						faceVerts.begin(),
-						faceVerts.end(),
-						[](HalfEdgeDS::Vertex& p) { return p.m_position.x; },
-						[](HalfEdgeDS::Vertex& p) { return p.m_position.y; },
-						[](HalfEdgeDS::Vertex& p) { return p.m_position.z; }
-					);
+
+					AABBBoundingRegion faceBounds(faceVerts.begin(), faceVerts.end(),
+						[](HalfEdgeDS::Vertex& point) { return point.m_position; });
 
 					//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
 
 					//calculate the X,Y,Z for MinBound
 
 
-					//glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(scene->voxelSize, faceBounds.getMin());
-					glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(faceBounds.getMin(), scene->getVoxelSize());
-					glm::vec3 voxelIndexMaxBound = SceneUtilities::getVoxelIndex(faceBounds.getMax(), scene->getVoxelSize());
+					//glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(scene->voxelSize, faceBounds.getMinBoundsPos());
+					glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(faceBounds.getMinBoundsPos(), scene->getVoxelSize());
+					glm::vec3 voxelIndexMaxBound = SceneUtilities::getVoxelIndex(faceBounds.getMaxBoundsPos(), scene->getVoxelSize());
 
 
 					for (int x = voxelIndexMinBound.x; x <= voxelIndexMaxBound.x; ++x)
@@ -60,8 +53,8 @@ public:
 								glm::vec3 currentIndexBound = { x,y,z };
 								//teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
 
-								auto it = scene->coordsOctreeMap.find(currentIndexBound);
-								if (it != scene->coordsOctreeMap.end())
+								auto it = scene->m_res.coordsOctreeMap.find(currentIndexBound);
+								if (it != scene->m_res.coordsOctreeMap.end())
 								{
 									//existuje octree s tymto indexom
 									it->second.addDataToOctree(std::make_pair(importedMesh, *faceIter), faceBounds);
@@ -73,7 +66,7 @@ public:
 									//SceneUtilities::calculateOctreeBounds()
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene->getVoxelSize());
-									auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+									auto addedOctree = scene->m_res.coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
 									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, *faceIter), faceBounds);
 
@@ -149,9 +142,9 @@ public:
 					//calculate the X,Y,Z for MinBound
 
 
-					//glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(scene->voxelSize, faceBounds.getMin());
-					glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(faceBounds.getMin(), scene);
-					glm::vec3 voxelIndexMaxBound = SceneUtilities::getVoxelIndex(faceBounds.getMax(), scene);
+					//glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(scene->voxelSize, faceBounds.getMinBoundsPos());
+					glm::vec3 voxelIndexMinBound = SceneUtilities::getVoxelIndex(faceBounds.getMinBoundsPos(), scene);
+					glm::vec3 voxelIndexMaxBound = SceneUtilities::getVoxelIndex(faceBounds.getMaxBoundsPos(), scene);
 
 
 					for (int x = voxelIndexMinBound.x; x <= voxelIndexMaxBound.x; ++x)

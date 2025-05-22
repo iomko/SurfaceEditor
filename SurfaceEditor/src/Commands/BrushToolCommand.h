@@ -1,8 +1,4 @@
 #pragma once
-#include "../Patterns/Observer.h"
-#include "../Patterns/Command.h"
-#include "CmdProperties/CmdProperties.h"
-
 
 class BrushToolCommand : public Command<BrushToolParams, OctreeNodeDataParams>, public Observable
 {

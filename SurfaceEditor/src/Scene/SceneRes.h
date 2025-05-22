@@ -6,8 +6,9 @@
 #include "../Renderer/VertexDataStructs.h"
 #include "../AABBBoundingRegion.h"
 #include "../Mesh.h"
+#include "../DataStructures/Octree.h"
 
-class SceneRendererData
+class SceneRes
 {
 public:
 	using MeshLinesVaoMap = std::map<Mesh*, std::vector<LineVertex>>;
@@ -31,7 +32,7 @@ public:
 		std::map<AABBBoundingRegion, std::vector<AABBVertex>> vaoDataMap;
 
 
-		//t·to trieda SceneRendererData by skÙr mala sl˙ûiù ako
+		//t·to trieda SceneRes by skÙr mala sl˙ûiù ako
 		//len tak˝ holder, Ëiûe metÛdy ako clearAABBData a collectAABBData
 		//by som presunul niekde inde.
 		void clearAABBData()
@@ -42,15 +43,15 @@ public:
 		void collectAABBData(const AABBBoundingRegion& aabb) {
 			glm::vec3 vertexColor = glm::vec3(0.0f, 1.0f, 0.0f);
 			//left side
-			glm::vec3 bottomUpLeft = aabb.getMin();
-			glm::vec3 bottomDownLeft = glm::vec3(aabb.getMin().x, aabb.getMin().y, aabb.getMax().z);
-			glm::vec3 upperDownLeft = glm::vec3(aabb.getMin().x, aabb.getMax().y, aabb.getMax().z);
-			glm::vec3 upperUpLeft = glm::vec3(aabb.getMin().x, aabb.getMax().y, aabb.getMin().z);
+			glm::vec3 bottomUpLeft = aabb.getMinBoundsPos();
+			glm::vec3 bottomDownLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMaxBoundsPos().z);
+			glm::vec3 upperDownLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMaxBoundsPos().z);
+			glm::vec3 upperUpLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMinBoundsPos().z);
 			//right side
-			glm::vec3 bottomUpRight = glm::vec3(aabb.getMax().x, aabb.getMin().y, aabb.getMin().z);
-			glm::vec3 bottomDownRight = glm::vec3(aabb.getMax().x, aabb.getMin().y, aabb.getMax().z);
-			glm::vec3 upperDownRight = aabb.getMax();
-			glm::vec3 upperUpRight = glm::vec3(aabb.getMax().x, aabb.getMax().y, aabb.getMin().z);
+			glm::vec3 bottomUpRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMinBoundsPos().z);
+			glm::vec3 bottomDownRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMaxBoundsPos().z);
+			glm::vec3 upperDownRight = aabb.getMaxBoundsPos();
+			glm::vec3 upperUpRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMinBoundsPos().z);
 
 			AABBVertex AABB_vertices[] = {
 				//
@@ -115,4 +116,12 @@ public:
 
 	AABBData aabbData;
 	MeshData meshData;
+
+	using FaceOctreeCoordsMap = std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>;
+	using MeshFaceOctreeCoordsMap = std::map<Mesh*, FaceOctreeCoordsMap>;
+	using MeshFacePair = std::pair<Mesh*, HalfEdgeDS::Face*>;
+	using CoordsOctreeMap = std::map<glm::vec3, Octree<MeshFacePair>>;
+
+	MeshFaceOctreeCoordsMap meshFaceOctreeCoordsMap;
+	CoordsOctreeMap coordsOctreeMap;
 };

@@ -15,20 +15,11 @@
 class AABBBoundingRegion
 {
 public:
-	template <typename IteratorBegin, typename IteratorEnd, typename GetX, typename GetY, typename GetZ>
-	AABBBoundingRegion(IteratorBegin begin, IteratorEnd end, GetX xPosition, GetY yPosition, GetZ zPosition)
+	template <typename Iterator, typename PointExtractor>
+	AABBBoundingRegion(Iterator begin, Iterator end, PointExtractor extractor)
 	{
-		initializeBounds();
-		for (IteratorBegin it = begin; it != end; ++it) {
-			updateBounds(glm::vec3(xPosition(*it), yPosition(*it), zPosition(*it)));
-		}
-	}
-
-	AABBBoundingRegion(const glm::vec3* positionsArray, size_t arraySize)
-	{
-		initializeBounds();
-		for (size_t i = 0; i < arraySize; ++i) {
-			updateBounds(positionsArray[i]);
+		for (Iterator it = begin; it != end; ++it) {
+			initBounds(extractor(*it));
 		}
 	}
 
@@ -76,8 +67,8 @@ public:
 
 	bool intersectsSphere(const Sphere& sphere) const {
 		glm::vec3 closestPoint;
-		const glm::vec3& min = this->getMin();
-		const glm::vec3& max = this->getMax();
+		const glm::vec3& min = this->getMinBoundsPos();
+		const glm::vec3& max = this->getMaxBoundsPos();
 
 		// Clamp each coordinate to the AABB bounds
 		closestPoint.x = glm::clamp(sphere.position.x, min.x, max.x);
@@ -93,33 +84,33 @@ public:
 
 	bool intersectsAABB(const AABBBoundingRegion& aabb) const
 	{
-		return (this->bounds[1].x >= aabb.getMin().x &&
-			this->bounds[0].x <= aabb.getMax().x &&
-			this->bounds[1].y >= aabb.getMin().y &&
-			this->bounds[0].y <= aabb.getMax().y &&
-			this->bounds[1].z >= aabb.getMin().z &&
-			this->bounds[0].z <= aabb.getMax().z);
+		return (this->bounds[1].x >= aabb.getMinBoundsPos().x &&
+			this->bounds[0].x <= aabb.getMaxBoundsPos().x &&
+			this->bounds[1].y >= aabb.getMinBoundsPos().y &&
+			this->bounds[0].y <= aabb.getMaxBoundsPos().y &&
+			this->bounds[1].z >= aabb.getMinBoundsPos().z &&
+			this->bounds[0].z <= aabb.getMaxBoundsPos().z);
 	}
 
 	bool containsPoint(const glm::vec3& point) const {
-		return point.x >= this->getMin().x &&
-			point.x <= this->getMax().x &&
-			point.y >= this->getMin().y &&
-			point.y <= this->getMax().y &&
-			point.z >= this->getMin().z &&
-			point.z <= this->getMax().z;
+		return point.x >= this->getMinBoundsPos().x &&
+			point.x <= this->getMaxBoundsPos().x &&
+			point.y >= this->getMinBoundsPos().y &&
+			point.y <= this->getMaxBoundsPos().y &&
+			point.z >= this->getMinBoundsPos().z &&
+			point.z <= this->getMaxBoundsPos().z;
 	}
 
-	bool isWithIn(const AABBBoundingRegion& aabb) const {
-		return containsPoint(aabb.getMin()) &&
-			containsPoint(aabb.getMax());
+	bool containsAABB(const AABBBoundingRegion& aabb) const {
+		return containsPoint(aabb.getMinBoundsPos()) &&
+			containsPoint(aabb.getMaxBoundsPos());
 	}
 
-	const glm::vec3& getMin() const
+	const glm::vec3& getMinBoundsPos() const
 	{
 		return this->bounds[0];
 	}
-	const glm::vec3& getMax() const
+	const glm::vec3& getMaxBoundsPos() const
 	{
 		return this->bounds[1];
 	}
@@ -140,16 +131,16 @@ public:
 	}
 
 	bool operator<(const AABBBoundingRegion& other) const {
-		if (getMin().x != other.getMin().x) return getMin().x < other.getMin().x;
-		if (getMin().y != other.getMin().y) return getMin().y < other.getMin().y;
-		if (getMin().z != other.getMin().z) return getMin().z < other.getMin().z;
-		if (getMax().x != other.getMax().x) return getMax().x < other.getMax().x;
-		if (getMax().y != other.getMax().y) return getMax().y < other.getMax().y;
-		return getMax().z < other.getMax().z;
+		if (getMinBoundsPos().x != other.getMinBoundsPos().x) return getMinBoundsPos().x < other.getMinBoundsPos().x;
+		if (getMinBoundsPos().y != other.getMinBoundsPos().y) return getMinBoundsPos().y < other.getMinBoundsPos().y;
+		if (getMinBoundsPos().z != other.getMinBoundsPos().z) return getMinBoundsPos().z < other.getMinBoundsPos().z;
+		if (getMaxBoundsPos().x != other.getMaxBoundsPos().x) return getMaxBoundsPos().x < other.getMaxBoundsPos().x;
+		if (getMaxBoundsPos().y != other.getMaxBoundsPos().y) return getMaxBoundsPos().y < other.getMaxBoundsPos().y;
+		return getMaxBoundsPos().z < other.getMaxBoundsPos().z;
 	}
 	
 	bool operator==(const AABBBoundingRegion& other) const {
-		return this->getMin() == other.getMin() && this->getMax() == other.getMax();
+		return this->getMinBoundsPos() == other.getMinBoundsPos() && this->getMaxBoundsPos() == other.getMaxBoundsPos();
 	}
 
 	bool operator!=(const AABBBoundingRegion& other) const {
@@ -158,12 +149,7 @@ public:
 
 private:
 
-	void initializeBounds() {
-		bounds[0] = glm::vec3(std::numeric_limits<float>::max());
-		bounds[1] = glm::vec3(std::numeric_limits<float>::lowest());
-	}
-
-	void updateBounds(const glm::vec3& point) {
+	void initBounds(const glm::vec3& point) {
 		bounds[0].x = glm::min(bounds[0].x, point.x);
 		bounds[0].y = glm::min(bounds[0].y, point.y);
 		bounds[0].z = glm::min(bounds[0].z, point.z);

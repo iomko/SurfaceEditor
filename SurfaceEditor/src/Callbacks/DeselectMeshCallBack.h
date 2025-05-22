@@ -1,23 +1,18 @@
 #pragma once
-#include <iostream>
-
-#include "Callback.h"
-#include "../ViewPortsHolder.h"
-#include "../AABBBoundingRegion.h"
-#include "../Core/Input.h"
-#include "../MeshSelectionManager.h"
 
 class DeselectMeshCallBack : public Callback<>, public Observer
 {
 public:
 	void execute() override
 	{
-		RetClosestOctreeDataCallable closestOctreeDataCallable;
+		Camera* camera = ViewPortsHolderContext::m_camera;
+		Window* window = ViewPortsHolderContext::m_window;
+		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		std::pair<SceneRes::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
 
-		OctreeNodeDataParams output;
-		closestOctreeDataCallable.invoke(output);
+		SceneRes::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
-		Mesh* mesh = output.meshFacePair.first;
+		Mesh* mesh = meshFacePair.first;
 
 		MeshSelectionManager::unregisterMesh(*ViewPortsHolderContext::m_objectSelectionHolder, mesh);
 

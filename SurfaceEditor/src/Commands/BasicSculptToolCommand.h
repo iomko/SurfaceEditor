@@ -1,10 +1,4 @@
 #pragma once
-#include <iostream>
-#include <glm/vec3.hpp>
-
-#include "../Patterns/command.h"
-#include "../ViewPortsHolder.h"
-#include "../Callbacks/SelectFaceCallBack.h"
 
 class BasicSculptToolCommand : public Command<>
 {

@@ -1,13 +1,8 @@
 #pragma once
-#include "../Commands/CmdProperties/CmdProperties.h"
-#include "../Mesh.h"
-#include "../FunctionComposer.h"
-
-#include "../ViewPortsHolder.h"
 #include "../Triangulator.h"
-#include "../DeleteFaceTester.h"
+#include "../Utils/GeometryUtils.h"
 
-class InitMeshVaoDataCallable : public Callable<MeshParams, void>
+class MeshVaoInitCallable : public Callable<MeshParams, void>
 {
 public:
 	void invoke(const MeshParams& input) override
@@ -17,11 +12,11 @@ public:
 		std::vector<HalfEdgeDS::Face*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
 		std::vector<HalfEdgeDS::Edge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
-		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		SceneRes& res = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res;
 
 		Material* material = mesh->m_defaultMaterial;
-		SceneRendererData::MaterialVaoMap& meshFacesVaoMap = scene->m_rendererData.meshData.meshFacesVaoMap[mesh];
-		std::vector<LineVertex>& meshLinesVaoVector = scene->m_rendererData.meshData.meshLinesVaoMap[mesh];
+		SceneRes::MaterialVaoMap& meshFacesVaoMap = res.meshData.meshFacesVaoMap[mesh];
+		std::vector<LineVertex>& meshLinesVaoVector = res.meshData.meshLinesVaoMap[mesh];
 
 		std::vector<MeshVertex>& materialVaoVertices = meshFacesVaoMap[material];
 		std::vector<HalfEdgeDS::FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
@@ -42,7 +37,7 @@ public:
 			faceVertices.emplace_back(firstVertex);
 
 			//---COMPUTE_FACE_NORMAL---
-			glm::vec3 faceNormal = PolygonOperations::computeFaceNormal(meshFace);
+			glm::vec3 faceNormal = utils::geometry::computePolygonNormal(meshFace);
 
 			//---TRIANGULATION---
 			std::vector<glm::vec3> triangulatedVertices = Triangulator::triangulatePolygon(faceVertices);
@@ -90,11 +85,11 @@ public:
 			//---TOP_EDGE---
 			HalfEdgeDS::HalfEdge* halfEdge = edge->m_halfEdge;
 
-			glm::vec3 normal = PolygonOperations::computeFaceNormal(halfEdge->m_face);
+			glm::vec3 normal = utils::geometry::computePolygonNormal(halfEdge->m_face);
 
 			if (halfEdge->m_twin != nullptr)
 			{
-				glm::vec3 twinNormal = PolygonOperations::computeFaceNormal(halfEdge->m_twin->m_face);
+				glm::vec3 twinNormal = utils::geometry::computePolygonNormal(halfEdge->m_twin->m_face);
 				normal = glm::normalize(normal + twinNormal); // Average and normalize
 			}
 

@@ -54,6 +54,8 @@ float lastFrame = 0.0f;
 #include "../Gui/RemovalLayer.h"
 #include "../Gui/SelectionLayer.h"
 
+#include "../Callbacks/SelectFaceCallBack.h"
+
 #include "../Callbacks/DeselectMeshCallBack.h"
 #include "../Commands/DeselectMeshCommand.h"
 
@@ -72,6 +74,10 @@ float lastFrame = 0.0f;
 #include "../Tools/BrushTool.h"
 #include "../Tools/FaceSelectionTool.h"
 
+#include "../Callables/PlaneVertexGenCallable.h"
+#include "../Callables/MeshVaoInitCallable.h"
+#include "../Callables/SceneMeshAdderCallable.h"
+
 
 //#include "../OBJExporter.h"
 //#include "../OBJImporter.h"
@@ -84,7 +90,7 @@ float lastFrame = 0.0f;
 #include "../Callbacks/ExportMeshesCallback.h"
 #include "../Commands/ExportMeshesCommand.h"
 
-#include "../Callables/GenFetchedSurfaceVertexDataCallable.h"
+#include "../Callables/FetchedSurfaceVertexGenCallable.h"
 #include "../Callbacks/FetchSurfaceCallBack.h"
 
 //DELAUNAY_TEST
@@ -110,7 +116,7 @@ const unsigned int SCR_HEIGHT = 900;
 
 
 
-class RootInputParams : public Params {
+class RootInputParams : public OpParams {
 public:
 	int rootInputValue;
 
@@ -122,7 +128,7 @@ public:
 };
 	
 
-class RootOutputParams : public Params {
+class RootOutputParams : public OpParams {
 public:
 	int rootOutputValue;
 
@@ -132,7 +138,7 @@ public:
 	}
 };
 
-class Add5OutputParams : public Params {
+class Add5OutputParams : public OpParams {
 public:
 	int add5OutputParams;
 
@@ -142,7 +148,7 @@ public:
 	}
 };
 
-class Add100OutputParams : public Params {
+class Add100OutputParams : public OpParams {
 public:
 	int add100OutputParams;
 
@@ -275,16 +281,16 @@ int main()
 	//--ADD_PLANE_COMPOSER--
 
 	FunctionComposer addPlaneComposer;
-	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<GenPlaneVertexDataCallable>();
-	addPlaneComposer.addFunc<InitMeshVaoDataCallable>(addPlaneRoot);
-	addPlaneComposer.addFunc<AddMeshIntoSceneCallable>(addPlaneRoot);
+	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<PlaneVertexGenCallable>();
+	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
+	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
 	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
 
 	//---FETCH_SURFACE_COMPOSER---
 	FunctionComposer fetchSurfaceComposer;
-	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<GenFetchedSurfaceVertexDataCallable>();
-	fetchSurfaceComposer.addFunc<InitMeshVaoDataCallable>(fetchSurfaceRoot);
-	fetchSurfaceComposer.addFunc<AddMeshIntoSceneCallable>(fetchSurfaceRoot);
+	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<FetchedSurfaceVertexGenCallable>();
+	fetchSurfaceComposer.addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
+	fetchSurfaceComposer.addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
 	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
 
 
@@ -381,7 +387,7 @@ int main()
 	ViewPortsHolderContext::m_window = app.m_window;
 
 
-	AddPlaneParams planeProperties;
+	PlaneParams planeProperties;
 	planeProperties.m_size = 50.0f;
 	planeProperties.m_subdivisionLevel = 4;
 
@@ -517,16 +523,16 @@ int main()
 	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
 	app.getLayerStack().addLayer(&sculptToolsLayer);
 
-	scene.m_rendererData.aabbData.clearAABBData();
+	scene.m_res.aabbData.clearAABBData();
 
 
 
-	for (auto& entry : scene.coordsOctreeMap) {
+	for (auto& entry : scene.m_res.coordsOctreeMap) {
 		const glm::vec3& key = entry.first;
 		Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 		for (auto& octreeNode : octree) {
 			octreeNode.getBounds();
-			scene.m_rendererData.aabbData.collectAABBData(octreeNode.getBounds());
+			scene.m_res.aabbData.collectAABBData(octreeNode.getBounds());
 		}
 	}
 
@@ -616,7 +622,7 @@ int main()
 		camera->m_matrices.perspectiveMatrix = projection;
 		camera->m_matrices.viewMatrix = view;
 
-		ray = Ray::fromMousePos(*camera, projection, view, app.getWindow());
+		ray = Ray::fromMousePos(*camera, app.getWindow());
 
 		if (Input::isKeyDown(GLFW_KEY_C))
 		{
@@ -635,16 +641,16 @@ int main()
 		{
 			//viewPortLayer.deleteSelectedMeshes();
 			//delete them from renderer aswell!
-			scene.m_rendererData.aabbData.clearAABBData();
+			scene.m_res.aabbData.clearAABBData();
 
 
 			
-			for (auto& entry : scene.coordsOctreeMap) {
+			for (auto& entry : scene.m_res.coordsOctreeMap) {
 				const glm::vec3& key = entry.first;
 				Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 				for (auto& octreeNode : octree) {
 					octreeNode.getBounds();
-					scene.m_rendererData.aabbData.collectAABBData(octreeNode.getBounds());
+					scene.m_res.aabbData.collectAABBData(octreeNode.getBounds());
 				}
 			}
 
@@ -661,7 +667,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		
-		for (auto& [mesh, materialVertexMap] : scene.m_rendererData.meshData.meshFacesVaoMap)
+		for (auto& [mesh, materialVertexMap] : scene.m_res.meshData.meshFacesVaoMap)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -684,7 +690,7 @@ int main()
 		}
 
 		//RENDER LINES
-		for (auto& [mesh, linesVector] : scene.m_rendererData.meshData.meshLinesVaoMap)
+		for (auto& [mesh, linesVector] : scene.m_res.meshData.meshLinesVaoMap)
 		{
 			linesShader.bind();
 			Renderer::drawLines(linesVector);
@@ -692,7 +698,7 @@ int main()
 		}
 
 		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
-		for (const auto& [region, vertices] : scene.m_rendererData.aabbData.vaoDataMap) {
+		for (const auto& [region, vertices] : scene.m_res.aabbData.vaoDataMap) {
 			
 			Renderer::drawBox(vertices);
 		}

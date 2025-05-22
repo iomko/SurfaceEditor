@@ -24,7 +24,7 @@ public:
 		return Ray(camera.getState().position, camera.getState().frontVector);
 	}
 
-	static Ray fromMousePos(Camera& camera, const glm::mat4& perspectiveMat, glm::mat4& viewMat, Window& window)
+	static Ray fromMousePos(Camera& camera, Window& window)
 	{
 		double mouseX, mouseY;
 		glfwGetCursorPos(window.getWindowHandle(), &mouseX, &mouseY);
@@ -34,12 +34,12 @@ public:
 
 		glm::vec4 clip = glm::vec4(normalizedXCoord, normalizedYCoord, -1.0, 1.0);
 
-		glm::mat4 inversePerspective = glm::inverse(perspectiveMat);
+		glm::mat4 inversePerspective = glm::inverse(camera.m_matrices.perspectiveMatrix);
 		glm::vec4 cameraSpace = inversePerspective * clip;
 		cameraSpace[2] = -1.0;
 		cameraSpace[3] = 0.0;
 
-		glm::vec4 worldSpace = glm::inverse(viewMat) * cameraSpace;
+		glm::vec4 worldSpace = glm::inverse(camera.m_matrices.viewMatrix) * cameraSpace;
 
 		glm::vec3 rayPosition = glm::vec3(worldSpace);
 		glm::vec3 normalizedRayPosition = glm::normalize(rayPosition);

@@ -1,20 +1,19 @@
 #pragma once
-#include "Callback.h"
-#include "../Callables/RetClosestOctreeDataCallable.h"
-#include "../FaceSelectionManager.h"
 
 class SelectFaceCallBack : public Callback<>, public Observer
 {
 public:
 	virtual void execute() override
 	{
-		RetClosestOctreeDataCallable closestOctreeDataCallable;
+		Camera* camera = ViewPortsHolderContext::m_camera;
+		Window* window = ViewPortsHolderContext::m_window;
+		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		std::pair<SceneRes::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
 
-		OctreeNodeDataParams output;
-		closestOctreeDataCallable.invoke(output);
+		SceneRes::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
-		Mesh* mesh = output.meshFacePair.first;
-		HalfEdgeDS::Face* face = output.meshFacePair.second;
+		Mesh* mesh = meshFacePair.first;
+		HalfEdgeDS::Face* face = meshFacePair.second;
 
 		FaceSelectionManager::registerFace(*ViewPortsHolderContext::m_objectSelectionHolder, face, mesh);
 

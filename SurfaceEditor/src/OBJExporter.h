@@ -68,9 +68,9 @@ private:
 			Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
 
 			//GET FACEINFO MAPPINGS
-			SceneRendererData::MeshFacesMap::iterator meshFacesMapIt = scene->m_rendererData.meshData.meshFacesMap.find(mesh);
-			if (meshFacesMapIt != scene->m_rendererData.meshData.meshFacesMap.end()) {
-				SceneRendererData::FaceInfoMap& faceInfoMap = meshFacesMapIt->second;
+			SceneRes::MeshFacesMap::iterator meshFacesMapIt = scene->m_res.meshData.meshFacesMap.find(mesh);
+			if (meshFacesMapIt != scene->m_res.meshData.meshFacesMap.end()) {
+				SceneRes::FaceInfoMap& faceInfoMap = meshFacesMapIt->second;
 
 				//ITERATE THROUGH ALL THE FACEINFO
 				for (const auto& [faceIndex, faceInfo] : faceInfoMap) {

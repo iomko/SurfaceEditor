@@ -1,7 +1,4 @@
 #pragma once
-#include "../Patterns/Command.h"
-#include "../Patterns/Observer.h"
-#include "../ViewPortsHolder.h"
 
 class SelectFaceCommand : public Observable, public Command<> {
 public:

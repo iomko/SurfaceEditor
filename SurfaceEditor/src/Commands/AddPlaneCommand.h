@@ -1,14 +1,9 @@
 #pragma once
-#include <vector>
-#include "../Patterns/Observer.h"
-#include "../Patterns/Command.h"
-#include "CmdProperties/CmdProperties.h"
 
-
-class AddPlaneCommand : public Command<AddPlaneParams>, public Observable
+class AddPlaneCommand : public Command<PlaneParams>, public Observable
 {
 public:
-	virtual void execute(const AddPlaneParams& params) override
+	virtual void execute(const PlaneParams& params) override
 	{
 		notifyObservers(params);
 	}

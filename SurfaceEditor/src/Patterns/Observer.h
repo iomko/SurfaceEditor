@@ -55,7 +55,7 @@ public:
 		}
 	}
 
-	void notifyObservers(const Params& iParams)
+	void notifyObservers(const OpParams& iParams)
 	{
 		for (const auto& observer : m_observers)
 		{
@@ -63,7 +63,7 @@ public:
 		}
 	}
 
-	void notifyObservers(const Params& iParams, Params& oParams)
+	void notifyObservers(const OpParams& iParams, OpParams& oParams)
 	{
 		for (const auto& observer : m_observers)
 		{

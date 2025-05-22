@@ -3,7 +3,7 @@
 #include "DataStructures/HalfEdge.h"
 #include "Renderer/VertexDataStructs.h"
 
-#include "PolygonOperations.h"
+#include "Utils/GeometryUtils.h"
 #include "VectorOperations.h"
 
 #include "GeometryAlgorithms/TriangleTriangulator.h"

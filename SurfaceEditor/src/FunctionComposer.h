@@ -8,13 +8,13 @@ template <typename T, typename = void>
 struct has_input_params : std::false_type {};
 
 template <typename T>
-struct has_input_params<T, std::void_t<typename T::InputType>>
-	: std::conditional_t<std::is_void<typename T::InputType>::value, std::false_type, std::true_type> {};
+struct has_input_params<T, std::void_t<typename T::IType>>
+	: std::conditional_t<std::is_void<typename T::IType>::value, std::false_type, std::true_type> {};
 
 
 class FunctionNode {
 public:
-	CallableBase* m_function = nullptr;
+	CallableConcept* m_function = nullptr;
 	std::vector<FunctionNode*> m_functionChildNodes;
 };
 
@@ -46,12 +46,12 @@ public:
 			std::cerr << "Error: This callable requires input parameters." << std::endl;
 		} else
 		{
-			Params defaultParams{};
+			OpParams defaultParams{};
 			executeImpl(defaultParams);
 		}
 	}
 
-	void execute(const Params& inputParams)
+	void execute(const OpParams& inputParams)
 	{
 		if (!INPUT_PARAMS_FLAG)
 		{
@@ -71,13 +71,13 @@ public:
 private:
 	bool INPUT_PARAMS_FLAG = false;
 
-	void executeImpl(const Params& initialParams)
+	void executeImpl(const OpParams& initialParams)
 	{
-		std::queue<std::pair<FunctionNode*, Params*>> queue;
+		std::queue<std::pair<FunctionNode*, OpParams*>> queue;
 
 		if (m_rootNode && m_rootNode->m_function)
 		{
-			Params* outputParams = m_rootNode->m_function->execute(initialParams);
+			OpParams* outputParams = m_rootNode->m_function->execute(initialParams);
 			if (!m_rootNode->m_functionChildNodes.empty())
 			{
 				queue.push({ m_rootNode, outputParams });
@@ -89,13 +89,13 @@ private:
 			int numOfNodes = queue.size();
 			while (numOfNodes != 0)
 			{
-				std::pair<FunctionNode*, Params*> nodeParamsPair = queue.front();
+				std::pair<FunctionNode*, OpParams*> nodeParamsPair = queue.front();
 				queue.pop();
-				Params* inputParams = nodeParamsPair.second;
+				OpParams* inputParams = nodeParamsPair.second;
 				FunctionNode* node = nodeParamsPair.first;
 
 				for (auto it = node->m_functionChildNodes.begin(); it != node->m_functionChildNodes.end(); ++it) {
-					Params* outputParams = (*it)->m_function->execute(*inputParams);
+					OpParams* outputParams = (*it)->m_function->execute(*inputParams);
 					if (!(*it)->m_functionChildNodes.empty())
 					{
 						queue.push({ *it, outputParams });

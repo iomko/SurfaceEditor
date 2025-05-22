@@ -1,14 +1,4 @@
 #pragma once
-#include "Callback.h"
-#include "../ViewPortsHolder.h"
-#include "../Gui/SelectionLayer.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/SelectMeshCommand.h"
-#include "../Commands/DeselectMeshCommand.h"
-#include "../Commands/SelectFaceCommand.h"
-#include "../Commands/SelectVertexCommand.h"
-#include "../ViewPortsHolder.h"
-#include "../Commands/DeselectFaceCommand.h"
 #include "../Tools/FaceSelectionTool.h"
 #include "../Tools/MeshSelectionTool.h"
 
