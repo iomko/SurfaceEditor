@@ -15,11 +15,21 @@
 class AABBBoundingRegion
 {
 public:
-	template <typename Iterator, typename PointExtractor>
-	AABBBoundingRegion(Iterator begin, Iterator end, PointExtractor extractor)
+	template <typename It, typename PointExtractor>
+	AABBBoundingRegion(It begin, It end, PointExtractor extractor)
 	{
-		for (Iterator it = begin; it != end; ++it) {
-			initBounds(extractor(*it));
+		bounds[0] = glm::vec3(std::numeric_limits<float>::max());
+		bounds[1] = glm::vec3(std::numeric_limits<float>::lowest());
+		for (It it = begin; it != end; ++it) {
+			glm::vec3 point = extractor(*it);
+
+			bounds[0].x = glm::min(bounds[0].x, point.x);
+			bounds[0].y = glm::min(bounds[0].y, point.y);
+			bounds[0].z = glm::min(bounds[0].z, point.z);
+
+			bounds[1].x = glm::max(bounds[1].x, point.x);
+			bounds[1].y = glm::max(bounds[1].y, point.y);
+			bounds[1].z = glm::max(bounds[1].z, point.z);
 		}
 	}
 
@@ -28,7 +38,7 @@ public:
 		this->bounds[0].x = glm::min(min.x, max.x);
 		this->bounds[0].y = glm::min(min.y, max.y);
 		this->bounds[0].z = glm::min(min.z, max.z);
-		
+
 		this->bounds[1].x = glm::max(min.x, max.x);
 		this->bounds[1].y = glm::max(min.y, max.y);
 		this->bounds[1].z = glm::max(min.z, max.z);
@@ -138,7 +148,7 @@ public:
 		if (getMaxBoundsPos().y != other.getMaxBoundsPos().y) return getMaxBoundsPos().y < other.getMaxBoundsPos().y;
 		return getMaxBoundsPos().z < other.getMaxBoundsPos().z;
 	}
-	
+
 	bool operator==(const AABBBoundingRegion& other) const {
 		return this->getMinBoundsPos() == other.getMinBoundsPos() && this->getMaxBoundsPos() == other.getMaxBoundsPos();
 	}
@@ -148,16 +158,6 @@ public:
 	}
 
 private:
-
-	void initBounds(const glm::vec3& point) {
-		bounds[0].x = glm::min(bounds[0].x, point.x);
-		bounds[0].y = glm::min(bounds[0].y, point.y);
-		bounds[0].z = glm::min(bounds[0].z, point.z);
-
-		bounds[1].x = glm::max(bounds[1].x, point.x);
-		bounds[1].y = glm::max(bounds[1].y, point.y);
-		bounds[1].z = glm::max(bounds[1].z, point.z);
-	}
 
 	glm::vec3 bounds[2];
 };
