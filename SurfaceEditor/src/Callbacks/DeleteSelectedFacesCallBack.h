@@ -1,17 +1,19 @@
 #pragma once
+#include "../Utils/ContainerUtils.h"
 
 class DeleteSelectedFacesCallBack : public Callback<>, public Observer
 {
 public:
 	void execute() override
 	{
-		ObjectSelectionHolder* selectionsHolder = ViewPortsHolderContext::m_objectSelectionHolder;
-		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
-		std::vector<Mesh*>& selectedMeshes = selectionsHolder->m_meshes;
+		SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+		const SelectionHolder& selectionHolder = selectionController->getHolder();
+		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
 		for(Mesh* selectedMesh : selectedMeshes)
 		{
-			std::vector<HalfEdgeDS::Face*>& selectedFaces = selectionsHolder->m_faces.find(selectedMesh)->second;
+			const std::vector<HalfEdgeDS::Face*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
 
 			while(!selectedFaces.empty())
 			{
@@ -29,10 +31,10 @@ public:
 				//---DELETE_FROM_SELECTIONS---
 				if(selectedMesh->m_halfEdgeStructure->m_faces.empty())
 				{
-					MeshSelectionManager::unregisterMesh(*selectionsHolder, selectedMesh);
+					selectionController->unregisterMesh(selectedMesh);
 				} else
 				{
-					FaceSelectionManager::unregisterFace(*selectionsHolder, selectedFace, selectedMesh);
+					selectionController->unregisterFace(selectedMesh, selectedFace);
 				}
 				//---DELETE_FROM_SELECTIONS---
 			}
@@ -40,20 +42,6 @@ public:
 	}
 
 private:
-	template <typename T>
-	void swapWithLastAndPop(std::vector<T>& vector, size_t index) {
-		if (index < vector.size()) {
-			std::swap(vector[index], vector.back());
-			vector.pop_back();
-		}
-	}
-
-	template <typename T>
-	void reverseSubrange(std::vector<T>& vec, size_t startingIndex, size_t endingIndex) {
-		if (startingIndex >= vec.size() || endingIndex >= vec.size() || startingIndex > endingIndex)
-			return;
-		std::reverse(vec.begin() + startingIndex, vec.begin() + endingIndex + 1);
-	}
 
 	void deleteFaceMeshData(Mesh* mesh, HalfEdgeDS::Face* face)
 	{
@@ -86,7 +74,7 @@ private:
 			{
 				vertex->m_graphEdges.back()->graphEdgeIndexInVertex = foundGraphEdge->graphEdgeIndexInVertex;
 
-				swapWithLastAndPop(vertex->m_graphEdges, foundGraphEdge->graphEdgeIndexInVertex);
+				utils::containers::swapLastAndPop(vertex->m_graphEdges, foundGraphEdge->graphEdgeIndexInVertex);
 			}
 			else
 			{
@@ -97,7 +85,7 @@ private:
 			{
 				face->m_graphEdges.back()->graphEdgeIndexInFace = foundGraphEdge->graphEdgeIndexInFace;
 
-				swapWithLastAndPop(face->m_graphEdges, foundGraphEdge->graphEdgeIndexInFace);
+				utils::containers::swapLastAndPop(face->m_graphEdges, foundGraphEdge->graphEdgeIndexInFace);
 			}
 			else
 			{
@@ -114,7 +102,7 @@ private:
 				if (vertex->m_vertexIndexInVector != (halfEdgeMesh->m_vertices.size() - 1))
 				{
 					halfEdgeMesh->m_vertices.back()->m_vertexIndexInVector = vertex->m_vertexIndexInVector;
-					swapWithLastAndPop(halfEdgeMesh->m_vertices, vertex->m_vertexIndexInVector);
+					utils::containers::swapLastAndPop(halfEdgeMesh->m_vertices, vertex->m_vertexIndexInVector);
 				}
 				else
 				{
@@ -159,7 +147,7 @@ private:
 				{
 					//tak vieme ze sa nenachadzal na konci
 					halfEdgeMesh->m_edges.back()->m_edgeIndexInVector = halfEdge->m_edge->m_edgeIndexInVector;
-					swapWithLastAndPop(halfEdgeMesh->m_edges, halfEdge->m_edge->m_edgeIndexInVector);
+					utils::containers::swapLastAndPop(halfEdgeMesh->m_edges, halfEdge->m_edge->m_edgeIndexInVector);
 				}
 				else
 				{
@@ -182,7 +170,7 @@ private:
 			{
 				//tak vieme ze sa nenachadzal na konci
 				halfEdgeMesh->m_halfEdges.back()->m_halfEdgeIndexInVector = halfEdge->m_halfEdgeIndexInVector;
-				swapWithLastAndPop(halfEdgeMesh->m_halfEdges, halfEdge->m_halfEdgeIndexInVector);
+				utils::containers::swapLastAndPop(halfEdgeMesh->m_halfEdges, halfEdge->m_halfEdgeIndexInVector);
 			}
 			else
 			{
@@ -200,7 +188,7 @@ private:
 		if (face->m_faceIndexInVector != (halfEdgeMesh->m_faces.size() - 1))
 		{
 			halfEdgeMesh->m_faces.back()->m_faceIndexInVector = face->m_faceIndexInVector;
-			swapWithLastAndPop(halfEdgeMesh->m_faces, face->m_faceIndexInVector);
+			utils::containers::swapLastAndPop(halfEdgeMesh->m_faces, face->m_faceIndexInVector);
 		}
 		else
 		{
@@ -211,21 +199,20 @@ private:
 
 	void deleteEdgeVaoData(Mesh* mesh, HalfEdgeDS::Edge* edge)
 	{
-		SceneRes::MeshLinesVaoMap& meshLinesVaoMap = 
-			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res.meshData.meshLinesVaoMap;
-		auto meshLinesVaoMapIt = meshLinesVaoMap.find(mesh);
+		RendererStageData::MeshLinesMap& meshLinesMap = Renderer::s_stageData.meshLinesMap;
+		auto meshLinesVaoMapIt = meshLinesMap.find(mesh);
 
-		std::vector<LineVertex>& meshLinesVaoVector = meshLinesVaoMapIt->second;
+		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = meshLinesVaoMapIt->second;
 
 
 		//---VAO_DATA_SWAP---
 		//before
 		if (edge->m_EdgeLineIndex != (meshLinesVaoVector.size() - 4))
 		{
-			reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 4, meshLinesVaoVector.size() - 1);
+			utils::containers::reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 4, meshLinesVaoVector.size() - 1);
 			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 3; ++i)
 			{
-				swapWithLastAndPop(meshLinesVaoVector, i);
+				utils::containers::swapLastAndPop(meshLinesVaoVector, i);
 			}
 
 			mesh->m_halfEdgeStructure->m_edges.back()->m_EdgeLineIndex = edge->m_EdgeLineIndex;
@@ -239,7 +226,7 @@ private:
 
 			if(meshLinesVaoVector.empty())
 			{
-				meshLinesVaoMap.erase(meshLinesVaoMapIt);
+				meshLinesMap.erase(meshLinesVaoMapIt);
 			}
 
 		}
@@ -249,13 +236,12 @@ private:
 	//tymto vymazeme vao data z meshu
 	void deleteFaceVaoData(Mesh* mesh, HalfEdgeDS::Face* face)
 	{
-		SceneRes::MeshFacesVaoMap& meshVaoMap =
-			ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res.meshData.meshFacesVaoMap;
-		auto meshVaoMapIt = meshVaoMap.find(mesh);
+		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
+		auto meshVaoMapIt = meshMatsMap.find(mesh);
 
-		SceneRes::MaterialVaoMap& materialMap = meshVaoMapIt->second;
-		auto materialMapIt = materialMap.find(face->material);
-		std::vector<MeshVertex>& facesVao = materialMapIt->second;
+		RendererStageData::MatVertsMap& materialVertsMap = meshVaoMapIt->second;
+		auto materialMapIt = materialVertsMap.find(face->material);
+		std::vector<RendererStageData::MeshVertex>& facesVao = materialMapIt->second;
 
 		std::map<Material*, std::vector<HalfEdgeDS::FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
 		auto materialTrianglesIt = materialTrianglesMap.find(face->material);
@@ -272,10 +258,10 @@ private:
 				faceTriangles.back().indexInVAO = delFaceTriangle.indexInVAO;
 
 				//---VAO_DATA_SWAP---
-				reverseSubrange(facesVao, facesVao.size() - 3, facesVao.size() - 1);
+				utils::containers::reverseSubrange(facesVao, facesVao.size() - 3, facesVao.size() - 1);
 				for (int i = delFaceTriangle.indexInVAO; i <= delFaceTriangle.indexInVAO + 2; ++i)
 				{
-					swapWithLastAndPop(facesVao, i);
+					utils::containers::swapLastAndPop(facesVao, i);
 				}
 			}
 			else
@@ -287,10 +273,10 @@ private:
 
 				if (facesVao.empty())
 				{
-					materialMap.erase(materialMapIt);
-					if (materialMap.empty())
+					materialVertsMap.erase(materialMapIt);
+					if (materialVertsMap.empty())
 					{
-						meshVaoMap.erase(meshVaoMapIt);
+						meshMatsMap.erase(meshVaoMapIt);
 					}
 				}
 
@@ -300,7 +286,7 @@ private:
 			lastTriangleFace->faceTriangleIndices.at(faceTriangles.back().indexInFace) = delFaceTriangleIndex;
 
 			//---M_FACE_TRIANGLES_SWAP---
-			swapWithLastAndPop(faceTriangles, delFaceTriangleIndex);
+			utils::containers::swapLastAndPop(faceTriangles, delFaceTriangleIndex);
 
 			if (faceTriangles.empty())
 			{
@@ -315,7 +301,7 @@ private:
 			}
 
 			//---FACE_TRIANGLE_INDICES_SWAP---
-			swapWithLastAndPop(face->faceTriangleIndices, 0);
+			utils::containers::swapLastAndPop(face->faceTriangleIndices, 0);
 		}
 	}
 };

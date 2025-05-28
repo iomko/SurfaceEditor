@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "EditorSettings.h"
+#include "../Core/EditorSettings.h"
 
 Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 {
@@ -18,9 +18,9 @@ Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 
 void Camera::updateCameraDirection(double diffMousePositionX, double diffMousePositionY)
 {
-	m_state.yaw += (float)(diffMousePositionX) * EditorSettings::CameraSettings::m_rotationSensitivity;
+	m_state.yaw += (float)(diffMousePositionX) * CameraSettings::m_rotationSensitivity;
 	// -diffMousePositionY (because MouseDY is inverted)
-	m_state.pitch += (float)(-diffMousePositionY) * EditorSettings::CameraSettings::m_rotationSensitivity;
+	m_state.pitch += (float)(-diffMousePositionY) * CameraSettings::m_rotationSensitivity;
 
 	if (m_state.pitch > 89.0f)
 	{
@@ -44,19 +44,19 @@ void Camera::updateCameraPosition(CameraMovement movementDirection)
 {
 	if (movementDirection == CameraMovement::FORWARD)
 	{
-		m_state.position += EditorSettings::CameraSettings::m_movementSensitivity * m_state.frontVector;
+		m_state.position += CameraSettings::m_movementSensitivity * m_state.frontVector;
 	}
 	if (movementDirection == CameraMovement::BACKWARD)
 	{
-		m_state.position -= EditorSettings::CameraSettings::m_movementSensitivity * m_state.frontVector;
+		m_state.position -= CameraSettings::m_movementSensitivity * m_state.frontVector;
 	}
 	if (movementDirection == CameraMovement::LEFT)
 	{
-		m_state.position += -m_state.rightVector * EditorSettings::CameraSettings::m_movementSensitivity;
+		m_state.position += -m_state.rightVector * CameraSettings::m_movementSensitivity;
 	}
 	if (movementDirection == CameraMovement::RIGHT)
 	{
-		m_state.position += m_state.rightVector * EditorSettings::CameraSettings::m_movementSensitivity;
+		m_state.position += m_state.rightVector * CameraSettings::m_movementSensitivity;
 	}
 
 	// Update LookAt matrix

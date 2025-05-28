@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../OBJExporter.h"
+#include "../IO/OBJExporter.h"
 
 
 class ExportMeshesCallback : public Callback<ImportExportMeshesParams>, public Observer
@@ -13,13 +13,13 @@ public:
 		objExporter.setFilePath(params.m_filePathMeshes);
 
 		/*
-		for (const auto selectedMesh : ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes)
+		for (const auto selectedMesh : ViewPortsHolderContext::s_viewPortsHolder->m_selectedMeshes)
 		{
 			selectedMesh->m_meshID = selectedMesh->m_meshID;
 			objExporter.parseMesh(selectedMesh);
 		}
 
-		if (ViewPortsHolderContext::m_viewPortsHolder->m_selectedMeshes.size() == 0)
+		if (ViewPortsHolderContext::s_viewPortsHolder->m_selectedMeshes.size() == 0)
 		{
 			if (std::filesystem::exists(params.m_filePathMeshes))
 			{
@@ -46,13 +46,13 @@ public:
 		bool fileOpened = false;
 		objExporter.setFilePath(castedCmdParams.m_filePathMeshes);
 
-		for (const auto selectedMesh : ViewPortsHolderContext::m_viewPortsHolder->m_meshes)
+		for (const auto selectedMesh : ViewPortsHolderContext::s_viewPortsHolder->m_meshes)
 		{
 			selectedMesh->m_meshID = selectedMesh->m_meshID;
 			objExporter.parseMesh(selectedMesh);
 		}
 
-		if (ViewPortsHolderContext::m_viewPortsHolder->m_meshes.size() == 0)
+		if (ViewPortsHolderContext::s_viewPortsHolder->m_meshes.size() == 0)
 		{
 			if (std::filesystem::exists(castedCmdParams.m_filePathMeshes))
 			{

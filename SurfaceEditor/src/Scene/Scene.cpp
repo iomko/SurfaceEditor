@@ -1,24 +1,22 @@
 #include "Scene.h"
-#include "SceneRes.h"
+#include "../Renderer/Renderer.h"
 
-std::pair<SceneRes::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, SceneRes& res)
+std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, SceneResources& res)
 {
 	Ray ray = Ray::fromMousePos(*camera, *window);
 
 	//---FACE_INTERSECTS_RAY---
-	const auto& faceRayIntersect = [&res](const SceneRes::MeshFacePair& meshFacePair, const Ray& ray)->std::pair<bool, float>
+	const auto& faceRayIntersect = [&res](const SceneResources::MeshFacePair& meshFacePair, const Ray& ray)->std::pair<bool, float>
 		{
 			HalfEdgeDS::Face* face = meshFacePair.second;
 			Mesh* mesh = meshFacePair.first;
 
-			SceneRes::MeshData& meshRenderData = res.meshData;
-
 			//---MESH_VAO_MAP---
-			SceneRes::MeshFacesVaoMap& meshVaoMap = meshRenderData.meshFacesVaoMap;
+			RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
 			//---MATERIAL_VAO_MAP---
-			SceneRes::MaterialVaoMap& materialVaoMap = meshVaoMap.find(mesh)->second;
+			RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
 			//---VAO_DATA_OF_SPECIFIC_MATERIAL---
-			std::vector<MeshVertex>& materialVaoFaces = materialVaoMap.find(face->material)->second;
+			std::vector<RendererStageData::MeshVertex>& materialVaoFaces = materialVertsMap.find(face->material)->second;
 
 			std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
@@ -42,10 +40,10 @@ std::pair<SceneRes::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(C
 			return std::make_pair(false, -1.0f);
 		};
 
-	std::vector<OctreeNode<SceneRes::MeshFacePair>*> octreeNodes;
+	std::vector<OctreeNode<SceneResources::MeshFacePair>*> octreeNodes;
 	for (auto& entry : res.coordsOctreeMap)
 	{
-		Octree<SceneRes::MeshFacePair>& octree = entry.second;
+		Octree<SceneResources::MeshFacePair>& octree = entry.second;
 
 		octree.findMaxDepthNodes<Ray>(ray, [](const AABBBoundingRegion& region, const Ray& ray)
 			{
@@ -55,12 +53,12 @@ std::pair<SceneRes::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(C
 
 	}
 
-	SceneRes::MeshFacePair closestOctreeNodeData = std::make_pair(nullptr, nullptr);
+	SceneResources::MeshFacePair closestOctreeNodeData = std::make_pair(nullptr, nullptr);
 	float minRayHitDistance = std::numeric_limits<float>::min();
 
-	for (OctreeNode<SceneRes::MeshFacePair>* node : octreeNodes)
+	for (OctreeNode<SceneResources::MeshFacePair>* node : octreeNodes)
 	{
-		for (SceneRes::MeshFacePair& meshFacePair : node->nodeData)
+		for (SceneResources::MeshFacePair& meshFacePair : node->nodeData)
 		{
 			std::pair<bool, float> intersects = faceRayIntersect(meshFacePair, ray);
 			if (intersects.first)
@@ -95,8 +93,8 @@ glm::vec3 SceneUtilities::getVoxelIndex(const glm::vec3& bounds, const glm::vec3
 	glm::vec3 voxelIndex;
 
 	auto computeVoxelIndex = [&](float value, float voxelSize) -> int {
-		bool isWhole = NumberUtils::isWholeNumber(value, voxelSize);
-		bool isPositive = NumberUtils::isPositive(value);
+		bool isWhole = std::fabs(std::fmod(value, voxelSize)) < 1e-6f;
+		bool isPositive = value >= 0.0f;
 
 		int index;
 		if (isPositive)

@@ -10,21 +10,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Input.h"
-#include "../AABBBoundingRegion.h"
+#include "../Primitives/AABB.h"
 #include "../Core/Application.h"
 #include "../Core/Input.h"
 #include "../Core/Window.h"
 #include "../Renderer/Renderer.h"
 //#include "../Mesh.h"
-#include "../FunctionComposer.h"
-#include "../PolygonTraits.h"
-#include "../Renderer/Framebuffer.h"
+#include "../Callables/FunctionComposer.h"
 #include "../Callbacks/BrushToolCallBack.h"
-#include "../Gui/SculptToolsLayer.h"
+#include "../UI/SculptToolsLayer.h"
+#include "../Scene/Mesh.h"
 
 
 import Renderer.Shader;
-import Renderer.Buffers;
+#include "../Renderer/Buffers.h"
 #include "../DataStructures/Octree.h"
 #include "tiff/tiffio.h"
 //import LayerSystem.Layer.ImGuiLayer;
@@ -39,7 +38,7 @@ float lastFrame = 0.0f;
 #include "../DataStructures/HalfEdge.h"
 
 //#include "../Patterns/Observer.h"
-#include "../ViewPortsHolder.h"
+#include "../ViewPortsController.h"
 #include "../Callbacks/AddPlaneCallback.h"
 #include "../Commands/AddPlaneCommand.h"
 #include "../Tools/ToolRegistry.h"
@@ -50,9 +49,9 @@ float lastFrame = 0.0f;
 #include "../Callbacks/SelectMeshCallBack.h"
 #include "../Callbacks/SelectionLayerCallBack.h"
 #include "../Commands/SelectMeshCommand.h"
-#include "../Gui/AdditionLayer.h"
-#include "../Gui/RemovalLayer.h"
-#include "../Gui/SelectionLayer.h"
+#include "../UI/AdditionLayer.h"
+#include "../UI/RemovalLayer.h"
+#include "../UI/SelectionLayer.h"
 
 #include "../Callbacks/SelectFaceCallBack.h"
 
@@ -78,24 +77,16 @@ float lastFrame = 0.0f;
 #include "../Callables/MeshVaoInitCallable.h"
 #include "../Callables/SceneMeshAdderCallable.h"
 
-
-//#include "../OBJExporter.h"
-//#include "../OBJImporter.h"
-
 //ImportExportLayer
 #include "../Callbacks/ImportMeshesCallback.h"
 #include "../Commands/ImportMeshesCommand.h"
-#include "../Gui/ImportExportLayer.h"
+#include "../UI/ImportExportLayer.h"
 
 #include "../Callbacks/ExportMeshesCallback.h"
 #include "../Commands/ExportMeshesCommand.h"
 
 #include "../Callables/FetchedSurfaceVertexGenCallable.h"
 #include "../Callbacks/FetchSurfaceCallBack.h"
-
-//DELAUNAY_TEST
-#include "../DelaunayTest.h"
-#include "../Triangulator.h"
 
 //INTERACTION_HANDLER
 #include "../Tools/InteractionHandler.h"
@@ -115,167 +106,85 @@ const unsigned int SCR_HEIGHT = 900;
 //OUTPUT
 
 
+void clearAABBData()
+{
+	Renderer::s_stageData.aabbVertsMap.clear();
+}
 
-class RootInputParams : public OpParams {
-public:
-	int rootInputValue;
+void collectAABBData(const AABBBoundingRegion& aabb) {
+	glm::vec3 vertexColor = glm::vec3(0.0f, 1.0f, 0.0f);
+	//left side
+	glm::vec3 bottomUpLeft = aabb.getMinBoundsPos();
+	glm::vec3 bottomDownLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMaxBoundsPos().z);
+	glm::vec3 upperDownLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMaxBoundsPos().z);
+	glm::vec3 upperUpLeft = glm::vec3(aabb.getMinBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMinBoundsPos().z);
+	//right side
+	glm::vec3 bottomUpRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMinBoundsPos().z);
+	glm::vec3 bottomDownRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMinBoundsPos().y, aabb.getMaxBoundsPos().z);
+	glm::vec3 upperDownRight = aabb.getMaxBoundsPos();
+	glm::vec3 upperUpRight = glm::vec3(aabb.getMaxBoundsPos().x, aabb.getMaxBoundsPos().y, aabb.getMinBoundsPos().z);
 
-	~RootInputParams()
-	{
-		//toto by sa nemalo zavolat
-		std::cout << "DESTRUCTED Root_Input_Params" << std::endl;
-	}
-};
-	
+	RendererStageData::AABBVertex AABB_vertices[] = {
+		//
+		{bottomUpLeft, vertexColor},
+		{bottomDownLeft, vertexColor},
+		{upperDownLeft, vertexColor},
+		{upperDownLeft, vertexColor},
+		{upperUpLeft, vertexColor},
+		{bottomUpLeft, vertexColor},
 
-class RootOutputParams : public OpParams {
-public:
-	int rootOutputValue;
+		//
 
-	~RootOutputParams()
-	{
-		std::cout << "DESTRUCTED Root_Output_Params" << std::endl;
-	}
-};
+		{upperUpLeft, vertexColor},
+		{upperDownLeft, vertexColor},
+		{upperDownRight, vertexColor},
+		{upperDownRight, vertexColor},
+		{upperUpRight, vertexColor},
+		{upperUpLeft, vertexColor},
 
-class Add5OutputParams : public OpParams {
-public:
-	int add5OutputParams;
+		//
+		{upperUpRight, vertexColor},
+		{upperDownRight, vertexColor},
+		{bottomDownRight, vertexColor},
+		{bottomDownRight, vertexColor},
+		{bottomUpRight, vertexColor},
+		{upperUpRight, vertexColor},
 
-	~Add5OutputParams()
-	{
-		std::cout << "DESTRUCTED Add_50_Output_Params" << std::endl;
-	}
-};
+		//
+		{bottomUpRight, vertexColor},
+		{bottomDownRight, vertexColor},
+		{bottomDownLeft, vertexColor},
+		{bottomDownLeft, vertexColor},
+		{bottomUpLeft, vertexColor},
+		{bottomUpRight, vertexColor},
 
-class Add100OutputParams : public OpParams {
-public:
-	int add100OutputParams;
+		//
+		{upperUpLeft, vertexColor},
+		{upperUpRight, vertexColor},
+		{bottomUpRight, vertexColor},
+		{bottomUpRight, vertexColor},
+		{bottomUpLeft, vertexColor},
+		{upperUpLeft, vertexColor},
 
-	~Add100OutputParams()
-	{
-		std::cout << "DESTRUCTED Add_100_Output_Params" << std::endl;
-	}
-};
+		//
+		{upperDownLeft, vertexColor},
+		{upperDownRight, vertexColor},
+		{bottomDownRight, vertexColor},
+		{bottomDownRight, vertexColor},
+		{bottomDownLeft, vertexColor},
+		{upperDownLeft, vertexColor}
 
+	};
 
-//------
-
-// RootCreationSquare - Calculates square of the rootInputValue
-class RootCreationSquare : public Callable<RootInputParams, RootOutputParams> {
-public:
-
-	void invoke(const RootInputParams& input, RootOutputParams& output) override
-	{
-		output.rootOutputValue = input.rootInputValue * input.rootInputValue;
-		std::cout << "CREATING_2" << std::endl;
-		std::cout << "CREATING_2_OUTPUT: " << output.rootOutputValue << std::endl;
-	}
-};
-
-// Add5 - Adds 5 to the rootOutputValue
-class Add5 : public Callable<RootOutputParams, Add5OutputParams> {
-public:
-	void invoke(const RootOutputParams& input, Add5OutputParams& output) override
-	{
-		output.add5OutputParams = input.rootOutputValue + 5;
-		std::cout << "ADDING_5" << std::endl;
-	}
-};
-
-// Divide10 - Divides rootOutputValue by 10 and returns the result
-class Divide10 : public Callable<RootOutputParams, void> {
-public:
-	void invoke(const RootOutputParams& input) override
-	{
-		std::cout << "Divided_By_10: " << input.rootOutputValue / 10 << std::endl;
-	}
-};
-
-// Multiply10 - Multiplies rootOutputValue by 10 and returns the result
-class Multiply10 : public Callable<RootOutputParams, void> {
-public:
-
-	void invoke(const RootOutputParams& input) override
-	{
-		std::cout << "Multiplied_By_10: " << input.rootOutputValue * 10 << std::endl;
-	}
-};
-
-// Subtract10 - Subtracts 10 from rootOutputValue and returns the result
-class Subtract10 : public Callable<RootOutputParams, void> {
-public:
-
-	void invoke(const RootOutputParams& input) override
-	{
-		std::cout << "Subtracted_By_10: " << input.rootOutputValue - 10 << std::endl;
-	}
-};
-
-// Add100 - Adds 100 to add5OutputParams and returns the result
-class Add100 : public Callable<Add5OutputParams, Add100OutputParams> {
-public:
-	void invoke(const Add5OutputParams& input, Add100OutputParams& output) override
-	{
-		output.add100OutputParams = input.add5OutputParams + 100;
-		std::cout << "ADDING_100" << std::endl;
-	}
-};
-
-// Add20 - Adds 20 to add5OutputParams and returns the result
-class Add20 : public Callable<Add5OutputParams, void> {
-public:
-
-	void invoke(const Add5OutputParams& input) override
-	{
-		std::cout << "Added_20: " << input.add5OutputParams + 20 << std::endl;
-	}
-};
-
-// Subtract100 - Subtracts 100 from add100OutputParams and returns the result
-class Subtract100 : public Callable<Add100OutputParams, void> {
-public:
-	void invoke(const Add100OutputParams& input) override
-	{
-		std::cout << "Subtracted_100: " << input.add100OutputParams - 100 << std::endl;
-	}
-};
-
-// Subtract20 - Subtracts 20 from add100OutputParams and returns the result
-class Subtract20 : public Callable<Add100OutputParams, void> {
-public:
-
-	void invoke(const Add100OutputParams& input) override
-	{
-		std::cout << "Subtracted_20: " << input.add100OutputParams - 20 << std::endl;
-	}
-};
+	Renderer::s_stageData.aabbVertsMap[aabb].insert(
+		Renderer::s_stageData.aabbVertsMap[aabb].end(),
+		std::begin(AABB_vertices),
+		std::end(AABB_vertices)
+	);
+}
 
 int main()
 {
-
-
-	std::vector<glm::vec3> delaunayVertices;
-
-	delaunayVertices.emplace_back(glm::vec3(5.38461, 2.49756, 0.0)); //0 - index 0
-	delaunayVertices.emplace_back(glm::vec3(10.7969, -6.18571, 0.0)); //1 - index 1
-	delaunayVertices.emplace_back(glm::vec3(3.59558, -3.68423, 0.0)); //2 - index 2
-	delaunayVertices.emplace_back(glm::vec3(-2.01404, -8.78555, 0.0)); //4 - index 3
-	delaunayVertices.emplace_back(glm::vec3(-6.17731, -5.06843, 0.0)); //5 - index 4
-	delaunayVertices.emplace_back(glm::vec3(1.60165, -1.69653, 0.0)); //3 - index 5
-	delaunayVertices.emplace_back(glm::vec3(5.38461, 2.49756, 0.0)); //0 - index 6
-
-
-	//DELAUNAY_TEST
-	//DelaunayTest::constrainedTest();
-	//DelaunayTest::classicTest();
-
-	Triangulator::triangulatePolygon(delaunayVertices);
-
-	//dobre teraz by som mal otestovat moj novy triangulator
-
-
-
 	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
 
 	//--ADD_PLANE_COMPOSER--
@@ -294,39 +203,10 @@ int main()
 	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
 
 
-	FunctionComposer composer;
-	auto rootNode = composer.initRoot<RootCreationSquare>();
-
-	//FirstLevel
-	auto add5Node = composer.addFunc<Add5>(rootNode);
-	composer.addFunc<Divide10>(rootNode);
-	composer.addFunc<Multiply10>(rootNode);
-	composer.addFunc<Subtract10>(rootNode);
-
-	//SecondLevel
-	auto add100Node = composer.addFunc<Add100>(add5Node);
-	composer.addFunc<Add20>(add5Node);
-
-	//ThirdLevel
-	composer.addFunc<Subtract100>(add100Node);
-	composer.addFunc<Subtract20>(add100Node);
-
-	RootInputParams rootInputParams;
-	rootInputParams.rootInputValue = 2;
-
-	//composer.execute(rootInputParams);
-	//composer.execute();  
-	//composer.execute(rootInputParams);
-	composer.execute(rootInputParams);
-
-
-
-
 	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
 	Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	Ray ray = Ray::getCameraRay(*camera);
-
 
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -334,57 +214,36 @@ int main()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	Shader testShader = Shader("src\\Renderer\\quad.vert", "src\\Renderer\\fragColTest.frag");
-
-	Shader pointsShader = Shader("src\\Renderer\\pointsShader.vert", "src\\Renderer\\pointsShader.frag");
-
-	Shader linesShader = Shader("src\\Renderer\\linesShader.vert", "src\\Renderer\\linesShader.frag");
+	Shader linesShader = Shader("src\\Renderer\\Shaders\\linesShader.vert", "src\\Renderer\\Shaders\\linesShader.frag");
 
 	//mesh shader
-	Shader meshShader = Shader("src\\Renderer\\meshShader.vert", "src\\Renderer\\meshShader.frag", "src\\Renderer\\meshShader.geom");
+	Shader meshShader = Shader("src\\Renderer\\Shaders\\meshShader.vert", "src\\Renderer\\Shaders\\meshShader.frag");
 
 	//normals shader
-	Shader normalsShader = Shader("src\\Renderer\\normals.vert", "src\\Renderer\\normals.frag", "src\\Renderer\\normals.geom");
+	//Shader normalsShader = Shader("src\\Renderer\\normals.vert", "src\\Renderer\\normals.frag", "src\\Renderer\\normals.geom");
 
-
-	Shader shaderSingleColor = Shader("src\\Renderer\\singleColor.vert", "src\\Renderer\\singleColor.frag");
-
-	Shader shaderDilation = Shader("src\\Renderer\\quad.vert", "src\\Renderer\\dilate.frag");
-
-	Shader shaderBlit = Shader("src\\Renderer\\quad.vert", "src\\Renderer\\blit.frag");
 
 	Scene scene(25.0f, 25.0f, 25.0f);
 
 
-
-	//access
-	//scene.accessNeighbouringVertsAndFacesOfVertex(&mesh->m_halfEdgeStructure->m_vertices.at(0));
-
-
-	//SelectionLayer toolBarLayer(SelectionLayer("SelectionLayer"));
-	//app.getLayerStack().addLayer(&toolBarLayer);
-
-
 	//viewPortLayer
 	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
-	viewPortLayer->m_activeCamera = camera;
+	viewPortLayer->m_camera = camera;
 
 	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
-	viewPortLayer->m_shaderSettings.m_normalShader = &normalsShader;
-	viewPortLayer->m_shaderSettings.m_pointShader = &pointsShader;
 	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
 
-	ViewPortsHolder* viewPortsHolder = new ViewPortsHolder("viewPortsHolderLayer");
-	viewPortsHolder->addViewPortLayer(viewPortLayer);
+	ViewPortsController* viewPortsHolder = new ViewPortsController();
+	viewPortsHolder->addLayer(viewPortLayer);
 	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
-	ObjectSelectionHolder* objectSelectionHolder = new ObjectSelectionHolder();
+	SelectionController* selectionController = new SelectionController();
 
 	viewPortsHolder->m_scene = &scene;
-	ViewPortsHolderContext::m_viewPortsHolder = viewPortsHolder;
-	ViewPortsHolderContext::m_objectSelectionHolder = objectSelectionHolder;
-	ViewPortsHolderContext::m_camera = camera;
-	ViewPortsHolderContext::m_window = app.m_window;
+	ViewPortsHolderContext::s_viewPortsHolder = viewPortsHolder;
+	ViewPortsHolderContext::s_selectionController = selectionController;
+	ViewPortsHolderContext::s_camera = camera;
+	ViewPortsHolderContext::s_window = app.m_window;
 
 
 	PlaneParams planeProperties;
@@ -496,6 +355,7 @@ int main()
 	//toolBarLayerCallBack.observe(&toolBarLayer, &toolBarLayerCallBack);
 
 
+
 	//Transform Layer
 	//TransformLayer transformLayer(viewPortHolder, "TransformLayer");
 
@@ -523,16 +383,14 @@ int main()
 	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
 	app.getLayerStack().addLayer(&sculptToolsLayer);
 
-	scene.m_res.aabbData.clearAABBData();
-
-
+	clearAABBData();
 
 	for (auto& entry : scene.m_res.coordsOctreeMap) {
 		const glm::vec3& key = entry.first;
 		Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 		for (auto& octreeNode : octree) {
 			octreeNode.getBounds();
-			scene.m_res.aabbData.collectAABBData(octreeNode.getBounds());
+			collectAABBData(octreeNode.getBounds());
 		}
 	}
 
@@ -544,21 +402,6 @@ int main()
 	meshShader.bind();
 	meshShader.setMat4("u_model", model);
 	meshShader.unbind();
-
-	//normals shader
-	normalsShader.bind();
-	normalsShader.setMat4("u_model", model);
-	normalsShader.unbind();
-
-	//SingleColor shader
-	shaderSingleColor.bind();
-	shaderSingleColor.setMat4("u_model", model);
-	shaderSingleColor.unbind();
-
-	//points shader
-	pointsShader.bind();
-	pointsShader.setMat4("u_model", model);
-	pointsShader.unbind();
 
 	//lines shader
 	linesShader.bind();
@@ -598,27 +441,6 @@ int main()
 		//meshShader.setMat4("u_model", model);
 		meshShader.unbind();
 
-		//normals shader
-		normalsShader.bind();
-		normalsShader.setMat4("u_projection", projection);
-		normalsShader.setMat4("u_view", view);
-		//normalsShader.setMat4("u_model", model);
-		normalsShader.unbind();
-
-		//SingleColor shader
-		shaderSingleColor.bind();
-		shaderSingleColor.setMat4("u_projection", projection);
-		shaderSingleColor.setMat4("u_view", view);
-		//shaderSingleColor.setMat4("u_model", model);
-		shaderSingleColor.unbind();
-
-		//points shader
-		pointsShader.bind();
-		pointsShader.setMat4("u_projection", projection);
-		pointsShader.setMat4("u_view", view);
-		//pointsShader.setMat4("u_model", model);
-		pointsShader.unbind();
-
 		camera->m_matrices.perspectiveMatrix = projection;
 		camera->m_matrices.viewMatrix = view;
 
@@ -641,7 +463,7 @@ int main()
 		{
 			//viewPortLayer.deleteSelectedMeshes();
 			//delete them from renderer aswell!
-			scene.m_res.aabbData.clearAABBData();
+			clearAABBData();
 
 
 			
@@ -650,24 +472,23 @@ int main()
 				Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
 				for (auto& octreeNode : octree) {
 					octreeNode.getBounds();
-					scene.m_res.aabbData.collectAABBData(octreeNode.getBounds());
+					collectAABBData(octreeNode.getBounds());
 				}
 			}
 
 		}
 
-
-		glViewport(0, 0, ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_screenSettings.SCR_WIDTH,
-			ViewPortsHolderContext::m_viewPortsHolder->m_activeViewPortLayer->m_screenSettings.SCR_HEIGHT);
+		int screenWidth = ViewPortsHolderContext::s_window->getScreenWidth();
+		int screenHeight = ViewPortsHolderContext::s_window->getScreenHeight();
+		glViewport(0, 0, screenWidth, screenHeight);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glStencilMask(0xFF);
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
 		
-		for (auto& [mesh, materialVertexMap] : scene.m_res.meshData.meshFacesVaoMap)
+		for (auto& [mesh, materialVertexMap] : Renderer::s_stageData.meshMatsMap)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -690,19 +511,20 @@ int main()
 		}
 
 		//RENDER LINES
-		for (auto& [mesh, linesVector] : scene.m_res.meshData.meshLinesVaoMap)
+		for (auto& [mesh, linesVector] : Renderer::s_stageData.meshLinesMap)
 		{
 			linesShader.bind();
 			Renderer::drawLines(linesVector);
 			linesShader.unbind();
 		}
 
-		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
-		for (const auto& [region, vertices] : scene.m_res.aabbData.vaoDataMap) {
+		ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
+		
+		for (const auto& [region, vertices] : Renderer::s_stageData.aabbVertsMap) {
 			
 			Renderer::drawBox(vertices);
 		}
-		ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
+		ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
 
 		app.run();
 		

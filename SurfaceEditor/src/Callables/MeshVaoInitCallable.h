@@ -1,5 +1,4 @@
 #pragma once
-#include "../Triangulator.h"
 #include "../Utils/GeometryUtils.h"
 
 class MeshVaoInitCallable : public Callable<MeshParams, void>
@@ -12,13 +11,13 @@ public:
 		std::vector<HalfEdgeDS::Face*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
 		std::vector<HalfEdgeDS::Edge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
-		SceneRes& res = ViewPortsHolderContext::m_viewPortsHolder->m_scene->m_res;
+		SceneResources& res = ViewPortsHolderContext::s_viewPortsHolder->m_scene->m_res;
 
 		Material* material = mesh->m_defaultMaterial;
-		SceneRes::MaterialVaoMap& meshFacesVaoMap = res.meshData.meshFacesVaoMap[mesh];
-		std::vector<LineVertex>& meshLinesVaoVector = res.meshData.meshLinesVaoMap[mesh];
+		RendererStageData::MatVertsMap& materialVertsMap = Renderer::s_stageData.meshMatsMap[mesh];
+		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = Renderer::s_stageData.meshLinesMap[mesh];
 
-		std::vector<MeshVertex>& materialVaoVertices = meshFacesVaoMap[material];
+		std::vector<RendererStageData::MeshVertex>& materialVaoVertices = materialVertsMap[material];
 		std::vector<HalfEdgeDS::FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
 
 		//---FOR_FACES---
@@ -40,7 +39,7 @@ public:
 			glm::vec3 faceNormal = utils::geometry::computePolygonNormal(meshFace);
 
 			//---TRIANGULATION---
-			std::vector<glm::vec3> triangulatedVertices = Triangulator::triangulatePolygon(faceVertices);
+			std::vector<glm::vec3> triangulatedVertices = utils::geometry::triangulatePolygon(faceVertices);
 
 			//---VAO_INITIALIZATION---
 			//---FACE_TRIANGLES_INITIALIZAION---

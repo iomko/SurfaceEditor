@@ -2,9 +2,10 @@
 
 #include <iostream>
 #include <vector>
-#include "../glm_overrides.h"
+#include "../Utils/glm_overrides.h"
 #include <unordered_set>
 #include <map>
+#include "../Renderer/Material.h"
 
 using FaceTriangleIndex = int;
 using EdgeLineIndex = int;

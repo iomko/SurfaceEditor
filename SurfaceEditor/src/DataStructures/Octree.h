@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../AABBBoundingRegion.h";
-#include <functional>;
+#include "../Primitives/AABB.h"
+#include <functional>
 #include <map>
 #include <vector>
 

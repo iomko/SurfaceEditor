@@ -5,7 +5,7 @@ struct OpParams {
 	virtual ~OpParams() = default;
 };
 
-struct ToolBarParams : public OpParams
+struct SelectionLayerParams : public OpParams
 {
 public:
 	enum SelectionMode {
@@ -65,7 +65,7 @@ struct SelectFaceParamsIn : public OpParams
 
 struct OctreeNodeDataParams : public OpParams
 {
-	SceneRes::MeshFacePair meshFacePair;
+	SceneResources::MeshFacePair meshFacePair;
 	glm::vec3 hitPoint;
 };
 
@@ -78,4 +78,11 @@ struct BrushToolParams : public OpParams
 {
 	float radius;
 	float brushStrength;
+};
+
+struct BrushInteractionParams : public OpParams
+{
+	BrushToolParams brushToolParams;
+	Camera* camera = nullptr;
+	Window* window = nullptr;
 };

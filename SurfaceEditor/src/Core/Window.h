@@ -5,7 +5,7 @@
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
 #include <string>
-#include "../Events/EventSystem.h"
+#include "Event.h"
 #include "../Scene/Camera.h"
 
 class Window

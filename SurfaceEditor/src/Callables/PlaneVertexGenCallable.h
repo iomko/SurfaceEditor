@@ -34,61 +34,8 @@ public:
 			}
 		}
 
-		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
+		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), planeIndices, planeVertices);
 
 		output.m_mesh = mesh; 
-	}
-
-private:
-
-	/*
-	Mesh* createNewTestMesh()
-	{
-		std::vector<std::vector<int>> planeIndices;
-		std::vector<glm::vec3> planeVertices;
-
-		planeVertices.emplace_back(glm::vec3(0.0f, -2.53614f, 0.0f)); //0 - index 0
-		planeVertices.emplace_back(glm::vec3(0.0f, 11.6686f, -50.0f)); //1 - index 1
-		planeVertices.emplace_back(glm::vec3(50.0f, 3.13265f, -50.0f)); //2 - index 2
-		planeVertices.emplace_back(glm::vec3(50.0f, 1.31321f, 0.0f)); //3 - index 3
-
-		std::vector<int> firstFace{ 0, 2, 1 };
-		std::vector<int> secondFace{ 0, 3, 2 };
-
-		planeIndices.emplace_back(firstFace);
-		planeIndices.emplace_back(secondFace);
-
-		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
-
-		mesh->m_meshID = "testing_mesh";
-		return mesh;
-	}
-	*/
-
-	Mesh* createTestingMesh()
-	{
-		std::vector<std::vector<int>> planeIndices;
-		std::vector<glm::vec3> planeVertices;
-
-		planeVertices.emplace_back(glm::vec3(5.38461, 2.49756, 0.0)); //0 - index 0
-		planeVertices.emplace_back(glm::vec3(10.7969, -6.18571, 0.0)); //1 - index 1
-		planeVertices.emplace_back(glm::vec3(3.59558, -3.68423, 0.0)); //2 - index 2
-		planeVertices.emplace_back(glm::vec3(-2.01404, -8.78555, 0.0)); //4 - index 3
-		planeVertices.emplace_back(glm::vec3(-6.17731, -5.06843, 0.0)); //5 - index 4
-		planeVertices.emplace_back(glm::vec3(1.60165, -1.69653, 0.0)); //3 - index 5
-		planeVertices.emplace_back(glm::vec3(-8.15201, -2.79399, 0.0)); //6 - index 6
-		planeVertices.emplace_back(glm::vec3(-6.77999, 0.257219, 0.0)); //7 - index 7
-		planeVertices.emplace_back(glm::vec3(-1.93392, 2.98111, 0.0)); //8 - index 8
-
-		std::vector<int> firstFace { 0, 1, 2, 3, 4, 5 };
-		std::vector<int> secondFace { 8, 5, 4, 6, 7 };
-
-		planeIndices.emplace_back(firstFace);
-		planeIndices.emplace_back(secondFace);
-
-		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), planeIndices, planeVertices);
-
-		mesh->m_meshID = "testing_mesh";
-		return mesh;
 	}
 };

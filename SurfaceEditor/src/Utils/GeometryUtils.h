@@ -3,9 +3,42 @@
 #include <vector>
 
 #include <glm/glm.hpp>
-#include "../Primitives/Primitives.h"
+#include "../Primitives/Plane.h"
+#include "../DataStructures/HalfEdge.h"
 
 namespace utils::geometry {
+
+	enum class ProjectionAxis { ZY, ZX, XY };
+
+	inline std::vector<glm::vec2> projectVertices(const std::vector<glm::vec3>& vertices, const ProjectionAxis& projectionAxis)
+	{
+		std::vector<glm::vec2> projectedVertices;
+		if (projectionAxis == ProjectionAxis::ZY)
+		{
+			for (const glm::vec3& vertex : vertices)
+			{
+				projectedVertices.emplace_back(glm::vec2(vertex.z, vertex.y));
+			}
+		}
+		else if (projectionAxis == ProjectionAxis::ZX)
+		{
+			for (const glm::vec3& vertex : vertices)
+			{
+				projectedVertices.emplace_back(glm::vec2(vertex.x, vertex.z));
+			}
+		}
+		else if (projectionAxis == ProjectionAxis::XY)
+		{
+			for (const glm::vec3& vertex : vertices)
+			{
+				projectedVertices.emplace_back(glm::vec2(vertex.x, vertex.y));
+			}
+		}
+
+		return projectedVertices;
+	}
+
+	std::vector<glm::vec3> triangulatePolygon(const std::vector<glm::vec3>& vertices);
 
 	template <typename Iterator, typename PointExtractor>
 	glm::vec3 computePolygonNormal(Iterator begin, Iterator end, PointExtractor extractor) {

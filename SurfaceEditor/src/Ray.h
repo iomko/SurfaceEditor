@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Sphere.h"
+#include "Primitives/Sphere.h"
 #include "Scene/Camera.h"
 #include "Core/Window.h"
 

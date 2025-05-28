@@ -23,10 +23,10 @@ public:
 	{
 		Sphere sphere{ m_currentHitPoint, m_currentRadius };
 
-		Camera* camera = ViewPortsHolderContext::m_camera;
-		Window* window = ViewPortsHolderContext::m_window;
-		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
-		std::pair<SceneRes::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+		Camera* camera = ViewPortsHolderContext::s_camera;
+		Window* window = ViewPortsHolderContext::s_window;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
 
 		OctreeNodeDataParams oParams;
 		oParams.meshFacePair = meshFaceHitPair.first;

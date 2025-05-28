@@ -1,7 +1,7 @@
 #include "Window.h"
 #include "Input.h"
 
-#include "../Events/EventSystem.h"
+#include "Event.h"
 
 
 Window::Window(int width, int height, const std::string& title) : m_screenWidth(width), m_screenHeight(height), m_screenTitle(title){}

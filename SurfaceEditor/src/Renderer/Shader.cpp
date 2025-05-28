@@ -26,32 +26,6 @@ Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentS
 	}
 }
 
-/*
-Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
-{
-	unsigned int vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
-	unsigned int fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-
-
-	createAndlinkProgram(vertexShaderID, fragmentShaderID);
-	glDeleteShader(vertexShaderID);
-	glDeleteShader(fragmentShaderID);
-}
-
-Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geometryShaderPath)
-{
-	unsigned int vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
-	unsigned int fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-	unsigned int geometryShaderID = compileShader(geometryShaderPath, GL_GEOMETRY_SHADER);
-
-
-	createAndlinkProgram(vertexShaderID, fragmentShaderID, geometryShaderID);
-	glDeleteShader(vertexShaderID);
-	glDeleteShader(fragmentShaderID);
-	glDeleteShader(geometryShaderID);
-}
-*/
-
 void Shader::bind()
 {
 	glUseProgram(id);
@@ -84,43 +58,6 @@ void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int frag
 		std::cout << "Program linking failed: " << infoLog << std::endl;
 	}
 }
-
-/*
-void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID)
-{
-	id = glCreateProgram();
-
-	glAttachShader(id, vertexShaderID);
-	glAttachShader(id, fragmentShaderID);
-	glLinkProgram(id);
-
-	int success;
-	char infoLog[512];
-
-	glGetProgramiv(id, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(id, 512, nullptr, infoLog);
-	}
-}
-
-void Shader::createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID, unsigned int geometryShaderID)
-{
-	id = glCreateProgram();
-
-	glAttachShader(id, vertexShaderID);
-	glAttachShader(id, fragmentShaderID);
-	glAttachShader(id, geometryShaderID);
-	glLinkProgram(id);
-
-	int success;
-	char infoLog[512];
-
-	glGetProgramiv(id, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(id, 512, nullptr, infoLog);
-	}
-}
-*/
 
 std::string Shader::loadShaderSrc(const std::string& shaderPath)
 {

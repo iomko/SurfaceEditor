@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
-#include "../TiffGrayscaleMapLoader.h"
-#include "../CurlFileFetcher.h"
-#include "../Utils/OpenTopoUtils.h"
+#include "../IO/TiffGrayscaleMapLoader.h"
+#include "../IO/CurlFileFetcher.h"
+#include "../Utils/ThirdApiUtils.h"
 
 class FetchedSurfaceVertexGenCallable : public Callable<OpenTopoParams, MeshParams>
 {
@@ -12,7 +12,7 @@ class FetchedSurfaceVertexGenCallable : public Callable<OpenTopoParams, MeshPara
 
 		std::string filePath = "heightmap.tif";
 		CurlFileFetcher fileFetcher;
-		fileFetcher.fetchFile(utils::opentopo::buildUrl(input), filePath);
+		fileFetcher.fetchFile(utils::third_api::buildOpenTopoUrl(input), filePath);
 
 		float avgPixelHeight;
 		std::vector<uint16_t> heightMap = TiffGrayscaleMapLoader::load16bit(filePath.c_str(), width, height, avgPixelHeight);
@@ -61,7 +61,7 @@ class FetchedSurfaceVertexGenCallable : public Callable<OpenTopoParams, MeshPara
 			}
 		}
 
-		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::m_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), new TriangleTriangulator(), surfaceIndices, surfaceVertices);
+		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), surfaceIndices, surfaceVertices);
 
 		output.m_mesh = mesh;
 	}

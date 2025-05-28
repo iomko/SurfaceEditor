@@ -5,8 +5,6 @@ class ViewPortLayerRenderSettings
 {
 public:
 	Shader* m_meshShader = nullptr;
-	Shader* m_pointShader = nullptr;
 	Shader* m_edgeShader = nullptr;
-	Shader* m_normalShader = nullptr;
 	Shader* m_faceShader = nullptr;
 };

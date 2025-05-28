@@ -1,14 +1,29 @@
-#include "SceneRes.h"
-#include "../NumberUtils.h"
-#include "../Mesh.h"
-#include "../AABBBoundingRegion.h"
+#pragma once
+
+#include "../Scene/Mesh.h"
+#include "../Primitives/AABB.h"
 #include "../Scene/Camera.h"
 #include "../DataStructures/Octree.h"
+#include "../Core/Window.h"
+
+struct SceneResources
+{
+	using FaceOctreeCoordsMap = std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>;
+	using MeshFaceOctreeCoordsMap = std::map<Mesh*, FaceOctreeCoordsMap>;
+	using MeshFacePair = std::pair<Mesh*, HalfEdgeDS::Face*>;
+	using CoordsOctreeMap = std::map<glm::vec3, Octree<MeshFacePair>>;
+
+	using MatFacesMap = std::map<Material*, std::vector<HalfEdgeDS::Face*>>;
+	using MeshFacesMap = std::map<Mesh*, MatFacesMap>;
+
+	MeshFaceOctreeCoordsMap meshFaceOctreeCoordsMap;
+	CoordsOctreeMap coordsOctreeMap;
+};
 
 class SceneUtilities
 {
 public:
-	static std::pair<SceneRes::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneRes& res);
+	static std::pair<SceneResources::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneResources& res);
 	static std::pair<glm::vec3, glm::vec3> calculateOctreeBounds(const glm::vec3& voxelIndex, const glm::vec3& voxelSize);
 	static glm::vec3 calculateOctreeIDFromOctree(Octree<HalfEdgeDS::Face*>* octree, const glm::vec3& voxelSize);
 	static glm::vec3 getVoxelIndex(const glm::vec3& bounds, const glm::vec3& voxelSize);
@@ -17,7 +32,7 @@ public:
 class Scene
 {
 public:
-	SceneRes m_res;
+	SceneResources m_res;
 
 	Scene(float xSize, float ySize, float zSize)
 	{
@@ -34,7 +49,7 @@ public:
 
 	void addFaceIntoOctrees(Mesh* mesh, HalfEdgeDS::Face* face)
 	{
-		SceneRes::FaceOctreeCoordsMap& faceOctreeCoordsMap = m_res.meshFaceOctreeCoordsMap[mesh];
+		SceneResources::FaceOctreeCoordsMap& faceOctreeCoordsMap = m_res.meshFaceOctreeCoordsMap[mesh];
 
 		//COMPUTE BOUNDING BOX OF THE FACE
 		std::vector<HalfEdgeDS::Vertex> faceVerts;
@@ -54,9 +69,9 @@ public:
 				{
 					glm::vec3 currentVoxelBounds = { x,y,z };
 
-					Octree<SceneRes::MeshFacePair>* insertionOctree = retrieveCreatedOctree(currentVoxelBounds);
+					Octree<SceneResources::MeshFacePair>* insertionOctree = retrieveCreatedOctree(currentVoxelBounds);
 
-					insertionOctree->addDataToOctree(SceneRes::MeshFacePair(mesh, face), faceBounds);
+					insertionOctree->addDataToOctree(SceneResources::MeshFacePair(mesh, face), faceBounds);
 
 					//insertionOctree->addDataToOctree(Scene::MeshFacePair(mesh, &(*faceIter)), faceBounds);
 
@@ -72,14 +87,14 @@ public:
 	void deleteMeshFromOctrees(Mesh* mesh)
 	{
 		auto meshFaceOctreeCoordsMapIt = m_res.meshFaceOctreeCoordsMap.find(mesh);
-		SceneRes::FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
+		SceneResources::FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
 
 		for (auto& [face, octreeCoords] : faceOctreeCoordsMap)
 		{
 			for (glm::vec3 octreeCoord : octreeCoords)
 			{
 				auto coordsOctreeMapIt = m_res.coordsOctreeMap.find(octreeCoord);
-				Octree<SceneRes::MeshFacePair>& octree = coordsOctreeMapIt->second;
+				Octree<SceneResources::MeshFacePair>& octree = coordsOctreeMapIt->second;
 				octree.removeData(std::make_pair(mesh, face));
 
 				if (octree.isEmpty())
@@ -96,13 +111,13 @@ public:
 	{
 		auto meshFaceOctreeCoordsMapIt = m_res.meshFaceOctreeCoordsMap.find(mesh);
 		auto faceOctreeCoordsMapIt = meshFaceOctreeCoordsMapIt->second.find(face);
-		SceneRes::FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
+		SceneResources::FaceOctreeCoordsMap& faceOctreeCoordsMap = meshFaceOctreeCoordsMapIt->second;
 		std::vector<glm::vec3>& octreesCoords = faceOctreeCoordsMapIt->second;
 
 		for (glm::vec3& coords : octreesCoords)
 		{
 			auto coordsOctreeMapIt = m_res.coordsOctreeMap.find(coords);
-			Octree<SceneRes::MeshFacePair>& octree = coordsOctreeMapIt->second;
+			Octree<SceneResources::MeshFacePair>& octree = coordsOctreeMapIt->second;
 			octree.removeData(std::make_pair(mesh, face));
 
 			if(octree.isEmpty())
@@ -123,12 +138,12 @@ public:
 
 private:
 
-	Octree<SceneRes::MeshFacePair>* retrieveCreatedOctree(glm::vec3 octreeVoxelBounds)
+	Octree<SceneResources::MeshFacePair>* retrieveCreatedOctree(glm::vec3 octreeVoxelBounds)
 	{
-		SceneRes::CoordsOctreeMap::iterator coordsOctreeMapIt = m_res.coordsOctreeMap.find(octreeVoxelBounds);
+		SceneResources::CoordsOctreeMap::iterator coordsOctreeMapIt = m_res.coordsOctreeMap.find(octreeVoxelBounds);
 
 		bool isOctreeCreated = coordsOctreeMapIt != m_res.coordsOctreeMap.end();
-		Octree<SceneRes::MeshFacePair>* retOctree = nullptr;
+		Octree<SceneResources::MeshFacePair>* retOctree = nullptr;
 
 		//FIND IF THE OCTREE ON THAT VOXEL AREA EXISTS
 		if (!isOctreeCreated)
@@ -138,7 +153,7 @@ private:
 
 			//RETRIEVE NEWLY CREATED OCTREE
 			retOctree = &m_res.coordsOctreeMap.emplace(
-				octreeVoxelBounds, Octree<SceneRes::MeshFacePair>(octreeMinBounds, octreeMaxBounds)).first->second;
+				octreeVoxelBounds, Octree<SceneResources::MeshFacePair>(octreeMinBounds, octreeMaxBounds)).first->second;
 		}
 		else
 		{

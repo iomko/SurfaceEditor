@@ -1,0 +1,145 @@
+#pragma once
+#include <vector>
+
+#include "Editing/Selection/SelectionController.h"
+#include "Patterns/Observer.h"
+#include "Scene/ViewPortLayerRenderSettings.h"
+#include "Tools/Tool.h"
+#include "Core/Input.h"
+#include "Renderer/Renderer.h"
+
+class ViewPortLayer;
+
+class ViewPortsController : public Observer
+{
+public:
+	ViewPortsController() = default;
+
+	void addLayer(ViewPortLayer* viewPortLayer)
+	{
+		m_viewPortLayers.push_back(viewPortLayer);
+	}
+
+	std::vector<ViewPortLayer*> m_viewPortLayers;
+	ViewPortLayer* m_activeViewPortLayer = nullptr;
+
+	std::vector<ICommand*> m_commandsQueue;
+	Scene* m_scene = nullptr;
+
+	ITool* m_currentTool = nullptr;
+	OpParams* m_currentToolParams = nullptr;
+};
+
+class ViewPortsHolderContext
+{
+public:
+	static inline ViewPortsController* s_viewPortsHolder = nullptr;
+	static inline SelectionController* s_selectionController = nullptr;
+	static inline Camera* s_camera = nullptr;
+	static inline Window* s_window = nullptr;
+};
+
+class ViewPortLayer : public Layer, public Observable
+{
+private:
+	float m_deltaTime = 0.0f;
+public:
+	//Rendering
+	ViewPortLayerRenderSettings m_shaderSettings;
+	Camera* m_camera = nullptr;
+
+	ViewPortLayer(const std::string& name)
+		: Layer(name)
+	{
+		Renderer::init();
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete!" << std::endl;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void onUpdate() override
+	{
+		updateCameraMovement();
+	}
+
+	void updateCameraDirection(Event& event)
+	{
+		if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+		{
+			m_camera->updateCameraDirection(Input::getMouseDx(), Input::getMouseDy());
+			event.isHandled = true;
+		}
+	}
+
+	void updateCameraMovement()
+	{
+		const float movementSpeed = 50.0f * m_deltaTime;
+		if (Input::isKeyPressed(GLFW_KEY_W) == true)
+		{
+			m_camera->updateCameraPosition(CameraMovement::FORWARD);
+		}
+		if (Input::isKeyPressed(GLFW_KEY_S) == true)
+		{
+			m_camera->updateCameraPosition(CameraMovement::BACKWARD);
+		}
+		if (Input::isKeyPressed(GLFW_KEY_A) == true)
+		{
+			m_camera->updateCameraPosition(CameraMovement::LEFT);
+		}
+		if (Input::isKeyPressed(GLFW_KEY_D) == true)
+		{
+			m_camera->updateCameraPosition(CameraMovement::RIGHT);
+		}
+	}
+
+
+	void onEvent(Event& event) override
+	{
+		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsHolder;
+
+		if (event.getType() == EventType::MouseButtonPress ||
+			event.getType() == EventType::MouseScroll ||
+			event.getType() == EventType::MouseButtonRelease ||
+			event.getType() == EventType::MouseMove)
+		{
+			//mozno miesto toho aby sme mali toto tu
+			//tak to mozeme priamo zavolat u ViewPortsController
+			//ktory nasledne aplikuje tool
+			ViewPortsHolderContext::s_viewPortsHolder->m_currentTool;
+			ITool* currentTool = viewPortsHolder->m_currentTool;
+			OpParams* currentToolParams = viewPortsHolder->m_currentToolParams;
+			if(currentTool != nullptr)
+			{
+				if (Input::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT))
+				{
+					std::cout << "Button_Clicked!" << std::endl;
+					if (currentToolParams != nullptr)
+					{
+						currentTool->getInteractionHandler()->onBegin(*currentToolParams);
+					}
+					else
+					{
+						currentTool->getInteractionHandler()->onBegin();
+					}
+				}
+
+				if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+				{
+					if (currentToolParams != nullptr)
+					{
+						currentTool->getInteractionHandler()->onUpdate(*currentToolParams);
+					}
+					else
+					{
+						currentTool->getInteractionHandler()->onUpdate();
+					}
+				}
+				event.isHandled = true;
+			}
+			updateCameraDirection(event);
+		}
+	}
+
+};

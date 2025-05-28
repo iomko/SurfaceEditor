@@ -1,7 +1,7 @@
 #pragma once
 #include "Callable.h"
 #include "../Params/OperationParams.h"
-#include "../ViewPortsHolder.h"
+#include "../ViewPortsController.h"
 
 class SceneMeshAdderCallable : public Callable<MeshParams, void>
 {
@@ -10,9 +10,9 @@ public:
 	{
 		Mesh* mesh = input.m_mesh;
 
-		Scene* scene = ViewPortsHolderContext::m_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
 
-		SceneRes::MeshFaceOctreeCoordsMap& meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
+		SceneResources::MeshFaceOctreeCoordsMap& meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
 
 		bool sceneContainsMesh = meshFaceOctreeCoordsMap.find(mesh) != scene->m_res.meshFaceOctreeCoordsMap.end();
 		if (!sceneContainsMesh)

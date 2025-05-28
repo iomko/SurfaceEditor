@@ -2,67 +2,67 @@
 #include "../Tools/FaceSelectionTool.h"
 #include "../Tools/MeshSelectionTool.h"
 
-class SelectionLayerCallBack : public Callback<ToolBarParams>, public Observer
+class SelectionLayerCallBack : public Callback<SelectionLayerParams>, public Observer
 {
 public:
-	virtual void execute(const ToolBarParams& params)
+	virtual void execute(const SelectionLayerParams& params)
 	{
-		ToolBarParams::SelectionMode selectionMode = params.m_selectionMode;
-		ToolBarParams::Type type = params.m_type;
+		SelectionLayerParams::SelectionMode selectionMode = params.m_selectionMode;
+		SelectionLayerParams::Type type = params.m_type;
 
-		if(type == ToolBarParams::Type::Selection)
+		if(type == SelectionLayerParams::Type::Selection)
 		{
-			if(selectionMode == ToolBarParams::SelectionMode::Face)
+			if(selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
 				FaceSelectionTool* faceSelectionTool = ToolRegistry::getTool<FaceSelectionTool>();
-				ViewPortsHolderContext::m_viewPortsHolder->m_currentTool = faceSelectionTool;
+				ViewPortsHolderContext::s_viewPortsHolder->m_currentTool = faceSelectionTool;
 
-				if (ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams != nullptr)
+				if (ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams != nullptr)
 				{
-					delete ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams;
-					ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams = nullptr;
+					delete ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams;
+					ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams = nullptr;
 				}
-			} else if(selectionMode == ToolBarParams::SelectionMode::Edge)
+			} else if(selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = nullptr;
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = nullptr;
 				//create edge command
-			} else if(selectionMode == ToolBarParams::SelectionMode::Vertex)
+			} else if(selectionMode == SelectionLayerParams::SelectionMode::Vertex)
 			{
 				//create vertex command
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = nullptr;
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = nullptr;
 
-			} else if(selectionMode == ToolBarParams::SelectionMode::Object)
+			} else if(selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
 				MeshSelectionTool* meshSelectionTool = ToolRegistry::getTool<MeshSelectionTool>();
-				ViewPortsHolderContext::m_viewPortsHolder->m_currentTool = meshSelectionTool;
+				ViewPortsHolderContext::s_viewPortsHolder->m_currentTool = meshSelectionTool;
 
-				if (ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams != nullptr)
+				if (ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams != nullptr)
 				{
-					delete ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams;
-					ViewPortsHolderContext::m_viewPortsHolder->m_currentToolParams = nullptr;
+					delete ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams;
+					ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams = nullptr;
 				}
 			}
-		} else if(type == ToolBarParams::Type::Deselection)
+		} else if(type == SelectionLayerParams::Type::Deselection)
 		{
-			if (selectionMode == ToolBarParams::SelectionMode::Face)
+			if (selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = CommandRegistry::getCommand<DeselectFaceCommand>();
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = CommandRegistry::getCommand<DeselectFaceCommand>();
 				//create face command
 			}
-			else if (selectionMode == ToolBarParams::SelectionMode::Edge)
+			else if (selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = nullptr;
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = nullptr;
 				//create edge command
 			}
-			else if (selectionMode == ToolBarParams::SelectionMode::Vertex)
+			else if (selectionMode == SelectionLayerParams::SelectionMode::Vertex)
 			{
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = nullptr;
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = nullptr;
 				//create vertex command	
 			}
-			else if (selectionMode == ToolBarParams::SelectionMode::Object)
+			else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
 				//create object command
-				//ViewPortsHolderContext::m_viewPortsHolder->m_currentCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
+				//ViewPortsHolderContext::s_viewPortsHolder->m_currentCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
 			}
 
 		}
