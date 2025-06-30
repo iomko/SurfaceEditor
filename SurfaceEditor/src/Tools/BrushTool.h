@@ -5,8 +5,8 @@
 class BrushTool : public Tool<BrushToolCommand, BrushInteractionHandler>
 {
 public:
-	BrushTool(BrushToolCommand* command, BrushInteractionHandler* interactionHandler)
-		: Tool(command, interactionHandler) {}
+	BrushTool(BrushToolCommand* command)
+		: Tool(command) {}
 
 	static std::string getToolName() { return "BrushTool"; }
 };

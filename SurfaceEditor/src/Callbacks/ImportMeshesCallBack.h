@@ -14,7 +14,7 @@ public:
 		for (const auto& importedMesh : objImporter.getMeshes())
 		{
 
-			Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+			Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
 			createMeshRenderingData(params, importedMesh);
 
@@ -113,7 +113,7 @@ public:
 		{
 			
 
-			Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+			Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 			
 			createMeshRenderingData(castedCmdParams, importedMesh);
 
@@ -201,14 +201,14 @@ private:
 	void createMeshRenderingData(const ImportExportMeshesParams& cmdParams, Mesh* mesh)
 	{
 		
-		auto meshesShaderIt = ViewPortsHolderContext::s_viewPortsHolder->m_meshesShaderData.find(mesh);
+		auto meshesShaderIt = ViewPortsHolderContext::s_viewPortsController->m_meshesShaderData.find(mesh);
 
 		ViewPortHolder::MeshRenderingFlags flags{ true, true, true, true };
 
 		
 
-		ViewPortHolder::MeshRenderingShaderData shaderData(*ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_pointsShader, *ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_linesShader,
-			*ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_normalsShader, *ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayer->m_shaderSettings.m_meshShader);
+		ViewPortHolder::MeshRenderingShaderData shaderData(*ViewPortsHolderContext::s_viewPortsController->m_viewPortLayer->m_shaderSettings.m_pointsShader, *ViewPortsHolderContext::s_viewPortsController->m_viewPortLayer->m_shaderSettings.m_linesShader,
+			*ViewPortsHolderContext::s_viewPortsController->m_viewPortLayer->m_shaderSettings.m_normalsShader, *ViewPortsHolderContext::s_viewPortsController->m_viewPortLayer->m_shaderSettings.m_meshShader);
 
 		ViewPortHolder::MeshRenderingVAOData vaoData;
 
@@ -222,7 +222,7 @@ private:
 			//endPoint.y += 0.005f;
 
 
-			if (meshesShaderIt == ViewPortsHolderContext::s_viewPortsHolder->m_meshesShaderData.end()) {
+			if (meshesShaderIt == ViewPortsHolderContext::s_viewPortsController->m_meshesShaderData.end()) {
 				vaoData.m_edges.push_back({ startPoint, false });
 				vaoData.m_edges.push_back({ endPoint, false });
 			}
@@ -236,9 +236,9 @@ private:
 		}
 
 
-		if (meshesShaderIt == ViewPortsHolderContext::s_viewPortsHolder->m_meshesShaderData.end())
+		if (meshesShaderIt == ViewPortsHolderContext::s_viewPortsController->m_meshesShaderData.end())
 		{
-			ViewPortsHolderContext::s_viewPortsHolder->m_meshesShaderData.emplace(mesh, std::make_tuple(flags, shaderData, vaoData));
+			ViewPortsHolderContext::s_viewPortsController->m_meshesShaderData.emplace(mesh, std::make_tuple(flags, shaderData, vaoData));
 		}
 
 		

@@ -15,6 +15,8 @@ namespace utils::containers
 	void swapLastAndPop(std::vector<T>& vector, size_t index) {
 		if (index < vector.size() - 1) {
 			std::swap(vector[index], vector.back());
+		}
+		if (!vector.empty()) {
 			vector.pop_back();
 		}
 	}

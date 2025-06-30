@@ -10,7 +10,7 @@ public:
 	{
 		Mesh* mesh = input.m_mesh;
 
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
 		SceneResources::MeshFaceOctreeCoordsMap& meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
 

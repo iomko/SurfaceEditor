@@ -2,15 +2,14 @@
 
 class CommandRegistry {
 public:
-
     template<typename CommandT, typename... Args>
-    static void registerCommand(Args&&... args) {
+    void registerCommand(Args&&... args) {
         constexpr std::string_view commandName = CommandT::getCommandName();
         m_commands[commandName] = new CommandT(std::forward<Args>(args)...);
     }
 
     template<typename CommandT>
-    static CommandT* getCommand() {
+    CommandT* getCommand() {
         auto it = m_commands.find(CommandT::getCommandName());
         if (it != m_commands.end()) {
             return static_cast<CommandT*>(it->second);
@@ -18,12 +17,12 @@ public:
         return nullptr;
     }
 
-    static void deleteRegistry() {
+    void deleteRegistry() {
         for (auto& pair : m_commands) {
             delete pair.second;
         }
     }
 
 private:
-    static inline std::unordered_map<std::string_view, ICommand*> m_commands;
+    std::unordered_map<std::string_view, CommandConcept*> m_commands;
 };

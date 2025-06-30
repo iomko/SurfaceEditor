@@ -72,6 +72,7 @@ float lastFrame = 0.0f;
 #include "../Commands/BrushToolCommand.h"
 #include "../Tools/BrushTool.h"
 #include "../Tools/FaceSelectionTool.h"
+#include "../Tools/FaceDeselectionTool.h"
 
 #include "../Callables/PlaneVertexGenCallable.h"
 #include "../Callables/MeshVaoInitCallable.h"
@@ -185,6 +186,8 @@ void collectAABBData(const AABBBoundingRegion& aabb) {
 
 int main()
 {
+	CommandRegistry* commandRegistry = new CommandRegistry();
+
 	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
 
 	//--ADD_PLANE_COMPOSER--
@@ -240,7 +243,7 @@ int main()
 	SelectionController* selectionController = new SelectionController();
 
 	viewPortsHolder->m_scene = &scene;
-	ViewPortsHolderContext::s_viewPortsHolder = viewPortsHolder;
+	ViewPortsHolderContext::s_viewPortsController = viewPortsHolder;
 	ViewPortsHolderContext::s_selectionController = selectionController;
 	ViewPortsHolderContext::s_camera = camera;
 	ViewPortsHolderContext::s_window = app.m_window;
@@ -254,13 +257,13 @@ int main()
 	app.getLayerStack().addLayer(viewPortLayer);
 
 	//ImporExportLayer
-	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer");
+	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer", *commandRegistry);
 	app.getLayerStack().addLayer(importExportLayer);
 
 	//importMeshesCommand
 
-	CommandRegistry::registerCommand<ImportMeshesCommand>();
-	ImportMeshesCommand* importMeshesCommand = CommandRegistry::getCommand<ImportMeshesCommand>();
+	commandRegistry->registerCommand<ImportMeshesCommand>();
+	ImportMeshesCommand* importMeshesCommand = commandRegistry->getCommand<ImportMeshesCommand>();
 
 	ImportMeshesCallback importMeshesCallback;
 	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
@@ -271,8 +274,8 @@ int main()
 	importMeshesCallback.observe(importMeshesCommand, &importMeshesCallback);
 	//importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
 
-	CommandRegistry::registerCommand<ExportMeshesCommand>();
-	ExportMeshesCommand* exportMeshesCommand = CommandRegistry::getCommand<ExportMeshesCommand>();
+	commandRegistry->registerCommand<ExportMeshesCommand>();
+	ExportMeshesCommand* exportMeshesCommand = commandRegistry->getCommand<ExportMeshesCommand>();
 
 	ExportMeshesCallback exportMeshesCallback;
 	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
@@ -280,66 +283,71 @@ int main()
 	exportMeshesCommand->addObserver(&exportMeshesCallback);
 	exportMeshesCallback.observe(exportMeshesCommand, &exportMeshesCallback);
 
-	CommandRegistry::registerCommand<AddPlaneCommand>();
-	AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
+	commandRegistry->registerCommand<AddPlaneCommand>();
+	AddPlaneCommand* addPlaneCommand = commandRegistry->getCommand<AddPlaneCommand>();
 
 	addPlaneCommand->addObserver(&addPlaneCallBack);
 	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
 
-	CommandRegistry::registerCommand<FetchSurfaceCommand>();
-	FetchSurfaceCommand* fetchSurfaceCommand = CommandRegistry::getCommand<FetchSurfaceCommand>();
+	commandRegistry->registerCommand<FetchSurfaceCommand>();
+	FetchSurfaceCommand* fetchSurfaceCommand = commandRegistry->getCommand<FetchSurfaceCommand>();
 
 	fetchSurfaceCommand->addObserver(&fetchSurfaceCallBack);
 	fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);
 
 	SelectMeshCallBack selectMeshCallBack;
-	CommandRegistry::registerCommand<SelectMeshCommand>();
-	SelectMeshCommand* selectMeshCommand = CommandRegistry::getCommand<SelectMeshCommand>();
+	commandRegistry->registerCommand<SelectMeshCommand>();
+	SelectMeshCommand* selectMeshCommand = commandRegistry->getCommand<SelectMeshCommand>();
 
-	ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand, new SelectionHandler<SelectMeshCommand>());
+	ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand);
+
+	ToolRegistry::getTool<MeshSelectionTool>();
 
 	selectMeshCommand->addObserver(&selectMeshCallBack);
 	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
 
 	BrushToolCallBack brushToolCallBack;
-	CommandRegistry::registerCommand<BrushToolCommand>();
-	BrushToolCommand* brushToolCommand = CommandRegistry::getCommand<BrushToolCommand>();
+	commandRegistry->registerCommand<BrushToolCommand>();
+	BrushToolCommand* brushToolCommand = commandRegistry->getCommand<BrushToolCommand>();
 
 	brushToolCommand->addObserver(&brushToolCallBack);
 	brushToolCallBack.observe(brushToolCommand, &brushToolCallBack);
 
-	ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
+	//ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
+	ToolRegistry::registerTool<BrushTool>(brushToolCommand);
 
 	DeselectMeshCallBack deselectMeshCallBack;
-	CommandRegistry::registerCommand<DeselectMeshCommand>();
-	DeselectMeshCommand* deselectMeshCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
+	commandRegistry->registerCommand<DeselectMeshCommand>();
+	DeselectMeshCommand* deselectMeshCommand = commandRegistry->getCommand<DeselectMeshCommand>();
 
 	deselectMeshCommand->addObserver(&deselectMeshCallBack);
 	deselectMeshCallBack.observe(deselectMeshCommand, &deselectMeshCallBack);
 
 	SelectFaceCallBack selectFaceCallBack;
-	CommandRegistry::registerCommand<SelectFaceCommand>();
-	SelectFaceCommand* selectFaceCommand = CommandRegistry::getCommand<SelectFaceCommand>();
+	commandRegistry->registerCommand<SelectFaceCommand>();
+	SelectFaceCommand* selectFaceCommand = commandRegistry->getCommand<SelectFaceCommand>();
 	selectFaceCommand->addObserver(&selectFaceCallBack);
 	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
 
-	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand, new SelectionHandler<SelectFaceCommand>());
+	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
 
 	DeselectFaceCallBack deselectFaceCallBack;
-	CommandRegistry::registerCommand<DeselectFaceCommand>();
-	DeselectFaceCommand* deselectFaceCommand = CommandRegistry::getCommand<DeselectFaceCommand>();
+	commandRegistry->registerCommand<DeselectFaceCommand>();
+	DeselectFaceCommand* deselectFaceCommand = commandRegistry->getCommand<DeselectFaceCommand>();
 	deselectFaceCommand->addObserver(&deselectFaceCallBack);
 	deselectFaceCallBack.observe(deselectFaceCommand, &deselectFaceCallBack);
 
+	ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
+
 	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack;
-	CommandRegistry::registerCommand<DeleteSelectedFacesCommand>();
-	DeleteSelectedFacesCommand* deleteSelectedFacesCommand = CommandRegistry::getCommand<DeleteSelectedFacesCommand>();
+	commandRegistry->registerCommand<DeleteSelectedFacesCommand>();
+	DeleteSelectedFacesCommand* deleteSelectedFacesCommand = commandRegistry->getCommand<DeleteSelectedFacesCommand>();
 	deleteSelectedFacesCommand->addObserver(&deleteSelectedFacesCallBack);
 	deleteSelectedFacesCallBack.observe(deleteSelectedFacesCommand, &deleteSelectedFacesCallBack);
 
 	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack;
-	CommandRegistry::registerCommand<DeleteSelectedMeshesCommand>();
-	DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = CommandRegistry::getCommand<DeleteSelectedMeshesCommand>();
+	commandRegistry->registerCommand<DeleteSelectedMeshesCommand>();
+	DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = commandRegistry->getCommand<DeleteSelectedMeshesCommand>();
 	deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
 	deleteSelectedMeshesCallBack.observe(deleteSelectedMeshesCommand, &deleteSelectedMeshesCallBack);
 
@@ -372,11 +380,11 @@ int main()
 
 
 	//AdditionLayer
-	AdditionLayer additionLayer("AdditionLayer");
+	AdditionLayer additionLayer("AdditionLayer", *commandRegistry);
 	app.getLayerStack().addLayer(&additionLayer);
 
 	//RemovalLayer
-	RemovalLayer removalLayer("RemovalLayer");
+	RemovalLayer removalLayer("RemovalLayer", *commandRegistry);
 	app.getLayerStack().addLayer(&removalLayer);
 
 	//SculptToolsLayer
@@ -446,20 +454,19 @@ int main()
 
 		ray = Ray::fromMousePos(*camera, app.getWindow());
 
-		if (Input::isKeyDown(GLFW_KEY_C))
+		if (Input::isKeyPressed(GLFW_KEY_C))
 		{
  			basicSculptToolCommand.applyBrush(ray, 20.0f, 5.0f);
 		}
 
-		if (Input::isKeyDown(GLFW_KEY_V))
+		if (Input::isKeyPressed(GLFW_KEY_V))
 		{
 			basicSculptToolCommand.applyBrush(ray, 20.0f, -5.0f);
 
 		}
 
-		
 
-		if(Input::isKeyDown(GLFW_KEY_T))
+		if(Input::isKeyPressed(GLFW_KEY_T))
 		{
 			//viewPortLayer.deleteSelectedMeshes();
 			//delete them from renderer aswell!
@@ -518,13 +525,13 @@ int main()
 			linesShader.unbind();
 		}
 
-		ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
+		ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
 		
 		for (const auto& [region, vertices] : Renderer::s_stageData.aabbVertsMap) {
 			
 			Renderer::drawBox(vertices);
 		}
-		ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
+		ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
 
 		app.run();
 		

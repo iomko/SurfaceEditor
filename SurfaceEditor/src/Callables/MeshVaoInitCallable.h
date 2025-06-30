@@ -11,7 +11,7 @@ public:
 		std::vector<HalfEdgeDS::Face*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
 		std::vector<HalfEdgeDS::Edge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
-		SceneResources& res = ViewPortsHolderContext::s_viewPortsHolder->m_scene->m_res;
+		SceneResources& res = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res;
 
 		Material* material = mesh->m_defaultMaterial;
 		RendererStageData::MatVertsMap& materialVertsMap = Renderer::s_stageData.meshMatsMap[mesh];

@@ -42,12 +42,27 @@ void FaceSelectionManager::unregisterFace(HalfEdgeDS::Face* face, Mesh* mesh)
 		int indexInSelection = face->m_selectionIndex;
 		std::vector<HalfEdgeDS::Face*>& selectionVector = m_holder.faces.find(mesh)->second;
 
+		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
+		std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+
+		RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
+		std::vector<RendererStageData::MeshVertex>& meshVaoVertices = materialVertsMap.find(face->material)->second;
+
 		if (indexInSelection != selectionVector.size() - 1)
 		{
 			//vymenime entry s poslednym vo vectore
 			selectionVector.back()->m_selectionIndex = indexInSelection;
 			utils::containers::swapWithLast(selectionVector, indexInSelection);
 		}
+
+		for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
+		{
+			int faceVaoIndex = faceTriangles.at(faceTriangleIndex).indexInVAO;
+			meshVaoVertices.at(faceVaoIndex).isHighlited = false;
+			meshVaoVertices.at(faceVaoIndex + 1).isHighlited = false;
+			meshVaoVertices.at(faceVaoIndex + 2).isHighlited = false;
+		}
+
 		face->m_selected = false;
 		face->m_selectionIndex = -1;
 

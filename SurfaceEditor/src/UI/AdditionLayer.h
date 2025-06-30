@@ -9,10 +9,8 @@
 
 class AdditionLayer : public Layer, public Observable, public Observer {
 public:
-    AdditionLayer(const std::string& name)
-        : Layer(name)
-    {
-    }
+    AdditionLayer(const std::string& name, CommandRegistry& commandRegistry)
+        : Layer(name), m_commandRegistry(commandRegistry) {}
 
     void onEvent(Event& event) override
     {
@@ -42,7 +40,7 @@ public:
 					ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
 
 					if (ImGui::Button("AddToScene")) {
-						AddPlaneCommand* addPlaneCommand = CommandRegistry::getCommand<AddPlaneCommand>();
+						AddPlaneCommand* addPlaneCommand = m_commandRegistry.getCommand<AddPlaneCommand>();
 
 						PlaneParams addPlaneCommandParams;
 						addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
@@ -82,7 +80,7 @@ public:
 					params.m_apiKey = std::string(m_apiKeyBuffer);
 
 					// Tu si zavoláš tvoju logiku na fetch a pridanie do scény
-					FetchSurfaceCommand* fetchCommand = CommandRegistry::getCommand<FetchSurfaceCommand>();
+					FetchSurfaceCommand* fetchCommand = m_commandRegistry.getCommand<FetchSurfaceCommand>();
 					fetchCommand->execute(params);
 				}
 
@@ -97,6 +95,8 @@ public:
 	}
 
 private:
+	CommandRegistry& m_commandRegistry;
+
 	float m_lowerLeftLon = 0.0f;
 	float m_lowerLeftLat = 0.0f;
 	float m_upperRightLon = 0.0f;

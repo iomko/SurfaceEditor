@@ -9,10 +9,8 @@
 
 class RemovalLayer : public Layer, public Observable, public Observer {
 public:
-	RemovalLayer(const std::string& name)
-		: Layer(name)
-	{
-	}
+	RemovalLayer(const std::string& name, CommandRegistry& commandRegistry)
+		: Layer(name), m_commandRegistry(commandRegistry) {}
 
 	void onEvent(Event& event) override
 	{
@@ -37,12 +35,12 @@ public:
 			mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
 		if (ImGui::Button("Delete Selected Faces")) {
-			DeleteSelectedFacesCommand* deleteSelectedFacesCommand = CommandRegistry::getCommand<DeleteSelectedFacesCommand>();
+			DeleteSelectedFacesCommand* deleteSelectedFacesCommand = m_commandRegistry.getCommand<DeleteSelectedFacesCommand>();
 			deleteSelectedFacesCommand->execute();
 		}
 
 		if (ImGui::Button("Delete Selected Meshes")) {
-			DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = CommandRegistry::getCommand<DeleteSelectedMeshesCommand>();
+			DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = m_commandRegistry.getCommand<DeleteSelectedMeshesCommand>();
 			deleteSelectedMeshesCommand->execute();
 		}
 
@@ -50,5 +48,7 @@ public:
 	}
 
 private:
+	CommandRegistry& m_commandRegistry;
+
 	bool m_isMouseInsideWindow;
 };

@@ -14,7 +14,6 @@ void main()
     mat4 mvp = u_projection * u_view * u_model;
     gl_Position = mvp * vec4(l_Pos, 1.0);
 
-    // Choose color based on highlight
     if (l_IsHighlighted == 1.0f)
         v_color = vec3(255.0 / 255.0, 198.0 / 255.0, 111.0 / 255.0);
     else

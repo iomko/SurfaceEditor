@@ -13,9 +13,7 @@
 class SculptToolsLayer : public Layer, public Observable, public Observer {
 public:
 	SculptToolsLayer(const std::string& name)
-		: Layer(name)
-	{
-	}
+		: Layer(name) {}
 
 	void onEvent(Event& event) override
 	{
@@ -25,28 +23,6 @@ public:
 				event.isHandled = true;
 			}
 		}
-
-		/*
-		if (event.getType() == EventType::MouseButtonPress || 
-			event.getType() == EventType::MouseMove)
-		{
-
-			
-
-			bool isAnyMouseButtonDown = std::any_of(
-				Input::m_mouseButtonStates.begin(),
-				Input::m_mouseButtonStates.end(),
-				[](const auto& pair) { return pair.second; }
-			);
-
-			if(isAnyMouseButtonDown)
-			{
-				if (m_isMouseInsideWindow) {
-					event.isHandled = true;
-				}
-			}
-		}
-		*/
 	}
 
 	void onImGuiRender() override {
@@ -62,16 +38,16 @@ public:
 		if (ImGui::TreeNode("BrushTool")) {
 			if (ImGui::Button("Choose Brush Tool")) {
 				std::cout << "Chosen Brush Tool" << std::endl;
-				ViewPortsHolderContext::s_viewPortsHolder->m_currentTool = ToolRegistry::getTool<BrushTool>();
-				if(ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams != nullptr)
+				ViewPortsHolderContext::s_viewPortsController->m_currentTool = ToolRegistry::getTool<BrushTool>();
+				if(ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
 				{
-					delete ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams = nullptr;
+					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
 				}
 				BrushToolParams* brushToolParams = new BrushToolParams();
 				brushToolParams->brushStrength = m_brushStrength;
 				brushToolParams->radius = m_brushRadius;
-				ViewPortsHolderContext::s_viewPortsHolder->m_currentToolParams = brushToolParams;
+				ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = brushToolParams;
 			}
 
 			ImGui::SliderFloat("BrushStrength", &m_brushStrength, -50.0f, 50.0f, "%.1f");
@@ -84,6 +60,7 @@ public:
 	}
 
 private:
+
 	bool m_isMouseInsideWindow;
 
 	float m_brushStrength;

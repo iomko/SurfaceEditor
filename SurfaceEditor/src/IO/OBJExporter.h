@@ -65,7 +65,7 @@ private:
 
 			//musime prechadzat cez vsetky meshes
 
-			Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+			Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
 			//GET FACEINFO MAPPINGS
 			SceneResources::MeshFacesMap::iterator meshFacesMapIt = scene->m_res.meshData.meshFacesMap.find(mesh);

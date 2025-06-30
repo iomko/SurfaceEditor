@@ -99,6 +99,8 @@ void Window::setCallBackFunctions()
 		instance->m_screenHeight = height;
 		WindowResizeEvent event(width, height);
 
+		
+
 		instance->m_eventFunc(event);
 		});
 
@@ -182,58 +184,6 @@ void Window::setCallBackFunctions()
 				break;
 			}
 		});
-
-	/*
-	glfwSetMouseButtonCallback(m_windowHandle, [](GLFWwindow* window, int button, int action, int mods)
-		{
-			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				//Input::m_mouseButtonStates[button] = true;
-				Input::m_mouseButtonClicked[button] = true;
-				MouseButtonPressEvent event(button);
-				instance->m_eventFunc(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				//Input::m_mouseButtonStates[button] = false;
-				MouseButtonReleaseEvent event(button);
-				instance->m_eventFunc(event);
-				break;
-			}
-			default:
-				break;
-			}
-		});
-	*/
-
-	/*
-	glfwSetMouseButtonCallback(m_windowHandle, [](GLFWwindow* window, int button, int action, int mods)
-		{
-			Window* instance = static_cast<Window*>(glfwGetWindowUserPointer(window));
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				MouseButtonPressEvent event(button);
-				instance->m_eventFunc(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				MouseButtonReleaseEvent event(button);
-				instance->m_eventFunc(event);
-				break;
-			}
-			default:;
-			}
-		});
-	*/
 }
 
 void Window::setEventFunc(std::function<void(Event&)> func)

@@ -6,15 +6,16 @@
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/BrushToolCommand.h"
 
-class BrushInteractionHandler : public InteractionHandler<BrushToolParams>
+class BrushInteractionHandler : public InteractionHandler<BrushToolCommand, BrushToolParams>
 {
 public:
+	BrushInteractionHandler(BrushToolCommand* command)
+		: InteractionHandler(command) {}
+
 	void onBegin(const BrushToolParams& iParams) override
 	{
-		std::cout << "OnBegin executed" << std::endl;
-		BrushToolCommand* brushToolCommand = CommandRegistry::getCommand<BrushToolCommand>();
 		OctreeNodeDataParams oParams;
-		brushToolCommand->execute(iParams, oParams);
+		this->getCommand()->execute(iParams, oParams);
 
 		m_currentHitPoint = oParams.hitPoint;
 		m_currentRadius = iParams.radius;
@@ -25,7 +26,7 @@ public:
 
 		Camera* camera = ViewPortsHolderContext::s_camera;
 		Window* window = ViewPortsHolderContext::s_window;
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
 
 		OctreeNodeDataParams oParams;
@@ -34,8 +35,7 @@ public:
 
 		if(!sphere.containsPoint(oParams.hitPoint))
 		{
-			BrushToolCommand* brushToolCommand = CommandRegistry::getCommand<BrushToolCommand>();
-			brushToolCommand->execute(iParams, oParams);
+			this->getCommand()->execute(iParams, oParams);
 
 			if (oParams.meshFacePair.first != nullptr)
 			{

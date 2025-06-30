@@ -15,8 +15,6 @@
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Core\Layer.cpp" />
-    <ClCompile Include="src\DataStructures\DataStructures.ixx" />
-    <ClCompile Include="src\DataStructures\Octree.ixx" />
     <ClCompile Include="src\Renderer\Shader.ixx" />
     <ClCompile Include="Linking\include\TrianglePP\tpp_assert.cpp" />
     <ClCompile Include="Linking\include\TrianglePP\tpp_impl.cpp" />
@@ -217,6 +215,8 @@
     <ClInclude Include="src\Core\EditorSettings.h" />
     <ClInclude Include="src\Primitives\Plane.h" />
     <ClInclude Include="src\Primitives\Sphere.h" />
+    <ClInclude Include="src\Tools\DeselectionHandler.h" />
+    <ClInclude Include="src\Tools\FaceDeselectionTool.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Linking\lib\GLFW\glfw3.lib" />

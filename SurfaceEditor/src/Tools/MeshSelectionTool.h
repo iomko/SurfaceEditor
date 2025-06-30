@@ -5,8 +5,8 @@
 class MeshSelectionTool : public Tool<SelectMeshCommand, SelectionHandler<SelectMeshCommand>>
 {
 public:
-	MeshSelectionTool(SelectMeshCommand* command, SelectionHandler<SelectMeshCommand>* interactionHandler)
-		: Tool(command, interactionHandler)
+	MeshSelectionTool(SelectMeshCommand* command)
+		: Tool(command)
 	{
 	}
 	static std::string getToolName() { return "MeshSelectionTool"; }

@@ -2,8 +2,8 @@
 
 #include "../Params/OperationParams.h"
 
-struct ICommand {
-	virtual ~ICommand() = default;
+struct CommandConcept {
+	virtual ~CommandConcept() = default;
 	virtual void execute() = 0;
 	virtual void execute(const OpParams& iParams) = 0;
 	virtual void execute(const OpParams& iParams, OpParams& oParams) = 0;
@@ -14,7 +14,7 @@ template<typename IParams = OpParams, typename OParams = OpParams>
 class Command;
 
 template <typename IParams, typename OParams>
-class Command : public ICommand
+class Command : public CommandConcept
 {
 public:
 	void undo() override {}
@@ -31,7 +31,7 @@ public:
 };
 
 template <typename IParams>
-class Command<IParams, OpParams> : public ICommand {
+class Command<IParams, OpParams> : public CommandConcept {
 public:
 	void undo() override {}
 	void execute() override{}
@@ -46,7 +46,7 @@ public:
 };
 
 template <>
-class Command<OpParams> : public ICommand {
+class Command<OpParams> : public CommandConcept {
 public:
 	void undo() override {}
 	void execute() override = 0;

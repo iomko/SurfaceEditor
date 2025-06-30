@@ -8,7 +8,7 @@ public:
 	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
 	{
 		const float epsilon = 0.001f;
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		Camera* camera = ViewPortsHolderContext::s_camera;
 		Window* window = ViewPortsHolderContext::s_window;
 		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
@@ -121,7 +121,7 @@ private:
 	std::pair<std::unordered_set<HalfEdgeDS::Vertex*>, std::unordered_set<HalfEdgeDS::Face*>>
 	collectIntersectingElements(const Sphere& sphere, Mesh* mesh)
 	{
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		std::unordered_set<HalfEdgeDS::Vertex*> verticesToChange;
 		std::unordered_set<HalfEdgeDS::Face*> facesToChange;
 

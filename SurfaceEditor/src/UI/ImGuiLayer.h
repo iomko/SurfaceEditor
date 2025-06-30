@@ -6,9 +6,7 @@ class ImGuiLayer : public Layer
 {
 public:
 	explicit ImGuiLayer(const std::string& name)
-		: Layer(name)
-	{
-	}
+		: Layer(name) {}
 	void onAttach() override;
 	void onDetach() override;
 	void begin();

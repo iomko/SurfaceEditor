@@ -7,7 +7,7 @@ public:
 	{
 		Camera* camera = ViewPortsHolderContext::s_camera;
 		Window* window = ViewPortsHolderContext::s_window;
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
 
 		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;

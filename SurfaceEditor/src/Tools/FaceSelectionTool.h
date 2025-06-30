@@ -5,8 +5,8 @@
 class FaceSelectionTool : public Tool<SelectFaceCommand, SelectionHandler<SelectFaceCommand>>
 {
 public:
-	FaceSelectionTool(SelectFaceCommand* command, SelectionHandler<SelectFaceCommand>* interactionHandler)
-		: Tool(command, interactionHandler)
+	FaceSelectionTool(SelectFaceCommand* command)
+		: Tool(command)
 	{
 	}
 	static std::string getToolName() { return "FaceSelectionTool"; }

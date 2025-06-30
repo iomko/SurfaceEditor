@@ -9,9 +9,8 @@
 class ImportExportLayer : public Layer, public Observable
 {
 public:
-    ImportExportLayer(const std::string& name)
-        : Layer(name)
-    {}
+    ImportExportLayer(const std::string& name, CommandRegistry& commandRegistry)
+        : Layer(name), m_commandRegistry(commandRegistry) {}
 
 	void onEvent(Event& event) override
 	{
@@ -46,8 +45,7 @@ public:
         }
         if (importClicked && !filePath.empty()) {
             std::cout << "filePath: " << filePath << std::endl;
-
-            ImportMeshesCommand* importMeshesCommand = CommandRegistry::getCommand<ImportMeshesCommand>();
+            ImportMeshesCommand* importMeshesCommand = m_commandRegistry.getCommand<ImportMeshesCommand>();
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
@@ -63,8 +61,7 @@ public:
         }
         if (exportClicked && !filePath.empty()) {
             std::cout << "filePath: " << filePath << std::endl;
-
-            ExportMeshesCommand* exportMeshesCommand = CommandRegistry::getCommand<ExportMeshesCommand>();
+            ExportMeshesCommand* exportMeshesCommand = m_commandRegistry.getCommand<ExportMeshesCommand>();
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
@@ -75,5 +72,7 @@ public:
     }
 
 private:
+    CommandRegistry& m_commandRegistry;
+    
     bool m_isMouseInsideWindow = false;
 };

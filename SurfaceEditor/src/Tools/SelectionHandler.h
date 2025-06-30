@@ -4,13 +4,15 @@
 #include "../Commands/SelectFaceCommand.h"
 
 template<typename SelectCommandT>
-class SelectionHandler : public InteractionHandler<>
+class SelectionHandler : public InteractionHandler<SelectCommandT>
 {
 public:
+	SelectionHandler(SelectCommandT* command)
+		: InteractionHandler<SelectCommandT>(command) {}
+
 	void onBegin() override
 	{
-		SelectCommandT* selectCommand = CommandRegistry::getCommand<SelectCommandT>();
-		selectCommand->execute();
+		this->getCommand()->execute();
 	}
 	void onUpdate() override {}
 	void onEnd() override {}

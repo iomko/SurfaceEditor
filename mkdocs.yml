@@ -1,0 +1,142 @@
+site_name: SurfaceEditor Docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+  features:
+    # - navigation.tabs     # disabled to use side nav instead
+    # - navigation.top      # disabled to use side nav instead
+    - search.highlight
+    - search.suggest
+
+nav:
+  - Home: index.md
+  - Src:
+      - Ray: Ray.md
+      - ViewPortsController: ViewPortsController.md
+      - Core:
+          - Application: Application.md
+          - Event: Event.md
+          - EventType: EventType.md
+          - KeyEvents: KeyEvents.md
+          - MouseEvents: MouseEvents.md
+          - WindowEvents: WindowEvents.md
+          - Input: Input.md
+          - Layer: Layer.md
+          - LayerStack: LayerStack.md
+          - Window: Window.md
+          - EditorSettings: EditorSettings.md
+      - Callables:
+          - Callable: Callable.md
+          - FetchedSurfaceVertexGenCallable: FetchedSurfaceVertexGenCallable.md
+          - FunctionComposer: FunctionComposer.md
+          - MeshVaoInitCallable: MeshVaoInitCallable.md
+          - PlaneVertexGenCallable: PlaneVertexGenCallable.md
+          - SceneMeshAdderCallable: SceneMeshAdderCallable.md
+      - Callabacks:
+          - AddPlaneCallback: AddPlaneCallback.md
+          - BrushToolCallBack: BrushToolCallBack.md
+          - Callback: Callback.md
+          - DeleteSelectedFacesCallBack: DeleteSelectedFacesCallBack.md
+          - DeleteSelectedMeshesCallBack: DeleteSelectedMeshesCallBack.md
+          - DeselectFaceCallBack: DeselectFaceCallBack.md
+          - DeselectMeshCallBack: DeselectMeshCallBack.md
+          - ExportMeshesCallback: ExportMeshesCallback.md
+          - FetchSurfaceCallBack: FetchSurfaceCallBack.md
+          - ImportMeshesCallback: ImportMeshesCallback.md
+          - SelectFaceCallBack: SelectFaceCallBack.md
+          - SelectionLayerCallBack: SelectionLayerCallBack.md
+          - SelectMeshCallBack: SelectMeshCallBack.md
+          - AddPlaneCommand: AddPlaneCommand.md
+      - Commands:
+          - AddPlaneCommand: AddPlaneCommand.md
+          - BrushToolCommand: BrushToolCommand.md
+          - CommandRegistry: CommandRegistry.md
+          - DeleteSelectedFacesCommand: DeleteSelectedFacesCommand.md
+          - DeleteSelectedMeshesCommand: DeleteSelectedMeshesCommand.md
+          - DeselectFaceCommand: DeselectFaceCommand.md
+          - DeselectMeshCommand: DeselectMeshCommand.md
+          - ExportMeshesCommand: ExportMeshesCommand.md
+          - FetchSurfaceCommand: FetchSurfaceCommand.md
+          - ImportMeshesCommand: ImportMeshesCommand.md
+          - SelectFaceCommand: SelectFaceCommand.md
+          - SelectMeshCommand: SelectMeshCommand.md
+          - SelectVertexCommand: SelectVertexCommand.md
+          - TransformMeshCommand: TransformMeshCommand.md
+          - VertexModeChangeCommand: VertexModeChangeCommand.md
+      - DataStructures:
+          - HalfEdge: HalfEdge.md
+          - Octree: Octree.md
+      - Editing:
+            - Selection:
+              - FaceSelectionManager: FaceSelectionManager.md
+              - MeshSelectionManager: MeshSelectionManager.md
+              - SelectionController: SelectionController.md
+              - SelectionHolder: SelectionHolder.md
+      - IO:
+          - BaseExporter: BaseExporter.md
+          - BaseImporter: BaseImporter.md
+          - CurlFileFetcher: CurlFileFetcher.md
+          - OBJExporter: OBJExporter.md
+          - OBJImporter: OBJImporter.md
+          - TiffGrayscaleMapLoader: TiffGrayscaleMapLoader.md
+          - WindowsFileDialogs: WindowsFileDialogs.md
+      - Params:
+          - OperationParams: OperationParams.md
+      - Patterns:
+          - Command: Command.md
+          - Observer: Observer.md
+      - Primitives:
+          - AABB: AABB.md
+          - Plane: Plane.md
+          - Sphere: Sphere.md
+      - Renderer:
+          - Buffers: Buffers.md
+          - Material: Material.md
+          - Renderer: Renderer.md
+          - Shader: Shader.md
+      - Scene:
+          - Camera: Camera.md
+          - Mesh: Mesh.md
+          - Scene: Scene.md
+          - ViewPortLayerRenderSettings: ViewPortLayerRenderSettings.md
+      - Tools:
+          - BrushInteractionHandler: BrushInteractionHandler.md
+          - BrushTool: BrushTool.md
+          - DeselectionHandler: DeselectionHandler.md
+          - FaceDeselectionTool: FaceDeselectionTool.md
+          - FaceSelectionTool: FaceSelectionTool.md
+          - InteractionHandler: InteractionHandler.md
+          - MeshSelectionTool: MeshSelectionTool.md
+          - SelectionHandler: SelectionHandler.md
+          - Tool: Tool.md
+          - ToolRegistry: ToolRegistry.md
+      - UI:
+          - AdditionLayer: AdditionLayer.md
+          - ImGuiLayer: ImGuiLayer.md
+          - ImportExportLayer: ImportExportLayer.md
+          - RemovalLayer: RemovalLayer.md
+          - SculptToolsLayer: SculptToolsLayer.md
+          - SelectionLayer: SelectionLayer.md
+      - Utils:
+          - ContainerUtils: ContainerUtils.md
+          - GeometryUtils: GeometryUtils.md
+          - glm_overrides: glm_overrides.md
+          - InterpolationUtils: InterpolationUtils.md
+          - ThirdApiUtils: ThirdApiUtils.md
+          
+          
+            

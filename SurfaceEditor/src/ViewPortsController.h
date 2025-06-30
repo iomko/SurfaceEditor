@@ -23,7 +23,7 @@ public:
 	std::vector<ViewPortLayer*> m_viewPortLayers;
 	ViewPortLayer* m_activeViewPortLayer = nullptr;
 
-	std::vector<ICommand*> m_commandsQueue;
+	std::vector<CommandConcept*> m_commandsQueue;
 	Scene* m_scene = nullptr;
 
 	ITool* m_currentTool = nullptr;
@@ -33,7 +33,7 @@ public:
 class ViewPortsHolderContext
 {
 public:
-	static inline ViewPortsController* s_viewPortsHolder = nullptr;
+	static inline ViewPortsController* s_viewPortsController = nullptr;
 	static inline SelectionController* s_selectionController = nullptr;
 	static inline Camera* s_camera = nullptr;
 	static inline Window* s_window = nullptr;
@@ -66,7 +66,7 @@ public:
 
 	void updateCameraDirection(Event& event)
 	{
-		if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+		if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE))
 		{
 			m_camera->updateCameraDirection(Input::getMouseDx(), Input::getMouseDy());
 			event.isHandled = true;
@@ -76,19 +76,19 @@ public:
 	void updateCameraMovement()
 	{
 		const float movementSpeed = 50.0f * m_deltaTime;
-		if (Input::isKeyPressed(GLFW_KEY_W) == true)
+		if (Input::isKeyDown(GLFW_KEY_W) == true)
 		{
 			m_camera->updateCameraPosition(CameraMovement::FORWARD);
 		}
-		if (Input::isKeyPressed(GLFW_KEY_S) == true)
+		if (Input::isKeyDown(GLFW_KEY_S) == true)
 		{
 			m_camera->updateCameraPosition(CameraMovement::BACKWARD);
 		}
-		if (Input::isKeyPressed(GLFW_KEY_A) == true)
+		if (Input::isKeyDown(GLFW_KEY_A) == true)
 		{
 			m_camera->updateCameraPosition(CameraMovement::LEFT);
 		}
-		if (Input::isKeyPressed(GLFW_KEY_D) == true)
+		if (Input::isKeyDown(GLFW_KEY_D) == true)
 		{
 			m_camera->updateCameraPosition(CameraMovement::RIGHT);
 		}
@@ -97,7 +97,7 @@ public:
 
 	void onEvent(Event& event) override
 	{
-		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsHolder;
+		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController;
 
 		if (event.getType() == EventType::MouseButtonPress ||
 			event.getType() == EventType::MouseScroll ||
@@ -107,12 +107,13 @@ public:
 			//mozno miesto toho aby sme mali toto tu
 			//tak to mozeme priamo zavolat u ViewPortsController
 			//ktory nasledne aplikuje tool
-			ViewPortsHolderContext::s_viewPortsHolder->m_currentTool;
+			ViewPortsHolderContext::s_viewPortsController->m_currentTool;
 			ITool* currentTool = viewPortsHolder->m_currentTool;
 			OpParams* currentToolParams = viewPortsHolder->m_currentToolParams;
+
 			if(currentTool != nullptr)
 			{
-				if (Input::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT))
+				if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 				{
 					std::cout << "Button_Clicked!" << std::endl;
 					if (currentToolParams != nullptr)
@@ -125,7 +126,7 @@ public:
 					}
 				}
 
-				if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+				if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
 				{
 					if (currentToolParams != nullptr)
 					{

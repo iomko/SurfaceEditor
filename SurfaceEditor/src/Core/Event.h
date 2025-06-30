@@ -119,7 +119,7 @@ class MouseButtonPressEvent : public Event
 public:
 	MouseButtonPressEvent(int buttonCode)
 	{
-		this->buttonCode = buttonCode;
+		this->m_buttonCode = buttonCode;
 	}
 	virtual EventType getType() override
 	{
@@ -134,7 +134,7 @@ public:
 	}
 	virtual ~MouseButtonPressEvent() override = default;
 private:
-	int buttonCode;
+	int m_buttonCode;
 };
 
 class MouseButtonReleaseEvent : public Event

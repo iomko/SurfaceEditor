@@ -8,7 +8,7 @@ public:
 	{
 		SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
-		Scene* scene = ViewPortsHolderContext::s_viewPortsHolder->m_scene;
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
 		for(Mesh* selectedMesh : selectedMeshes)

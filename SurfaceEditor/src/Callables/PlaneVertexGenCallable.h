@@ -34,7 +34,7 @@ public:
 			}
 		}
 
-		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::s_viewPortsHolder->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), planeIndices, planeVertices);
+		Mesh* mesh = new Mesh(new Material(ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader), planeIndices, planeVertices);
 
 		output.m_mesh = mesh; 
 	}

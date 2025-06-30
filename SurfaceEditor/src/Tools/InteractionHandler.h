@@ -1,55 +1,86 @@
 #pragma once
 #include "../Params/OperationParams.h"
 
-class IInteractionHandler
+class InteractionHandlerConcept
 {
 public:
-	virtual ~IInteractionHandler() = default;
+	virtual ~InteractionHandlerConcept() = default;
 
-	virtual void onBegin() {}
-	virtual void onUpdate() {}
-	virtual void onEnd() {}
+	virtual void onBegin() = 0;
+	virtual void onUpdate() = 0;
+	virtual void onEnd() = 0;
 
-	virtual void onBegin(const OpParams& iParams) {}
-	virtual void onUpdate(const OpParams& iParams) {}
-	virtual void onEnd(const OpParams& iParams) {}
+	virtual void onBegin(const OpParams& iParams) = 0;
+	virtual void onUpdate(const OpParams& iParams) = 0;
+	virtual void onEnd(const OpParams& iParams) = 0;
+
+	virtual CommandConcept* getCommand() const { return nullptr; }
 };
 
-template <typename IParams = OpParams>
-class InteractionHandler : public IInteractionHandler {
+template <typename CommandT, typename IParams = OpParams>
+class InteractionHandler;
+
+template <typename CommandT>
+class InteractionHandler<CommandT, OpParams> : public InteractionHandlerConcept {
 public:
-	virtual void onBegin(const IParams& iParams) = 0;
-	virtual void onUpdate(const IParams& iParams) = 0;
-	virtual void onEnd(const IParams& iParams) = 0;
+	explicit InteractionHandler(CommandT* command) : m_command(command) {}
 
-	void onBegin(const OpParams& iParams) override final {
-		const IParams& specificParams = static_cast<const IParams&>(iParams);
-		onBegin(specificParams);
-	}
-
-	void onUpdate(const OpParams& iParams) override final {
-		const IParams& specificParams = static_cast<const IParams&>(iParams);
-		onUpdate(specificParams);
-	}
-
-	void onEnd(const OpParams& iParams) override final {
-		const IParams& specificParams = static_cast<const IParams&>(iParams);
-		onEnd(specificParams);
-	}
-
-	void onBegin() override final {throw std::logic_error("InteractionHandler does not support onBegin without parameters.");}
-	void onUpdate() override final {throw std::logic_error("InteractionHandler does not support onUpdate without parameters.");}
-	void onEnd() override final {throw std::logic_error("InteractionHandler does not support onEnd without parameters.");}
-};
-
-template <>
-class InteractionHandler<OpParams> : public IInteractionHandler {
-public:
 	virtual void onBegin() override = 0;
 	virtual void onUpdate() override = 0;
 	virtual void onEnd() override = 0;
 
-	void onBegin(const OpParams& iParams) override final {throw std::logic_error("InteractionHandler does not support onBegin with parameters.");}
-	void onUpdate(const OpParams& iParams) override final {throw std::logic_error("InteractionHandler does not support onUpdate with parameters.");}
-	void onEnd(const OpParams& iParams) override final {throw std::logic_error("InteractionHandler does not support onEnd with parameters.");}
+	void onBegin(const OpParams&) override final {
+		throw std::logic_error("onBegin with params not supported.");
+	}
+	void onUpdate(const OpParams&) override final {
+		throw std::logic_error("onUpdate with params not supported.");
+	}
+	void onEnd(const OpParams&) override final {
+		throw std::logic_error("onEnd with params not supported.");
+	}
+
+	CommandT* getCommand() const override {
+		return static_cast<CommandT*>(m_command);
+	}
+
+private:
+	CommandT* m_command;
+};
+
+
+template <typename CommandT, typename IParams>
+class InteractionHandler : public InteractionHandlerConcept {
+public:
+	explicit InteractionHandler(CommandT* command) : m_command(command) {}
+
+	virtual void onBegin(const IParams&) = 0;
+	virtual void onUpdate(const IParams&) = 0;
+	virtual void onEnd(const IParams&) = 0;
+
+	void onBegin(const OpParams& iParams) override final {
+		onBegin(static_cast<const IParams&>(iParams));
+	}
+	void onUpdate(const OpParams& iParams) override final {
+		onUpdate(static_cast<const IParams&>(iParams));
+	}
+	void onEnd(const OpParams& iParams) override final {
+		onEnd(static_cast<const IParams&>(iParams));
+	}
+
+	void onBegin() override {
+		throw std::logic_error("onBegin without params not supported.");
+	}
+	void onUpdate() override {
+		throw std::logic_error("onUpdate without params not supported.");
+	}
+	void onEnd() override {
+		throw std::logic_error("onEnd without params not supported.");
+	}
+
+	CommandT* getCommand() const override {
+		return static_cast<CommandT*>(m_command);
+	}
+
+private:
+	CommandT* m_command;
 };
