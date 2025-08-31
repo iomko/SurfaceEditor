@@ -1,6 +1,7 @@
 #pragma once
 #include "../ViewPortsController.h"
 #include "../Utils/InterpolationUtils.h"
+#include "../Utils/GeometryUtils.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
@@ -16,7 +17,7 @@ public:
 
 		glm::vec3 hitPoint = meshFaceHitPair.second;
 		Mesh* closestMesh = meshFacePair.first;
-		HalfEdgeDS::Face* closestFace = meshFacePair.second;
+		ExtendedFace* closestFace = meshFacePair.second;
 
 		oParams.hitPoint = hitPoint;
 		oParams.meshFacePair = meshFacePair;
@@ -27,24 +28,24 @@ public:
 			std::vector<RendererStageData::LineVertex>& edgesVector = Renderer::s_stageData.meshLinesMap.find(closestMesh)->second;
 			
 			Sphere sphere{ hitPoint, iParams.radius };
-			HalfEdgeDS::Vertex* closestVertex = findClosestVertexOnFace(closestFace, hitPoint);
+			ExtendedVertex* closestVertex = findClosestVertexOnFace(closestFace, hitPoint);
 			glm::vec3 normal = computeAvgNormal(closestVertex);
 			auto elementsToChange = collectIntersectingElements(sphere, closestMesh);
-			std::unordered_set<HalfEdgeDS::Vertex*>& verticesToChange = elementsToChange.first;
-			std::unordered_set<HalfEdgeDS::Face*>& facesToChange = elementsToChange.second;
+			std::unordered_set<ExtendedVertex*>& verticesToChange = elementsToChange.first;
+			std::unordered_set<ExtendedFace*>& facesToChange = elementsToChange.second;
 
-			for (HalfEdgeDS::Vertex* vertex : verticesToChange)
+			for (ExtendedVertex* vertex : verticesToChange)
 			{
 				float distance = glm::length(vertex->m_position - sphere.position);
 				float scalingFactor = calculateNormalScaleFactor(distance, iParams.radius, iParams.brushStrength);
 
-				for (HalfEdgeDS::GraphEdge* graphEdge : vertex->m_graphEdges)
+				for (GraphEdge* graphEdge : vertex->m_graphEdges)
 				{
-					HalfEdgeDS::Face* face = graphEdge->face;
+					ExtendedFace* face = graphEdge->face;
 
 					FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
 
-					HalfEdgeDS::FaceTriangle& faceTriangle =
+					FaceTriangle& faceTriangle =
 						closestMesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
 
 					std::vector<RendererStageData::MeshVertex>& facesVaoData = materialVertsMap.find(face->material)->second;
@@ -61,7 +62,7 @@ public:
 				}
 
 
-				for (HalfEdgeDS::Edge* edge : vertex->m_neighbourEdges)
+				for (ExtendedEdge* edge : vertex->m_neighbourEdges)
 				{
 					int edgeIndexInVao = edge->m_EdgeLineIndex;
 
@@ -81,7 +82,7 @@ public:
 			}
 
 
-			for (HalfEdgeDS::Face* face : facesToChange)
+			for (ExtendedFace* face : facesToChange)
 			{
 				scene->deleteFaceFromOctrees(closestMesh, face);
 				scene->addFaceIntoOctrees(closestMesh, face);
@@ -101,7 +102,7 @@ private:
 		return scalingFactor;
 	}
 
-	glm::vec3 computeAvgNormal(HalfEdgeDS::Vertex* vertex)
+	glm::vec3 computeAvgNormal(ExtendedVertex* vertex)
 	{
 		glm::vec3 averageNormal(0.0f);
 
@@ -118,23 +119,23 @@ private:
 		return averageNormal;
 	}
 
-	std::pair<std::unordered_set<HalfEdgeDS::Vertex*>, std::unordered_set<HalfEdgeDS::Face*>>
+	std::pair<std::unordered_set<ExtendedVertex*>, std::unordered_set<ExtendedFace*>>
 	collectIntersectingElements(const Sphere& sphere, Mesh* mesh)
 	{
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-		std::unordered_set<HalfEdgeDS::Vertex*> verticesToChange;
-		std::unordered_set<HalfEdgeDS::Face*> facesToChange;
+		std::unordered_set<ExtendedVertex*> verticesToChange;
+		std::unordered_set<ExtendedFace*> facesToChange;
 
 		auto octreeBoundsIntersectAlg = [](const AABBBoundingRegion& aabb, const Sphere& sphereIn)
 			{
 				return aabb.intersectsSphere(sphereIn);
 			};
 
-		auto dataIntersectAlg = [&](const std::pair<Mesh*, HalfEdgeDS::Face*>& meshFacePair, const Sphere& sphereIn)
+		auto dataIntersectAlg = [&](const std::pair<Mesh*, ExtendedFace*>& meshFacePair, const Sphere& sphereIn)
 			{
 				bool intersects = false;
 				Mesh* meshIn = meshFacePair.first;
-				HalfEdgeDS::Face* face = meshFacePair.second;
+				ExtendedFace* face = meshFacePair.second;
 				if (meshIn != mesh)
 				{
 					return intersects;
@@ -143,7 +144,7 @@ private:
 				{
 					for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it)
 					{
-						HalfEdgeDS::Vertex* vertex = &it.operator*();
+						ExtendedVertex* vertex = &it.operator*();
 						if (sphereIn.containsPoint(vertex->m_position))
 						{
 							intersects = true;
@@ -168,11 +169,11 @@ private:
 		return { verticesToChange, facesToChange };
 	}
 
-	HalfEdgeDS::Vertex* findClosestVertexOnFace(HalfEdgeDS::Face* face, glm::vec3 hitPoint)
+	ExtendedVertex* findClosestVertexOnFace(ExtendedFace* face, glm::vec3 hitPoint)
 	{
-		HalfEdgeDS::Vertex* closestVertex = nullptr;
+		ExtendedVertex* closestVertex = nullptr;
 		for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it) {
-			HalfEdgeDS::Vertex* vertex = &it.operator*();
+			ExtendedVertex* vertex = &it.operator*();
 			vertex->m_position;
 			if(closestVertex == nullptr)
 			{

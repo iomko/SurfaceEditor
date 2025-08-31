@@ -17,7 +17,7 @@ public:
 		bool sceneContainsMesh = meshFaceOctreeCoordsMap.find(mesh) != scene->m_res.meshFaceOctreeCoordsMap.end();
 		if (!sceneContainsMesh)
 		{
-			for (HalfEdgeDS::Face* face : mesh->getHalfEdgeStructure()->m_faces)
+			for (ExtendedFace* face : mesh->getHalfEdgeStructure()->m_faces)
 			{
 				scene->addFaceIntoOctrees(mesh, face);
 			}

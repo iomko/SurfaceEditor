@@ -27,12 +27,12 @@ public:
 
 				for (auto faceIter = importedMesh->m_halfEdgeStructure->faceIterBegin(); faceIter != importedMesh->m_halfEdgeStructure->faceIterEnd(); ++faceIter)
 				{
-					std::vector<HalfEdgeDS::Vertex> faceVerts;
+					std::vector<ExtendedVertex> faceVerts;
 					importedMesh->m_halfEdgeStructure->getVerticesFromFace(*faceIter, faceVerts);
 					//auto& faceVerts = importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter);
 
 					AABBBoundingRegion faceBounds(faceVerts.begin(), faceVerts.end(),
-						[](HalfEdgeDS::Vertex& point) { return point.m_position; });
+						[](ExtendedVertex& point) { return point.m_position; });
 
 					//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
 
@@ -66,13 +66,13 @@ public:
 									//SceneUtilities::calculateOctreeBounds()
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene->getVoxelSize());
-									auto addedOctree = scene->m_res.coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+									auto addedOctree = scene->m_res.coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, ExtendedFace*>>(octreeMinBound, octreeMaxBound)).first;
 									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, *faceIter), faceBounds);
 
 								}
 
-								HalfEdgeDS::Face* facePointer = *faceIter;
+								ExtendedFace* facePointer = *faceIter;
 								glm::vec3 octreeIndex = currentIndexBound;
 								// Now add the entry to the inner map
 								faceOctreesMap[facePointer].push_back(octreeIndex);
@@ -126,15 +126,15 @@ public:
 
 				for (auto faceIter = importedMesh->m_halfEdgeStructure->faceIterBegin(); faceIter != importedMesh->m_halfEdgeStructure->faceIterEnd(); ++faceIter)
 				{
-					std::vector<HalfEdgeDS::Vertex> faceVerts;
+					std::vector<ExtendedVertex> faceVerts;
 					importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter, faceVerts);
 					//auto& faceVerts = importedMesh->m_halfEdgeStructure->getVerticesFromFace(faceIter);
 					AABBBoundingRegion faceBounds(
 						faceVerts.begin(),
 						faceVerts.end(),
-						[](HalfEdgeDS::Vertex& p) { return p.getPosition().x; },
-						[](HalfEdgeDS::Vertex& p) { return p.getPosition().y; },
-						[](HalfEdgeDS::Vertex& p) { return p.getPosition().z; }
+						[](ExtendedVertex& p) { return p.getPosition().x; },
+						[](ExtendedVertex& p) { return p.getPosition().y; },
+						[](ExtendedVertex& p) { return p.getPosition().z; }
 					);
 
 					//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
@@ -168,13 +168,13 @@ public:
 									//SceneUtilities::calculateOctreeBounds()
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
-									auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>(octreeMinBound, octreeMaxBound)).first;
+									auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, ExtendedFace*>>(octreeMinBound, octreeMaxBound)).first;
 									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, &(*faceIter)), faceBounds);
 
 								}
 
-								HalfEdgeDS::Face* facePointer = &(*faceIter);
+								ExtendedFace* facePointer = &(*faceIter);
 								glm::vec3 octreeIndex = currentIndexBound;
 								// Now add the entry to the inner map
 								faceOctreesMap[facePointer].push_back(octreeIndex);

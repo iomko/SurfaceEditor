@@ -8,12 +8,12 @@
 
 struct SceneResources
 {
-	using FaceOctreeCoordsMap = std::map<HalfEdgeDS::Face*, std::vector<glm::vec3>>;
+	using FaceOctreeCoordsMap = std::map<ExtendedFace*, std::vector<glm::vec3>>;
 	using MeshFaceOctreeCoordsMap = std::map<Mesh*, FaceOctreeCoordsMap>;
-	using MeshFacePair = std::pair<Mesh*, HalfEdgeDS::Face*>;
+	using MeshFacePair = std::pair<Mesh*, ExtendedFace*>;
 	using CoordsOctreeMap = std::map<glm::vec3, Octree<MeshFacePair>>;
 
-	using MatFacesMap = std::map<Material*, std::vector<HalfEdgeDS::Face*>>;
+	using MatFacesMap = std::map<Material*, std::vector<ExtendedFace*>>;
 	using MeshFacesMap = std::map<Mesh*, MatFacesMap>;
 
 	MeshFaceOctreeCoordsMap meshFaceOctreeCoordsMap;
@@ -25,7 +25,7 @@ class SceneUtilities
 public:
 	static std::pair<SceneResources::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneResources& res);
 	static std::pair<glm::vec3, glm::vec3> calculateOctreeBounds(const glm::vec3& voxelIndex, const glm::vec3& voxelSize);
-	static glm::vec3 calculateOctreeIDFromOctree(Octree<HalfEdgeDS::Face*>* octree, const glm::vec3& voxelSize);
+	static glm::vec3 calculateOctreeIDFromOctree(Octree<ExtendedFace*>* octree, const glm::vec3& voxelSize);
 	static glm::vec3 getVoxelIndex(const glm::vec3& bounds, const glm::vec3& voxelSize);
 };
 
@@ -47,16 +47,16 @@ public:
 		return m_voxelSize;
 	}
 
-	void addFaceIntoOctrees(Mesh* mesh, HalfEdgeDS::Face* face)
+	void addFaceIntoOctrees(Mesh* mesh, ExtendedFace* face)
 	{
 		SceneResources::FaceOctreeCoordsMap& faceOctreeCoordsMap = m_res.meshFaceOctreeCoordsMap[mesh];
 
 		//COMPUTE BOUNDING BOX OF THE FACE
-		std::vector<HalfEdgeDS::Vertex> faceVerts;
+		std::vector<ExtendedVertex> faceVerts;
 		mesh->m_halfEdgeStructure->getVerticesFromFace(face, faceVerts);
 
 		AABBBoundingRegion faceBounds(faceVerts.begin(), faceVerts.end(),
-			[](HalfEdgeDS::Vertex& point) { return point.m_position; });
+			[](ExtendedVertex& point) { return point.m_position; });
 
 		glm::vec3 sceneVoxelMinCoords = SceneUtilities::getVoxelIndex(faceBounds.getMinBoundsPos(), m_voxelSize);
 		glm::vec3 sceneVoxelMaxCoords = SceneUtilities::getVoxelIndex(faceBounds.getMaxBoundsPos(), m_voxelSize);
@@ -107,7 +107,7 @@ public:
 		m_res.meshFaceOctreeCoordsMap.erase(meshFaceOctreeCoordsMapIt);
 	}
 
-	void deleteFaceFromOctrees(Mesh* mesh, HalfEdgeDS::Face* face)
+	void deleteFaceFromOctrees(Mesh* mesh, ExtendedFace* face)
 	{
 		auto meshFaceOctreeCoordsMapIt = m_res.meshFaceOctreeCoordsMap.find(mesh);
 		auto faceOctreeCoordsMapIt = meshFaceOctreeCoordsMapIt->second.find(face);

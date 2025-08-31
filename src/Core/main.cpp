@@ -392,7 +392,7 @@ int main()
 
 	for (auto& entry : scene.m_res.coordsOctreeMap) {
 		const glm::vec3& key = entry.first;
-		Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
+		Octree<std::pair<Mesh*, ExtendedFace*>>& octree = entry.second;
 		for (auto& octreeNode : octree) {
 			octreeNode.getBounds();
 			collectAABBData(octreeNode.getBounds());
@@ -473,7 +473,7 @@ int main()
 			
 			for (auto& entry : scene.m_res.coordsOctreeMap) {
 				const glm::vec3& key = entry.first;
-				Octree<std::pair<Mesh*, HalfEdgeDS::Face*>>& octree = entry.second;
+				Octree<std::pair<Mesh*, ExtendedFace*>>& octree = entry.second;
 				for (auto& octreeNode : octree) {
 					octreeNode.getBounds();
 					collectAABBData(octreeNode.getBounds());

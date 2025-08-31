@@ -6,16 +6,16 @@ FaceSelectionManager::FaceSelectionManager(SelectionHolder& holder)
 	: m_holder(holder)
 {}
 
-void FaceSelectionManager::registerFace(HalfEdgeDS::Face* face, Mesh* mesh)
+void FaceSelectionManager::registerFace(ExtendedFace* face, Mesh* mesh)
 {
 	if ((mesh != nullptr && mesh->m_selected) &&
 		(face != nullptr && !face->m_selected))
 	{
-		std::vector<HalfEdgeDS::Face*>& selectionVector = m_holder.faces[mesh];
+		std::vector<ExtendedFace*>& selectionVector = m_holder.faces[mesh];
 		selectionVector.emplace_back(face);
 
 		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
-		std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
 		RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
 		std::vector<RendererStageData::MeshVertex>& meshVaoVertices = materialVertsMap.find(face->material)->second;
@@ -33,17 +33,17 @@ void FaceSelectionManager::registerFace(HalfEdgeDS::Face* face, Mesh* mesh)
 	}
 }
 
-void FaceSelectionManager::unregisterFace(HalfEdgeDS::Face* face, Mesh* mesh)
+void FaceSelectionManager::unregisterFace(ExtendedFace* face, Mesh* mesh)
 {
 	if ((mesh != nullptr && mesh->m_selected) &&
 		(face != nullptr && face->m_selected))
 	{
 		//musime si ziskat vector z Mesh*
 		int indexInSelection = face->m_selectionIndex;
-		std::vector<HalfEdgeDS::Face*>& selectionVector = m_holder.faces.find(mesh)->second;
+		std::vector<ExtendedFace*>& selectionVector = m_holder.faces.find(mesh)->second;
 
 		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
-		std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
 		RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
 		std::vector<RendererStageData::MeshVertex>& meshVaoVertices = materialVertsMap.find(face->material)->second;

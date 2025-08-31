@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils/ContainerUtils.h"
+#include "DataStructures/ExtendedHalfEdge.h"
 
 class DeleteSelectedFacesCallBack : public Callback<>, public Observer
 {
@@ -13,11 +14,11 @@ public:
 
 		for(Mesh* selectedMesh : selectedMeshes)
 		{
-			const std::vector<HalfEdgeDS::Face*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
+			const std::vector<ExtendedFace*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
 
 			while(!selectedFaces.empty())
 			{
-				HalfEdgeDS::Face* selectedFace = selectedFaces.back();
+				ExtendedFace* selectedFace = selectedFaces.back();
 
 				//---DELETE_FROM_OCTREES---
 				scene->deleteFaceFromOctrees(selectedMesh, selectedFace);
@@ -43,23 +44,23 @@ public:
 
 private:
 
-	void deleteFaceMeshData(Mesh* mesh, HalfEdgeDS::Face* face)
+	void deleteFaceMeshData(Mesh* mesh, ExtendedFace* face)
 	{
-		HalfEdgeDS::HalfEdgeMesh* halfEdgeMesh = mesh->m_halfEdgeStructure;
+		ExtendedHalfEdgeMesh* halfEdgeMesh = mesh->m_halfEdgeStructure;
 		//idem postupne cez vsetky vertices
-		HalfEdgeDS::HalfEdge* halfEdge = face->m_halfEdge;
+		ExtendedHalfEdge* halfEdge = face->m_halfEdge;
 		do {
 			//do something with the vertex Vertex*
 			//and the halfEdge HalfEdge*
-			HalfEdgeDS::Vertex* vertex = halfEdge->m_vertex;
+			ExtendedVertex* vertex = halfEdge->m_vertex;
 
-			HalfEdgeDS::HalfEdge* nextHalfEdge = halfEdge->m_next;
+			ExtendedHalfEdge* nextHalfEdge = halfEdge->m_next;
 
 			//potrebujem vymazat graphEdge z m_graphEdges
 
 			//najskor z vertexu
-			HalfEdgeDS::GraphEdge* foundGraphEdge = nullptr;
-			for (HalfEdgeDS::GraphEdge* graphEdge : vertex->m_graphEdges)
+			GraphEdge* foundGraphEdge = nullptr;
+			for (GraphEdge* graphEdge : vertex->m_graphEdges)
 			{
 				if (graphEdge->face == face)
 				{
@@ -119,11 +120,11 @@ private:
 			else
 			{
 				//musime najst novy halfEdge ktory bude pripadat vertexu
-				HalfEdgeDS::HalfEdge* neighborFaceHalfEdge = vertex->m_graphEdges.front()->face->m_halfEdge;
+				ExtendedHalfEdge* neighborFaceHalfEdge = vertex->m_graphEdges.front()->face->m_halfEdge;
 
 				while (neighborFaceHalfEdge->m_vertex != vertex)
 				{
-					HalfEdgeDS::HalfEdge* neighborFaceNextHalfEdge = neighborFaceHalfEdge->m_next;
+					ExtendedHalfEdge* neighborFaceNextHalfEdge = neighborFaceHalfEdge->m_next;
 					neighborFaceHalfEdge = neighborFaceNextHalfEdge;
 				}
 
@@ -197,7 +198,7 @@ private:
 
 	}
 
-	void deleteEdgeVaoData(Mesh* mesh, HalfEdgeDS::Edge* edge)
+	void deleteEdgeVaoData(Mesh* mesh, ExtendedEdge* edge)
 	{
 		RendererStageData::MeshLinesMap& meshLinesMap = Renderer::s_stageData.meshLinesMap;
 		auto meshLinesVaoMapIt = meshLinesMap.find(mesh);
@@ -234,7 +235,7 @@ private:
 	}
 
 	//tymto vymazeme vao data z meshu
-	void deleteFaceVaoData(Mesh* mesh, HalfEdgeDS::Face* face)
+	void deleteFaceVaoData(Mesh* mesh, ExtendedFace* face)
 	{
 		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
 		auto meshVaoMapIt = meshMatsMap.find(mesh);
@@ -243,14 +244,14 @@ private:
 		auto materialMapIt = materialVertsMap.find(face->material);
 		std::vector<RendererStageData::MeshVertex>& facesVao = materialMapIt->second;
 
-		std::map<Material*, std::vector<HalfEdgeDS::FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
+		std::map<Material*, std::vector<FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
 		auto materialTrianglesIt = materialTrianglesMap.find(face->material);
-		std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = materialTrianglesIt->second;
+		std::vector<FaceTriangle>& faceTriangles = materialTrianglesIt->second;
 
 		while (!face->faceTriangleIndices.empty())
 		{
 			FaceTriangleIndex delFaceTriangleIndex = face->faceTriangleIndices.front();
-			HalfEdgeDS::FaceTriangle& delFaceTriangle = faceTriangles.at(delFaceTriangleIndex);
+			FaceTriangle& delFaceTriangle = faceTriangles.at(delFaceTriangleIndex);
 
 			//before
 			if (delFaceTriangleIndex != faceTriangles.size() - 1)
@@ -282,7 +283,7 @@ private:
 
 			}
 
-			HalfEdgeDS::Face* lastTriangleFace = faceTriangles.back().face;
+			ExtendedFace* lastTriangleFace = faceTriangles.back().face;
 			lastTriangleFace->faceTriangleIndices.at(faceTriangles.back().indexInFace) = delFaceTriangleIndex;
 
 			//---M_FACE_TRIANGLES_SWAP---

@@ -54,7 +54,7 @@ struct PlaneParams : public OpParams
 struct SelectFaceParamsOut : public OpParams
 {
 	Mesh* mesh = nullptr;
-	HalfEdgeDS::Face* face = nullptr;
+	ExtendedFace* face = nullptr;
 	glm::vec3 hitPoint;
 };
 

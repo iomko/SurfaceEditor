@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <iostream>
@@ -10,14 +11,33 @@
 using FaceTriangleIndex = int;
 using EdgeLineIndex = int;
 
+
+
 namespace HalfEdgeDS
 {
+    template<typename Traits>
 	class HalfEdge;
+    template<typename Traits>
 	class Edge;
+    template<typename Traits>
 	class Vertex;
+    template<typename Traits>
 	class Face;
-	class HalfEdgeMesh;
+    template<typename Traits>
+   	class HalfEdgeMesh;
 
+    
+    struct HalfEdgeTraits {
+        using FType = Face<HalfEdgeTraits>;   
+        using EType = Edge<HalfEdgeTraits>;
+        using HType = HalfEdge<HalfEdgeTraits>;
+        using VType = Vertex<HalfEdgeTraits>;
+        using DerType = HalfEdgeMesh<HalfEdgeTraits>;
+    };
+
+
+    //CHANGE
+    /*
 	class GraphEdge
 	{
 	public:
@@ -26,73 +46,82 @@ namespace HalfEdgeDS
 		Face* face = nullptr;
 		int graphEdgeIndexInFace = -1;
 	};
+    */
 
+    template<typename Traits = HalfEdgeTraits>
 	class HalfEdge
 	{
 	public:
-		HalfEdge(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
-
+		HalfEdge(Traits::DerType& mesh) : m_mesh(mesh) {}
+        HalfEdge(){
+        }
+        
 	public:
-		HalfEdge* m_next = nullptr;
-		HalfEdge* m_previous = nullptr;
-		HalfEdge* m_twin = nullptr;
-		Vertex* m_vertex = nullptr;
-		Edge* m_edge = nullptr;
-		Face* m_face = nullptr;
+        Traits::HType* m_next = nullptr;
+        Traits::HType* m_previous = nullptr;
+        Traits::HType* m_twin = nullptr;
+        Traits::VType* m_vertex = nullptr;
+        Traits::EType* m_edge = nullptr;
+        Traits::FType* m_face = nullptr;
+        Traits::DerType& m_mesh;
 
 		int m_halfEdgeIndexInVector = -1;
-
-		HalfEdgeMesh& m_mesh;
 	};
 
+    template<typename Traits = HalfEdgeTraits>
 	class Vertex
 	{
 	public:
-		Vertex(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
+		Vertex(Traits::DerType& mesh) : m_mesh(mesh) {}
 
 	public:
-		HalfEdge* m_halfEdge = nullptr;
+        Traits::HType* m_halfEdge = nullptr;
 		glm::vec3 m_position{};
-		HalfEdgeMesh& m_mesh;
+        Traits::DerType& m_mesh;
 
 		int m_vertexIndexInVector = -1;
 
-		std::vector<Edge*> m_neighbourEdges;
+        //CHANGE
+
+		//std::vector<Edge*> m_neighbourEdges;
 
 		//graph
-		std::vector<GraphEdge*> m_graphEdges;
+		//std::vector<GraphEdge*> m_graphEdges;
 	};
 
+    template<typename Traits = HalfEdgeTraits>
 	class Edge
 	{
 	public:
-		Edge(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
+		Edge(Traits::DerType& mesh) : m_mesh(mesh) {}
 
 	public:
-		HalfEdge* m_halfEdge = nullptr;
-		Vertex* m_firstVertex = nullptr;
-		Vertex* m_secondVertex = nullptr;
+        Traits::HType* m_halfEdge = nullptr;
+        Traits::VType* m_firstVertex = nullptr;
+        Traits::VType* m_secondVertex = nullptr;
 
 		int m_edgeIndexInVector = -1;
 
-		EdgeLineIndex m_EdgeLineIndex = -1;
-		HalfEdgeMesh& m_mesh;
+        //CHANGE
+		//EdgeLineIndex m_EdgeLineIndex = -1;
+        Traits::DerType& m_mesh;
 	};
 
+    template<typename Traits = HalfEdgeTraits>
 	class Face
 	{
 	public:
-		Face(HalfEdgeMesh& mesh) : m_mesh(mesh) {}
+		Face(Traits::DerType& mesh) : m_mesh(mesh) {}
 
 		class FaceVertexIterator {
 		public:
 			using iterator_category = std::forward_iterator_tag;
 			using difference_type = std::ptrdiff_t;
-			using value_type = Vertex;
-			using pointer = Vertex*;
-			using reference = Vertex&;
+			using value_type = Traits::VType;
+			using pointer = Traits::VType*;
+			using reference = Traits::VType&;
 
-			FaceVertexIterator(HalfEdge* halfEdge)
+			FaceVertexIterator(Traits::HType* halfEdge)
 			{
 				m_currentHalfEdge = halfEdge;
 				m_startOfHalfEdgeLoop = true;
@@ -108,7 +137,7 @@ namespace HalfEdgeDS
 				return *this;
 			}
 
-			Vertex& operator*()
+            Traits::VType& operator*()
 			{
 				return *m_currentHalfEdge->m_vertex;
 			}
@@ -135,14 +164,14 @@ namespace HalfEdgeDS
 			}
 
 		private:
-			HalfEdge* m_currentHalfEdge = nullptr;
+            Traits::HType* m_currentHalfEdge = nullptr;
 			bool m_startOfHalfEdgeLoop;
 		};
 
 		
 		class FaceHalfEdgeIterator {
 		public:
-			FaceHalfEdgeIterator(HalfEdge* halfEdge)
+			FaceHalfEdgeIterator(Traits::HType* halfEdge)
 			{
 				m_currentHalfEdge = halfEdge;
 				m_startOfHalfEdgeLoop = true;
@@ -158,7 +187,7 @@ namespace HalfEdgeDS
 				return *this;
 			}
 
-			HalfEdge& operator*() {
+            Traits::HType& operator*() {
 				return *m_currentHalfEdge;
 			}
 
@@ -178,7 +207,7 @@ namespace HalfEdgeDS
 			}
 
 		private:
-			HalfEdge* m_currentHalfEdge;
+            Traits::HType* m_currentHalfEdge;
 			bool m_startOfHalfEdgeLoop;
 		};
 
@@ -189,34 +218,36 @@ namespace HalfEdgeDS
 		FaceVertexIterator faceVertexEnd() { return FaceVertexIterator(m_halfEdge); }
 
 	public:
-		HalfEdge* m_halfEdge = nullptr;
-		HalfEdgeMesh& m_mesh;
+        Traits::HType* m_halfEdge = nullptr;
+        Traits::DerType& m_mesh;
 
+
+        //CHANGE
 		//selection
-		bool m_selected = false;
-		int m_selectionIndex = -1;
+		//bool m_selected = false;
+		//int m_selectionIndex = -1;
 
 		int m_faceIndexInVector = -1;
 
 		//graph
-		std::vector<GraphEdge*> m_graphEdges;
-		Material* material = nullptr;
-		std::vector<FaceTriangleIndex> faceTriangleIndices;
+		//std::vector<GraphEdge*> m_graphEdges;
+		//Material* material = nullptr;
+		//std::vector<FaceTriangleIndex> faceTriangleIndices;
 	};
 
+    //CHANGE
+    /*
 	struct FaceTriangle
 	{
 		int indexInVAO = -1;
 		Face* face = nullptr;
 		int indexInFace = -1;
 	};
+    */
 
-
-
+    template<typename Traits = HalfEdgeTraits>
 	class HalfEdgeMesh
 	{
-	private:
-
 	public:
 		HalfEdgeMesh()
 		{
@@ -234,12 +265,14 @@ namespace HalfEdgeDS
 		auto faceIterBegin() { return m_faces.begin(); }
 		auto faceIterEnd() { return m_faces.end(); }
 
-		void getVerticesFromFace(Face* face, std::vector<Vertex>& vertices) {
+		void getVerticesFromFace(Traits::FType* face, std::vector<typename Traits::VType>& vertices) {
 			vertices.clear();
 			
-			HalfEdge* halfEdge = face->m_halfEdge;
+            typename Traits::HType* halfEdge1 = face->m_halfEdge;
+
+            auto halfEdge = face->m_halfEdge;
 			do {
-				Vertex* vertex = halfEdge->m_vertex;
+                typename Traits::VType* vertex = halfEdge->m_vertex;
 				vertices.push_back(*vertex);
 				halfEdge = halfEdge->m_next;
 
@@ -248,7 +281,12 @@ namespace HalfEdgeDS
 
 		template <typename T, typename Vector>
 		T* createObject(Vector& storageVector) {
-			auto newObject = new T(*this);
+            T* newObject = nullptr;
+            if constexpr (std::is_void_v<typename Traits::DerType>) {
+                newObject = new T(*this); 
+            } else {
+                newObject = new T(static_cast<typename Traits::DerType&>(*this));
+            }
 			storageVector.emplace_back(newObject);
 			return newObject;
 		}
@@ -266,14 +304,21 @@ namespace HalfEdgeDS
 				if (outWasCreated) *outWasCreated = false;
 				return it->second;
 			}
+            T* newObject = nullptr;
 
-			auto newObject = new T(*this);
+            if constexpr (std::is_void_v<typename Traits::DerType>) {
+                newObject = new T(*this);
+            } else {
+                newObject = new T(static_cast<typename Traits::DerType&>(*this));
+            }
 			helperMap[key] = newObject;
 			storageVector.emplace_back(newObject);
 			if (outWasCreated) *outWasCreated = true;
 			return newObject;
 		}
 
+        //CHANGE
+        /*
 		void buildGraph()
 		{
 			//---GO_THROUGH_ALL_FACES---
@@ -301,17 +346,19 @@ namespace HalfEdgeDS
 
 			std::cout << "Graph built" << std::endl;
 		}
+        */
+
 
 		void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices)
 		{
 			//HELPER_MAPS_FOR_BUILD
-			std::map<std::pair<glm::vec3, glm::vec3>, HalfEdge*> helperHalfEdgeMap;
-			std::map<glm::vec3, Vertex*> helperVertexMap;
+			std::map<std::pair<glm::vec3, glm::vec3>, typename Traits::HType*> helperHalfEdgeMap;
+			std::map<glm::vec3, typename Traits::VType*> helperVertexMap;
 
 			for (const std::vector<int>& polygonIndices : polygons)
 			{
 				//---FACE_CREATION---
-				Face* face = createObject<Face>(m_faces);
+                typename Traits::FType* face = createObject<typename Traits::FType>(m_faces);
 				face->m_faceIndexInVector = m_faces.size() - 1;
 
 				
@@ -322,15 +369,15 @@ namespace HalfEdgeDS
 
 					//---HALF_EDGE_CREATION
 					bool newHalfEdgeCreated = false;
-					HalfEdge* halfEdge = 
-						findOrCreateObject<HalfEdge>(std::make_pair(firstVertexPos, secondVertexPos), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+                    typename Traits::HType* halfEdge = 
+						findOrCreateObject<typename Traits::HType>(std::make_pair(firstVertexPos, secondVertexPos), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
 					if (newHalfEdgeCreated) halfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
 
 					//---VERTEX_CREATION---
 					bool newVertexCreated = false;
-					Vertex* firstVertex = findOrCreateObject<Vertex>(firstVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
+                    typename Traits::VType* firstVertex = findOrCreateObject<typename Traits::VType>(firstVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
 					if(newVertexCreated) firstVertex->m_vertexIndexInVector = m_vertices.size() - 1;
-					Vertex* secondVertex = findOrCreateObject<Vertex>(secondVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
+                    typename Traits::VType* secondVertex = findOrCreateObject<typename Traits::VType>(secondVertexPos, helperVertexMap, m_vertices, &newVertexCreated);
 					if (newVertexCreated) secondVertex->m_vertexIndexInVector = m_vertices.size() - 1;
 
 					//---VERTEX_INITIALIZATION---
@@ -345,10 +392,10 @@ namespace HalfEdgeDS
 					//halfEdge->setVertex(firstVertex);
 
 						//---SET_TWIN_HALF_EDGE---
-					HalfEdge* twinHalfEdge = findObject<HalfEdge>(std::make_pair(secondVertexPos, firstVertexPos), helperHalfEdgeMap);
+                    typename Traits::HType* twinHalfEdge = findObject<typename Traits::HType>(std::make_pair(secondVertexPos, firstVertexPos), helperHalfEdgeMap);
 
 						//---SET_EDGE---
-					Edge* edge = nullptr;
+                    typename Traits::EType* edge = nullptr;
 					if(twinHalfEdge)
 					{
 						halfEdge->m_twin = twinHalfEdge;
@@ -357,7 +404,7 @@ namespace HalfEdgeDS
 					} else
 					{
 						//---EDGE_CREATION---
-						edge = createObject<Edge>(m_edges);
+						edge = createObject<typename Traits::EType>(m_edges);
 						edge->m_edgeIndexInVector = m_edges.size() - 1;
 					}
 					halfEdge->m_edge = edge;
@@ -365,8 +412,8 @@ namespace HalfEdgeDS
 						//---SET_NEXT_HALF_EDGE
 					glm::vec3 nextFirstVertex =  vertices.at(polygonIndices.at((i + 1) % polygonIndices.size()));
 					glm::vec3 nextSecondVertex = vertices.at(polygonIndices.at((i + 2) % polygonIndices.size()));
-					HalfEdge* nextHalfEdge = 
-						findOrCreateObject<HalfEdge>(std::make_pair(nextFirstVertex, nextSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+                    typename Traits::HType* nextHalfEdge = 
+						findOrCreateObject<typename Traits::HType>(std::make_pair(nextFirstVertex, nextSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
 					halfEdge->m_next = nextHalfEdge;
 
 					if (newHalfEdgeCreated) nextHalfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
@@ -374,8 +421,8 @@ namespace HalfEdgeDS
 						//---SET_PREVIOUS_HALF_EDGE
 					glm::vec3 previousFirstVertex = vertices.at(polygonIndices.at((i - 1 + polygonIndices.size()) % polygonIndices.size()));
 					glm::vec3 previousSecondVertex = vertices.at(polygonIndices.at((i) % polygonIndices.size()));
-					HalfEdge* previousHalfEdge = 
-						findOrCreateObject<HalfEdge>(std::make_pair(previousFirstVertex, previousSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
+                    typename Traits::HType* previousHalfEdge = 
+						findOrCreateObject<typename Traits::HType>(std::make_pair(previousFirstVertex, previousSecondVertex), helperHalfEdgeMap, m_halfEdges, &newHalfEdgeCreated);
 					halfEdge->m_previous = previousHalfEdge;
 
 					if (newHalfEdgeCreated) previousHalfEdge->m_halfEdgeIndexInVector = m_halfEdges.size() - 1;
@@ -388,8 +435,9 @@ namespace HalfEdgeDS
 					if(edge && !edge->m_halfEdge)
 					{
 						//---ADDING_NEIGHBOURING_EDGES---
-						firstVertex->m_neighbourEdges.emplace_back(edge);
-						secondVertex->m_neighbourEdges.emplace_back(edge);
+                        //CHANGE
+						//firstVertex->m_neighbourEdges.emplace_back(edge);
+						//secondVertex->m_neighbourEdges.emplace_back(edge);
 
 						edge->m_halfEdge = halfEdge;
 						edge->m_firstVertex = firstVertex;
@@ -399,15 +447,17 @@ namespace HalfEdgeDS
 			}
 
 			//---BUILD_GRAPH---
-			buildGraph();
+            //CHANGE
+			//buildGraph();
 		}
 
 	public:
-		std::vector<HalfEdge*> m_halfEdges;
-		std::vector<Vertex*> m_vertices;
-		std::vector<Edge*> m_edges;
-		std::vector<Face*> m_faces;
+		std::vector<typename Traits::HType*> m_halfEdges;
+		std::vector<typename Traits::VType*> m_vertices;
+		std::vector<typename Traits::EType*> m_edges;
+        std::vector<typename Traits::FType*> m_faces;
 
-		std::map<Material*, std::vector<FaceTriangle>> m_faceTriangles;
+        //CHANGE
+		//std::map<Material*, std::vector<FaceTriangle>> m_faceTriangles;
 	};
 }

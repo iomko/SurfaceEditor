@@ -39,7 +39,7 @@ private:
 		std::cout << "File created: " << m_filePath << std::endl;
 
 		std::ostringstream outputVectorStringStream;
-		std::map<HalfEdgeDS::VertexIndex, int> vertexIndexMap;
+		std::map<ExtendedVertexIndex, int> vertexIndexMap;
 		std::ostringstream outputNormalStringStream;
 		std::map<glm::vec3, int> normalIndexMap;
 		std::ostringstream outputFaceStringStream;
@@ -84,7 +84,7 @@ private:
 						++currentFaceIndexInt;
 					}
 
-					HalfEdgeDS::Face& face = mesh->m_halfEdgeStructure->m_faces.at(faceIndex);
+					ExtendedFace& face = mesh->m_halfEdgeStructure->m_faces.at(faceIndex);
 
 					outputFaceStringStream << "f ";
 					for (auto faceVertexIt = face.faceVertexBegin(); faceVertexIt != face.faceVertexEnd(); ++faceVertexIt) {

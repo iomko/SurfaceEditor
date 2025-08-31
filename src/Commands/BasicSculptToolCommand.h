@@ -51,17 +51,17 @@ public:
     }
 
     
-    std::pair<std::vector<HalfEdgeDS::Vertex*>, std::vector<HalfEdgeDS::Face*>> accessNeighbouringVertsAndFacesOfVertex(HalfEdgeDS::Vertex* vertex)
+    std::pair<std::vector<ExtendedVertex*>, std::vector<ExtendedFace*>> accessNeighbouringVertsAndFacesOfVertex(ExtendedVertex* vertex)
     {
        
-        HalfEdgeDS::HalfEdge* startingHalfEdge = vertex->m_halfEdge;
-        HalfEdgeDS::HalfEdge* currentHalfEdge = startingHalfEdge;
+        ExtendedHalfEdge* startingHalfEdge = vertex->m_halfEdge;
+        ExtendedHalfEdge* currentHalfEdge = startingHalfEdge;
         bool previouslyAccessedNext = true;
         bool previouslyVisitedBoundaryEdge = false;
         bool visitedTwoBoundaryEdges = false;
 
-        std::vector<HalfEdgeDS::Face*> returnedFacesIndices;
-        std::vector<HalfEdgeDS::Vertex*> returnedVerticesIndices;
+        std::vector<ExtendedFace*> returnedFacesIndices;
+        std::vector<ExtendedVertex*> returnedVerticesIndices;
         //ak sme predtym accessli Next tak to bude TRUE
         //ak sme predtym accessli Previous tak to bude FALSE
 

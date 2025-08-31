@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 #include "../Primitives/Plane.h"
-#include "../DataStructures/HalfEdge.h"
+#include "../DataStructures/ExtendedHalfEdge.h"
 
 namespace utils::geometry {
 
@@ -89,8 +89,8 @@ namespace utils::geometry {
 		}
 	}
 
-	inline glm::vec3 computePolygonNormal(HalfEdgeDS::Face* face) {
-		auto pointExtractor = [](HalfEdgeDS::Vertex& v) { return v.m_position; };
+	inline glm::vec3 computePolygonNormal(ExtendedFace* face) {
+		auto pointExtractor = [](ExtendedVertex& v) { return v.m_position; };
 		return computePolygonNormal(face->faceVertexBegin(), face->faceVertexEnd(), pointExtractor);
 	}
 

@@ -5,5 +5,5 @@
 struct SelectionHolder
 {
 	std::vector<Mesh*> meshes;
-	std::map<Mesh*, std::vector<HalfEdgeDS::Face*>> faces;
+	std::map<Mesh*, std::vector<ExtendedFace*>> faces;
 };

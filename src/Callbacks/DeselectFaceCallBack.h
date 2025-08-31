@@ -14,7 +14,7 @@ public:
 		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
 		Mesh* mesh = meshFacePair.first;
-		HalfEdgeDS::Face* face = meshFacePair.second;
+		ExtendedFace* face = meshFacePair.second;
 
 		ViewPortsHolderContext::s_selectionController->unregisterFace(mesh, face);
 	}

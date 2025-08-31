@@ -43,10 +43,10 @@ public:
 			if(faceSelectionsIt != m_holder.faces.end())
 			{
 				//vymaz vsetky selected faces selectnuteho meshu
-				std::vector<HalfEdgeDS::Face*>& faceSelections = m_holder.faces.find(mesh)->second;
+				std::vector<ExtendedFace*>& faceSelections = m_holder.faces.find(mesh)->second;
 
 				while (!faceSelections.empty()) {
-					HalfEdgeDS::Face* face = faceSelections.back();
+					ExtendedFace* face = faceSelections.back();
 
 					face->m_selected = false;
 					face->m_selectionIndex = -1;

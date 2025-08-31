@@ -1,12 +1,11 @@
 #pragma once
 #include "../Renderer/Material.h"
-#include "../DataStructures/HalfEdge.h"
-#include "../Utils/GeometryUtils.h"
+#include "../DataStructures/ExtendedHalfEdge.h"
 
 class Mesh
 {
 public:
-	HalfEdgeDS::HalfEdgeMesh* m_halfEdgeStructure = nullptr;
+	ExtendedHalfEdgeMesh* m_halfEdgeStructure = nullptr;
 	Material* m_defaultMaterial;
 
 	std::string m_meshID;
@@ -21,14 +20,14 @@ public:
 	Mesh(Material* defaultMaterial, std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
 		m_defaultMaterial = defaultMaterial;
-		m_halfEdgeStructure = new HalfEdgeDS::HalfEdgeMesh();
+		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
 	}
 
 	Mesh(Material* defaultMaterial, std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
 	{
 		m_defaultMaterial = defaultMaterial;
-		m_halfEdgeStructure = new HalfEdgeDS::HalfEdgeMesh();
+		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
 	}
 
@@ -37,7 +36,7 @@ public:
 		return m_buildSuccessful;
 	}
 
-	HalfEdgeDS::HalfEdgeMesh* getHalfEdgeStructure()
+	ExtendedHalfEdgeMesh* getHalfEdgeStructure()
 	{
 		return m_halfEdgeStructure;
 	}

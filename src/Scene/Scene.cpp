@@ -8,7 +8,7 @@ std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHit
 	//---FACE_INTERSECTS_RAY---
 	const auto& faceRayIntersect = [&res](const SceneResources::MeshFacePair& meshFacePair, const Ray& ray)->std::pair<bool, float>
 		{
-			HalfEdgeDS::Face* face = meshFacePair.second;
+			ExtendedFace* face = meshFacePair.second;
 			Mesh* mesh = meshFacePair.first;
 
 			//---MESH_VAO_MAP---
@@ -18,7 +18,7 @@ std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHit
 			//---VAO_DATA_OF_SPECIFIC_MATERIAL---
 			std::vector<RendererStageData::MeshVertex>& materialVaoFaces = materialVertsMap.find(face->material)->second;
 
-			std::vector<HalfEdgeDS::FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+			std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
 			//---WE NEED TO CHECK WITH THE VAO DATA OF THE FACE, IF WE ACTUALLY HIT THE FACE---
 			for (FaceTriangleIndex triangleIndex : face->faceTriangleIndices)
@@ -83,7 +83,7 @@ std::pair<glm::vec3, glm::vec3> SceneUtilities::calculateOctreeBounds(const glm:
 	return { octreeMinBound, octreeMaxBound };
 }
 
-glm::vec3 SceneUtilities::calculateOctreeIDFromOctree(Octree<HalfEdgeDS::Face*>* octree, const glm::vec3& voxelSize)
+glm::vec3 SceneUtilities::calculateOctreeIDFromOctree(Octree<ExtendedFace*>* octree, const glm::vec3& voxelSize)
 {
 	return getVoxelIndex(octree->rootNode->getBounds().getMinBoundsPos(), voxelSize);
 }

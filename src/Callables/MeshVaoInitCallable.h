@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils/GeometryUtils.h"
+#include "DataStructures/ExtendedHalfEdge.h"
 
 class MeshVaoInitCallable : public Callable<MeshParams, void>
 {
@@ -8,8 +9,8 @@ public:
 	{
 		Mesh* mesh = input.m_mesh;
 
-		std::vector<HalfEdgeDS::Face*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
-		std::vector<HalfEdgeDS::Edge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
+		std::vector<ExtendedFace*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
+		std::vector<ExtendedEdge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
 		SceneResources& res = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res;
 
@@ -18,10 +19,10 @@ public:
 		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = Renderer::s_stageData.meshLinesMap[mesh];
 
 		std::vector<RendererStageData::MeshVertex>& materialVaoVertices = materialVertsMap[material];
-		std::vector<HalfEdgeDS::FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
+		std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
 
 		//---FOR_FACES---
-		for (HalfEdgeDS::Face* meshFace : meshFaces)
+		for (ExtendedFace* meshFace : meshFaces)
 		{
 			//---SET_FACE_MATERIAL---
 			meshFace->material = material;
@@ -52,7 +53,7 @@ public:
 				materialVaoVertices.emplace_back(triangulatedVertices.at(i + 2), faceNormal, false);
 
 				//---CREATE_FACE_TRIANGLE---
-				HalfEdgeDS::FaceTriangle faceTriangle;
+				FaceTriangle faceTriangle;
 				faceTriangle.face = meshFace;
 				faceTriangle.indexInVAO = materialVaoVertices.size() - 3;
 				faceTriangle.indexInFace = indexInFace;
@@ -71,10 +72,10 @@ public:
 		}
 
 		//---FOR_LINES---
-		for (HalfEdgeDS::Edge* edge : meshEdges)
+		for (ExtendedEdge* edge : meshEdges)
 		{
-			HalfEdgeDS::Vertex* edgeFirstVertex = edge->m_firstVertex;
-			HalfEdgeDS::Vertex* edgeSecondVertex = edge->m_secondVertex;
+			ExtendedVertex* edgeFirstVertex = edge->m_firstVertex;
+			ExtendedVertex* edgeSecondVertex = edge->m_secondVertex;
 
 			
 
@@ -82,7 +83,7 @@ public:
 
 			//---CREATE_LINE_VAO_DATA---
 			//---TOP_EDGE---
-			HalfEdgeDS::HalfEdge* halfEdge = edge->m_halfEdge;
+			ExtendedHalfEdge* halfEdge = edge->m_halfEdge;
 
 			glm::vec3 normal = utils::geometry::computePolygonNormal(halfEdge->m_face);
 
@@ -102,6 +103,6 @@ public:
 			int edgeLineIndex = meshLinesVaoVector.size() - 4;
 			edge->m_EdgeLineIndex = edgeLineIndex;
 		}
-
+        std::cout << "TEST HERE" << std::endl;
 	}
 };

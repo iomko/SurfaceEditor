@@ -12,12 +12,12 @@ public:
 		return m_holder;
 	}
 
-	void registerFace(Mesh* mesh, HalfEdgeDS::Face* face)
+	void registerFace(Mesh* mesh, ExtendedFace* face)
 	{
 		m_faceManager.registerFace(face, mesh);
 	}
 
-	void unregisterFace(Mesh* mesh, HalfEdgeDS::Face* face)
+	void unregisterFace(Mesh* mesh, ExtendedFace* face)
 	{
 		m_faceManager.unregisterFace(face, mesh);
 	}
