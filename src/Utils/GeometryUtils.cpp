@@ -53,7 +53,7 @@ namespace utils::geometry::detail
 			retVertex.y = (float)vertex[1];
 			retVertex.z = (float)vertex[0];
 		}
-		else if (projectionAxis == ProjectionAxis::ZX)
+		else if (projectionAxis == ProjectionAxis::XZ)
 		{
 			retVertex.y = 0.0f;
 			retVertex.z = (float)vertex[1];
@@ -119,7 +119,7 @@ namespace utils::geometry
 				}
 
 			}
-			else if (computeProjectedArea(ProjectionAxis::ZX) > 1e-5f)
+			else if (computeProjectedArea(ProjectionAxis::XZ) > 1e-5f)
 			{
 				//---SET_PROJECTION_NORMAL_FOR_GETTING_NEW_PROJECTED_POINT_AFTER_TRIANGULATION---
 				projectionNormal.y = 1.0f;
@@ -132,9 +132,9 @@ namespace utils::geometry
 				for (tpp::FaceIterator fit = delaunayGenerator.fbegin(); fit != delaunayGenerator.fend(); ++fit)
 				{
 					std::vector<glm::vec3> faceVertices = {
-						detail::liftTo3D(ProjectionAxis::ZX, delaunayVertices[fit.Org()]),
-						detail::liftTo3D(ProjectionAxis::ZX, delaunayVertices[fit.Dest()]),
-						detail::liftTo3D(ProjectionAxis::ZX, delaunayVertices[fit.Apex()])
+						detail::liftTo3D(ProjectionAxis::XZ, delaunayVertices[fit.Org()]),
+						detail::liftTo3D(ProjectionAxis::XZ, delaunayVertices[fit.Dest()]),
+						detail::liftTo3D(ProjectionAxis::XZ, delaunayVertices[fit.Apex()])
 					};
 
 					for (const auto& faceVertex : faceVertices) {

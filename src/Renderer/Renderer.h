@@ -73,7 +73,7 @@ public:
 		
 		lineBuffer.vao.bind();
 		lineBuffer.vbo.bind();
-		lineBuffer.vbo.createData(nullptr, (10000000 * 2) * sizeof(LineVertex), GL_DYNAMIC_DRAW);
+		lineBuffer.vbo.createData(nullptr, (50000000 * 2) * sizeof(LineVertex), GL_DYNAMIC_DRAW);
 		//data.Line_vbo.createData(nullptr, 2 * sizeof(LineVertex), GL_DYNAMIC_DRAW);
 		lineBuffer.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, position));
 		lineBuffer.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, isHighlighted));
@@ -130,19 +130,36 @@ public:
 		pointBuffer.vao.unbind();
 		pointBuffer.vbo.unbind();
 	}
-    static void drawMesh(const std::vector<RendererStageData::MeshVertex>& mesh)
-    {
+
+    static void updateMesh(const std::vector<RendererStageData::MeshVertex>& mesh){
 		BufferRegistry::Buffer& meshBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Mesh>();
 		// Binding VAO, VBO, EBO
 		meshBuffer.vao.bind();
 		meshBuffer.vbo.bind();
 
 		meshBuffer.vbo.updateData(mesh.data(), mesh.size() * sizeof(RendererStageData::MeshVertex), 0);
-		glDrawArrays(GL_TRIANGLES, 0, mesh.size());
 
 		// Unbinding VAO, VBO
 		meshBuffer.vao.unbind();
 		meshBuffer.vbo.unbind();
+    }
+
+    static void drawMesh(const std::vector<RendererStageData::MeshVertex>& mesh)
+    {
+		BufferRegistry::Buffer& meshBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Mesh>();
+
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(1.0f, 1.0f); // offset face slightly back
+
+		// Binding VAO, VBO, EBO
+		meshBuffer.vao.bind();
+
+		glDrawArrays(GL_TRIANGLES, 0, mesh.size());
+
+		// Unbinding VAO, VBO
+		meshBuffer.vao.unbind();
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
     }
     static void drawBox(const std::vector<RendererStageData::AABBVertex>& box)
     {
@@ -164,21 +181,30 @@ public:
 		aabbBuffer.vbo.unbind();
 		aabbBuffer.ebo->unbind();
     }
+
+    static void updateLines(std::vector<RendererStageData::LineVertex>& lines){
+		BufferRegistry::Buffer& lineBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Line>();
+
+        lineBuffer.vao.bind();
+        lineBuffer.vbo.bind();
+
+        lineBuffer.vbo.updateData(lines.data(), lines.size() * sizeof(RendererStageData::LineVertex), 0);
+
+        lineBuffer.vao.unbind();
+        lineBuffer.vbo.unbind();
+    }
     static void drawLines(std::vector<RendererStageData::LineVertex>& lines)
     {
 		BufferRegistry::Buffer& lineBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Line>();
+
 		//Binding VAO,VBO
 		lineBuffer.vao.bind();
-		lineBuffer.vbo.bind();
-		//Updade VBO
-		lineBuffer.vbo.updateData(lines.data(), lines.size() * sizeof(RendererStageData::LineVertex), 0);
 		//Draw Mesh using vertexData
-		glLineWidth(3.0f);
+		glLineWidth(1.0f);
 		glDrawArrays(GL_LINES, 0, lines.size());
 		glLineWidth(0.5f);
 		//Unbinding VAO,VBO
 		lineBuffer.vao.unbind();
-		lineBuffer.vbo.unbind();
     }
 
 private:

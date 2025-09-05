@@ -6,9 +6,182 @@
 #include "../Primitives/Plane.h"
 #include "../DataStructures/ExtendedHalfEdge.h"
 
+#include <algorithm>
+#include <initializer_list>
+#include <cmath> // fabs
+
 namespace utils::geometry {
 
-	enum class ProjectionAxis { ZY, ZX, XY };
+	enum class ProjectionAxis { ZY, XZ, XY };
+    
+    //before
+    /*
+    inline glm::vec2 createPerpendicular2DVector(const glm::vec2& firstPoint, const glm::vec2& secondPoint){
+        glm::vec2 line{secondPoint.x - firstPoint.x, secondPoint.y - firstPoint.y};
+        return glm::vec2{-line.y, line.x};
+    }
+
+    inline bool overlap(float minA, float maxA, float minB, float maxB) {
+        float EPS = 1e-5f * std::max({
+            fabsf(minA), fabsf(maxA), fabsf(minB), fabsf(maxB), 1.0f 
+        });
+
+        // Non-overlap if intervals are separated or just touching
+        return (minA <= maxB - EPS) && (minB <= maxA - EPS);
+    }
+
+    inline bool polygon2DOverlap(const std::vector<glm::vec2>& verticesA, const std::vector<glm::vec2>& verticesB){
+        //najskor si musime ziskat vsetky axis, ktore budeme testovat
+        std::vector<glm::vec2> axes;
+        
+        for (int i = 0; i < verticesA.size(); ++i) {
+            glm::vec2 currentVertex = verticesA.at(i);
+            glm::vec2 nextVertex = verticesA.at((i+1) % verticesA.size());
+
+
+            glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
+            if (glm::length(axis) > 1e-8f) {
+                axes.emplace_back(glm::normalize(axis));
+            }
+        } 
+
+        for (int i = 0; i < verticesB.size(); ++i) {
+            glm::vec2 currentVertex = verticesB.at(i);
+            glm::vec2 nextVertex = verticesB.at((i+1) % verticesB.size());
+
+            //glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
+            //axis = glm::normalize(axis);
+            //axes.emplace_back(axis);
+            
+            glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
+            if (glm::length(axis) > 1e-8f) {
+                axes.emplace_back(glm::normalize(axis));
+            }
+        } 
+
+        //mame vytvorene axis
+        //teraz musime ist cez vsetky axes
+        //create projection
+        
+        for (glm::vec2 axis : axes) {
+
+            float minA = glm::dot(verticesA.at(0), axis);
+            float maxA = glm::dot(verticesA.at(0), axis);
+
+            for (int i = 1; i < verticesA.size(); ++i) {
+                float projectedVertex = glm::dot(verticesA.at(i),axis);
+                if(projectedVertex > maxA){
+                    maxA = projectedVertex;
+                }
+                if(projectedVertex < minA){
+                    minA = projectedVertex;
+                }
+            }
+
+            float minB = glm::dot(verticesB.at(0), axis);
+            float maxB = glm::dot(verticesB.at(0), axis);
+
+            for (int i = 1; i < verticesB.size(); ++i) {
+                float projectedVertex = glm::dot(verticesB.at(i),axis);
+                if(projectedVertex > maxB){
+                    maxB = projectedVertex;
+                }
+                if(projectedVertex < minB){
+                    minB = projectedVertex;
+                }
+            }
+
+            if (!overlap(minA, maxA, minB, maxB)) {
+                return false;
+            } else {
+
+            }
+
+        }
+        return true;
+    }
+    */
+
+    //after
+    inline glm::vec2 createPerpendicular2DVector(const glm::vec2& a, const glm::vec2& b){
+        // return unnormalized perpendicular (no normalization here)
+        glm::vec2 line = b - a;
+        return glm::vec2(-line.y, line.x);
+    }
+
+    // return true if polygons A and B overlap (touching = NOT overlap)
+    inline bool polygon2DOverlap(const std::vector<glm::vec2>& verticesA,
+                                 const std::vector<glm::vec2>& verticesB)
+    {
+        if (verticesA.empty() || verticesB.empty()) return false;
+
+        // collect unique axes (store raw perpendiculars)
+        std::vector<glm::vec2> axes;
+        auto add_axis = [&](const glm::vec2 &axis_raw) {
+            const float len2 = glm::dot(axis_raw, axis_raw);
+            if (len2 < 1e-12f) return; // degenerate edge -> skip
+
+            // compare direction (use normalized direction for comparison only)
+            glm::vec2 na = axis_raw / std::sqrt(len2);
+
+            const float DEDUPE_DOT_TOL = 1.0f - 1e-6f; // nearly parallel
+            for (const glm::vec2 &existing : axes) {
+                glm::vec2 ne = existing / glm::length(existing);
+                if (std::fabs(glm::dot(na, ne)) > DEDUPE_DOT_TOL) {
+                    return; // same axis already present
+                }
+            }
+            axes.push_back(axis_raw); // store raw
+        };
+
+        auto collect_axes_from = [&](const std::vector<glm::vec2>& V) {
+            const int n = (int)V.size();
+            for (int i = 0; i < n; ++i) {
+                const glm::vec2 &cur = V[i];
+                const glm::vec2 &next = V[(i+1) % n];
+                glm::vec2 axis = createPerpendicular2DVector(cur, next);
+                add_axis(axis);
+            }
+        };
+
+        collect_axes_from(verticesA);
+        collect_axes_from(verticesB);
+
+        // SAT: if for any axis the projections are separated (or just touching),
+        // polygons do NOT overlap.
+        for (const glm::vec2 &axis_raw : axes) {
+            // project A
+            float minA = glm::dot(verticesA[0], axis_raw);
+            float maxA = minA;
+            for (size_t i = 1; i < verticesA.size(); ++i) {
+                float p = glm::dot(verticesA[i], axis_raw);
+                if (p < minA) minA = p;
+                if (p > maxA) maxA = p;
+            }
+
+            // project B
+            float minB = glm::dot(verticesB[0], axis_raw);
+            float maxB = minB;
+            for (size_t i = 1; i < verticesB.size(); ++i) {
+                float p = glm::dot(verticesB[i], axis_raw);
+                if (p < minB) minB = p;
+                if (p > maxB) maxB = p;
+            }
+
+            // EPS relative to projection magnitudes (axis is raw so projections may be large)
+            float scaleRef = std::max({1.0f, fabsf(minA), fabsf(maxA), fabsf(minB), fabsf(maxB)});
+            float EPS = 1e-6f * scaleRef;
+
+            // If intervals are separated or just touching -> no overlap (touching treated as non-overlap)
+            if (maxA <= minB + EPS || maxB <= minA + EPS) {
+                return false;
+            }
+            // otherwise there's overlap on this axis -> check next axis
+        }
+
+        // no separating axis found -> polygons overlap (strict intersection)
+        return true;
+    }
 
 	inline std::vector<glm::vec2> projectVertices(const std::vector<glm::vec3>& vertices, const ProjectionAxis& projectionAxis)
 	{
@@ -20,7 +193,7 @@ namespace utils::geometry {
 				projectedVertices.emplace_back(glm::vec2(vertex.z, vertex.y));
 			}
 		}
-		else if (projectionAxis == ProjectionAxis::ZX)
+		else if (projectionAxis == ProjectionAxis::XZ)
 		{
 			for (const glm::vec3& vertex : vertices)
 			{

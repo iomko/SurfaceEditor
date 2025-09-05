@@ -102,6 +102,8 @@ namespace HalfEdgeDS
 
 		int m_edgeIndexInVector = -1;
 
+        bool m_isOuter = false;
+
         //CHANGE
 		//EdgeLineIndex m_EdgeLineIndex = -1;
         Traits::DerType& m_mesh;
@@ -265,7 +267,7 @@ namespace HalfEdgeDS
 		auto faceIterBegin() { return m_faces.begin(); }
 		auto faceIterEnd() { return m_faces.end(); }
 
-		void getVerticesFromFace(Traits::FType* face, std::vector<typename Traits::VType>& vertices) {
+		static void getVerticesFromFace(Traits::FType* face, std::vector<typename Traits::VType>& vertices) {
 			vertices.clear();
 			
             typename Traits::HType* halfEdge1 = face->m_halfEdge;
@@ -346,7 +348,9 @@ namespace HalfEdgeDS
 
 			std::cout << "Graph built" << std::endl;
 		}
-        */
+        */  
+
+
 
 
 		void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices)
@@ -406,6 +410,7 @@ namespace HalfEdgeDS
 						//---EDGE_CREATION---
 						edge = createObject<typename Traits::EType>(m_edges);
 						edge->m_edgeIndexInVector = m_edges.size() - 1;
+ 
 					}
 					halfEdge->m_edge = edge;
 
@@ -442,7 +447,11 @@ namespace HalfEdgeDS
 						edge->m_halfEdge = halfEdge;
 						edge->m_firstVertex = firstVertex;
 						edge->m_secondVertex = secondVertex;
-					}
+
+                        edge->m_isOuter = true;
+					} else if(edge && edge->m_halfEdge) {
+                        edge->m_isOuter = false;
+                    }
 				}
 			}
 

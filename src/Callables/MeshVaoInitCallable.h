@@ -1,6 +1,7 @@
 #pragma once
 #include "../Utils/GeometryUtils.h"
 #include "DataStructures/ExtendedHalfEdge.h"
+#include "Renderer/Renderer.h"
 
 class MeshVaoInitCallable : public Callable<MeshParams, void>
 {
@@ -76,7 +77,6 @@ public:
 		{
 			ExtendedVertex* edgeFirstVertex = edge->m_firstVertex;
 			ExtendedVertex* edgeSecondVertex = edge->m_secondVertex;
-
 			
 
 			//mozeme si pamatam v tomto vao, vrchny aj spodny edge
@@ -93,16 +93,15 @@ public:
 				normal = glm::normalize(normal + twinNormal); // Average and normalize
 			}
 
-			meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position + (normal * 0.001f), false);
-			meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position + (normal * 0.001f), false);
-
-			meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position + (-normal * 0.001f), false);
-			meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position + (-normal * 0.001f), false);
+			meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position, false);
+			meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position, false);
 
 			//---ADD_INFO_INTO_EDGE---
-			int edgeLineIndex = meshLinesVaoVector.size() - 4;
+			int edgeLineIndex = meshLinesVaoVector.size() - 2;
 			edge->m_EdgeLineIndex = edgeLineIndex;
 		}
+
+        Renderer::updateLines(meshLinesVaoVector);
         std::cout << "TEST HERE" << std::endl;
 	}
 };

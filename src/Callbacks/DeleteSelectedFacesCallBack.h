@@ -7,7 +7,7 @@ class DeleteSelectedFacesCallBack : public Callback<>, public Observer
 public:
 	void execute() override
 	{
-		SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+		SelectionController*  selectionController = ViewPortsHolderContext::s_selectionController;
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 		const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;

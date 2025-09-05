@@ -74,6 +74,12 @@ struct MeshParams : public OpParams
 	Mesh* m_mesh = nullptr;
 };
 
+struct FaceParams : public OpParams
+{   
+    Mesh* mesh;
+    std::vector<ExtendedFace*>* faces;
+};
+
 struct BrushToolParams : public OpParams
 {
 	float radius;

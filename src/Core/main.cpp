@@ -1,4 +1,5 @@
-﻿#define NOMINMAX  // Prevents Windows.h from defining min/max macros
+﻿#include "UI/ModifiersLayer.h"
+#define NOMINMAX  // Prevents Windows.h from defining min/max macros
 
 #include <limits>
 //#include <Windows.h>
@@ -86,6 +87,13 @@ float lastFrame = 0.0f;
 
 #include "../Callables/FetchedSurfaceVertexGenCallable.h"
 #include "../Callbacks/FetchSurfaceCallBack.h"
+
+#include "../Callbacks/SolidifyMeshesCallBack.h"
+#include "../Commands/SolidifyMeshesCommand.h"
+
+#include "../DataStructures/ExtendedHalfEdge.h"
+
+#include "../Utils/GeometryUtils.h"
 
 //INTERACTION_HANDLER
 #include "../Tools/InteractionHandler.h"
@@ -187,6 +195,45 @@ void collectAABBData(const AABBBoundingRegion& aabb) {
 
 int main()
 {
+    ExtendedHalfEdgeMesh extendedHalfEdgeMeshTest;
+    std::vector<glm::vec3> testVertices;
+    testVertices.emplace_back(-6.17731, -5.06843, 0.0);
+    testVertices.emplace_back(-8.15201, -2.79399, 0.0);
+    testVertices.emplace_back(-6.77999, 0.257219, 0.0);
+    testVertices.emplace_back(-1.93392, 2.98111, 0.0);
+    testVertices.emplace_back(1.60165, -1.69653, 0.0);
+    extendedHalfEdgeMeshTest.addFloatingFace(testVertices);
+
+    //intersection test
+
+    std::vector<glm::vec2> selectedFace2DVertices;
+    selectedFace2DVertices.emplace_back(374, 372);
+    selectedFace2DVertices.emplace_back(374, 374);
+    selectedFace2DVertices.emplace_back(376, 374);
+
+    std::vector<glm::vec2> face2DVertices;
+    face2DVertices.emplace_back(374, 372);
+    face2DVertices.emplace_back(376, 374);
+    face2DVertices.emplace_back(376, 372);
+
+    bool testOverlap = utils::geometry::polygon2DOverlap(selectedFace2DVertices, face2DVertices);
+
+
+    /*
+    std::vector<glm::vec2> vertsB;
+    vertsB.emplace_back(glm::vec2(0.0, 0.0));
+    vertsB.emplace_back(glm::vec2(0.0, -3.5));
+    vertsB.emplace_back(glm::vec2(-3.5, 0.0));
+
+    std::vector<glm::vec2> vertsA;
+    vertsA.emplace_back(glm::vec2(-3.5, -3.5));
+    vertsA.emplace_back(glm::vec2(-3.5, 0.0));
+    vertsA.emplace_back(glm::vec2(0.0, -3.5));
+
+    bool isShadowing = utils::geometry::polygon2DOverlap(vertsA, vertsB);
+    */
+
+
 	CommandRegistry* commandRegistry = new CommandRegistry();
 
 	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
@@ -198,6 +245,10 @@ int main()
 	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
 	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
 	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
+
+    SolidifyMeshesCallBack solidifyMeshesCallBack;
+
+
 
 	//---FETCH_SURFACE_COMPOSER---
 	FunctionComposer fetchSurfaceComposer;
@@ -285,6 +336,12 @@ int main()
 
 	addPlaneCommand->addObserver(&addPlaneCallBack);
 	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+
+    commandRegistry->registerCommand<SolidifyMeshesCommand>();
+    SolidifyMeshesCommand* solidifyMeshesCommand = commandRegistry->getCommand<SolidifyMeshesCommand>();
+
+    solidifyMeshesCommand->addObserver(&solidifyMeshesCallBack);
+    solidifyMeshesCallBack.observe(solidifyMeshesCommand, &solidifyMeshesCallBack);
 
 	commandRegistry->registerCommand<FetchSurfaceCommand>();
 	FetchSurfaceCommand* fetchSurfaceCommand = commandRegistry->getCommand<FetchSurfaceCommand>();
@@ -379,6 +436,10 @@ int main()
 	//AdditionLayer
 	AdditionLayer additionLayer("AdditionLayer", *commandRegistry);
 	app.getLayerStack().addLayer(&additionLayer);
+
+	//ModifiersLayer
+	ModifiersLayer modifiersLayer("ModifiersLayer", *commandRegistry);
+	app.getLayerStack().addLayer(&modifiersLayer);
 
 	//RemovalLayer
 	RemovalLayer removalLayer("RemovalLayer", *commandRegistry);
@@ -508,18 +569,22 @@ int main()
 			for (auto& [material, vertexVector] : materialVertexMap)
 			{
 				// Pass the vertexVector to some method
-				material->getShader()->bind();
-				Renderer::drawMesh(vertexVector);
-				material->getShader()->unbind();
+                if(!vertexVector.empty()){
+                    material->getShader()->bind();
+                    Renderer::drawMesh(vertexVector);
+                    material->getShader()->unbind();
+                }
 			}
 		}
 
 		//RENDER LINES
 		for (auto& [mesh, linesVector] : Renderer::s_stageData.meshLinesMap)
 		{
-			linesShader.bind();
-			Renderer::drawLines(linesVector);
-			linesShader.unbind();
+            if(!linesVector.empty()){
+                linesShader.bind();
+                Renderer::drawLines(linesVector);
+                linesShader.unbind();
+            }
 		}
 
 		ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
