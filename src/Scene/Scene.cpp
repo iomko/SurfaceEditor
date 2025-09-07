@@ -12,11 +12,11 @@ std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHit
 			Mesh* mesh = meshFacePair.first;
 
 			//---MESH_VAO_MAP---
-			RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
-			//---MATERIAL_VAO_MAP---
-			RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
-			//---VAO_DATA_OF_SPECIFIC_MATERIAL---
-			std::vector<RendererStageData::MeshVertex>& materialVaoFaces = materialVertsMap.find(face->material)->second;
+            //potrebujeme ziskat materialVaoVertices
+            MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+            BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+            meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
+            std::vector<RendererBuffersData::MeshVertex>& materialVaoFaces = meshBufferData->vertices;
 
 			std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 

@@ -7,8 +7,17 @@
 
 #include "Buffers.h"
 #include "../Scene/Mesh.h"
+#include <string>
 
-struct RendererStageData
+
+struct RendererConfig
+{
+	static constexpr unsigned int maxBoxCount = 2000000;
+	static constexpr unsigned int maxVertexCount = 36 * maxBoxCount;
+	static constexpr unsigned int maxIndexCount = 24 * maxBoxCount;
+};
+
+struct RendererBuffersData 
 {
 	struct AABBVertex {
 		glm::vec3 position;
@@ -33,221 +42,418 @@ struct RendererStageData
 		float isHighlited = 0.0f;
 	};
 
-	using MeshLinesMap = std::map<Mesh*, std::vector<LineVertex>>;
-	using MatVertsMap = std::map<Material*, std::vector<MeshVertex>>;
-	using MeshMatsMap = std::map<Mesh*, MatVertsMap>;
-	using AABBVertsMap = std::map<AABBBoundingRegion, std::vector<AABBVertex>>;
-
-	MeshLinesMap meshLinesMap;
-	MeshMatsMap meshMatsMap;
-	AABBVertsMap aabbVertsMap;
-private:
-	RendererStageData() = default;
-
 	friend class Renderer;
 };
 
-struct RendererConfig
-{
-	static constexpr unsigned int maxBoxCount = 2000000;
-	static constexpr unsigned int maxVertexCount = 36 * maxBoxCount;
-	static constexpr unsigned int maxIndexCount = 24 * maxBoxCount;
+template<typename T, typename... Args>
+concept HasGetBufferStorage = requires(T t, Args&&... args) {
+    { t.getBufferStorage(std::forward<Args>(args)...) } -> std::same_as<bool>;
 };
+
+template<typename T, typename... Args>
+concept HasGetRawDataStorage = requires(T t, Args&&... args) {
+    { t.getRawDataStorage(std::forward<Args>(args)...) } -> std::same_as<bool>;
+};
+
+template<typename T, typename... Args>
+concept HasUpdateBufferStorage = requires(T t, Args&&... args) {
+    { t.updateBufferStorage(std::forward<Args>(args)...) } -> std::same_as<void>;
+};
+
+template<typename T, typename... Args>
+concept HasRegisterBufferStorage = requires(T t, Args&&... args) {
+    { t.registerBufferStorage(std::forward<Args>(args)...) } -> std::same_as<void>;
+};
+
+
+class BufferStorageConcept {
+public:
+    BufferStorageConcept() = default;
+};
+
+template<typename Derived>
+class BufferStorage : public BufferStorageConcept {
+public:
+    BufferStorage() = default;
+
+public:
+
+    template<typename... Args>
+    void getBufferStorage(Args&&... args){
+        static_assert(HasGetRawDataStorage<Derived, Args...>, "Derived must implement getBufferDataStorage");
+        static_cast<Derived*>(this)->getBufferDataStorage(std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    void getRawDataStorage(Args&&... args){
+        static_assert(HasGetRawDataStorage<Derived, Args...>, "Derived must implement getBufferDataStorage");
+        static_cast<Derived*>(this)->getBufferDataStorage(std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    void updateBufferStorage(Args&&... args) {
+        static_assert(HasUpdateBufferStorage<Derived, Args...>, "Derived must implement updateBufferStorage");
+        static_cast<Derived*>(this)->updateBufferStorage(std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    void registerBufferStorage(Args&&... args) {
+        static_assert(HasRegisterBufferStorage<Derived, Args...>, "Derived must implement registerBufferStorage");
+        static_cast<Derived*>(this)->registerBufferStorage(std::forward<Args>(args)...);
+    };
+
+    static std::string getBufferStorageName() {
+        return "BufferStorage";
+    }
+};
+
+template<typename VertexType>
+struct BufferData{
+    VertexArrayObject vao;
+    VertexBufferObject vbo;
+    std::vector<VertexType> vertices;
+};
+
+
+class MeshBufferStorage : public BufferStorage<MeshBufferStorage> {
+public:
+    MeshBufferStorage() {}
+
+    bool getBufferData(Mesh* mesh, Material* material, BufferData<RendererBuffersData::MeshVertex>*& retBufferData){
+        auto meshMatsMapIt = meshMatsMap.find(mesh);
+
+        if (meshMatsMapIt == meshMatsMap.end()) return false;
+
+        auto& matBuffMap = meshMatsMapIt->second;
+        
+        auto matBuffMapIt = matBuffMap.find(material);
+
+        if (matBuffMapIt == matBuffMap.end()) return false;
+
+        auto& meshBufferData = matBuffMapIt->second;
+        retBufferData = &meshBufferData;
+        return true;
+    }
+
+    void updateBufferStorage(Mesh* mesh, Material* material){
+        auto meshMatsMapIt = meshMatsMap.find(mesh);
+
+        if (meshMatsMapIt == meshMatsMap.end()) return;
+
+        auto& matBuffMap = meshMatsMapIt->second;
+        auto matBuffMapIt = matBuffMap.find(material);
+
+        if (matBuffMapIt == matBuffMap.end()) return;
+
+        auto& meshBufferData = matBuffMapIt->second;
+        
+        meshBufferData.vbo.bind();
+        meshBufferData.vbo.createData(meshBufferData.vertices.data(), meshBufferData.vertices.size() * sizeof(RendererBuffersData::MeshVertex), GL_DYNAMIC_DRAW);
+        meshBufferData.vbo.unbind();
+    }
+
+    void registerBufferStorage(Mesh* mesh, Material* material){
+        auto& matBuffMap = meshMatsMap[mesh];
+
+        auto [it, inserted] = matBuffMap.try_emplace(material);
+
+        if(inserted){
+            auto& meshBufferData = it->second;
+            
+            meshBufferData.vao.create();
+            meshBufferData.vbo.create();
+            
+            meshBufferData.vao.bind();
+            meshBufferData.vbo.bind();
+            meshBufferData.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::MeshVertex), (void*)offsetof(RendererBuffersData::MeshVertex, position));
+            meshBufferData.vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::MeshVertex), (void*)offsetof(RendererBuffersData::MeshVertex, normal));
+            meshBufferData.vao.addVertexBufferLayout(2, 1, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::MeshVertex), (void*)offsetof(RendererBuffersData::MeshVertex, isHighlited));
+            meshBufferData.vao.unbind();
+            meshBufferData.vbo.unbind();
+        }
+    }
+
+    static std::string getBufferStorageName() {
+        return "MeshBufferStorage";
+    }
+
+	using MatBuffMap = std::map<Material*, BufferData<RendererBuffersData::MeshVertex>>;
+	using MeshMatsMap = std::map<Mesh*, MatBuffMap>;
+
+	MeshMatsMap meshMatsMap;
+};
+
+class LineBufferStorage : public BufferStorage<LineBufferStorage> {
+public:
+    LineBufferStorage() {}
+
+    bool getBufferData(Mesh* mesh, BufferData<RendererBuffersData::LineVertex>*& retBufferData) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+        
+        if (meshBuffMapIt == meshBuffMap.end()) return false;
+
+        auto& lineBufferData = meshBuffMapIt->second;
+        retBufferData = &lineBufferData;
+        return true;
+    }
+
+    void updateBufferStorage(Mesh* mesh) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+
+        if (meshBuffMapIt == meshBuffMap.end()) return;
+
+        auto& lineBufferData = meshBuffMapIt->second;
+
+        lineBufferData.vbo.bind();
+        lineBufferData.vbo.createData(lineBufferData.vertices.data(), lineBufferData.vertices.size() * sizeof(RendererBuffersData::LineVertex), GL_DYNAMIC_DRAW);
+        lineBufferData.vbo.unbind();
+    }
+
+    void registerBufferStorage(Mesh* mesh) {
+
+        auto [it, inserted] = meshBuffMap.try_emplace(mesh);
+
+        if(inserted) {
+            auto& lineBufferData =it->second;
+            
+            lineBufferData.vao.create();
+            lineBufferData.vbo.create();
+
+            lineBufferData.vao.bind();
+            lineBufferData.vbo.bind();
+            lineBufferData.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::LineVertex), (void*)offsetof(RendererBuffersData::LineVertex, position));
+            lineBufferData.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::LineVertex), (void*)offsetof(RendererBuffersData::LineVertex, isHighlighted));
+            lineBufferData.vao.unbind();
+            lineBufferData.vbo.unbind();
+        }
+    }
+
+    static std::string getBufferStorageName() {
+        return "LineBufferStorage";
+    }
+
+	using MeshBuffMap = std::map<Mesh*, BufferData<RendererBuffersData::LineVertex>>;
+
+	MeshBuffMap meshBuffMap;
+};
+
+class PointBufferStorage : public BufferStorage<PointBufferStorage> {
+public:
+    PointBufferStorage() {}
+
+    bool getBufferData(Mesh* mesh, BufferData<RendererBuffersData::PointVertex>*& retBufferData) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+
+        if(meshBuffMapIt == meshBuffMap.end()) return false;
+
+        auto& pointBufferData = meshBuffMapIt->second;
+        retBufferData = &pointBufferData;
+        return true;
+    }
+
+    void updateBufferStorage(Mesh* mesh) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+
+        if(meshBuffMapIt == meshBuffMap.end()) return;
+
+        auto& pointBufferData = meshBuffMapIt->second;
+
+        pointBufferData.vbo.bind();
+        pointBufferData.vbo.createData(pointBufferData.vertices.data(), pointBufferData.vertices.size() * sizeof(RendererBuffersData::PointVertex), GL_DYNAMIC_DRAW);
+        pointBufferData.vbo.unbind();
+    }
+
+    void registerBufferStorage(Mesh* mesh) {
+        auto [it, inserted] = meshBuffMap.try_emplace(mesh);
+
+        if(inserted) {
+            auto& pointBufferData = it->second;
+
+            pointBufferData.vao.create();
+            pointBufferData.vbo.create();
+
+            pointBufferData.vao.bind();
+            pointBufferData.vbo.bind();
+            pointBufferData.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::PointVertex), (void*)0);
+            pointBufferData.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::PointVertex), (void*)(offsetof(RendererBuffersData::PointVertex, isHighlighted)));
+            pointBufferData.vao.unbind();
+            pointBufferData.vbo.unbind();
+        }
+
+    }
+
+    static std::string getBufferStorageName() {
+        return "PointBufferStorage";
+    }
+
+	using MeshBuffMap = std::map<Mesh*, BufferData<RendererBuffersData::PointVertex>>;
+
+	MeshBuffMap meshBuffMap;
+};
+
+class AABBBufferStorage : public BufferStorage<AABBBufferStorage> {
+public:
+    AABBBufferStorage() {}
+
+    bool getBufferData(const AABBBoundingRegion& aabb, BufferData<RendererBuffersData::AABBVertex>*& retBufferData) {
+        auto aabbBuffMapIt = aabbBuffMap.find(aabb);
+
+        if(aabbBuffMapIt == aabbBuffMap.end()) return false;
+
+        auto& aabbBufferData = aabbBuffMapIt->second;
+        
+        retBufferData = &aabbBufferData;
+        return true;
+    }
+
+    void updateBufferStorage(const AABBBoundingRegion& aabb) {
+        auto aabbBuffMapIt = aabbBuffMap.find(aabb);
+
+        if(aabbBuffMapIt == aabbBuffMap.end()) return;
+
+        auto& aabbBufferData = aabbBuffMapIt->second;
+
+        aabbBufferData.vbo.bind();
+        aabbBufferData.vbo.createData(aabbBufferData.vertices.data(), aabbBufferData.vertices.size() * sizeof(RendererBuffersData::AABBVertex), GL_DYNAMIC_DRAW);
+        aabbBufferData.vbo.unbind();
+    }
+
+    void registerBufferStorage(const AABBBoundingRegion& aabb) {
+        auto [it, inserted] = aabbBuffMap.try_emplace(aabb); 
+        
+        if(inserted) {
+            auto& aabbBufferData = it->second;
+
+            aabbBufferData.vao.create();
+            aabbBufferData.vbo.create();
+
+            aabbBufferData.vao.bind();
+            aabbBufferData.vbo.bind();
+            aabbBufferData.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::AABBVertex), (void*)0);
+            aabbBufferData.vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::AABBVertex), (void*)offsetof(RendererBuffersData::AABBVertex, color));
+            aabbBufferData.vao.unbind();
+            aabbBufferData.vbo.unbind();
+        }
+    }
+
+    static std::string getBufferStorageName() {
+        return "AABBBufferStorage";
+    }
+
+	using AABBBuffMap = std::map<AABBBoundingRegion, BufferData<RendererBuffersData::AABBVertex>>;
+
+	AABBBuffMap aabbBuffMap;
+};
+
 
 class Renderer {
 public:
 	static void init()
 	{
-		using AABBVertex = RendererStageData::AABBVertex;
-		using LineVertex = RendererStageData::LineVertex;
-		using PointVertex = RendererStageData::PointVertex;
-		using MeshVertex = RendererStageData::MeshVertex;
+		using AABBVertex = RendererBuffersData::AABBVertex;
+		using LineVertex = RendererBuffersData::LineVertex;
+		using PointVertex = RendererBuffersData::PointVertex;
+		using MeshVertex = RendererBuffersData::MeshVertex;
 
-		s_bufferRegistry.registerBuffer<BufferRegistry::BufferType::Line>(false);
-		s_bufferRegistry.registerBuffer<BufferRegistry::BufferType::Mesh>(false);
-		s_bufferRegistry.registerBuffer<BufferRegistry::BufferType::AABB>(true);
-		s_bufferRegistry.registerBuffer<BufferRegistry::BufferType::Point>(false);
-
-		//LINE
-		BufferRegistry::Buffer& lineBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Line>();
-		
-		lineBuffer.vao.bind();
-		lineBuffer.vbo.bind();
-		lineBuffer.vbo.createData(nullptr, (50000000 * 2) * sizeof(LineVertex), GL_DYNAMIC_DRAW);
-		//data.Line_vbo.createData(nullptr, 2 * sizeof(LineVertex), GL_DYNAMIC_DRAW);
-		lineBuffer.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, position));
-		lineBuffer.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (void*)offsetof(LineVertex, isHighlighted));
-		lineBuffer.vao.unbind();
-		lineBuffer.vbo.unbind();
-
-		//MESH
-		BufferRegistry::Buffer& meshBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Mesh>();
-		meshBuffer.vao.bind();
-		meshBuffer.vbo.bind();
-		meshBuffer.vbo.createData(nullptr, (3 * 1000000) * sizeof(MeshVertex), GL_DYNAMIC_DRAW);
-		meshBuffer.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, position));
-		meshBuffer.vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, normal));
-		meshBuffer.vao.addVertexBufferLayout(2, 1, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, isHighlited));
-		meshBuffer.vao.unbind();
-		meshBuffer.vbo.unbind();
-
-		//POINTS
-		BufferRegistry::Buffer& pointBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Point>();
-		pointBuffer.vao.bind();
-		pointBuffer.vbo.bind();
-		pointBuffer.vbo.createData(nullptr, 1000000 * sizeof(PointVertex), GL_DYNAMIC_DRAW);
-		pointBuffer.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(PointVertex), (void*)0);
-		pointBuffer.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointVertex), (void*)(offsetof(PointVertex, isHighlighted)));
-		pointBuffer.vao.unbind();
-		pointBuffer.vbo.unbind();
-
-		//AABB
-		BufferRegistry::Buffer& aabbBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::AABB>();
-		aabbBuffer.vao.bind();
-		aabbBuffer.vbo.bind();
-		aabbBuffer.vbo.createData(nullptr, RendererConfig::maxVertexCount * sizeof(AABBVertex), GL_DYNAMIC_DRAW);
-
-		aabbBuffer.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void*)0);
-		aabbBuffer.vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void*)offsetof(AABBVertex, color));
-		aabbBuffer.vao.unbind();
-		aabbBuffer.vbo.unbind();
-	}
-    static void drawPoints(std::vector<RendererStageData::PointVertex>& points)
-	{
-		BufferRegistry::Buffer& pointBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Point>();
-		glDisable(GL_PROGRAM_POINT_SIZE);
-		// Binding VAO, VBO, EBO
-		pointBuffer.vao.bind();
-		pointBuffer.vbo.bind();
-
-		pointBuffer.vbo.updateData(points.data(), points.size() * sizeof(RendererStageData::PointVertex), 0);
-
-		glPointSize(10.0f);
-
-		glDrawArrays(GL_POINTS, 0, points.size());
-
-		// Unbinding VAO, VBO
-		pointBuffer.vao.unbind();
-		pointBuffer.vbo.unbind();
+        s_bufferRegistry.registerBuffer<MeshBufferStorage>();
+        s_bufferRegistry.registerBuffer<LineBufferStorage>();
+        s_bufferRegistry.registerBuffer<AABBBufferStorage>();
+        s_bufferRegistry.registerBuffer<PointBufferStorage>();
 	}
 
-    static void updateMesh(const std::vector<RendererStageData::MeshVertex>& mesh){
-		BufferRegistry::Buffer& meshBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Mesh>();
-		// Binding VAO, VBO, EBO
-		meshBuffer.vao.bind();
-		meshBuffer.vbo.bind();
+    static void drawMeshPoints(Mesh* mesh, Shader* shader){
+        PointBufferStorage* pointBufferStorage = s_bufferRegistry.queryBuffer<PointBufferStorage>();
+        
+        BufferData<RendererBuffersData::PointVertex>* pointBufferData;
+        if(pointBufferStorage->getBufferData(mesh, pointBufferData)) {
+           
+            shader->bind();
+            glDisable(GL_PROGRAM_POINT_SIZE);
+            pointBufferData->vao.bind();
 
-		meshBuffer.vbo.updateData(mesh.data(), mesh.size() * sizeof(RendererStageData::MeshVertex), 0);
+            glPointSize(10.0f);
 
-		// Unbinding VAO, VBO
-		meshBuffer.vao.unbind();
-		meshBuffer.vbo.unbind();
+            glDrawArrays(GL_POINTS, 0, pointBufferData->vertices.size());
+
+            pointBufferData->vao.unbind();
+            shader->unbind();
+        }
     }
 
-    static void drawMesh(const std::vector<RendererStageData::MeshVertex>& mesh)
-    {
-		BufferRegistry::Buffer& meshBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Mesh>();
+    static void drawMeshLines(Mesh* mesh, Shader* shader){
+		LineBufferStorage* lineBufferStorage = s_bufferRegistry.queryBuffer<LineBufferStorage>();
 
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(1.0f, 1.0f); // offset face slightly back
+        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
 
-		// Binding VAO, VBO, EBO
-		meshBuffer.vao.bind();
+        if(lineBufferStorage->getBufferData(mesh, lineBufferData)) {
 
-		glDrawArrays(GL_TRIANGLES, 0, mesh.size());
-
-		// Unbinding VAO, VBO
-		meshBuffer.vao.unbind();
-
-        glDisable(GL_POLYGON_OFFSET_FILL);
-    }
-    static void drawBox(const std::vector<RendererStageData::AABBVertex>& box)
-    {
-		BufferRegistry::Buffer& aabbBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::AABB>();
-		// Binding VAO, VBO, EBO
-		aabbBuffer.vao.bind();
-		aabbBuffer.vbo.bind();
-		//data.AABB_ebo.bind();
-
-		aabbBuffer.vbo.updateData(box.data(), box.size() * sizeof(RendererStageData::AABBVertex), 0);
-
-		// Draw all AABBs in a single call
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDrawArrays(GL_TRIANGLES, 0, box.size());
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		// Unbinding VAO, VBO, EBO
-		aabbBuffer.vao.unbind();
-		aabbBuffer.vbo.unbind();
-		aabbBuffer.ebo->unbind();
+            shader->bind();
+            lineBufferData->vao.bind();
+            glLineWidth(1.0f);
+            glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
+            glLineWidth(0.5f);
+            lineBufferData->vao.unbind();
+            shader->unbind();
+        }
     }
 
-    static void updateLines(std::vector<RendererStageData::LineVertex>& lines){
-		BufferRegistry::Buffer& lineBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Line>();
+    static void drawMesh(Mesh* mesh){
+        MeshBufferStorage* meshBufferStorage = s_bufferRegistry.queryBuffer<MeshBufferStorage>();
 
-        lineBuffer.vao.bind();
-        lineBuffer.vbo.bind();
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
 
-        lineBuffer.vbo.updateData(lines.data(), lines.size() * sizeof(RendererStageData::LineVertex), 0);
+        if(meshBufferStorage->getBufferData(mesh, mesh->m_defaultMaterial, meshBufferData)) {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(1.0f, 1.0f);
+            
+            mesh->m_defaultMaterial->getShader()->bind();
+            meshBufferData->vao.bind();
+            glDrawArrays(GL_TRIANGLES, 0, meshBufferData->vertices.size()); 
+            meshBufferData->vao.unbind();
+            mesh->m_defaultMaterial->getShader()->bind();
 
-        lineBuffer.vao.unbind();
-        lineBuffer.vbo.unbind();
+            glDisable(GL_POLYGON_OFFSET_FILL);
+        }
     }
-    static void drawLines(std::vector<RendererStageData::LineVertex>& lines)
-    {
-		BufferRegistry::Buffer& lineBuffer = s_bufferRegistry.queryBuffer<BufferRegistry::BufferType::Line>();
 
-		//Binding VAO,VBO
-		lineBuffer.vao.bind();
-		//Draw Mesh using vertexData
-		glLineWidth(1.0f);
-		glDrawArrays(GL_LINES, 0, lines.size());
-		glLineWidth(0.5f);
-		//Unbinding VAO,VBO
-		lineBuffer.vao.unbind();
+    static void drawBox(const AABBBoundingRegion& aabb){
+        AABBBufferStorage* aabbBufferStorage = s_bufferRegistry.queryBuffer<AABBBufferStorage>();
+
+        BufferData<RendererBuffersData::AABBVertex>* aabbBufferData;
+        
+        if(aabbBufferStorage->getBufferData(aabb, aabbBufferData)) {
+            aabbBufferData->vao.bind();
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDrawArrays(GL_TRIANGLES, 0, aabbBufferData->vertices.size());
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+            aabbBufferData->vao.unbind();
+        }
     }
 
 private:
 	class BufferRegistry
 	{
 	public:
-		enum class BufferType
-		{
-			Point, Line, Mesh, AABB, ScreenQuad
-		};
-
-		struct Buffer
-		{
-			VertexArrayObject vao;
-			VertexBufferObject vbo;
-			std::optional<ElementBufferObject> ebo;
-		};
-
-		template<BufferType T>
-		void registerBuffer(bool useEbo) {
-			Buffer buffer;
-			buffer.vao.create();
-			buffer.vbo.create();
-			if (useEbo)
-			{
-				buffer.ebo = ElementBufferObject();
-				buffer.ebo->create();
-			}
-			m_buffers.insert({ T, std::move(buffer) });
+		template<typename BufferType>
+		void registerBuffer() {
+            m_buffers.try_emplace(BufferType::getBufferStorageName(), new BufferType());
 		}
 
-		template<BufferType T>
-		Buffer& queryBuffer()
+        template<typename BufferType>
+		BufferType* queryBuffer()
 		{
-			return m_buffers[T];
+            auto it = m_buffers.find(BufferType::getBufferStorageName());
+            if (it != m_buffers.end()) {
+                return static_cast<BufferType*>(it->second);
+            }
+            return nullptr;
 		}
 
 	private:
-		std::map<BufferType, Buffer> m_buffers;
+		std::map<std::string, BufferStorageConcept*> m_buffers;
 	};
-private:
-	inline static BufferRegistry s_bufferRegistry;
-
 public:
-	inline static RendererStageData s_stageData;
+	inline static BufferRegistry s_bufferRegistry;
 };

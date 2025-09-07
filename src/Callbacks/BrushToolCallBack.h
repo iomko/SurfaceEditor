@@ -24,8 +24,11 @@ public:
 
 		if (closestMesh != nullptr)
 		{
-			RendererStageData::MatVertsMap& materialVertsMap = Renderer::s_stageData.meshMatsMap.find(closestMesh)->second;
-			std::vector<RendererStageData::LineVertex>& edgesVector = Renderer::s_stageData.meshLinesMap.find(closestMesh)->second;
+            //potrebujem ziskat meshLinesVaoVector
+            LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
+            BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+            lineBufferStorage->getBufferData(closestMesh, lineBufferData);
+            std::vector<RendererBuffersData::LineVertex>& edgesVector = lineBufferData->vertices;
 			
 			Sphere sphere{ hitPoint, iParams.radius };
 			ExtendedVertex* closestVertex = findClosestVertexOnFace(closestFace, hitPoint);
@@ -43,12 +46,16 @@ public:
 				{
 					ExtendedFace* face = graphEdge->face;
 
+                    //potrebujeme ziskat materialVaoVertices
+                    MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+                    BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+                    meshBufferStorage->getBufferData(closestMesh, face->material, meshBufferData);
+                    std::vector<RendererBuffersData::MeshVertex>& facesVaoData = meshBufferData->vertices;
+
 					FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
 
 					FaceTriangle& faceTriangle =
 						closestMesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
-
-					std::vector<RendererStageData::MeshVertex>& facesVaoData = materialVertsMap.find(face->material)->second;
 
 					int faceIndexInVao = faceTriangle.indexInVAO;
 					for (int i = faceIndexInVao; i < faceIndexInVao + 3; ++i)

@@ -13,14 +13,26 @@ public:
 		std::vector<ExtendedFace*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
 		std::vector<ExtendedEdge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
-		SceneResources& res = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res;
-
 		Material* material = mesh->m_defaultMaterial;
-		RendererStageData::MatVertsMap& materialVertsMap = Renderer::s_stageData.meshMatsMap[mesh];
-		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = Renderer::s_stageData.meshLinesMap[mesh];
 
-		std::vector<RendererStageData::MeshVertex>& materialVaoVertices = materialVertsMap[material];
 		std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
+
+        //potrebujeme ziskat materialVaoVertices
+        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+        meshBufferStorage->registerBufferStorage(mesh, material);
+
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+        meshBufferStorage->getBufferData(mesh, material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& materialVaoVertices = meshBufferData->vertices;
+         
+        //potrebujem ziskat meshLinesVaoVector
+        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
+        lineBufferStorage->registerBufferStorage(mesh);
+
+        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+        lineBufferStorage->getBufferData(mesh, lineBufferData);
+        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
+
 
 		//---FOR_FACES---
 		for (ExtendedFace* meshFace : meshFaces)
@@ -101,7 +113,10 @@ public:
 			edge->m_EdgeLineIndex = edgeLineIndex;
 		}
 
-        Renderer::updateLines(meshLinesVaoVector);
+        meshBufferStorage->updateBufferStorage(mesh, material);
+        lineBufferStorage->updateBufferStorage(mesh);
+         
+
         std::cout << "TEST HERE" << std::endl;
 	}
 };

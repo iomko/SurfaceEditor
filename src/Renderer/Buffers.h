@@ -44,7 +44,6 @@ public:
 	void create()
 	{
 		glGenVertexArrays(1, &id);
-		bind();
 	}
 	void addVertexBufferLayout(int index, int size, GLenum type, bool normalized, int stride, void* offset)
 	{
@@ -97,7 +96,6 @@ public:
 	void create()
 	{
 		glGenBuffers(1, &id);
-		bind();
 	}
 	void createData(const void* data, int size, GLenum usage)
 	{
@@ -107,7 +105,7 @@ public:
 	{
 		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 	}
-private:
+public:
 	unsigned int id = 0;
 };
 

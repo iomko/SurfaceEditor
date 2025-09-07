@@ -204,10 +204,14 @@ private:
 
 	void deleteEdgeVaoData(Mesh* mesh, ExtendedEdge* edge)
 	{
-		RendererStageData::MeshLinesMap& meshLinesMap = Renderer::s_stageData.meshLinesMap;
-		auto meshLinesVaoMapIt = meshLinesMap.find(mesh);
+        //potrebujem ziskat meshLinesVaoVector
+        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
 
-		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = meshLinesVaoMapIt->second;
+        LineBufferStorage::MeshBuffMap& meshLinesMap = lineBufferStorage->meshBuffMap;
+
+        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+        lineBufferStorage->getBufferData(mesh, lineBufferData);
+        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
 
 
 		//---VAO_DATA_SWAP---
@@ -232,7 +236,7 @@ private:
 
 			if (meshLinesVaoVector.empty())
 			{
-				meshLinesMap.erase(meshLinesVaoMapIt);
+				meshLinesMap.erase(mesh);
 			}
 
 		}
@@ -242,12 +246,15 @@ private:
 	//tymto vymazeme vao data z meshu
 	void deleteFaceVaoData(Mesh* mesh, ExtendedFace* face)
 	{
-		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
-		auto meshVaoMapIt = meshMatsMap.find(mesh);
+        //potrebujeme ziskat materialVaoVertices
+        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
 
-		RendererStageData::MatVertsMap& materialVertsMap = meshVaoMapIt->second;
-		auto materialMapIt = materialVertsMap.find(face->material);
-		std::vector<RendererStageData::MeshVertex>& facesVao = materialMapIt->second;
+        MeshBufferStorage::MeshMatsMap& meshMatsMap = meshBufferStorage->meshMatsMap;
+        MeshBufferStorage::MatBuffMap& materialVertsMap = meshMatsMap.find(mesh)->second;
+
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+        meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& facesVao = meshBufferData->vertices;
 
 		std::map<Material*, std::vector<FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
 		auto materialTrianglesIt = materialTrianglesMap.find(face->material);
@@ -279,10 +286,10 @@ private:
 
 				if (facesVao.empty())
 				{
-					materialVertsMap.erase(materialMapIt);
+					materialVertsMap.erase(face->material);
 					if (materialVertsMap.empty())
 					{
-						meshMatsMap.erase(meshVaoMapIt);
+						meshMatsMap.erase(mesh);
 					}
 				}
 

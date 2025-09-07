@@ -116,6 +116,7 @@ std::string getShaderPath(const std::string& file){
     return std::string(SHADER_DIR) + "/" + file;
 }
 
+/*
 void clearAABBData()
 {
 	Renderer::s_stageData.aabbVertsMap.clear();
@@ -192,6 +193,34 @@ void collectAABBData(const AABBBoundingRegion& aabb) {
 		std::end(AABB_vertices)
 	);
 }
+*/
+
+
+void DebugDrawSimpleLine(Shader* debugShader) {
+    struct P { float x,y,z; float h; };
+    P pts[] = { {-0.5f,-0.5f,0,0}, {0.5f,0.5f,0,0} };
+    GLuint tmpVAO=0, tmpVBO=0;
+    glGenVertexArrays(1, &tmpVAO);
+    glGenBuffers(1, &tmpVBO);
+
+    glBindVertexArray(tmpVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, tmpVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pts), pts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(P), (void*)0); glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(P), (void*)(offsetof(P,h))); glEnableVertexAttribArray(1);
+
+    debugShader->bind();
+    glDisable(GL_DEPTH_TEST);
+    glBindVertexArray(tmpVAO);
+    glDrawArrays(GL_LINES, 0, 2);
+    glBindVertexArray(0);
+    debugShader->unbind();
+
+    glDeleteBuffers(1, &tmpVBO);
+    glDeleteVertexArrays(1, &tmpVAO);
+}
+
+
 
 int main()
 {
@@ -217,21 +246,6 @@ int main()
     face2DVertices.emplace_back(376, 372);
 
     bool testOverlap = utils::geometry::polygon2DOverlap(selectedFace2DVertices, face2DVertices);
-
-
-    /*
-    std::vector<glm::vec2> vertsB;
-    vertsB.emplace_back(glm::vec2(0.0, 0.0));
-    vertsB.emplace_back(glm::vec2(0.0, -3.5));
-    vertsB.emplace_back(glm::vec2(-3.5, 0.0));
-
-    std::vector<glm::vec2> vertsA;
-    vertsA.emplace_back(glm::vec2(-3.5, -3.5));
-    vertsA.emplace_back(glm::vec2(-3.5, 0.0));
-    vertsA.emplace_back(glm::vec2(0.0, -3.5));
-
-    bool isShadowing = utils::geometry::polygon2DOverlap(vertsA, vertsB);
-    */
 
 
 	CommandRegistry* commandRegistry = new CommandRegistry();
@@ -449,8 +463,8 @@ int main()
 	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
 	app.getLayerStack().addLayer(&sculptToolsLayer);
 
-	clearAABBData();
-
+	//clearAABBData();
+    /*
 	for (auto& entry : scene.m_res.coordsOctreeMap) {
 		const glm::vec3& key = entry.first;
 		Octree<std::pair<Mesh*, ExtendedFace*>>& octree = entry.second;
@@ -459,6 +473,7 @@ int main()
 			collectAABBData(octreeNode.getBounds());
 		}
 	}
+    */
 
 	//toolBarLayer.addObserver(&viewPortLayer);
 	glm::mat4 model = glm::mat4(1.0f);
@@ -474,6 +489,11 @@ int main()
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
 
+
+    //unsigned int tmpVAO=0, tmpVBO=0;
+    //glGenVertexArrays(1, &tmpVAO);
+    //glGenBuffers(1, &tmpVBO);
+    //
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
 
@@ -523,7 +543,7 @@ int main()
 
 		}
 
-
+        /*
 		if(Input::isKeyPressed(GLFW_KEY_T))
 		{
 			//viewPortLayer.deleteSelectedMeshes();
@@ -542,6 +562,7 @@ int main()
 			}
 
 		}
+        */
 
 		int screenWidth = ViewPortsHolderContext::s_window->getScreenWidth();
 		int screenHeight = ViewPortsHolderContext::s_window->getScreenHeight();
@@ -552,48 +573,58 @@ int main()
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		
-		for (auto& [mesh, materialVertexMap] : Renderer::s_stageData.meshMatsMap)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			//chcem zapisovat do depth bufferu
-			glEnable(GL_DEPTH_TEST);
-			glDepthMask(GL_TRUE);
-			glDepthFunc(GL_LESS);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			//nechcem zapisovat do stencil bufferu
-			glStencilMask(0x00);
-			glDisable(GL_STENCIL_TEST);
+        //chcem zapisovat do depth bufferu
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
 
-			for (auto& [material, vertexVector] : materialVertexMap)
-			{
-				// Pass the vertexVector to some method
-                if(!vertexVector.empty()){
-                    material->getShader()->bind();
-                    Renderer::drawMesh(vertexVector);
-                    material->getShader()->unbind();
-                }
-			}
-		}
+        //nechcem zapisovat do stencil bufferu
+        glStencilMask(0x00);
+        glDisable(GL_STENCIL_TEST);
 
-		//RENDER LINES
-		for (auto& [mesh, linesVector] : Renderer::s_stageData.meshLinesMap)
-		{
-            if(!linesVector.empty()){
-                linesShader.bind();
-                Renderer::drawLines(linesVector);
-                linesShader.unbind();
-            }
-		}
+        //DebugDrawSimpleLine(&linesShader);
 
-		ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
-		
+        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
+            Renderer::drawMesh(mesh);
+            Renderer::drawMeshLines(mesh, &linesShader);
+            
+            /*
+            LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
+
+            BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+
+            lineBufferStorage->getBufferData(mesh, lineBufferData);
+
+            linesShader.bind();
+            lineBufferData->vao.bind();
+            //lineBufferData->vbo.bind();
+
+            glDisable(GL_DEPTH_TEST);
+            glBindVertexArray(lineBufferData->vao.id);
+            glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
+            glBindVertexArray(0);
+
+            lineBufferData->vao.unbind();
+            //lineBufferData->vbo.unbind();
+
+            linesShader.unbind();
+            */
+
+        }
+
+		//ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();
+	    
+        /*
 		for (const auto& [region, vertices] : Renderer::s_stageData.aabbVertsMap) {
 			
 			Renderer::drawBox(vertices);
 		}
-		ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
+        */
+
+		//ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->unbind();
 
 		app.run();
 		

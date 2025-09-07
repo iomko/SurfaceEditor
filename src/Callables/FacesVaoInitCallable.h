@@ -14,12 +14,19 @@ public:
     
 		Material* material = mesh->m_defaultMaterial;
 
-		RendererStageData::MatVertsMap& materialVertsMap = Renderer::s_stageData.meshMatsMap[mesh];
-
-		std::vector<RendererStageData::MeshVertex>& materialVaoVertices = materialVertsMap[material];
-		std::vector<RendererStageData::LineVertex>& meshLinesVaoVector = Renderer::s_stageData.meshLinesMap[mesh];
-        
         std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
+
+        //potrebujeme ziskat materialVaoVertices
+        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+        meshBufferStorage->getBufferData(mesh, material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& materialVaoVertices = meshBufferData->vertices;
+         
+        //potrebujem ziskat meshLinesVaoVector
+        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
+        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+        lineBufferStorage->getBufferData(mesh, lineBufferData);
+        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
 
 
 		//---FOR_FACES---

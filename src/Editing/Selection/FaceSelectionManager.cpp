@@ -14,11 +14,13 @@ void FaceSelectionManager::registerFace(ExtendedFace* face, Mesh* mesh)
 		std::vector<ExtendedFace*>& selectionVector = m_holder.faces[mesh];
 		selectionVector.emplace_back(face);
 
-		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
-		RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
-		std::vector<RendererStageData::MeshVertex>& meshVaoVertices = materialVertsMap.find(face->material)->second;
+        //potrebujeme ziskat materialVaoVertices
+        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+        meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& meshVaoVertices = meshBufferData->vertices;
 
 		for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
 		{
@@ -42,11 +44,13 @@ void FaceSelectionManager::unregisterFace(ExtendedFace* face, Mesh* mesh)
 		int indexInSelection = face->m_selectionIndex;
 		std::vector<ExtendedFace*>& selectionVector = m_holder.faces.find(mesh)->second;
 
-		RendererStageData::MeshMatsMap& meshMatsMap = Renderer::s_stageData.meshMatsMap;
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
-		RendererStageData::MatVertsMap& materialVertsMap = meshMatsMap.find(mesh)->second;
-		std::vector<RendererStageData::MeshVertex>& meshVaoVertices = materialVertsMap.find(face->material)->second;
+        //potrebujeme ziskat materialVaoVertices
+        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
+        meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& meshVaoVertices = meshBufferData->vertices;
 
 		if (indexInSelection != selectionVector.size() - 1)
 		{
