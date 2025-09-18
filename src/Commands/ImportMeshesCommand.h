@@ -5,7 +5,7 @@
 #include "Patterns/Observer.h"
 
 
-class ImportMeshesCommand : public Command<ImportExportMeshesParams>, public Observable
+class ImportMeshesCommand : public Observable, public Command<ImportExportMeshesParams>
 {
 public:
 	virtual void execute(const ImportExportMeshesParams& params) override

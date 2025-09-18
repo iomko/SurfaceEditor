@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 
 namespace utils::containers
 {
@@ -27,5 +28,4 @@ namespace utils::containers
 			return;
 		std::reverse(vec.begin() + startingIndex, vec.begin() + endingIndex + 1);
 	}
-
 }

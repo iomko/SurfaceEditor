@@ -5,6 +5,7 @@
 #include "../Scene/Camera.h"
 #include "../DataStructures/Octree.h"
 #include "../Core/Window.h"
+#include "DataStructures/PrintableMesh.h"
 
 struct SceneResources
 {
@@ -16,6 +17,9 @@ struct SceneResources
 	using MatFacesMap = std::map<Material*, std::vector<ExtendedFace*>>;
 	using MeshFacesMap = std::map<Mesh*, MatFacesMap>;
 
+    using PrintableMeshMap = std::map<Mesh*, PrintableMesh*>;
+    
+    PrintableMeshMap printableMeshMap;
 	MeshFaceOctreeCoordsMap meshFaceOctreeCoordsMap;
 	CoordsOctreeMap coordsOctreeMap;
 };

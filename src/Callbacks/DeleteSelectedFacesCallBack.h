@@ -210,10 +210,10 @@ private:
 
 		//---VAO_DATA_SWAP---
 		//before
-		if (edge->m_EdgeLineIndex != (meshLinesVaoVector.size() - 4))
+		if (edge->m_EdgeLineIndex != (meshLinesVaoVector.size() - 2))
 		{
-			utils::containers::reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 4, meshLinesVaoVector.size() - 1);
-			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 3; ++i)
+			utils::containers::reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 2, meshLinesVaoVector.size() - 1);
+			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 1; ++i)
 			{
 				utils::containers::swapLastAndPop(meshLinesVaoVector, i);
 			}

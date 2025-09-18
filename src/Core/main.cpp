@@ -1,9 +1,12 @@
-﻿#include "UI/ModifiersLayer.h"
+﻿#include "Callbacks/CreatePrintStructureCallBack.h"
+#include "Commands/CreatePrintCommand.h"
+#include "UI/ModifiersLayer.h"
+#include "UI/PrintableMeshSettingsPopUpLayer.h"
 #define NOMINMAX  // Prevents Windows.h from defining min/max macros
 
 #include <limits>
 //#include <Windows.h>
-
+#include <print>
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
@@ -94,6 +97,10 @@ float lastFrame = 0.0f;
 #include "../DataStructures/ExtendedHalfEdge.h"
 
 #include "../Utils/GeometryUtils.h"
+
+#include "UI/OutlinerLayer.h"
+#include "Callables/MeshOutlinerAdderCallable.h"
+#include "DataStructures/PrintableMesh.h"
 
 //INTERACTION_HANDLER
 #include "../Tools/InteractionHandler.h"
@@ -220,10 +227,37 @@ void DebugDrawSimpleLine(Shader* debugShader) {
     glDeleteVertexArrays(1, &tmpVAO);
 }
 
+struct OutlinerDataTest {
+    std::string someData = "same";
+};
+
 
 
 int main()
 {
+    /*
+    PrintableMesh printableMesh;
+    std::vector<ExtrudeEdge> extrudeEdges;
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, -20.0f },glm::vec3{-5.0f, 0.0f, -20.0f} ); //1
+    extrudeEdges.emplace_back( glm::vec3{-5.0f, 0.0f, -20.0f },glm::vec3{5.0f, 0.0f, -20.0f} ); //2
+    extrudeEdges.emplace_back( glm::vec3{-4.0f, 0.0f, 20.0f },glm::vec3{-20.0f, 0.0f, 20.0f} ); //3
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, -8.0f },glm::vec3{-20.0f, 0.0f, 10.0f} ); //4
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, 18.0f },glm::vec3{-20.0f, 0.0f, 13.0f} ); //5
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, -15.0f },glm::vec3{-20.0f, 0.0f, -11.0f} ); //6
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, -20.0f },glm::vec3{-20.0f, 0.0f, -15.0f} ); //7
+    extrudeEdges.emplace_back( glm::vec3{5.0f, 0.0f, -8.0f },glm::vec3{2.0f, 0.0f, 20.0f} ); //8
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, -8.0f },glm::vec3{-20.0f, 0.0f, -11.0f} ); //9
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, 20.0f },glm::vec3{-20.0f, 0.0f, 18.0f} ); //10
+    extrudeEdges.emplace_back( glm::vec3{5.0f, 0.0f, -8.0f },glm::vec3{5.0f, 0.0f, -20.0f} ); //11
+    extrudeEdges.emplace_back( glm::vec3{-20.0f, 0.0f, 10.0f },glm::vec3{-20.0f, 0.0f, 13.0f} ); //12
+    extrudeEdges.emplace_back( glm::vec3{-4.0f, 0.0f, 20.0f },glm::vec3{2.0f, 0.0f, 20.0f} ); //13
+   
+    printableMesh.addLevelLayers(extrudeEdges);
+    */
+    //printableMesh.addLevelLayers(extrudeEdges);
+    
+    WindowLayerBus windowLayerBus;
+
     ExtendedHalfEdgeMesh extendedHalfEdgeMeshTest;
     std::vector<glm::vec3> testVertices;
     testVertices.emplace_back(-6.17731, -5.06843, 0.0);
@@ -258,9 +292,11 @@ int main()
 	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<PlaneVertexGenCallable>();
 	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
 	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
+    addPlaneComposer.addFunc<MeshOutlinerAdderCallable>(addPlaneRoot);
 	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
 
     SolidifyMeshesCallBack solidifyMeshesCallBack;
+    CreatePrintStructureCallBack createPrintStructureCallBack;
 
 
 
@@ -269,6 +305,7 @@ int main()
 	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<FetchedSurfaceVertexGenCallable>();
 	fetchSurfaceComposer.addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
 	fetchSurfaceComposer.addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
+    fetchSurfaceComposer.addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
 	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
 
 
@@ -356,6 +393,11 @@ int main()
 
     solidifyMeshesCommand->addObserver(&solidifyMeshesCallBack);
     solidifyMeshesCallBack.observe(solidifyMeshesCommand, &solidifyMeshesCallBack);
+
+    commandRegistry->registerCommand<CreatePrintCommand>();
+    CreatePrintCommand* createPrintCommand = commandRegistry->getCommand<CreatePrintCommand>();
+    createPrintCommand->addObserver(&createPrintStructureCallBack);
+    createPrintStructureCallBack.observe(createPrintCommand, &createPrintStructureCallBack);
 
 	commandRegistry->registerCommand<FetchSurfaceCommand>();
 	FetchSurfaceCommand* fetchSurfaceCommand = commandRegistry->getCommand<FetchSurfaceCommand>();
@@ -451,8 +493,29 @@ int main()
 	AdditionLayer additionLayer("AdditionLayer", *commandRegistry);
 	app.getLayerStack().addLayer(&additionLayer);
 
+    //OutlinerLayer
+    OutlinerLayer outlinerLayer("OutlinerLayer", windowLayerBus);
+    app.getLayerStack().addLayer(&outlinerLayer);
+
+    //popUpLayer
+    PrintableMeshSettingsPopUpLayer popUpLayer("PopUpLayer", *commandRegistry, windowLayerBus);
+    app.getLayerStack().addLayer(&popUpLayer);
+
+    /*
+    OutlinerNodeConcept* mesh1Concept = outlinerLayer.addNode(0, "Mesh1", OutlinerDataTest{});
+    OutlinerNodeConcept* material1Concept = outlinerLayer.addChildNode(mesh1Concept, 1, "Material1", OutlinerDataTest{});
+    outlinerLayer.addChildNode(material1Concept, 2, "Texture1", OutlinerDataTest{});
+    outlinerLayer.addChildNode(material1Concept, 3, "Texture2", OutlinerDataTest{});
+    outlinerLayer.addChildNode(material1Concept, 4, "Texture3", OutlinerDataTest{});
+    outlinerLayer.addChildNode(mesh1Concept, 5, "PrintableMesh1", OutlinerDataTest{});
+    outlinerLayer.addChildNode(mesh1Concept, 6, "PrintableMesh2", OutlinerDataTest{});
+    outlinerLayer.addNode(7, "Mesh2", OutlinerDataTest{});
+    OutlinerNodeConcept* material3Concept = outlinerLayer.addNode(8, "Mesh3", OutlinerDataTest{});
+    outlinerLayer.addChildNode(material3Concept, 9, "Material2", OutlinerDataTest{});
+    */
+
 	//ModifiersLayer
-	ModifiersLayer modifiersLayer("ModifiersLayer", *commandRegistry);
+	ModifiersLayer modifiersLayer("ModifiersLayer", *commandRegistry, windowLayerBus);
 	app.getLayerStack().addLayer(&modifiersLayer);
 
 	//RemovalLayer
@@ -489,9 +552,71 @@ int main()
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
 
+    
+    //test for edge connections
+    //
+    /*
+    std::vector<glm::vec3> connectionVertices;
+    connectionVertices.emplace_back(-1.9639, 0.0, -0.551); //0
+    connectionVertices.emplace_back(-1.0, 0.0, -1.0); //1
+    connectionVertices.emplace_back(1.0, 0.0, -1.0); //2
+    connectionVertices.emplace_back(2.0096, 0.0, 0.37151); //3
+    connectionVertices.emplace_back(1.0, 0.0, 1.0); //4
+    connectionVertices.emplace_back(-1.0, 0.0, 1.0); //5
+    connectionVertices.emplace_back(-1.0, 0.0, 2.7877);
+    std::vector<std::vector<int>> connectionPolygons;
+    
+    std::vector<int> firstPolygon { 0, 5, 1 };
+    std::vector<int> secondPolygon { 1, 5, 2 };
+    std::vector<int> thirdPolygon { 2, 5, 4 };
+    std::vector<int> fourthPolygon { 2, 4, 3 };
+
+    connectionPolygons.push_back(firstPolygon);
+    connectionPolygons.push_back(secondPolygon);
+    connectionPolygons.push_back(thirdPolygon);
+    connectionPolygons.push_back(fourthPolygon);
+
+    ExtendedHalfEdgeMesh connectionHalfEdgeMesh;
+    connectionHalfEdgeMesh.build(connectionPolygons, connectionVertices);
+
+    //addFloatingFace
+    //
+    ExtendedEdge* firstEdge = nullptr;
+
+    for(ExtendedEdge* extendedEdge : connectionHalfEdgeMesh.m_edges) {
+        if((extendedEdge->m_firstVertex->m_position == connectionVertices.at(5)
+            && extendedEdge->m_secondVertex->m_position == connectionVertices.at(4)) 
+            || (extendedEdge->m_secondVertex->m_position == connectionVertices.at(5) 
+            && extendedEdge->m_firstVertex->m_position == connectionVertices.at(4))) 
+        {
+            firstEdge = extendedEdge;
+            break;
+        }
+    }
+
+    std::vector<glm::vec3> floatingFace { { -1.0, 0.0, 1.0 }, { -1.0, 0.0, 2.7877 }, { 1.0, 0.0, 1.0 } };
+    ExtendedEdge* secondEdge = nullptr;
+    ExtendedFace* floatingExtendedFace = connectionHalfEdgeMesh.addFloatingFace(floatingFace);
+    for(auto it = floatingExtendedFace->faceHalfEdgeBegin(); it != floatingExtendedFace->faceHalfEdgeEnd(); ++it) {
+        ExtendedEdge* floatingEdge = (*it).m_edge;
+        if((floatingEdge->m_firstVertex->m_position == connectionVertices.at(5)
+            && floatingEdge->m_secondVertex->m_position == connectionVertices.at(4)) 
+            || (floatingEdge->m_secondVertex->m_position == connectionVertices.at(5) 
+            && floatingEdge->m_firstVertex->m_position == connectionVertices.at(4))) 
+        {
+            secondEdge = floatingEdge;
+            break;
+        }
+    }
+
+    connectionHalfEdgeMesh.connectEdges(firstEdge, secondEdge);
+    */
+
+    //connectionHalfEdgeMesh.connectEdges(ExtendedEdge *firstEdge, ExtendedEdge *secondEdge)
+
 
     //unsigned int tmpVAO=0, tmpVBO=0;
-    //glGenVertexArrays(1, &tmpVAO);
+    //glGenVertexArrays(1, &tmpVAO); 
     //glGenBuffers(1, &tmpVBO);
     //
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
@@ -543,27 +668,6 @@ int main()
 
 		}
 
-        /*
-		if(Input::isKeyPressed(GLFW_KEY_T))
-		{
-			//viewPortLayer.deleteSelectedMeshes();
-			//delete them from renderer aswell!
-			clearAABBData();
-
-
-			
-			for (auto& entry : scene.m_res.coordsOctreeMap) {
-				const glm::vec3& key = entry.first;
-				Octree<std::pair<Mesh*, ExtendedFace*>>& octree = entry.second;
-				for (auto& octreeNode : octree) {
-					octreeNode.getBounds();
-					collectAABBData(octreeNode.getBounds());
-				}
-			}
-
-		}
-        */
-
 		int screenWidth = ViewPortsHolderContext::s_window->getScreenWidth();
 		int screenHeight = ViewPortsHolderContext::s_window->getScreenHeight();
 		glViewport(0, 0, screenWidth, screenHeight);
@@ -590,29 +694,10 @@ int main()
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
             Renderer::drawMesh(mesh);
             Renderer::drawMeshLines(mesh, &linesShader);
-            
-            /*
-            LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
+        }
 
-            BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-
-            lineBufferStorage->getBufferData(mesh, lineBufferData);
-
-            linesShader.bind();
-            lineBufferData->vao.bind();
-            //lineBufferData->vbo.bind();
-
-            glDisable(GL_DEPTH_TEST);
-            glBindVertexArray(lineBufferData->vao.id);
-            glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
-            glBindVertexArray(0);
-
-            lineBufferData->vao.unbind();
-            //lineBufferData->vbo.unbind();
-
-            linesShader.unbind();
-            */
-
+        for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
+            Renderer::drawPrintableMesh(printableMesh, &linesShader);
         }
 
 		//ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_edgeShader->bind();

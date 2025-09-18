@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <sstream>
 #include "../Params/OperationParams.h"
 
 namespace utils::third_api

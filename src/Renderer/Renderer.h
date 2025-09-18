@@ -8,6 +8,7 @@
 #include "Buffers.h"
 #include "../Scene/Mesh.h"
 #include <string>
+#include "DataStructures/PrintableMesh.h"
 
 
 struct RendererConfig
@@ -181,6 +182,60 @@ public:
 	using MeshMatsMap = std::map<Mesh*, MatBuffMap>;
 
 	MeshMatsMap meshMatsMap;
+};
+
+class PrintableMeshBufferStorage : public BufferStorage<PrintableMeshBufferStorage> {
+public:
+    PrintableMeshBufferStorage() {}
+
+    bool getBufferData(PrintableMesh* mesh, BufferData<RendererBuffersData::LineVertex>*& retBufferData) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+        
+        if (meshBuffMapIt == meshBuffMap.end()) return false;
+
+        auto& lineBufferData = meshBuffMapIt->second;
+        retBufferData = &lineBufferData;
+        return true;
+    }
+
+    void updateBufferStorage(PrintableMesh* mesh) {
+        auto meshBuffMapIt = meshBuffMap.find(mesh);
+
+        if (meshBuffMapIt == meshBuffMap.end()) return;
+
+        auto& lineBufferData = meshBuffMapIt->second;
+
+        lineBufferData.vbo.bind();
+        lineBufferData.vbo.createData(lineBufferData.vertices.data(), lineBufferData.vertices.size() * sizeof(RendererBuffersData::LineVertex), GL_DYNAMIC_DRAW);
+        lineBufferData.vbo.unbind();
+    }
+
+    void registerBufferStorage(PrintableMesh* mesh) {
+
+        auto [it, inserted] = meshBuffMap.try_emplace(mesh);
+
+        if(inserted) {
+            auto& lineBufferData =it->second;
+            
+            lineBufferData.vao.create();
+            lineBufferData.vbo.create();
+
+            lineBufferData.vao.bind();
+            lineBufferData.vbo.bind();
+            lineBufferData.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::LineVertex), (void*)offsetof(RendererBuffersData::LineVertex, position));
+            lineBufferData.vao.addVertexBufferLayout(1, 1, GL_FLOAT, GL_FALSE, sizeof(RendererBuffersData::LineVertex), (void*)offsetof(RendererBuffersData::LineVertex, isHighlighted));
+            lineBufferData.vao.unbind();
+            lineBufferData.vbo.unbind();
+        }
+    }
+
+    static std::string getBufferStorageName() {
+        return "LineBufferStorage";
+    }
+
+	using MeshBuffMap = std::map<PrintableMesh*, BufferData<RendererBuffersData::LineVertex>>;
+
+	MeshBuffMap meshBuffMap;
 };
 
 class LineBufferStorage : public BufferStorage<LineBufferStorage> {
@@ -359,6 +414,7 @@ public:
         s_bufferRegistry.registerBuffer<LineBufferStorage>();
         s_bufferRegistry.registerBuffer<AABBBufferStorage>();
         s_bufferRegistry.registerBuffer<PointBufferStorage>();
+        s_bufferRegistry.registerBuffer<PrintableMeshBufferStorage>();
 	}
 
     static void drawMeshPoints(Mesh* mesh, Shader* shader){
@@ -386,10 +442,25 @@ public:
         BufferData<RendererBuffersData::LineVertex>* lineBufferData;
 
         if(lineBufferStorage->getBufferData(mesh, lineBufferData)) {
-
             shader->bind();
             lineBufferData->vao.bind();
             glLineWidth(1.0f);
+            glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
+            glLineWidth(0.5f);
+            lineBufferData->vao.unbind();
+            shader->unbind();
+        }
+    }
+
+    static void drawPrintableMesh(PrintableMesh* mesh, Shader* shader) {
+		PrintableMeshBufferStorage* printableMeshBufferStorage = s_bufferRegistry.queryBuffer<PrintableMeshBufferStorage>();
+
+        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
+
+        if(printableMeshBufferStorage->getBufferData(mesh, lineBufferData)) {
+            shader->bind();
+            lineBufferData->vao.bind();
+            glLineWidth(2.0f);
             glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
             glLineWidth(0.5f);
             lineBufferData->vao.unbind();

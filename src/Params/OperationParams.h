@@ -1,5 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
+#include "DataStructures/PrintableMesh.h"
 
 struct OpParams {
 	virtual ~OpParams() = default;
@@ -80,10 +81,28 @@ struct FaceParams : public OpParams
     std::vector<ExtendedFace*>* faces;
 };
 
+struct NewFaceParams : public OpParams {
+    Mesh* mesh;
+    ExtendedFace* face;
+};
+
+struct EdgeParams : public OpParams
+{
+    Mesh* mesh;
+    std::vector<ExtendedEdge*>* edges;
+};
+
 struct BrushToolParams : public OpParams
 {
 	float radius;
 	float brushStrength;
+};
+
+struct EdgeConnectionsParams : public OpParams 
+{
+    Mesh* mesh;
+    ExtendedEdge* firstEdge;
+    ExtendedEdge* secondEdge;
 };
 
 struct BrushInteractionParams : public OpParams
@@ -92,3 +111,14 @@ struct BrushInteractionParams : public OpParams
 	Camera* camera = nullptr;
 	Window* window = nullptr;
 };
+
+struct PrintableMeshParams : public OpParams {
+    PrintableMesh printableMesh; 
+};
+
+struct PrintMeshSettingsParams : public OpParams {
+    Mesh* mesh = nullptr;
+    float height = 1.0f;
+};
+
+

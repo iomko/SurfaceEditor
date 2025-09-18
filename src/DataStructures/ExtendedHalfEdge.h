@@ -1,5 +1,7 @@
 #pragma once
 #include "HalfEdge.h"
+#include "Utils/ContainerUtils.h"
+#include <algorithm>
 
 class ExtendedHalfEdge;
 class ExtendedEdge;
@@ -148,9 +150,91 @@ public:
         }
 
         //build graph for that face
-        //buildGraphForFace(face);
+        buildGraphForFace(face);
 
         return face;
+    }
+
+    void connectEdges(ExtendedEdge* firstEdge, ExtendedEdge* secondEdge){
+        
+        ExtendedHalfEdge* firstHalfEdge = firstEdge->m_halfEdge;
+        ExtendedHalfEdge* secondHalfEdge = secondEdge->m_halfEdge;
+
+        ExtendedHalfEdgeMesh& mesh = firstEdge->m_mesh;
+
+        ExtendedVertex* firstVertex = firstHalfEdge->m_vertex;
+        ExtendedVertex* secondVertex = firstHalfEdge->m_next->m_vertex;
+
+        if(firstEdge == secondEdge) return;
+
+        if(firstHalfEdge->m_vertex->m_position == secondHalfEdge->m_next->m_vertex->m_position &&
+            firstHalfEdge->m_next->m_vertex->m_position == secondHalfEdge->m_vertex->m_position) 
+        {   
+            std::vector<std::pair<ExtendedVertex*, ExtendedVertex*>> points{ 
+                std::make_pair(firstHalfEdge->m_vertex, secondHalfEdge->m_next->m_vertex),
+                std::make_pair(firstHalfEdge->m_next->m_vertex, secondHalfEdge->m_vertex)
+            };
+            //tak iba v tento pripad
+            //
+            for (std::pair<ExtendedVertex*, ExtendedVertex*>& point : points) {
+
+                ExtendedVertex* vertex = point.first;
+                ExtendedVertex* oppositeVertex = point.second;
+
+                std::vector<ExtendedEdge*>& edges = vertex->m_neighbourEdges;
+
+                for (ExtendedEdge* edge : edges) {
+                    
+                    if(edge->m_halfEdge->m_vertex == vertex) {
+                        edge->m_halfEdge->m_vertex = oppositeVertex;
+                    }
+
+                    if(edge->m_halfEdge->m_twin != nullptr && edge->m_halfEdge->m_twin->m_vertex == vertex) {
+                        edge->m_halfEdge->m_twin->m_vertex = oppositeVertex;
+                    }
+
+                    if(edge->m_firstVertex->m_position == vertex->m_position) {
+                        edge->m_firstVertex = oppositeVertex;
+                    } else if(edge->m_secondVertex->m_position == vertex->m_position) {
+                        edge->m_secondVertex = oppositeVertex;
+                    }
+
+                }
+
+                std::vector<ExtendedVertex*>& meshVertices = mesh.m_vertices;
+                
+                //prehod neighbour edges
+                //musime vymazat jeden edge
+                auto it = std::find(vertex->m_neighbourEdges.begin(), vertex->m_neighbourEdges.end(), firstEdge);
+                if(it != vertex->m_neighbourEdges.end()){
+                    vertex->m_neighbourEdges.erase(it);
+                }
+                oppositeVertex->m_neighbourEdges.insert(
+                        oppositeVertex->m_neighbourEdges.end(),
+                        vertex->m_neighbourEdges.begin(),
+                        vertex->m_neighbourEdges.end()
+                        );
+
+                ExtendedVertex*& lastVertex = meshVertices.back();
+                lastVertex->m_vertexIndexInVector = vertex->m_vertexIndexInVector;
+                utils::containers::swapLastAndPop(meshVertices, vertex->m_vertexIndexInVector);
+            }
+
+            //halfEdge
+            firstEdge->m_halfEdge->m_edge = secondEdge;
+            //twins
+            secondEdge->m_halfEdge->m_twin = firstEdge->m_halfEdge;
+            firstEdge->m_halfEdge->m_twin = secondEdge->m_halfEdge;
+
+
+            std::vector<ExtendedEdge*>& meshEdges = mesh.m_edges;
+            ExtendedEdge*& lastEdge = meshEdges.back();
+
+            lastEdge->m_edgeIndexInVector = firstEdge->m_edgeIndexInVector;
+            utils::containers::swapLastAndPop(meshEdges, firstEdge->m_edgeIndexInVector);
+
+        }
+
     }
 
 private:

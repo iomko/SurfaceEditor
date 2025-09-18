@@ -2,6 +2,7 @@
 #define AABBBOUNDINGREGION_H
 
 #include "../Ray.h"
+#include "Primitives/Plane.h"
 
 #include <array>
 
@@ -43,6 +44,24 @@ public:
 		this->bounds[1].y = glm::max(min.y, max.y);
 		this->bounds[1].z = glm::max(min.z, max.z);
 	}
+
+    bool insersectsPlane(const Plane& plane) const
+    {
+        glm::vec3 vp, vn;
+        for (int i = 0; i < 3; i++) {
+            if (plane.normal[i] >= 0) {
+                vp[i] = bounds[1][i];
+                vn[i] = bounds[0][i];
+            } else {
+                vp[i] = bounds[0][i];
+                vn[i] = bounds[1][i];
+            }
+        }
+        float dp = dot(plane.normal, vp - plane.point);
+        float dn = dot(plane.normal, vn - plane.point);
+
+        return (dp >= 0 && dn <= 0);
+    }
 
 	bool intersectsRay(const Ray& ray) const
 	{

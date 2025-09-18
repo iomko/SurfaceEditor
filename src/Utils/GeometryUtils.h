@@ -9,8 +9,19 @@
 #include <algorithm>
 #include <initializer_list>
 #include <cmath> // fabs
+#include <set>
 
 namespace utils::geometry {
+
+    struct Vec3LessEpsilon {
+        float eps = 1e-6f; // tolerance
+        bool operator()(const glm::vec3& a, const glm::vec3& b) const {
+            if (std::abs(a.x - b.x) > eps) return a.x < b.x;
+            if (std::abs(a.y - b.y) > eps) return a.y < b.y;
+            if (std::abs(a.z - b.z) > eps) return a.z < b.z;
+            return false; // considered equal
+        }
+    };
 
 	enum class ProjectionAxis { ZY, XZ, XY };
     
@@ -101,6 +112,63 @@ namespace utils::geometry {
         return true;
     }
     */
+
+    struct PlaneFaceIntersection {
+        bool intersects;              // true if intersects in any way
+        enum Type { None, Point, Edge, FullTriangle } type;
+        glm::vec3 firstPoint;         // valid if Point or Edge
+        glm::vec3 secondPoint;        // valid if Edge
+    };
+
+    inline PlaneFaceIntersection planeIntersectsFace(const Plane& plane, ExtendedFace* face) {
+        std::set<glm::vec3, Vec3LessEpsilon> intersectionPoints;
+
+        for(auto it = face->faceHalfEdgeBegin(); it != face->faceHalfEdgeEnd(); ++it) {
+            ExtendedEdge* edge = (*it).m_edge;
+            glm::vec3 v1 = edge->m_firstVertex->m_position;
+            glm::vec3 v2 = edge->m_secondVertex->m_position;
+
+            float d1 = glm::dot(plane.normal, v1 - plane.point);
+            float d2 = glm::dot(plane.normal, v2 - plane.point);
+
+            if((d1 < 0 && d2 > 0) || (d1 > 0 && d2 < 0)) {
+                float t = -d1 / (d2 - d1);
+                intersectionPoints.insert(v1 + t * (v2 - v1));
+            } else if(d1 == 0) {
+                intersectionPoints.insert(v1);
+            } else if(d2 == 0) {
+                intersectionPoints.insert(v2);
+            }
+        }
+
+        PlaneFaceIntersection result{};
+        switch(intersectionPoints.size()) {
+            case 0:
+                result.intersects = false;
+                result.type = PlaneFaceIntersection::None;
+                break;
+            case 1:
+                result.intersects = true;
+                result.type = PlaneFaceIntersection::Point;
+                result.firstPoint = *intersectionPoints.begin();
+                break;
+            case 2:
+                result.intersects = true;
+                result.type = PlaneFaceIntersection::Edge;
+                {
+                    auto it = intersectionPoints.begin();
+                    result.firstPoint = *it++;
+                    result.secondPoint = *it;
+                }
+                break;
+            default:
+                result.intersects = true;
+                result.type = PlaneFaceIntersection::FullTriangle;
+                break;
+        }
+        return result;
+    }
+
 
     //after
     inline glm::vec2 createPerpendicular2DVector(const glm::vec2& a, const glm::vec2& b){

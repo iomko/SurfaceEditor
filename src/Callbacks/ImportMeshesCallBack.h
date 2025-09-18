@@ -1,5 +1,6 @@
 #pragma once
 #include "../IO/OBJImporter.h"
+#include "Patterns/Observer.h"
 
 class ImportMeshesCallback : public Callback<ImportExportMeshesParams>, public Observer
 {

@@ -22,14 +22,9 @@ public:
         meshBufferStorage->getBufferData(mesh, material, meshBufferData);
         std::vector<RendererBuffersData::MeshVertex>& materialVaoVertices = meshBufferData->vertices;
          
-        //potrebujem ziskat meshLinesVaoVector
-        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
-        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-        lineBufferStorage->getBufferData(mesh, lineBufferData);
-        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
-
-
 		//---FOR_FACES---
+        std::unordered_set<ExtendedEdge*> renderedEdges;
+
         for(ExtendedFace* face : faces) {
                          //---SET_FACE_MATERIAL---
             face->material = material;
@@ -76,72 +71,9 @@ public:
                 ++indexInFace;
             }
 
-
-            for(ExtendedFace* face : faces) {
-
-                for(auto it = face->faceHalfEdgeBegin(); it != face->faceHalfEdgeEnd(); ++it) 
-                {
-                    ExtendedHalfEdge* halfEdge = &(*it);
-                    ExtendedEdge* edge = (*it).m_edge;
-
-                    ExtendedVertex* edgeFirstVertex = edge->m_firstVertex;
-                    ExtendedVertex* edgeSecondVertex = edge->m_secondVertex;
-
-
-                    glm::vec3 normal = utils::geometry::computePolygonNormal(halfEdge->m_face);
-                    
-                    if (halfEdge->m_twin != nullptr)
-                    {
-                        glm::vec3 twinNormal = utils::geometry::computePolygonNormal(halfEdge->m_twin->m_face);
-                        normal = glm::normalize(normal + twinNormal); // Average and normalize
-                    }
-
-                        
-                    meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position, false);
-                    meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position, false);
-
-
-                    //---ADD_INFO_INTO_EDGE---
-                    int edgeLineIndex = meshLinesVaoVector.size() - 2;
-                    edge->m_EdgeLineIndex = edgeLineIndex;
-
-                }
-
-            }
-            /*
-            //---FOR_LINES---
-            //
-            for(auto it = face->faceHalfEdgeBegin(); it != face->faceHalfEdgeEnd(); ++it) 
-            {
-                ExtendedHalfEdge* halfEdge = &(*it);
-                ExtendedEdge* edge = (*it).m_edge;
-
-                ExtendedVertex* edgeFirstVertex = edge->m_firstVertex;
-                ExtendedVertex* edgeSecondVertex = edge->m_secondVertex;
-
-
-                glm::vec3 normal = utils::geometry::computePolygonNormal(halfEdge->m_face);
-                
-                if (halfEdge->m_twin != nullptr)
-                {
-                    glm::vec3 twinNormal = utils::geometry::computePolygonNormal(halfEdge->m_twin->m_face);
-                    normal = glm::normalize(normal + twinNormal); // Average and normalize
-                }
-
-                    
-                meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position + (normal * 0.001f), false);
-                meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position + (normal * 0.001f), false);
-
-                meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position + (-normal * 0.001f), false);
-                meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position + (-normal * 0.001f), false);
-
-                //---ADD_INFO_INTO_EDGE---
-                int edgeLineIndex = meshLinesVaoVector.size() - 4;
-                edge->m_EdgeLineIndex = edgeLineIndex;
-
-            }
-            */
         }
+        
+        meshBufferStorage->updateBufferStorage(mesh, material);
     }
 
 };

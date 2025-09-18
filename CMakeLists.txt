@@ -6,11 +6,13 @@ set(CMAKE_BUILD_TYPE Debug)
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Renderer/Shaders")
 
 #use C++20 features
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #FIND
+find_package(X11 REQUIRED)
+
 find_package(glfw3 3.4 REQUIRED)
 
 find_package(OpenGL REQUIRED)
@@ -80,7 +82,7 @@ add_executable(SurfaceEditor ${SRC_FILES})
 
 #target_link_libraries(imgui_lib PUBLIC glfw3 OpenGL::GL)
 
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw3 OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP)
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw3 OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
 #target_link_libraries(SurfaceEditor PRIVATE ${TIFF_LIBRARIES})
 
 target_include_directories(SurfaceEditor PRIVATE "${PROJECT_SOURCE_DIR}/src")
