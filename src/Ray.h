@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "Ray2D.h"
 
 #include "Primitives/Sphere.h"
 #include "Scene/Camera.h"
@@ -50,6 +51,7 @@ public:
 
 		return Ray(rayStart, normalizedRayPosition);
 	}
+
 
 	static bool intersectsSphere(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const Sphere& sphere)
 	{

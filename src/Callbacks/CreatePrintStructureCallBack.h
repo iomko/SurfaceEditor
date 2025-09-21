@@ -54,10 +54,10 @@ public:
         
         //budeme prechadzat cez vsetky planes, zo zaciatku len pre test ich spravime napr 10
         Plane plane{{0.0f, -50.0f, 0.0f}, {0.0f, 0.1f, 0.0f} };
-        for (int planeIndex = 0; planeIndex < 200; planeIndex++) {
+        for (int planeIndex = 0; planeIndex < 20; planeIndex++) {
             //vytvor plane
             plane.point.y += perimeterHeight;
-            std::map<std::pair<glm::vec3, glm::vec3>, ExtrudeEdge, EdgeComparatorEps> extrudeEdgesMap;
+            std::map<std::pair<glm::vec3, glm::vec3>, std::pair<ExtrudeEdge, ExtendedFace*>, EdgeComparatorEps> extrudeEdgesMap;
 
 
             for(auto& octreeCoordsPair : octreeCoordsMap) {
@@ -71,7 +71,7 @@ public:
                 octree.findMaxDepthNodes<Plane>(plane, octreeBoundsIntersectAlg, hitOctreeNodes);
 
                 for(OctreeNode<SceneResources::MeshFacePair>* octreeNode : hitOctreeNodes) {
-                    std::println("went inside of octreeNodes in printing structure");
+                    //std::println("went inside of octreeNodes in printing structure");
                     std::vector<SceneResources::MeshFacePair>& nodeData = octreeNode->nodeData;
 
                     for(SceneResources::MeshFacePair& data : nodeData) {
@@ -86,9 +86,11 @@ public:
                             if(planeIntersection.type == utils::geometry::PlaneFaceIntersection::Type::Edge){
                                 //tak vieme ze uz mame edge
                                 
+                                glm::vec3 modifiedFirstPoint {planeIntersection.firstPoint.x, plane.point.y, planeIntersection.firstPoint.z};
+                                glm::vec3 modifiedSecondPoint {planeIntersection.secondPoint.x, plane.point.y, planeIntersection.secondPoint.z};
                                 extrudeEdgesMap.insert({
-                                    {planeIntersection.firstPoint, planeIntersection.secondPoint},
-                                    ExtrudeEdge{planeIntersection.firstPoint, planeIntersection.secondPoint}
+                                    {modifiedFirstPoint, modifiedSecondPoint},
+                                    {ExtrudeEdge{modifiedFirstPoint, modifiedSecondPoint}, face}
                                 });
                                 //extrudeEdges.emplace_back(planeIntersection.firstPoint, planeIntersection.secondPoint);
                             }
@@ -98,14 +100,14 @@ public:
             }
             
             //mame uz vsetky extrude edges pre dany plane
-            std::vector<ExtrudeEdge> extrudeEdges;
+            std::vector<std::pair<ExtrudeEdge, ExtendedFace*>> extrudeEdges;
             extrudeEdges.reserve(extrudeEdgesMap.size()); // avoid reallocations
 
             for (auto& [_, value] : extrudeEdgesMap) {
-                extrudeEdges.push_back(value);
+                extrudeEdges.emplace_back(value);
             }
 
-            outputPrintableMesh->addLevelLayers(extrudeEdges);
+            outputPrintableMesh->addPerimeterLayerLevel(extrudeEdges);
         }
 
         //super teraz uz mame vytvorene samotne layers, teraz co potrebujeme je moznost to pridat do sceny nech to clovek vidi
@@ -118,23 +120,77 @@ public:
         std::vector<RendererBuffersData::LineVertex>& edgesVector = printableMeshBufferData->vertices;
         edgesVector.clear();
 
-        for(PrintLayer& printLayer : outputPrintableMesh->m_perimeterLayer) {
-            std::vector<std::list<ExtrudePoint>>& levelLayers = printLayer.levelLayers;
-            
-            for(std::list<ExtrudePoint>& levelLayer : levelLayers) {
 
-                for(auto it = levelLayer.begin(); it != levelLayer.end(); ++it) {
+        for(PrintLayerLevel& printLayerLevel : outputPrintableMesh->m_structure.printLayers) {
+            std::vector<PerimeterOutline>& perimeterOutlines = printLayerLevel.perimeterOutlines;
+            for(PerimeterOutline& perimeterOutline : perimeterOutlines) {
+
+                for(auto it = perimeterOutline.points.begin(); it != perimeterOutline.points.end(); ++it) {
                     auto nextIt = std::next(it);
-                    if(nextIt == levelLayer.end()) {
-                        nextIt = levelLayer.begin();
+                    if(nextIt == perimeterOutline.points.end()) {
+                        nextIt = perimeterOutline.points.begin();
                     }
-                    edgesVector.emplace_back(it->pos, true);
-                    edgesVector.emplace_back(nextIt->pos, true);
+                    //POTOM VRATIT
+                    /*
+                    if(perimeterOutline.filled) {
+                        edgesVector.emplace_back(it->first.pos, true);
+                        edgesVector.emplace_back(nextIt->first.pos, true);
+                    } else {
+                        edgesVector.emplace_back(it->first.pos, 0.25f);
+                        edgesVector.emplace_back(nextIt->first.pos, 0.25f);
+                    }
+                    */
+                    if(it->first.filled && nextIt->first.filled) {
+                        edgesVector.emplace_back(it->first.pos, 1.0f);
+                        edgesVector.emplace_back(nextIt->first.pos, 1.0f);
+
+                        if(it->first.hasPerpendicular) {
+                            edgesVector.emplace_back(it->first.pos, 0.15f);
+                            edgesVector.emplace_back(it->first.pos + it->first.perpendicularEdge, 0.15f);
+                        }
+                    } else {
+                        if(it->first.highlightTest && nextIt->first.highlightTest) {
+                            edgesVector.emplace_back(it->first.pos, 0.1f);
+                            edgesVector.emplace_back(nextIt->first.pos, 0.1f);
+                            
+                            edgesVector.emplace_back(it->first.pos, 0.4f);
+                            edgesVector.emplace_back(it->first.pos + it->first.faceNormalEdge, 0.4f);
+
+                            edgesVector.emplace_back(it->first.pos, 0.11f);
+                            edgesVector.emplace_back(it->first.pos + it->first.planeNormalEdge, 0.11f);
+
+                            //edgesVector.emplace_back(it->first.pos, 0.15f);
+                            //edgesVector.emplace_back(it->first.pos + (it->first.perpendicularEdge * 1.5f), 0.15f);
+                        } else {
+                            edgesVector.emplace_back(it->first.pos, 0.25f);
+                            edgesVector.emplace_back(nextIt->first.pos, 0.25f);
+                        }
+
+                    }
+
+
+
+
                 }
 
             }
 
+            std::vector<InfillLine>& infillLines = printLayerLevel.infillLines;
+
+            for(InfillLine& infillLine : infillLines) {
+
+                for(auto it = infillLine.points.begin(); it != infillLine.points.end(); std::advance(it,2)) {
+
+                    edgesVector.emplace_back(it->pos, 0.5f);
+                    edgesVector.emplace_back(std::next(it)->pos, 0.5f);
+                }
+            }
+
         }
+
+        //dobre po tomto uz mame v poriadku pridany perimeterLayerLevels
+
+        //teraz potrebujeme pridat infillLayerLevels
 
         //pridaj do sceny
         //
@@ -155,6 +211,10 @@ public:
 
         std::println("Done creating print structure!");
         //
-
+        
     }
+
+private:
+
+
 };

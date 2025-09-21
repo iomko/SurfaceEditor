@@ -57,7 +57,6 @@ public:
             mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
         if(m_state.m_isOpen) {
-            std::cout << "Yes PRINTABLE WAS OPENED!" << std::endl;
             ImGui::Begin(this->getName().c_str());
 
             if (ImGui::InputFloat("LayerHeight", &m_state.m_layerHeight)) {

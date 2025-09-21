@@ -251,6 +251,53 @@ namespace utils::geometry {
         return true;
     }
 
+    enum SideRelation {
+        SameSide,
+        OppositeSide,
+        OnPlane
+    };
+
+    inline SideRelation checkSideRelation(const glm::vec3& planeNormal,
+        const glm::vec3& v1,
+        const glm::vec3& v2)
+    {
+        float d1 = glm::dot(planeNormal, v1);
+        float d2 = glm::dot(planeNormal, v2);
+
+        if (d1 == 0.0f || d2 == 0.0f) return SideRelation::OnPlane;
+        if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
+            return SideRelation::SameSide;
+        return SideRelation::OppositeSide;
+    }
+
+    enum WindingOrder {
+        None,
+        CW,
+        CCW
+    };
+
+    inline WindingOrder getWindingOrder(const std::vector<glm::vec2>& poly) {
+        if (poly.size() < 3) return None; // not a polygon
+
+        double area = 0.0;
+        for (size_t i = 0; i < poly.size(); i++) {
+            const glm::vec2& curr = poly[i];
+            const glm::vec2& next = poly[(i + 1) % poly.size()];
+            area += (next.x - curr.x) * (next.y + curr.y);
+        }
+
+        if (area > 0)  return CW;
+        if (area < 0)  return CCW;
+        return None;
+    }
+
+
+    inline glm::vec2 getRightNormal(const glm::vec2& A, const glm::vec2& B) {
+        glm::vec2 d = B - A;
+        glm::vec2 n(d.y, -d.x);
+        return glm::normalize(n);
+    }
+
 	inline std::vector<glm::vec2> projectVertices(const std::vector<glm::vec3>& vertices, const ProjectionAxis& projectionAxis)
 	{
 		std::vector<glm::vec2> projectedVertices;

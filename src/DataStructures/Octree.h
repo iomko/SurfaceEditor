@@ -11,7 +11,7 @@ class OctreeNode
 public:
     AABBBoundingRegion nodeBounds;
     size_t depth = 0;
-    size_t maxDepth = 1;
+    size_t maxDepth = 3;
     OctreeNode<T>* parentNode = nullptr;
     bool isLeaf = true;
     bool delProcessed = false;

@@ -60,7 +60,7 @@ public:
 
                     if(edge->m_isOuter){
                         glm::vec3 secondVertex = halfEdge->m_vertex->m_position;
-                        secondVertex.y = -10.0f;
+                        secondVertex.y = -60.0f;
                         std::vector<glm::vec3> newFaceVerts {{halfEdge->m_vertex->m_position}, {secondVertex}, {halfEdge->m_next->m_vertex->m_position}};
 
                         toBeRenderedFaces.emplace_back(halfEdgeStructure->addFloatingFace(newFaceVerts));
@@ -112,14 +112,14 @@ public:
                     ExtendedHalfEdge* previousHalfEdge = currentHalfEdge->m_previous;
                     
                     glm::vec3 newVertexPosition = currentHalfEdge->m_vertex->m_position; 
-                    newVertexPosition.y = -100.0f;
+                    newVertexPosition.y = -60.0f;
                     newFaceVertices.emplace_back(newVertexPosition);
                     
                     glm::vec3 newEdgeFirstVertexPos = currentEdge->m_firstVertex->m_position;
                     glm::vec3 newEdgeSecondVertexPos = currentEdge->m_secondVertex->m_position;
                     
-                    newEdgeFirstVertexPos.y = -100.0f;
-                    newEdgeSecondVertexPos.y = -100.0f;
+                    newEdgeFirstVertexPos.y = -60.0f;
+                    newEdgeSecondVertexPos.y = -60.0f;
 
                     if(currentEdge->m_isOuter){
                         usedEdgesMap.insert({std::make_pair(currentEdge->m_firstVertex->m_position, currentEdge->m_secondVertex->m_position), currentEdge});
