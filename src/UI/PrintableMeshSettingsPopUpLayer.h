@@ -59,8 +59,9 @@ public:
         if(m_state.m_isOpen) {
             ImGui::Begin(this->getName().c_str());
 
-            if (ImGui::InputFloat("LayerHeight", &m_state.m_layerHeight)) {
-                // Value was changed! 
+            ImGui::InputFloat("LayerHeight", &m_state.m_layerHeight);
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                // This triggers when the user presses Enter OR when the field loses focus.
                 m_state.m_selectedPrintableMesh->removeAllLevelLayers();
                 CreatePrintCommand* printCommand = m_commandRegistry.getCommand<CreatePrintCommand>();
                 PrintMeshSettingsParams printMeshSettingsParams;

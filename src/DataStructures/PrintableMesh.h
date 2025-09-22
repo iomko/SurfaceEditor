@@ -12,6 +12,7 @@
 #include "Utils/ContainerUtils.h"
 #include "Utils/GeometryUtils.h"
 #include "Ray2D.h"
+#include "Scene/Mesh.h"
 
 
 struct ExtrudeEdge {
@@ -35,15 +36,6 @@ struct ExtrudeEdge {
     void swapPoints() {
         std::swap(firstPoint, secondPoint);
     }
-
-    //testing part
-    bool filled = false;
-    bool highlightTest = false;
-    
-    glm::vec3 faceNormalEdge{};
-    glm::vec3 planeNormalEdge{};
-    bool hasPerpendicular = false;
-    glm::vec3 perpendicularEdge{};
 };
 
 struct OutlinerEdgeHelperData {
@@ -70,15 +62,6 @@ struct Vec2Comparator {
 
 struct ExtrudePoint {
     glm::vec3 pos;
-
-    //testing part
-    bool filled = false;
-    bool highlightTest = false;
-    
-    glm::vec3 faceNormalEdge{};
-    glm::vec3 planeNormalEdge{};
-    bool hasPerpendicular = false;
-    glm::vec3 perpendicularEdge{};
 };
 
 struct PerimeterOutline {
@@ -92,12 +75,6 @@ struct InfillLine {
 };
 
 struct PrintLayerLevel {
-    //using InfillLine = std::list<ExtrudePoint>;
-    //using PerimeterOutline = std::list<std::pair<ExtrudePoint, ExtendedFace*>>;
-
-    //using InfillLayerLevel = std::vector<InfillLine>;
-    //using PerimeterLayerLevel = std::vector<PerimeterOutline>;
-
     std::vector<PerimeterOutline> perimeterOutlines;
     std::vector<InfillLine> infillLines;
 };
@@ -162,7 +139,7 @@ public:
         glm::vec2 oppositeOffsetDir(-offsetDir.y, offsetDir.x);
 
         //teraz musime vytvorit dva krajne body na ciare
-        float incrementNum = 10.0f;
+        float incrementNum = 5.0f;
         glm::vec2 currentOffsetPosition = modifiedMinPoint + (offsetDir * incrementNum);
         while (currentOffsetPosition.x < modifiedMaxPoint.x && currentOffsetPosition.y < modifiedMaxPoint.y) {
             
@@ -248,12 +225,12 @@ public:
 
     }
 
-    void addPerimeterLayerLevel(const std::vector<std::pair<ExtrudeEdge, ExtendedFace*>>& edges){
+    void addPerimeterLayerLevel(Mesh* mesh, const std::vector<std::pair<ExtrudeEdge, ExtendedFace*>>& edges){
+        
         std::vector<PrintLayerLevel>& printLayers = m_structure.printLayers;
 
         PrintLayerLevel& printLayerLevel = printLayers.emplace_back();
         std::vector<PerimeterOutline>& perimeterOutlines = printLayerLevel.perimeterOutlines;
-        //PrintLayerLevel::PerimeterLayerLevel& perimeterLayerLevel = printLayerLevel.perimeterLayerLevel;
 
         std::map<glm::vec3, std::pair<int,std::variant<FrontTag, BackTag>>> pointsHelper;
         glm::vec2 quadTreeMinBounds{ std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
@@ -533,8 +510,10 @@ public:
                 }
             }
         }
+        glm::vec2 minQuadtreeBounds{mesh->m_meshBounds.getMinBoundsPos().x, mesh->m_meshBounds.getMinBoundsPos().z};
+        glm::vec2 maxQuadtreeBounds{mesh->m_meshBounds.getMaxBoundsPos().x, mesh->m_meshBounds.getMaxBoundsPos().z};
         
-        Quadtree<OutlinerEdgeHelperData> outlinerQuadtree(quadTreeMinBounds, quadTreeMaxBounds);
+        Quadtree<OutlinerEdgeHelperData> outlinerQuadtree(minQuadtreeBounds, maxQuadtreeBounds);
 
         //nakoniec sa musi prejst cez vsetky vytvorene edges
         //potrebujem kazdemu 
@@ -560,11 +539,11 @@ public:
             outline.windingOrder = windingOrder;
           
             //POTOM TOTO DAT NASPAT
-            /*
+            
             //CREATING A PLANE FROM TWO DIRECTIONS
-            glm::vec3 firstOutlinePoint = outline.points.begin()->first.pos;
-            glm::vec3 secondOutlinePoint = std::next(outline.points.begin())->first.pos;
-            glm::vec3 outlineDir = glm::normalize(firstOutlinePoint - secondOutlinePoint);
+            glm::vec3 firstOutlinePoint = outline.points.begin()->first.firstPoint;
+            glm::vec3 secondOutlinePoint = outline.points.begin()->first.secondPoint;
+            glm::vec3 outlineDir = glm::normalize(secondOutlinePoint - firstOutlinePoint);
 
             glm::vec3 upDir{ 0.0f, 1.0f, 0.0f };
             glm::vec3 planeNormal = glm::normalize(glm::cross(upDir, outlineDir));
@@ -575,17 +554,9 @@ public:
             ExtendedFace* face = outline.points.begin()->second;
             glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
 
-            glm::vec2 outlinePerpendicular2DDir = utils::geometry::getRightNormal({firstOutlinePoint.x, firstOutlinePoint.z}, { secondOutlinePoint.x, secondOutlinePoint.z} );
-            if(outline.windingOrder == utils::geometry::WindingOrder::CCW) {
-                -outlinePerpendicular2DDir;
-            }
-            glm::vec3 outlinePerpendicular3DDir{ outlinePerpendicular2DDir.x, firstOutlinePoint.y, outlinePerpendicular2DDir.y };
+            glm::vec2 outlinePerpendicular2DDir = utils::geometry::getInwardNormal({firstOutlinePoint.x, firstOutlinePoint.z}, { secondOutlinePoint.x, secondOutlinePoint.z} , outline.windingOrder);
+            glm::vec3 outlinePerpendicular3DDir{ outlinePerpendicular2DDir.x, 0.0f, outlinePerpendicular2DDir.y };
             
-            //tak mame teraz k dispozicii
-            //planeNormal
-            //outlinePerpendicular3DDir
-            //faceNormal
-            //
            
             utils::geometry::SideRelation sideRelation = utils::geometry::checkSideRelation(planeNormal, outlinePerpendicular3DDir, faceNormal);
             if(sideRelation == utils::geometry::SideRelation::OppositeSide) {
@@ -593,78 +564,24 @@ public:
             } else if(sideRelation == utils::geometry::SideRelation::SameSide) {
                 outline.filled = false;
             }
-            */
 
-
-
-            //dobre teraz uz kazdy perimeterOutline ma nastavene to ze ci ma byt filled alebo nie
-            //
-            //teraz musime dalej pridat tento outline, ale len 2D do quadTree, na to aby som mohol rychlo vyhladat pomocou ray intersection
-            //danu line
- 
             for(auto it = outline.points.begin(); it != outline.points.end(); ++it) {
-                ExtendedFace* face = it->second;
-                glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
-
-                glm::vec3 firstEdgePoint = it->first.firstPoint;
-                glm::vec3 secondEdgePoint = it->first.secondPoint;
-                glm::vec3 edgeDir = glm::normalize(secondEdgePoint - firstEdgePoint);
-
-                glm::vec3 planeUpDir{ 0.0f, 1.0f, 0.0f };
-                glm::vec3 planeNormal = glm::normalize(glm::cross(planeUpDir, edgeDir));
-
-                glm::vec2 inward2D = utils::geometry::getInwardNormal({firstEdgePoint.x, firstEdgePoint.z}, { secondEdgePoint.x, secondEdgePoint.z}, outline.windingOrder);
-                glm::vec3 inward3D{ inward2D.x, 0.0f, inward2D.y };
-
-                utils::geometry::SideRelation sideRelation = utils::geometry::checkSideRelation(planeNormal, inward3D, faceNormal);
-                if(sideRelation == utils::geometry::SideRelation::OppositeSide) {
-                    it->first.filled = true;
-                    it->first.perpendicularEdge = inward3D;
-                    it->first.hasPerpendicular = true;
-                } else if(sideRelation == utils::geometry::SideRelation::SameSide) {
-                    it->first.filled = false;
-                    
-                    if(!infillAlreadySet) {
-                        it->first.highlightTest = true;
-
-                        it->first.faceNormalEdge = faceNormal;
-                        it->first.planeNormalEdge = planeNormal;
-                        it->first.perpendicularEdge = inward3D;
-                        std::cout << "---NOT AN INFILL---" << std::endl;
-                        std::cout << "FaceNormal: " << faceNormal.x << ", " << faceNormal.y << ", " << faceNormal.z << std::endl;
-                        std::cout << "planeNormal: " << planeNormal.x << ", " << planeNormal.y << ", " << planeNormal.z << std::endl;
-                        std::cout << "firstPoint: " << firstEdgePoint.x << ", " << firstEdgePoint.y << ", " << firstEdgePoint.z << std::endl;
-                        std::cout << "secondPoint: " << secondEdgePoint.x << ", " << secondEdgePoint.y << ", " << secondEdgePoint.z << std::endl;
-                        if(outline.windingOrder == utils::geometry::WindingOrder::CCW) {
-                            std::cout << "WindingOrder: CCW" << std::endl;
-                        } else if (outline.windingOrder == utils::geometry::WindingOrder::CW) {
-                            std::cout << "WindingOrder: CW" << std::endl;
-                        } else if(outline.windingOrder == utils::geometry::WindingOrder::None) {
-                            std::cout << "WindingOrder: None" << std::endl; 
-                        }
-                        std::cout << "PerpendicularEdge: " << inward3D.x << ", " << inward3D.y << ", " << inward3D.z << std::endl;
-                        infillAlreadySet = true;
-                    }
-
-                }
-
-
-                //OutlinerEdgeHelperData data(it->first.pos, nextIt->first.pos, outline.filled, outlineId);
-                //glm::vec2 minDataBounds = glm::min(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
-                //glm::vec2 maxDataBounds = glm::max(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
-                //BoundingRegion2D dataBounds(minDataBounds, maxDataBounds);
-                //outlinerQuadtree.addDataToQuadtree(data, dataBounds);
+                OutlinerEdgeHelperData data(it->first.firstPoint, it->first.secondPoint, outline.filled, outlineId);
+                glm::vec2 minDataBounds = glm::min(glm::vec2(it->first.firstPoint.x, it->first.firstPoint.z), glm::vec2(it->first.secondPoint.x, it->first.secondPoint.z));
+                glm::vec2 maxDataBounds = glm::max(glm::vec2(it->first.firstPoint.x, it->first.firstPoint.z), glm::vec2(it->first.secondPoint.x, it->first.secondPoint.z));
+                BoundingRegion2D dataBounds(minDataBounds, maxDataBounds);
+                outlinerQuadtree.addDataToQuadtree(data, dataBounds);
             }
+
             ++outlineId;
         }
 
         //dobre mame vybudovany quadtree uz, teraz mozme s tymto quadtree zavolat metodu
         //ktora mi zase naopak vytvori vsetky potrebne infill layers
-        //addInfillLayerLevel(outlinerQuadtree, yTemp);
+        addInfillLayerLevel(outlinerQuadtree, yTemp);
 
     }
 
 public:
     PrintableMeshStructure m_structure;
-    bool infillAlreadySet = false;
 };

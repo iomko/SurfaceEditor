@@ -460,7 +460,7 @@ public:
         if(printableMeshBufferStorage->getBufferData(mesh, lineBufferData)) {
             shader->bind();
             lineBufferData->vao.bind();
-            glLineWidth(2.0f);
+            glLineWidth(5.0f);
             glDrawArrays(GL_LINES, 0, lineBufferData->vertices.size());
             glLineWidth(0.5f);
             lineBufferData->vao.unbind();

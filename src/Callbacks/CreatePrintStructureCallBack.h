@@ -53,10 +53,15 @@ public:
         SceneResources::CoordsOctreeMap& octreeCoordsMap = scene->m_res.coordsOctreeMap;
         
         //budeme prechadzat cez vsetky planes, zo zaciatku len pre test ich spravime napr 10
-        Plane plane{{0.0f, -50.0f, 0.0f}, {0.0f, 0.1f, 0.0f} };
-        for (int planeIndex = 0; planeIndex < 20; planeIndex++) {
+        float minPlaneY = inputMesh->m_meshBounds.getMinBoundsPos().y;
+        float maxPlaneY = inputMesh->m_meshBounds.getMaxBoundsPos().y;
+        minPlaneY = (std::trunc(minPlaneY * 10.0f) / 10.0f) + 0.1f;
+        //minPlaneY = std::round(minPlaneY);
+        Plane plane;
+        plane.point = glm::vec3(0.0f, minPlaneY, 0.0f);
+        plane.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        for (float planeHeight = plane.point.y; plane.point.y < maxPlaneY; plane.point.y += perimeterHeight) {
             //vytvor plane
-            plane.point.y += perimeterHeight;
             std::map<std::pair<glm::vec3, glm::vec3>, std::pair<ExtrudeEdge, ExtendedFace*>, EdgeComparatorEps> extrudeEdgesMap;
 
 
@@ -107,8 +112,10 @@ public:
                 extrudeEdges.emplace_back(value);
             }
 
-            outputPrintableMesh->addPerimeterLayerLevel(extrudeEdges);
+            outputPrintableMesh->addPerimeterLayerLevel(inputMesh, extrudeEdges);
         }
+
+
 
         //super teraz uz mame vytvorene samotne layers, teraz co potrebujeme je moznost to pridat do sceny nech to clovek vidi
         //to znamena ze teraz potrebujeme separatny buffer na to aby som mohol vykreslit zase tuto PrintableMesh strukturu
@@ -127,51 +134,20 @@ public:
 
                 for(auto it = perimeterOutline.points.begin(); it != perimeterOutline.points.end(); ++it) {
                     //POTOM VRATIT
-                    /*
+                    
                     if(perimeterOutline.filled) {
-                        edgesVector.emplace_back(it->first.pos, true);
-                        edgesVector.emplace_back(nextIt->first.pos, true);
+                        edgesVector.emplace_back(it->first.firstPoint, true);
+                        edgesVector.emplace_back(it->first.secondPoint, true);
                     } else {
-                        edgesVector.emplace_back(it->first.pos, 0.25f);
-                        edgesVector.emplace_back(nextIt->first.pos, 0.25f);
+                        edgesVector.emplace_back(it->first.firstPoint, 0.25f);
+                        edgesVector.emplace_back(it->first.secondPoint, 0.25f);
                     }
-                    */
-                    if(it->first.filled) {
-                        edgesVector.emplace_back(it->first.firstPoint, 1.0f);
-                        edgesVector.emplace_back(it->first.secondPoint, 1.0f);
-
-                        if(it->first.hasPerpendicular) {
-                            edgesVector.emplace_back(it->first.firstPoint, 0.15f);
-                            edgesVector.emplace_back(it->first.firstPoint + it->first.perpendicularEdge, 0.15f);
-                        }
-                    } else {
-                        if(it->first.highlightTest) {
-                            edgesVector.emplace_back(it->first.firstPoint, 0.1f);
-                            edgesVector.emplace_back(it->first.secondPoint, 0.1f);
-                            
-                            edgesVector.emplace_back(it->first.firstPoint, 0.4f);
-                            edgesVector.emplace_back(it->first.firstPoint + it->first.faceNormalEdge, 0.4f);
-
-                            edgesVector.emplace_back(it->first.firstPoint, 0.11f);
-                            edgesVector.emplace_back(it->first.firstPoint + it->first.planeNormalEdge, 0.11f);
-
-                            //edgesVector.emplace_back(it->first.pos, 0.15f);
-                            //edgesVector.emplace_back(it->first.pos + (it->first.perpendicularEdge * 1.5f), 0.15f);
-                        } else {
-                            edgesVector.emplace_back(it->first.firstPoint, 0.25f);
-                            edgesVector.emplace_back(it->first.secondPoint, 0.25f);
-                        }
-
-                    }
-
-
-
 
                 }
 
             }
 
-            /*
+            
             std::vector<InfillLine>& infillLines = printLayerLevel.infillLines;
 
             for(InfillLine& infillLine : infillLines) {
@@ -182,7 +158,6 @@ public:
                     edgesVector.emplace_back(std::next(it)->pos, 0.5f);
                 }
             }
-            */
 
         }
 

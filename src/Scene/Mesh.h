@@ -1,6 +1,8 @@
 #pragma once
 #include "../Renderer/Material.h"
 #include "../DataStructures/ExtendedHalfEdge.h"
+#include "Primitives/AABB.h"
+#include <limits>
 
 class Mesh
 {
@@ -14,6 +16,8 @@ public:
 	int m_selectionIndex = -1;
 
 	bool m_buildSuccessful = false;
+    
+    AABBBoundingRegion m_meshBounds;
 public:
 
 	//nemusi brat defaultMaterial
@@ -22,6 +26,8 @@ public:
 		m_defaultMaterial = defaultMaterial;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
+       
+        calculateMeshBounds();
 	}
 
 	Mesh(Material* defaultMaterial, std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
@@ -29,7 +35,24 @@ public:
 		m_defaultMaterial = defaultMaterial;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
+
+        calculateMeshBounds();
 	}
+
+    void calculateMeshBounds() {
+        glm::vec3 minBounds(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+        glm::vec3 maxBounds(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+        
+        for(ExtendedEdge* edge : m_halfEdgeStructure->m_edges) {
+            minBounds = glm::min(minBounds, edge->m_firstVertex->m_position);
+            minBounds = glm::min(minBounds, edge->m_secondVertex->m_position);
+
+            maxBounds = glm::max(maxBounds, edge->m_firstVertex->m_position);
+            maxBounds = glm::max(maxBounds, edge->m_secondVertex->m_position);
+        }
+
+        m_meshBounds.setBounds(minBounds, maxBounds);
+    }
 
 	bool isBuildSuccessful()
 	{

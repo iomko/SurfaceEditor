@@ -16,6 +16,8 @@
 class AABBBoundingRegion
 {
 public:
+    AABBBoundingRegion() {}
+
 	template <typename It, typename PointExtractor>
 	AABBBoundingRegion(It begin, It end, PointExtractor extractor)
 	{
@@ -44,6 +46,16 @@ public:
 		this->bounds[1].y = glm::max(min.y, max.y);
 		this->bounds[1].z = glm::max(min.z, max.z);
 	}
+
+    void setBounds(const glm::vec3& min, const glm::vec3& max){
+        this->bounds[0].x = glm::min(min.x, max.x);
+		this->bounds[0].y = glm::min(min.y, max.y);
+		this->bounds[0].z = glm::min(min.z, max.z);
+
+		this->bounds[1].x = glm::max(min.x, max.x);
+		this->bounds[1].y = glm::max(min.y, max.y);
+		this->bounds[1].z = glm::max(min.z, max.z);
+    }
 
     bool insersectsPlane(const Plane& plane) const
     {
@@ -178,6 +190,6 @@ public:
 
 private:
 
-	glm::vec3 bounds[2];
+	glm::vec3 bounds[2]{};
 };
 #endif

@@ -304,26 +304,7 @@ public:
             faceParams.faces = &toBeAddedOctreeFaces;
             sceneFacesAdderCallable.invoke(faceParams);
 
-            /*
-            std::vector<ExtendedEdge*> renderedEdges(toBeRenderedEdges.begin(), toBeRenderedEdges.end());
-            //selectedMesh
-            EdgesVaoInitCallable edgesVaoInitCallable;
-            EdgeParams edgeParams;
-            edgeParams.mesh = selectedMesh;
-            edgeParams.edges = &renderedEdges; 
-            edgesVaoInitCallable.invoke(edgeParams); //nema na to vplyv
-
-            FacesVaoInitCallable facesVaoInitCallable;
-            FaceParams faceParams;
-            faceParams.mesh = selectedMesh;
-            faceParams.faces = &toBeRenderedFaces;
-            facesVaoInitCallable.invoke(faceParams); //nema na to vplyv
-
-            SceneFacesAdderCallable sceneFacesAdderCallable;
-            sceneFacesAdderCallable.invoke(faceParams); //nema na to vplyv
-
-            std::cout << "SIZE OF USEDEDGESMAP: " << usedEdgesMap.size() << std::endl;
-            */
+            selectedMesh->calculateMeshBounds();
         }
 
         //dobre teraz uz mame spodnu cast spravenu. Teraz pri nej vsak musime jednotlive edges spojit dokopy.

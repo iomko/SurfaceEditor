@@ -692,15 +692,13 @@ int main()
         //DebugDrawSimpleLine(&linesShader);
 
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
-            /*
             if(scene.m_res.printableMeshMap.empty()) {
                 Renderer::drawMesh(mesh);
                 Renderer::drawMeshLines(mesh, &linesShader);
             }
-            */
 
-            Renderer::drawMesh(mesh);
-            Renderer::drawMeshLines(mesh, &linesShader);
+            //Renderer::drawMesh(mesh);
+            //Renderer::drawMeshLines(mesh, &linesShader);
         }
 
         for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {

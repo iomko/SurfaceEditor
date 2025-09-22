@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(SurfaceEditor VERSION 1.0 LANGUAGES C CXX)
 
 # Set build type
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Renderer/Shaders")
 
 #use C++20 features
