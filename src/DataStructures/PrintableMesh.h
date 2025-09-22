@@ -31,6 +31,19 @@ struct ExtrudeEdge {
         if (secondPoint.y != other.secondPoint.y) return secondPoint.y < other.secondPoint.y;
         return secondPoint.z < other.secondPoint.z;
     }
+
+    void swapPoints() {
+        std::swap(firstPoint, secondPoint);
+    }
+
+    //testing part
+    bool filled = false;
+    bool highlightTest = false;
+    
+    glm::vec3 faceNormalEdge{};
+    glm::vec3 planeNormalEdge{};
+    bool hasPerpendicular = false;
+    glm::vec3 perpendicularEdge{};
 };
 
 struct OutlinerEdgeHelperData {
@@ -69,7 +82,7 @@ struct ExtrudePoint {
 };
 
 struct PerimeterOutline {
-    std::list<std::pair<ExtrudePoint, ExtendedFace*>> points;
+    std::list<std::pair<ExtrudeEdge, ExtendedFace*>> points;
     utils::geometry::WindingOrder windingOrder = utils::geometry::WindingOrder::None;
     bool filled = false;
 };
@@ -235,7 +248,7 @@ public:
 
     }
 
-    void addPerimeterLayerLevel(std::vector<std::pair<ExtrudeEdge, ExtendedFace*>>& edges){
+    void addPerimeterLayerLevel(const std::vector<std::pair<ExtrudeEdge, ExtendedFace*>>& edges){
         std::vector<PrintLayerLevel>& printLayers = m_structure.printLayers;
 
         PrintLayerLevel& printLayerLevel = printLayers.emplace_back();
@@ -256,9 +269,8 @@ public:
             if(firstPointIt == pointsHelper.end() &&
                 secondPointIt == pointsHelper.end()) {
                 PerimeterOutline perimeterOutline;
-                //PrintLayerLevel::PerimeterOutline perimeterOutline;
-                perimeterOutline.points.emplace_back(edge.firstPoint, face);
-                perimeterOutline.points.emplace_back(edge.secondPoint, face);
+
+                perimeterOutline.points.emplace_back(edge, face);
 
                 perimeterOutlines.emplace_back(perimeterOutline);
                 
@@ -269,21 +281,45 @@ public:
                         (firstPointIt != pointsHelper.end() && secondPointIt == pointsHelper.end())) {
                
                 glm::vec3 point = (firstPointIt != pointsHelper.end()) ? edge.secondPoint : edge.firstPoint;
-                auto it = (firstPointIt != pointsHelper.end()) ? firstPointIt : secondPointIt;
-                std::pair<int ,std::variant<FrontTag, BackTag>>& indexTagPair = it->second;
-                int index = indexTagPair.first;
-                std::variant<FrontTag, BackTag>& tag = indexTagPair.second;
 
-                if(std::holds_alternative<FrontTag>(tag)){
-                    perimeterOutlines.at(index).points.emplace_front(point, face);
-                    pointsHelper.emplace(point, std::make_pair(index, FrontTag{}));
+                if(firstPointIt != pointsHelper.end()) {
+                    std::pair<int ,std::variant<FrontTag, BackTag>>& indexTagPair = firstPointIt->second;
+                    int index = indexTagPair.first;
+                    std::variant<FrontTag, BackTag>& tag = indexTagPair.second;
 
-                } else if(std::holds_alternative<BackTag>(tag)){
-                    perimeterOutlines.at(index).points.emplace_back(point, face);
-                    pointsHelper.emplace(point, std::make_pair(index, BackTag{}));
+                    if(std::holds_alternative<FrontTag>(tag)) {
+                        ExtrudeEdge swappedEdge = edge;
+                        swappedEdge.swapPoints();
+                        perimeterOutlines.at(index).points.emplace_front(swappedEdge, face);
+                        pointsHelper.emplace(point, std::make_pair(index, FrontTag{})); 
 
+                    } else if(std::holds_alternative<BackTag>(tag)) {
+                        perimeterOutlines.at(index).points.emplace_back(edge, face);
+                        pointsHelper.emplace(point, std::make_pair(index, BackTag{}));
+                    }
+
+                    pointsHelper.erase(firstPointIt);
+
+                } else if(secondPointIt != pointsHelper.end()) {
+                    std::pair<int ,std::variant<FrontTag, BackTag>>& indexTagPair = secondPointIt->second;
+                    int index = indexTagPair.first;
+                    std::variant<FrontTag, BackTag>& tag = indexTagPair.second;
+
+                    if(std::holds_alternative<FrontTag>(tag)) {
+                        perimeterOutlines.at(index).points.emplace_front(edge, face);
+                        pointsHelper.emplace(point, std::make_pair(index, FrontTag{}));
+
+                    } else if(std::holds_alternative<BackTag>(tag)) {
+                        ExtrudeEdge swappedEdge = edge;
+                        swappedEdge.swapPoints();
+                        perimeterOutlines.at(index).points.emplace_back(swappedEdge, face);
+                        pointsHelper.emplace(point, std::make_pair(index, BackTag{}));
+
+                    }
+                    
+                    pointsHelper.erase(secondPointIt);
                 }
-                pointsHelper.erase(it);
+
             } else if(firstPointIt != pointsHelper.end() && secondPointIt != pointsHelper.end()){
                 std::pair<int ,std::variant<FrontTag, BackTag>>& firstIndexTagPair = firstPointIt->second;
                 std::pair<int ,std::variant<FrontTag, BackTag>>& secondIndexTagPair = secondPointIt->second;
@@ -292,31 +328,49 @@ public:
 
                 if(firstIndex == secondIndex) {
                     //uzatvorene
+                    //
+                    std::variant<FrontTag, BackTag>& firstTag = firstPointIt->second.second;
+                    int firstIndex = firstPointIt->second.first;
+
+
+                    if(std::holds_alternative<FrontTag>(firstTag)) {
+                        ExtrudeEdge swappedEdge = edge;
+                        swappedEdge.swapPoints();
+
+                        perimeterOutlines.at(firstIndex).points.emplace_front(swappedEdge, face);
+                    } else if(std::holds_alternative<BackTag>(firstTag)) {
+                        perimeterOutlines.at(firstIndex).points.emplace_back(edge, face);
+                    }
+
                     pointsHelper.erase(firstPointIt);
                     pointsHelper.erase(secondPointIt);
                 } else {
                     std::variant<FrontTag, BackTag>& firstTag = firstIndexTagPair.second;
                     std::variant<FrontTag, BackTag>& secondTag = secondIndexTagPair.second;
-                    std::list<std::pair<ExtrudePoint, ExtendedFace*>>& firstList = perimeterOutlines.at(firstIndex).points;
-                    std::list<std::pair<ExtrudePoint, ExtendedFace*>>& secondList = perimeterOutlines.at(secondIndex).points;
+                    std::list<std::pair<ExtrudeEdge, ExtendedFace*>>& firstList = perimeterOutlines.at(firstIndex).points;
+                    std::list<std::pair<ExtrudeEdge, ExtendedFace*>>& secondList = perimeterOutlines.at(secondIndex).points;
 
                     bool firstFrontTag = std::holds_alternative<FrontTag>(firstTag);
                     bool secondFrontTag = std::holds_alternative<FrontTag>(secondTag);
                     
                     if(firstFrontTag && secondFrontTag){
 
-                        ExtrudePoint& extrudePointToRemoveFirst = firstList.front().first;
-                        ExtrudePoint& extrudePointToRemoveSecond = secondList.front().first;
+                        glm::vec3& pointToRemoveFirst = firstList.front().first.firstPoint;
+                        glm::vec3& pointToRemoveSecond = secondList.front().first.firstPoint;
 
-                        pointsHelper.erase(extrudePointToRemoveFirst.pos);
-                        pointsHelper.erase(extrudePointToRemoveSecond.pos);
+                        pointsHelper.erase(pointToRemoveFirst);
+                        pointsHelper.erase(pointToRemoveSecond);
 
 
                         if(firstIndex == (perimeterOutlines.size()-1)) { 
-                            ExtrudePoint& extrudePointToMove = perimeterOutlines.back().points.back().first;
-                            pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
-                            pointsHelper.find(extrudePointToMove.pos)->second.second = FrontTag{};
-
+                            glm::vec3& pointToMove = perimeterOutlines.back().points.back().first.secondPoint;
+                            pointsHelper.find(pointToMove)->second.first = secondIndex;
+                            pointsHelper.find(pointToMove)->second.second = FrontTag{};
+                            
+                            for(std::pair<ExtrudeEdge, ExtendedFace*>& currentEdge : firstList) {
+                                currentEdge.first.swapPoints(); 
+                            }
+                            firstList.emplace_front(edge, face);
                             //splice
                             //
                             while (!firstList.empty()) {
@@ -326,18 +380,22 @@ public:
                             perimeterOutlines.pop_back();
 
                         } else if(firstIndex != (perimeterOutlines.size()-1)) {
-                            ExtrudePoint& extrudePointToMove = perimeterOutlines.at(firstIndex).points.back().first;
-                            pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
-                            pointsHelper.find(extrudePointToMove.pos)->second.second = FrontTag{};
-
+                            glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.back().first.secondPoint;
+                            pointsHelper.find(pointToMove)->second.first = secondIndex;
+                            pointsHelper.find(pointToMove)->second.second = FrontTag{};
+                            
+                            for(std::pair<ExtrudeEdge, ExtendedFace*>& currentEdge : firstList) {
+                                currentEdge.first.swapPoints(); 
+                            }
+                            firstList.emplace_front(edge, face);
                             //splice
                             while (!firstList.empty()) {
                                 auto it = firstList.begin();      
                                 secondList.splice(secondList.begin(), firstList, it); 
                             }
 
-                            pointsHelper.find(perimeterOutlines.back().points.front().first.pos)->second.first = firstIndex;
-                            pointsHelper.find(perimeterOutlines.back().points.back().first.pos)->second.first = firstIndex;
+                            pointsHelper.find(perimeterOutlines.back().points.front().first.firstPoint)->second.first = firstIndex;
+                            pointsHelper.find(perimeterOutlines.back().points.back().first.secondPoint)->second.first = firstIndex;
 
                             
                             utils::containers::swapLastAndPop(perimeterOutlines, firstIndex);
@@ -347,58 +405,67 @@ public:
                             (!firstFrontTag && secondFrontTag) )
                     {
                         if(!firstFrontTag) {
-                            ExtrudePoint& extrudePointToRemoveFirst = firstList.back().first;
-                            ExtrudePoint& extrudePointToRemoveSecond = secondList.front().first;
+                            glm::vec3& pointToRemoveFirst = firstList.back().first.secondPoint;
+                            glm::vec3& pointToRemoveSecond = secondList.front().first.firstPoint;
 
-                            pointsHelper.erase(extrudePointToRemoveFirst.pos);
-                            pointsHelper.erase(extrudePointToRemoveSecond.pos);
+                            pointsHelper.erase(pointToRemoveFirst);
+                            pointsHelper.erase(pointToRemoveSecond);
                             //tam kde teraz nic nie je je firstList
                             //to znamena, ze si zobereme index pre firstList
                             //firstIndex
                             if(firstIndex == (perimeterOutlines.size()-1)) {
-                                ExtrudePoint& extrudePointToMove = perimeterOutlines.back().points.front().first;
-                                pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
-
+                                glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.front().first.firstPoint;
+                                pointsHelper.find(pointToMove)->second.first = secondIndex;
+                               
+                                firstList.emplace_back(edge, face);
                                 secondList.splice(secondList.begin(), firstList);
+
                                 perimeterOutlines.pop_back();
 
                             } else if(firstIndex != (perimeterOutlines.size()-1)) {
                                 //firstIndex nie je na konci
-                                ExtrudePoint& extrudePointToMove = perimeterOutlines.at(firstIndex).points.front().first;
-                                pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
+                                glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.front().first.firstPoint;
+                                pointsHelper.find(pointToMove)->second.first = secondIndex;
                                
-
+                                firstList.emplace_back(edge, face);
                                 secondList.splice(secondList.begin(), firstList);
                                 //move with the last element
                                 //change ids of last element
-                                pointsHelper.find(perimeterOutlines.back().points.front().first.pos)->second.first = firstIndex;
-                                pointsHelper.find(perimeterOutlines.back().points.back().first.pos)->second.first = firstIndex;
+                                pointsHelper.find(perimeterOutlines.back().points.front().first.firstPoint)->second.first = firstIndex;
+                                pointsHelper.find(perimeterOutlines.back().points.back().first.secondPoint)->second.first = firstIndex;
 
                                 utils::containers::swapLastAndPop(perimeterOutlines, firstIndex);
                             }
                         } else {
                             //TERAZ SPRAVIT TOTO!!!
-                            ExtrudePoint& extrudePointToRemoveSecond = secondList.back().first;
-                            ExtrudePoint& extrudePointToRemoveFirst = firstList.front().first;
+                            glm::vec3& pointToRemoveSecond = secondList.back().first.secondPoint;
+                            glm::vec3& pointToRemoveFirst = firstList.front().first.firstPoint;
 
-                            pointsHelper.erase(extrudePointToRemoveSecond.pos);
-                            pointsHelper.erase(extrudePointToRemoveFirst.pos);
+                            pointsHelper.erase(pointToRemoveSecond);
+                            pointsHelper.erase(pointToRemoveFirst);
 
                             if(firstIndex == (perimeterOutlines.size() - 1)) {
-                                ExtrudePoint& extrudePointToMove = perimeterOutlines.back().points.back().first;
-                                pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
+                                glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.back().first.secondPoint;
+                                pointsHelper.find(pointToMove)->second.first = secondIndex;
+                                
+                                firstList.emplace_front(edge, face);
+                                firstList.front().first.swapPoints();
 
                                 secondList.splice(secondList.end(), firstList);
+
                                 perimeterOutlines.pop_back();
 
                             } else if(firstIndex != (perimeterOutlines.size()-1)) {
-                                ExtrudePoint& extrudePointToMove = perimeterOutlines.at(firstIndex).points.back().first;
-                                pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
+                                glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.back().first.secondPoint;
+                                pointsHelper.find(pointToMove)->second.first = secondIndex;
+                                
+                                firstList.emplace_front(edge, face);
+                                firstList.front().first.swapPoints();
 
                                 secondList.splice(secondList.end(), firstList);
 
-                                pointsHelper.find(perimeterOutlines.back().points.front().first.pos)->second.first = firstIndex;
-                                pointsHelper.find(perimeterOutlines.back().points.back().first.pos)->second.first = firstIndex;
+                                pointsHelper.find(perimeterOutlines.back().points.front().first.firstPoint)->second.first = firstIndex;
+                                pointsHelper.find(perimeterOutlines.back().points.back().first.secondPoint)->second.first = firstIndex;
 
                                 utils::containers::swapLastAndPop(perimeterOutlines, firstIndex);
                             }
@@ -407,17 +474,23 @@ public:
                         }
                     } else if(!firstFrontTag && !secondFrontTag) {
                        
-                        ExtrudePoint& extrudePointToRemoveFirst = firstList.back().first;
-                        ExtrudePoint& extrudePointToRemoveSecond = secondList.back().first;
+                        glm::vec3& pointToRemoveFirst = firstList.back().first.secondPoint;
+                        glm::vec3& pointToRemoveSecond = secondList.back().first.secondPoint;
 
-                        pointsHelper.erase(extrudePointToRemoveFirst.pos);
-                        pointsHelper.erase(extrudePointToRemoveSecond.pos);
+                        pointsHelper.erase(pointToRemoveFirst);
+                        pointsHelper.erase(pointToRemoveSecond);
 
 
                         if(firstIndex == (perimeterOutlines.size()-1)) { 
-                            ExtrudePoint& extrudePointToMove = perimeterOutlines.back().points.front().first;
-                            pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
-                            pointsHelper.find(extrudePointToMove.pos)->second.second = BackTag{};
+                            glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.front().first.firstPoint;
+                            pointsHelper.find(pointToMove)->second.first = secondIndex;
+                            pointsHelper.find(pointToMove)->second.second = BackTag{};
+
+
+                            firstList.emplace_back(edge, face);
+                            for(std::pair<ExtrudeEdge, ExtendedFace*>& currentEdge : firstList) {
+                                currentEdge.first.swapPoints(); 
+                            }
 
                             //splice
                             while (!firstList.empty()) {
@@ -426,12 +499,19 @@ public:
                                 // Move (splice) last element from first → back of second
                                 secondList.splice(secondList.end(), firstList, it);
                             }
+
                             perimeterOutlines.pop_back();
 
                         } else if(firstIndex != (perimeterOutlines.size()-1)) {
-                            ExtrudePoint& extrudePointToMove = perimeterOutlines.at(firstIndex).points.front().first;
-                            pointsHelper.find(extrudePointToMove.pos)->second.first = secondIndex;
-                            pointsHelper.find(extrudePointToMove.pos)->second.second = BackTag{};
+                            glm::vec3& pointToMove = perimeterOutlines.at(firstIndex).points.front().first.firstPoint;
+                            pointsHelper.find(pointToMove)->second.first = secondIndex;
+                            pointsHelper.find(pointToMove)->second.second = BackTag{};
+
+
+                            firstList.emplace_back(edge, face);
+                            for(std::pair<ExtrudeEdge, ExtendedFace*>& currentEdge : firstList) {
+                                currentEdge.first.swapPoints(); 
+                            }
 
                             //splice
                             while (!firstList.empty()) {
@@ -441,8 +521,8 @@ public:
                                 secondList.splice(secondList.end(), firstList, it);
                             }
 
-                            pointsHelper.find(perimeterOutlines.back().points.front().first.pos)->second.first = firstIndex;
-                            pointsHelper.find(perimeterOutlines.back().points.back().first.pos)->second.first = firstIndex;
+                            pointsHelper.find(perimeterOutlines.back().points.front().first.firstPoint)->second.first = firstIndex;
+                            pointsHelper.find(perimeterOutlines.back().points.back().first.secondPoint)->second.first = firstIndex;
 
                             
                             utils::containers::swapLastAndPop(perimeterOutlines, firstIndex);
@@ -464,14 +544,15 @@ public:
         bool yTempInitialized = false;
         for(PerimeterOutline& outline : perimeterOutlines) {
             std::vector<glm::vec2> outline2DProjection;
-            for(auto& [extrudePoint, _] : outline.points) {
+            for(auto& [extrudeEdge, _] : outline.points) {
 
                 if(!yTempInitialized){
-                    yTemp = extrudePoint.pos.y;
+                    yTemp = extrudeEdge.firstPoint.y;
                     yTempInitialized = true;
                 }
-
-                outline2DProjection.emplace_back(extrudePoint.pos.x, extrudePoint.pos.z);
+              
+                glm::vec2 projected2DPoint(extrudeEdge.firstPoint.x, extrudeEdge.firstPoint.z);
+                outline2DProjection.emplace_back(projected2DPoint);
             }
             
             //dobre teraz mame spravenu 2D, musime zavolat metodu, ktora mi povie o tom ci je polygon CCW alebo CW
@@ -522,44 +603,33 @@ public:
             //danu line
  
             for(auto it = outline.points.begin(); it != outline.points.end(); ++it) {
-                auto nextIt = std::next(it);
-                if(nextIt == outline.points.end()) {
-                    nextIt = outline.points.begin();
-                }
-
                 ExtendedFace* face = it->second;
                 glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
 
-                glm::vec3 firstEdgePoint = it->first.pos;
-                glm::vec3 secondEdgePoint = nextIt->first.pos;
-                glm::vec3 edgeDir = glm::normalize(firstEdgePoint - secondEdgePoint);
+                glm::vec3 firstEdgePoint = it->first.firstPoint;
+                glm::vec3 secondEdgePoint = it->first.secondPoint;
+                glm::vec3 edgeDir = glm::normalize(secondEdgePoint - firstEdgePoint);
 
                 glm::vec3 planeUpDir{ 0.0f, 1.0f, 0.0f };
                 glm::vec3 planeNormal = glm::normalize(glm::cross(planeUpDir, edgeDir));
 
-                glm::vec2 outlinePerpendicularDir = utils::geometry::getRightNormal({firstEdgePoint.x, firstEdgePoint.z}, { secondEdgePoint.x, secondEdgePoint.z} );
-                if(outline.windingOrder == utils::geometry::WindingOrder::CCW) {
-                    outlinePerpendicularDir = -outlinePerpendicularDir;
-                }
-                glm::vec3 outline3DPerpendicularDir{ outlinePerpendicularDir.x, firstEdgePoint.y, outlinePerpendicularDir.y };
+                glm::vec2 inward2D = utils::geometry::getInwardNormal({firstEdgePoint.x, firstEdgePoint.z}, { secondEdgePoint.x, secondEdgePoint.z}, outline.windingOrder);
+                glm::vec3 inward3D{ inward2D.x, 0.0f, inward2D.y };
 
-                utils::geometry::SideRelation sideRelation = utils::geometry::checkSideRelation(planeNormal, outline3DPerpendicularDir, faceNormal);
+                utils::geometry::SideRelation sideRelation = utils::geometry::checkSideRelation(planeNormal, inward3D, faceNormal);
                 if(sideRelation == utils::geometry::SideRelation::OppositeSide) {
                     it->first.filled = true;
-                    nextIt->first.filled = true;
-                    it->first.perpendicularEdge = outline3DPerpendicularDir;
+                    it->first.perpendicularEdge = inward3D;
                     it->first.hasPerpendicular = true;
                 } else if(sideRelation == utils::geometry::SideRelation::SameSide) {
                     it->first.filled = false;
-                    nextIt->first.filled = false;
                     
                     if(!infillAlreadySet) {
                         it->first.highlightTest = true;
-                        nextIt->first.highlightTest = true;
 
                         it->first.faceNormalEdge = faceNormal;
                         it->first.planeNormalEdge = planeNormal;
-                        it->first.perpendicularEdge = outline3DPerpendicularDir;
+                        it->first.perpendicularEdge = inward3D;
                         std::cout << "---NOT AN INFILL---" << std::endl;
                         std::cout << "FaceNormal: " << faceNormal.x << ", " << faceNormal.y << ", " << faceNormal.z << std::endl;
                         std::cout << "planeNormal: " << planeNormal.x << ", " << planeNormal.y << ", " << planeNormal.z << std::endl;
@@ -572,19 +642,18 @@ public:
                         } else if(outline.windingOrder == utils::geometry::WindingOrder::None) {
                             std::cout << "WindingOrder: None" << std::endl; 
                         }
-                        std::cout << "PerpendicularEdge: " << outline3DPerpendicularDir.x << ", " << outline3DPerpendicularDir.y << ", " << outline3DPerpendicularDir.z << std::endl;
+                        std::cout << "PerpendicularEdge: " << inward3D.x << ", " << inward3D.y << ", " << inward3D.z << std::endl;
                         infillAlreadySet = true;
                     }
 
                 }
 
 
-                //musime vytvorit data ktore sa budu vkladat do quadtree
-                OutlinerEdgeHelperData data(it->first.pos, nextIt->first.pos, outline.filled, outlineId);
-                glm::vec2 minDataBounds = glm::min(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
-                glm::vec2 maxDataBounds = glm::max(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
-                BoundingRegion2D dataBounds(minDataBounds, maxDataBounds);
-                outlinerQuadtree.addDataToQuadtree(data, dataBounds);
+                //OutlinerEdgeHelperData data(it->first.pos, nextIt->first.pos, outline.filled, outlineId);
+                //glm::vec2 minDataBounds = glm::min(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
+                //glm::vec2 maxDataBounds = glm::max(glm::vec2(it->first.pos.x, it->first.pos.z), glm::vec2(nextIt->first.pos.x, nextIt->first.pos.z));
+                //BoundingRegion2D dataBounds(minDataBounds, maxDataBounds);
+                //outlinerQuadtree.addDataToQuadtree(data, dataBounds);
             }
             ++outlineId;
         }

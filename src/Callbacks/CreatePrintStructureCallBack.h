@@ -126,10 +126,6 @@ public:
             for(PerimeterOutline& perimeterOutline : perimeterOutlines) {
 
                 for(auto it = perimeterOutline.points.begin(); it != perimeterOutline.points.end(); ++it) {
-                    auto nextIt = std::next(it);
-                    if(nextIt == perimeterOutline.points.end()) {
-                        nextIt = perimeterOutline.points.begin();
-                    }
                     //POTOM VRATIT
                     /*
                     if(perimeterOutline.filled) {
@@ -140,30 +136,30 @@ public:
                         edgesVector.emplace_back(nextIt->first.pos, 0.25f);
                     }
                     */
-                    if(it->first.filled && nextIt->first.filled) {
-                        edgesVector.emplace_back(it->first.pos, 1.0f);
-                        edgesVector.emplace_back(nextIt->first.pos, 1.0f);
+                    if(it->first.filled) {
+                        edgesVector.emplace_back(it->first.firstPoint, 1.0f);
+                        edgesVector.emplace_back(it->first.secondPoint, 1.0f);
 
                         if(it->first.hasPerpendicular) {
-                            edgesVector.emplace_back(it->first.pos, 0.15f);
-                            edgesVector.emplace_back(it->first.pos + it->first.perpendicularEdge, 0.15f);
+                            edgesVector.emplace_back(it->first.firstPoint, 0.15f);
+                            edgesVector.emplace_back(it->first.firstPoint + it->first.perpendicularEdge, 0.15f);
                         }
                     } else {
-                        if(it->first.highlightTest && nextIt->first.highlightTest) {
-                            edgesVector.emplace_back(it->first.pos, 0.1f);
-                            edgesVector.emplace_back(nextIt->first.pos, 0.1f);
+                        if(it->first.highlightTest) {
+                            edgesVector.emplace_back(it->first.firstPoint, 0.1f);
+                            edgesVector.emplace_back(it->first.secondPoint, 0.1f);
                             
-                            edgesVector.emplace_back(it->first.pos, 0.4f);
-                            edgesVector.emplace_back(it->first.pos + it->first.faceNormalEdge, 0.4f);
+                            edgesVector.emplace_back(it->first.firstPoint, 0.4f);
+                            edgesVector.emplace_back(it->first.firstPoint + it->first.faceNormalEdge, 0.4f);
 
-                            edgesVector.emplace_back(it->first.pos, 0.11f);
-                            edgesVector.emplace_back(it->first.pos + it->first.planeNormalEdge, 0.11f);
+                            edgesVector.emplace_back(it->first.firstPoint, 0.11f);
+                            edgesVector.emplace_back(it->first.firstPoint + it->first.planeNormalEdge, 0.11f);
 
                             //edgesVector.emplace_back(it->first.pos, 0.15f);
                             //edgesVector.emplace_back(it->first.pos + (it->first.perpendicularEdge * 1.5f), 0.15f);
                         } else {
-                            edgesVector.emplace_back(it->first.pos, 0.25f);
-                            edgesVector.emplace_back(nextIt->first.pos, 0.25f);
+                            edgesVector.emplace_back(it->first.firstPoint, 0.25f);
+                            edgesVector.emplace_back(it->first.secondPoint, 0.25f);
                         }
 
                     }
@@ -175,6 +171,7 @@ public:
 
             }
 
+            /*
             std::vector<InfillLine>& infillLines = printLayerLevel.infillLines;
 
             for(InfillLine& infillLine : infillLines) {
@@ -185,6 +182,7 @@ public:
                     edgesVector.emplace_back(std::next(it)->pos, 0.5f);
                 }
             }
+            */
 
         }
 

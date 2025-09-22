@@ -232,9 +232,9 @@ struct OutlinerDataTest {
 };
 
 
-
 int main()
 {
+
     /*
     PrintableMesh printableMesh;
     std::vector<ExtrudeEdge> extrudeEdges;
