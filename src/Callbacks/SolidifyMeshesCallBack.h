@@ -8,8 +8,9 @@
 #include "Renderer/Renderer.h"
 #include "Scene/Scene.h"
 #include "Utils/GeometryUtils.h"
+#include "Utils/glm_overrides.h"
 #include "ViewPortsController.h"
-#include "DataStructures/Octree.h"
+#include "Structures/Octree.h"
 #include <glm/fwd.hpp>
 #include "Callables/FacesVaoInitCallable.h"
 #include "Callables/SceneFacesAdderCallable.h"
@@ -18,67 +19,11 @@
 #include <chrono>
 
 class SolidifyMeshesCallBack : public Callback<>, public Observer {
-private:
-    struct Vec3Less {
-        bool operator()(const glm::vec3& a, const glm::vec3& b) const {
-            return std::tie(a.x, a.y, a.z) < std::tie(b.x, b.y, b.z);
-        }
-    };
-
-    struct EdgeComparator {
-        bool operator()(const std::pair<glm::vec3, glm::vec3>& lhs,
-                        const std::pair<glm::vec3, glm::vec3>& rhs) const {
-            auto l = std::minmax(lhs.first, lhs.second, Vec3Less{});
-            auto r = std::minmax(rhs.first, rhs.second, Vec3Less{});
-            return std::tie(l.first, l.second) < std::tie(r.first, r.second);
-        }
-    };
 
 public:
-    void executePrivate() {
-        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-        Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-        SceneResources& sceneRes = scene->m_res;
-        SceneResources::CoordsOctreeMap& coordsOctreeMap = sceneRes.coordsOctreeMap;
-        const SelectionHolder& selectionHolder = selectionController->getHolder();
-        const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
-     
-        std::cout << "ACTUALLLLY" << std::endl;
-
-        for (Mesh* selectedMesh : selectedMeshes) {
-            ExtendedHalfEdgeMesh* halfEdgeStructure = selectedMesh->getHalfEdgeStructure();
-
-            std::vector<ExtendedFace*> originalFaces = halfEdgeStructure->m_faces;
-
-            std::vector<ExtendedFace*> toBeRenderedFaces;
-
-            for (ExtendedFace* selectedFace : originalFaces) {
-
-                for(auto it = selectedFace->faceHalfEdgeBegin(); it != selectedFace->faceHalfEdgeEnd(); ++it) {
-                    ExtendedEdge* edge = (*it).m_edge;
-                    ExtendedHalfEdge* halfEdge = edge->m_halfEdge;
-
-                    if(edge->m_isOuter){
-                        glm::vec3 secondVertex = halfEdge->m_vertex->m_position;
-                        secondVertex.y = -60.0f;
-                        std::vector<glm::vec3> newFaceVerts {{halfEdge->m_vertex->m_position}, {secondVertex}, {halfEdge->m_next->m_vertex->m_position}};
-
-                        toBeRenderedFaces.emplace_back(halfEdgeStructure->addFloatingFace(newFaceVerts));
-                    }
-                }
-
-
-            }
-            FacesVaoInitCallable facesVaoInitCallable;
-            FaceParams faceParams;
-            faceParams.mesh = selectedMesh;
-            faceParams.faces = &toBeRenderedFaces;
-            facesVaoInitCallable.invoke(faceParams);
-        }
-    }
 
 	void execute() override {
-        //najskor si musime ziskat SelectedMeshes
+        //Get Selected Meshes 
         SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
         Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
         SceneResources& sceneRes = scene->m_res;
@@ -93,15 +38,13 @@ public:
 
             std::vector<ExtendedFace*> originalFaces = halfEdgeStructure->m_faces;
             
-            std::map<std::pair<glm::vec3, glm::vec3>, ExtendedEdge*, EdgeComparator> usedEdgesMap;
-            std::map<std::pair<glm::vec3, glm::vec3>, std::pair<ExtendedEdge*, ExtendedEdge*>, EdgeComparator> outerEdgesMap;
+            std::map<std::pair<glm::vec3, glm::vec3>, ExtendedEdge*, glm::Vec3PairApproxComparator> usedEdgesMap;
+            std::map<std::pair<glm::vec3, glm::vec3>, std::pair<ExtendedEdge*, ExtendedEdge*>, glm::Vec3PairApproxComparator> outerEdgesMap;
             std::vector<ExtendedFace*> toBeAddedOctreeFaces;
 
 
             for (ExtendedFace* selectedFace : originalFaces) {
-                //musime ziskat projected vertices danej face a musime ich hlavne otocit
-                
-                //urobim si to manualne zatial
+
                 ExtendedHalfEdge* currentHalfEdge = selectedFace->m_halfEdge;
                 
                 std::vector<glm::vec3> newFaceVertices;
@@ -134,7 +77,6 @@ public:
                 ExtendedFace* newFace = halfEdgeStructure->addFloatingFace(newFaceVertices);
                 toBeAddedOctreeFaces.emplace_back(newFace);
 
-                //tu by sme predsa pri pridavani floating face rozhodne mali pridat aj vao data
                 FaceVaoInitCallable faceVaoInitCallable;
                 NewFaceParams newFaceParams;
                 newFaceParams.face = newFace;
@@ -159,7 +101,6 @@ public:
                     auto outerEdgesMapIt = outerEdgesMap.find(std::make_pair(edge->m_firstVertex->m_position, edge->m_secondVertex->m_position));
 
                     if(outerEdgesMapIt != outerEdgesMap.end()) {
-                        //tak v takomto pripade vieme ze ho tam pridame
                         std::pair<ExtendedEdge*, ExtendedEdge*>& outerEdgesPair = outerEdgesMapIt->second;
                         outerEdgesPair.second = edge;
                     }
@@ -167,8 +108,6 @@ public:
 
                     auto [usedEdgesMapIt, inserted] = usedEdgesMap.try_emplace(std::make_pair(edge->m_firstVertex->m_position, edge->m_secondVertex->m_position), edge);
                     if(!inserted){
-                        //tak vieme ze uz tam predtym bolo
-                        //
                         ExtendedEdge* otherEdge = usedEdgesMapIt->second;
 
                         ConnectEdgesCallBack connectEdgesCallBack;
@@ -184,8 +123,7 @@ public:
                 
             }
 
-            //spravime okolite faces este
-            //
+
             for (auto& [_, edgesPair] : outerEdgesMap) {
                 ExtendedHalfEdge* upperHalfEdge = edgesPair.first->m_halfEdge;
                 ExtendedHalfEdge* bottomHalfEdge = edgesPair.second->m_halfEdge;
@@ -206,7 +144,6 @@ public:
                 ExtendedFace* firstOuterFace = halfEdgeStructure->addFloatingFace(firstOuterFaceVerts);
                 toBeAddedOctreeFaces.emplace_back(firstOuterFace);
 
-                //tu by sme predsa pri pridavani floating face rozhodne mali pridat aj vao data
                 FaceVaoInitCallable faceVaoInitCallable1;
                 NewFaceParams newFaceParams1;
                 newFaceParams1.face = firstOuterFace;
@@ -230,8 +167,6 @@ public:
 
                     auto [usedEdgesMapIt, inserted] = usedEdgesMap.try_emplace(std::make_pair(edge->m_firstVertex->m_position, edge->m_secondVertex->m_position), edge);
                     if(!inserted){
-                        //tak vieme ze uz tam predtym bolo
-                        //
                         ExtendedEdge* otherEdge = usedEdgesMapIt->second;
 
                         ConnectEdgesCallBack connectEdgesCallBack;
@@ -249,7 +184,6 @@ public:
                 ExtendedFace* secondOuterFace = halfEdgeStructure->addFloatingFace(secondOuterFaceVerts);
                 toBeAddedOctreeFaces.emplace_back(secondOuterFace);
 
-                //tu by sme predsa pri pridavani floating face rozhodne mali pridat aj vao data
                 FaceVaoInitCallable faceVaoInitCallable2;
                 NewFaceParams newFaceParams2;
                 newFaceParams2.face = secondOuterFace;
@@ -274,8 +208,7 @@ public:
                     
                     auto [usedEdgesMapIt, inserted] = usedEdgesMap.try_emplace(std::make_pair(edge->m_firstVertex->m_position, edge->m_secondVertex->m_position), edge);
                     if(!inserted){
-                        //tak vieme ze uz tam predtym bolo
-                        //
+  
                         ExtendedEdge* otherEdge = usedEdgesMapIt->second;
 
                         ConnectEdgesCallBack connectEdgesCallBack;
@@ -306,12 +239,5 @@ public:
 
             selectedMesh->calculateMeshBounds();
         }
-
-        //dobre teraz uz mame spodnu cast spravenu. Teraz pri nej vsak musime jednotlive edges spojit dokopy.
-
-
-        //teraz si musime nejako ziskat pairs edgov, ktore budem pripajat
-
-
     }
 }; 

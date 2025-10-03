@@ -1,3 +1,4 @@
+#pragma once
 
 #include "../Params/OperationParams.h"
 #include "Callables/Callable.h"
@@ -9,28 +10,29 @@ class EdgesVaoInitCallable : public Callable<EdgeParams, void>
 public:
 	void invoke(const EdgeParams& input) override
 	{
-        Mesh* mesh = input.mesh;
-        std::vector<ExtendedEdge*>& edges = *(input.edges);
-    
-        //potrebujem ziskat meshLinesVaoVector
+        Mesh* inputMesh = input.mesh;
+        std::vector<ExtendedEdge*>& inputEdges = *(input.edges);
+   
+        //Get Raw Line Buffer Data For Specified Mesh
         LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
         BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-        lineBufferStorage->getBufferData(mesh, lineBufferData);
-        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
+        lineBufferStorage->getBufferData(inputMesh, lineBufferData);
+        std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = lineBufferData->vertices;
 
-        for(ExtendedEdge* edge : edges) {
-            ExtendedVertex* edgeFirstVertex = edge->m_firstVertex;
-            ExtendedVertex* edgeSecondVertex = edge->m_secondVertex;
+        for(ExtendedEdge* edge : inputEdges) {
+            ExtendedVertex* firstVertex = edge->m_firstVertex;
+            ExtendedVertex* secondVertex = edge->m_secondVertex;
                 
-            meshLinesVaoVector.emplace_back(edgeFirstVertex->m_position, false);
-            meshLinesVaoVector.emplace_back(edgeSecondVertex->m_position, false);
+            lineBufferVertices.emplace_back(firstVertex->m_position, false);
+            lineBufferVertices.emplace_back(secondVertex->m_position, false);
 
-            //---ADD_INFO_INTO_EDGE---
-            int edgeLineIndex = meshLinesVaoVector.size() - 2;
+            //Inject info about the position of line inside of it's buffer to the ExtendedEdge class
+            int edgeLineIndex = lineBufferVertices.size() - 2;
             edge->m_EdgeLineIndex = edgeLineIndex;
         }
-
-        lineBufferStorage->updateBufferStorage(mesh);
+        
+        //Notify buffer storage about the new changes being made to it
+        lineBufferStorage->updateBufferStorage(inputMesh);
     }
 
 };

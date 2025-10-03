@@ -1,34 +1,56 @@
 # Renderer
 
-The Renderer class manages the setup and drawing of various rendering primitives using OpenGL.
-It handles buffer creation, data uploading, and drawing calls for points, lines, meshes, and axis-aligned bounding boxes (AABBs).
-Buffers are registered and initialized once, and then updated dynamically for each draw call.
+### RendererBuffersData class
 
-###### Public Methods
-`static void init()`
-Initializes OpenGL buffers and vertex array objects (VAOs) for different primitive types: points, lines, meshes, and AABBs.
-It sets up buffer layouts and allocates GPU memory with appropriate usage hints (e.g., GL_DYNAMIC_DRAW).
+Defines the GPU-side vertex formats used by the renderer.  
 
-`static void drawPoints(std::vector<RendererStageData::PointVertex>& points)`
-Uploads and draws a collection of points.
-Points are rendered as GL_POINTS with a fixed size.
+`AABBVertex`: Holds position (glm::vec3) and color (glm::vec3).  
 
-`static void drawLines(std::vector<RendererStageData::LineVertex>& lines)`
-Uploads and draws a collection of lines.
-Lines are rendered as GL_LINES with a specified line width.
+`LineVertex`: Holds position (glm::vec3) and a highlight flag (float).  
 
-`static void drawMesh(const std::vector<RendererStageData::MeshVertex>& mesh)`
-Uploads and draws a mesh represented as triangles.
-Uses vertex positions, normals, and highlight flags.
+`PointVertex`: Holds position (glm::vec3) and a highlight flag (float).  
 
-`static void drawBox(const std::vector<RendererStageData::AABBVertex>& box)`
-Uploads and draws axis-aligned bounding boxes (AABBs).
-Draws wireframe boxes by switching polygon mode to line.
+`MeshVertex`: Holds position (glm::vec3), normal (glm::vec3), and a highlight flag (float).  
 
-###### Internal Types and Data
-`RendererStageData`
-Holds vertex data structures and maps associating meshes/materials/AABBs with vertex lists.
+### BufferStorage class
 
-`BufferRegistry`
-Manages OpenGL buffers (VAOs, VBOs, optionally EBOs) for different buffer types (Point, Line, Mesh, AABB).
-Buffers are registered once and queried on demand.
+The renderer uses a generic buffer storage system to manage raw vertex data for different geometry types (meshes, lines, points, AABBs, and printable meshes).  
+
+Each buffer storage provides the following core functionality:
+
+`getBufferData(...)` — Retrieves buffer data if it exists for a given object.  
+
+`updateBufferStorage(...)` — Updates GPU buffer data from CPU-side vertices.  
+
+`registerBufferStorage(...)` — Allocates and initializes GPU buffer objects (VAO, VBO) for a given object if not already present.  
+
+`static std::string getBufferStorageName()` — Returns a unique name identifying the buffer storage types.  
+
+
+###### Available buffer storages:
+
+`MeshBufferStorage` — Stores triangle mesh geometry (with materials).  
+
+`LineBufferStorage` — Stores line-based geometry for meshes.  
+
+`PointBufferStorage` — Stores per-vertex point data for meshes.  
+
+`AABBBufferStorage` — Stores box geometry for axis-aligned bounding boxes.  
+
+`PrintableMeshBufferStorage` — Stores line geometry for printable/debug meshes.  
+
+All storages are registered in a global BufferRegistry managed by the Renderer.
+
+
+### Renderer class
+
+The Renderer class provides functions to draw various scene elements using the registered buffer storages.
+
+###### Methods:
+
+`static void init()` - Initializes the buffer registry by registering all supported buffer storage types.  
+`static void drawMeshPoints(Mesh* mesh, Shader* shader)` - Draws mesh vertices.  
+`static void drawMeshLines(Mesh* mesh, Shader* shader)` - Draws mesh lines.  
+`static void drawPrintableMesh(PrintableMesh* mesh, Shader* shader)` - Draws a PrintableMesh as lines.  
+`static void drawMesh(Mesh* mesh)` - Draws mesh faces.  
+`static void drawBox(const AABBBoundingRegion& aabb)` - Draws an AABB as a wireframe box.  

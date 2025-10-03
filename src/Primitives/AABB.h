@@ -1,5 +1,4 @@
-#ifndef AABBBOUNDINGREGION_H
-#define AABBBOUNDINGREGION_H
+#pragma once
 
 #include "../Ray.h"
 #include "Primitives/Plane.h"
@@ -192,4 +191,3 @@ private:
 
 	glm::vec3 bounds[2]{};
 };
-#endif

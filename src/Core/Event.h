@@ -21,10 +21,10 @@ class KeyEvent : public Event
 public:
 	KeyEvent(int keyCode)
 	{
-		this->keyCode = keyCode;
+		this->m_keyCode = keyCode;
 	}
 protected:
-	int keyCode;
+	int m_keyCode;
 };
 
 class KeyPressEvent : public KeyEvent
@@ -68,8 +68,8 @@ class MouseScrollEvent : public Event
 public:
 	MouseScrollEvent(double xOffset, double yOffset)
 	{
-		this->xOffset = xOffset;
-		this->yOffset = yOffset;
+		this->m_xOffset = xOffset;
+		this->m_yOffset = yOffset;
 	}
 	virtual EventType getType() override
 	{
@@ -84,8 +84,8 @@ public:
 	}
 	virtual ~MouseScrollEvent() override = default;
 private:
-	double xOffset;
-	double yOffset;
+	double m_xOffset;
+	double m_yOffset;
 };
 
 
@@ -94,8 +94,8 @@ class MouseMoveEvent : public Event
 public:
 	MouseMoveEvent(double xPos, double yPos)
 	{
-		this->xPos = xPos;
-		this->yPos = yPos;
+		this->m_xPos = xPos;
+		this->m_yPos = yPos;
 	}
 	virtual EventType getType() override
 	{
@@ -110,8 +110,8 @@ public:
 	}
 	virtual ~MouseMoveEvent() override = default;
 private:
-	double xPos;
-	double yPos;
+	double m_xPos;
+	double m_yPos;
 };
 
 class MouseButtonPressEvent : public Event
@@ -142,7 +142,7 @@ class MouseButtonReleaseEvent : public Event
 public:
 	MouseButtonReleaseEvent(int buttonCode)
 	{
-		this->buttonCode = buttonCode;
+		this->m_buttonCode = buttonCode;
 	}
 	virtual EventType getType() override
 	{
@@ -158,7 +158,7 @@ public:
 	}
 	virtual ~MouseButtonReleaseEvent() override = default;
 private:
-	int buttonCode;
+	int m_buttonCode;
 };
 
 class WindowCloseEvent : public Event
@@ -188,8 +188,8 @@ class WindowResizeEvent : public Event
 public:
 	WindowResizeEvent(int width, int height)
 	{
-		this->width = width;
-		this->height = height;
+		this->m_width = width;
+		this->m_height = height;
 	}
 
 	virtual ~WindowResizeEvent() override = default;
@@ -209,6 +209,6 @@ public:
 	}
 
 private:
-	int width;
-	int height;
+	int m_width;
+	int m_height;
 };

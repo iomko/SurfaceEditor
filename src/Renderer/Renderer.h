@@ -8,15 +8,8 @@
 #include "Buffers.h"
 #include "../Scene/Mesh.h"
 #include <string>
-#include "DataStructures/PrintableMesh.h"
+#include "Structures/PrintableMesh.h"
 
-
-struct RendererConfig
-{
-	static constexpr unsigned int maxBoxCount = 2000000;
-	static constexpr unsigned int maxVertexCount = 36 * maxBoxCount;
-	static constexpr unsigned int maxIndexCount = 24 * maxBoxCount;
-};
 
 struct RendererBuffersData 
 {

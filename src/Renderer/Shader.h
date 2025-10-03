@@ -6,8 +6,6 @@ class Shader
 {
 public:
 	Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geometryShaderPath = "");
-	//Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
-	//Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geometryShaderPath);
 	void bind();
 	void unbind();
 	void setMat4(const std::string& name, glm::mat4 val);
@@ -18,8 +16,6 @@ public:
 private:
 
 	void createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID, unsigned int geometryShaderID = 0);
-	//void createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID);
-	//void createAndlinkProgram(unsigned int vertexShaderID, unsigned int fragmentShaderID, unsigned int geometryShaderID);
 	std::string loadShaderSrc(const std::string& shaderPath);
 	unsigned int compileShader(const std::string& shaderPath, GLenum type);
 	unsigned int id;

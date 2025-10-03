@@ -4,7 +4,6 @@
 
 namespace utils::containers
 {
-
 	template <typename T>
 	void swapWithLast(std::vector<T>& vector, size_t index) {
 		if (index < vector.size() - 1) {

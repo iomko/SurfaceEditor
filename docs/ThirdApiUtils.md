@@ -1,10 +1,7 @@
 # ThirdApiUtils
 
 ### utils::third_api
-Namespace providing utility functions for building API URLs for external services, such as the OpenTopography Global DEM API.
+Namespace providing utility functions for external services (APIs).  
 
 ###### Methods:
-`std::string buildOpenTopoUrl(const OpenTopoParams& input)`
-Constructs a URL string to query the OpenTopography Global DEM (NASADEM) API.
-The URL is built using the geographic bounding box and API key provided in the OpenTopoParams structure.
-Returns a complete and ready-to-use URL for downloading elevation data.
+`std::string buildOpenTopoUrl(const OpenTopoParams& input)` - Constructs a URL string to query the OpenTopography Global DEM (NASADEM) API. Returns a complete and ready-to-use URL for downloading elevation data.  

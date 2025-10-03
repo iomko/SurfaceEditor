@@ -192,16 +192,6 @@ public:
 
     Quadtree(glm::vec2 minVector, glm::vec2 maxVector) : rootNode(new QuadtreeNode<T>(minVector, maxVector, 0, 0))
     {}
-    /*
-    Octree(Octree<T>&& other) noexcept
-        : rootNode(std::move(other.rootNode)) {}
-    */
-
-    /*
-    bool operator<(const Octree<T>& other) const {
-        return rootNode->nodeBounds.getMinBoundsPos() < other.rootNode->nodeBounds.getMinBoundsPos();
-    }
-    */
 
     Quadtree(Quadtree<T>&& other) noexcept
         : rootNode(nullptr), leafs(std::move(other.leafs)) {

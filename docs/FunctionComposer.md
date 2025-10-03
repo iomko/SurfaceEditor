@@ -1,22 +1,15 @@
-
 # FunctionComposer
-The FunctionComposer class enables hierarchical composition and execution of multiple callable objects. It constructs a tree of function nodes, each performing a transformation on input parameters and passing results to its children.
+FunctionComposer is a class to which we can add instances of the Callable class, and it then executes all of them sequentially.
 
-###### Public Methods
-`template&lt;typename CallableType&gt; FunctionNode* initRoot()`
-Initializes the root node of the function tree with a callable object of type CallableType. Returns a pointer to the created root node. Sets an internal flag to determine if input is required.
+### FunctionComposer class
 
-`template&lt;typename CallableType&gt; FunctionNode* addFunc(FunctionNode* functionNode)`
-Adds a new child node with a callable object of type CallableType to the specified parent node. Returns a pointer to the newly created node.
+###### Methods:
 
-`void execute()`
-Executes the function composition starting from the root node. This overload should only be called if the root node does not require input parameters. Displays an error if input is required.
+`template<typename CallableType> FunctionNode* initRoot()` – Adds a Callable that will always be executed first.
 
-`void execute(const OpParams& inputParams)`
-Executes the function composition starting from the root node using the provided input parameters. This overload should only be used if the root node does require input. Displays an error otherwise.
+`template<typename CallableType> FunctionNode* addFunc(FunctionNode* functionNode)` – Adds a new Callable to an existing node, which will be executed after the Callable held by its parent node has completed.
 
-`~FunctionComposer()`
-Destroys the FunctionComposer and deallocates the root node.
+`void execute()` – Traverses the entire tree, executing all stored Callables sequentially.
 
-# FunctionNode
-The FunctionNode class is a lightweight structure used to represent a node in the function composition tree. Each node holds a callable object and a list of its child nodes.
+`void execute(const OpParams& inputParams)` – Similar to the standard execute() method, but provides input parameters that are sent to the root node.
+

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <iostream>
@@ -10,8 +9,6 @@
 
 using FaceTriangleIndex = int;
 using EdgeLineIndex = int;
-
-
 
 namespace HalfEdgeDS
 {
@@ -26,7 +23,6 @@ namespace HalfEdgeDS
     template<typename Traits>
    	class HalfEdgeMesh;
 
-    
     struct HalfEdgeTraits {
         using FType = Face<HalfEdgeTraits>;   
         using EType = Edge<HalfEdgeTraits>;
@@ -34,19 +30,6 @@ namespace HalfEdgeDS
         using VType = Vertex<HalfEdgeTraits>;
         using DerType = HalfEdgeMesh<HalfEdgeTraits>;
     };
-
-
-    //CHANGE
-    /*
-	class GraphEdge
-	{
-	public:
-		Vertex* vertex = nullptr;
-		int graphEdgeIndexInVertex = -1;
-		Face* face = nullptr;
-		int graphEdgeIndexInFace = -1;
-	};
-    */
 
     template<typename Traits = HalfEdgeTraits>
 	class HalfEdge
@@ -80,13 +63,6 @@ namespace HalfEdgeDS
         Traits::DerType& m_mesh;
 
 		int m_vertexIndexInVector = -1;
-
-        //CHANGE
-
-		//std::vector<Edge*> m_neighbourEdges;
-
-		//graph
-		//std::vector<GraphEdge*> m_graphEdges;
 	};
 
     template<typename Traits = HalfEdgeTraits>
@@ -104,8 +80,6 @@ namespace HalfEdgeDS
 
         bool m_isOuter = false;
 
-        //CHANGE
-		//EdgeLineIndex m_EdgeLineIndex = -1;
         Traits::DerType& m_mesh;
 	};
 
@@ -223,29 +197,8 @@ namespace HalfEdgeDS
         Traits::HType* m_halfEdge = nullptr;
         Traits::DerType& m_mesh;
 
-
-        //CHANGE
-		//selection
-		//bool m_selected = false;
-		//int m_selectionIndex = -1;
-
 		int m_faceIndexInVector = -1;
-
-		//graph
-		//std::vector<GraphEdge*> m_graphEdges;
-		//Material* material = nullptr;
-		//std::vector<FaceTriangleIndex> faceTriangleIndices;
 	};
-
-    //CHANGE
-    /*
-	struct FaceTriangle
-	{
-		int indexInVAO = -1;
-		Face* face = nullptr;
-		int indexInFace = -1;
-	};
-    */
 
     template<typename Traits = HalfEdgeTraits>
 	class HalfEdgeMesh
@@ -318,40 +271,6 @@ namespace HalfEdgeDS
 			if (outWasCreated) *outWasCreated = true;
 			return newObject;
 		}
-
-        //CHANGE
-        /*
-		void buildGraph()
-		{
-			//---GO_THROUGH_ALL_FACES---
-			for (Face* face : m_faces)
-			{
-				HalfEdge* halfEdge = face->m_halfEdge;
-				do {
-					//---ACCESS_EACH_VERTEX_OF_FACE---
-					Vertex* vertex = halfEdge->m_vertex;
-					halfEdge = halfEdge->m_next;
-
-					//---CREATE_GRAPH_EDGE---
-					GraphEdge* graphEdge = new GraphEdge();
-					graphEdge->vertex = vertex;
-					graphEdge->graphEdgeIndexInVertex = vertex->m_graphEdges.size();
-
-					graphEdge->face = face;
-					graphEdge->graphEdgeIndexInFace = face->m_graphEdges.size();
-
-					vertex->m_graphEdges.emplace_back(graphEdge);
-					face->m_graphEdges.emplace_back(graphEdge);
-
-				} while (halfEdge != face->m_halfEdge);
-			}
-
-			std::cout << "Graph built" << std::endl;
-		}
-        */  
-
-
-
 
 		void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices)
 		{
@@ -454,10 +373,6 @@ namespace HalfEdgeDS
                     }
 				}
 			}
-
-			//---BUILD_GRAPH---
-            //CHANGE
-			//buildGraph();
 		}
 
 	public:
@@ -465,8 +380,7 @@ namespace HalfEdgeDS
 		std::vector<typename Traits::VType*> m_vertices;
 		std::vector<typename Traits::EType*> m_edges;
         std::vector<typename Traits::FType*> m_faces;
-
-        //CHANGE
-		//std::map<Material*, std::vector<FaceTriangle>> m_faceTriangles;
 	};
 }
+
+

@@ -5,8 +5,8 @@
 #include <glm/glm.hpp>
 #include <variant>
 #include <map>
-#include "DataStructures/ExtendedHalfEdge.h"
-#include "DataStructures/QuadTree.h"
+#include "Structures/ExtendedHalfEdge.h"
+#include "Structures/QuadTree.h"
 #include "Primitives/BoundingRegion2D.h"
 #include "Primitives/Plane.h"
 #include "Utils/ContainerUtils.h"
@@ -576,8 +576,6 @@ public:
             ++outlineId;
         }
 
-        //dobre mame vybudovany quadtree uz, teraz mozme s tymto quadtree zavolat metodu
-        //ktora mi zase naopak vytvori vsetky potrebne infill layers
         addInfillLayerLevel(outlinerQuadtree, yTemp);
 
     }

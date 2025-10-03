@@ -174,8 +174,7 @@ public:
                 std::make_pair(firstHalfEdge->m_vertex, secondHalfEdge->m_next->m_vertex),
                 std::make_pair(firstHalfEdge->m_next->m_vertex, secondHalfEdge->m_vertex)
             };
-            //tak iba v tento pripad
-            //
+
             for (std::pair<ExtendedVertex*, ExtendedVertex*>& point : points) {
 
                 ExtendedVertex* vertex = point.first;

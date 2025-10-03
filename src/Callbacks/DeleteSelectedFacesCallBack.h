@@ -1,12 +1,13 @@
 #pragma once
 #include "../Utils/ContainerUtils.h"
-#include "DataStructures/ExtendedHalfEdge.h"
+#include "Structures/ExtendedHalfEdge.h"
 
 class DeleteSelectedFacesCallBack : public Callback<>, public Observer
 {
 public:
 	void execute() override
 	{
+        //Get selected meshes
 		SelectionController*  selectionController = ViewPortsHolderContext::s_selectionController;
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
@@ -16,20 +17,20 @@ public:
 		{
 			const std::vector<ExtendedFace*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
 
+            //Go through each selected Face
 			while(!selectedFaces.empty())
 			{
 				ExtendedFace* selectedFace = selectedFaces.back();
 
-				//---DELETE_FROM_OCTREES---
+			    //Delete face from octrees	
 				scene->deleteFaceFromOctrees(selectedMesh, selectedFace);
-				//---DELETE_FROM_OCTREES---
 
 				//---DELETE_FROM_HALFEDGE_STRUCTURE---
 				deleteFaceVaoData(selectedMesh, selectedFace);
 				deleteFaceMeshData(selectedMesh, selectedFace);
 				//---DELETE_FROM_HALFEDGE_STRUCTURE---
 
-				//---DELETE_FROM_SELECTIONS---
+		        //Delete face/mesh from selection	
 				if(selectedMesh->m_halfEdgeStructure->m_faces.empty())
 				{
 					selectionController->unregisterMesh(selectedMesh);
@@ -37,7 +38,6 @@ public:
 				{
 					selectionController->unregisterFace(selectedMesh, selectedFace);
 				}
-				//---DELETE_FROM_SELECTIONS---
 			}
 		}
 	}
@@ -47,13 +47,13 @@ private:
 	void deleteFaceMeshData(Mesh* mesh, ExtendedFace* face)
 	{
 		ExtendedHalfEdgeMesh* halfEdgeMesh = mesh->m_halfEdgeStructure;
-		//idem postupne cez vsetky vertices
+	
+        //Go Through all vertices of a face
 		ExtendedHalfEdge* halfEdge = face->m_halfEdge;
 		do {
 			//do something with the vertex Vertex*
 			//and the halfEdge HalfEdge*
 			ExtendedVertex* vertex = halfEdge->m_vertex;
-
 			ExtendedHalfEdge* nextHalfEdge = halfEdge->m_next;
 
 			//potrebujem vymazat graphEdge z m_graphEdges
@@ -68,9 +68,8 @@ private:
 					break;
 				}
 			}
-
-			//teraz potrebujem vymazat dany foundGraphEdge
-			//na to aby som to mohol spravit tak
+            
+            //Delete GraphEdge
 			if (foundGraphEdge->graphEdgeIndexInVertex != (vertex->m_graphEdges.size() - 1))
 			{
 				vertex->m_graphEdges.back()->graphEdgeIndexInVertex = foundGraphEdge->graphEdgeIndexInVertex;
@@ -93,11 +92,7 @@ private:
 				face->m_graphEdges.pop_back();
 			}
 
-			//dobre teraz sme vymazali graphData pri danej vertex
-
-			//teraz je potrebne sa pozriet na to ci mame vymazat aj samotny vertex z HalfEdge
-			//alebo nie
-
+            //Check if vertex needs to be deleted from HalfEdge
 			if (vertex->m_graphEdges.empty())
 			{
 				if (vertex->m_vertexIndexInVector != (halfEdgeMesh->m_vertices.size() - 1))
@@ -110,11 +105,6 @@ private:
 					halfEdgeMesh->m_vertices.pop_back();
 				}
 
-
-				//dobre tuto sa vymazala vertex, tym ze sa vymazala tak sme si isty, ze tento vertex
-				//uz nepatri ziadnej inej face
-
-				//preto musime vymazat vertex aj z halfEdge
 				vertex->m_halfEdge->m_vertex = nullptr;
 			}
 			else
@@ -132,21 +122,13 @@ private:
 			}
 
 
-			//---EDGE_DELETION---
+			//Edge deletion
 			if (halfEdge->m_twin == nullptr)
 			{
-				//neexistuje twin
-
 				deleteEdgeVaoData(mesh, halfEdge->m_edge);
-
-				//tak vymazeme tento edge
-				//na to aby sme vymazali rychlo edge tak musime vediet o indexe na ktorom sa nachadza
-				//vo vectore
-
 
 				if (halfEdge->m_edge->m_edgeIndexInVector != (halfEdgeMesh->m_edges.size() - 1))
 				{
-					//tak vieme ze sa nenachadzal na konci
 					halfEdgeMesh->m_edges.back()->m_edgeIndexInVector = halfEdge->m_edge->m_edgeIndexInVector;
 					utils::containers::swapLastAndPop(halfEdgeMesh->m_edges, halfEdge->m_edge->m_edgeIndexInVector);
 				}
@@ -166,10 +148,9 @@ private:
 				halfEdge->m_twin->m_twin = nullptr;
 			}
 
-			//---HALF_EDGE_DELETION---
+            //HalfEdge deletion
 			if (halfEdge->m_halfEdgeIndexInVector != (halfEdgeMesh->m_halfEdges.size() - 1))
 			{
-				//tak vieme ze sa nenachadzal na konci
 				halfEdgeMesh->m_halfEdges.back()->m_halfEdgeIndexInVector = halfEdge->m_halfEdgeIndexInVector;
 				utils::containers::swapLastAndPop(halfEdgeMesh->m_halfEdges, halfEdge->m_halfEdgeIndexInVector);
 			}
@@ -179,13 +160,12 @@ private:
 			}
 
 
-
-			//go next
+			//Go next
 			halfEdge = nextHalfEdge;
 		} while (halfEdge != face->m_halfEdge);
+        
 
-		//nakonci uz len vymazem face
-
+        //At the end delete face
 		if (face->m_faceIndexInVector != (halfEdgeMesh->m_faces.size() - 1))
 		{
 			halfEdgeMesh->m_faces.back()->m_faceIndexInVector = face->m_faceIndexInVector;
@@ -200,34 +180,32 @@ private:
 
 	void deleteEdgeVaoData(Mesh* mesh, ExtendedEdge* edge)
 	{
-        //potrebujem ziskat meshLinesVaoVector
+        //Get Raw Line Buffer Data For Specified Mesh
         LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
         LineBufferStorage::MeshBuffMap& meshLinesMap = lineBufferStorage->meshBuffMap;
         BufferData<RendererBuffersData::LineVertex>* lineBufferData;
         lineBufferStorage->getBufferData(mesh, lineBufferData);
-        std::vector<RendererBuffersData::LineVertex>& meshLinesVaoVector = lineBufferData->vertices;
+        std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = lineBufferData->vertices;
 
 
-		//---VAO_DATA_SWAP---
-		//before
-		if (edge->m_EdgeLineIndex != (meshLinesVaoVector.size() - 2))
+		if (edge->m_EdgeLineIndex != (lineBufferVertices.size() - 2))
 		{
-			utils::containers::reverseSubrange(meshLinesVaoVector, meshLinesVaoVector.size() - 2, meshLinesVaoVector.size() - 1);
+			utils::containers::reverseSubrange(lineBufferVertices, lineBufferVertices.size() - 2, lineBufferVertices.size() - 1);
 			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 1; ++i)
 			{
-				utils::containers::swapLastAndPop(meshLinesVaoVector, i);
+				utils::containers::swapLastAndPop(lineBufferVertices, i);
 			}
 
 			mesh->m_halfEdgeStructure->m_edges.back()->m_EdgeLineIndex = edge->m_EdgeLineIndex;
 
 		} else
 		{
-			for (int i = meshLinesVaoVector.size() - 1; i >= edge->m_EdgeLineIndex; --i)
+			for (int i = lineBufferVertices.size() - 1; i >= edge->m_EdgeLineIndex; --i)
 			{
-				meshLinesVaoVector.erase(meshLinesVaoVector.begin() + i);
+				lineBufferVertices.erase(lineBufferVertices.begin() + i);
 			}
 
-			if(meshLinesVaoVector.empty())
+			if(lineBufferVertices.empty())
 			{
                 meshLinesMap.erase(mesh);
 			}
@@ -239,7 +217,6 @@ private:
 	//tymto vymazeme vao data z meshu
 	void deleteFaceVaoData(Mesh* mesh, ExtendedFace* face)
 	{
-        //potrebujeme ziskat materialVaoVertices
         MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
 
         MeshBufferStorage::MeshMatsMap& meshMatsMap = meshBufferStorage->meshMatsMap;
@@ -250,7 +227,7 @@ private:
 
         BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
         meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
-        std::vector<RendererBuffersData::MeshVertex>& facesVao = meshBufferData->vertices;
+        std::vector<RendererBuffersData::MeshVertex>& meshBufferVertices = meshBufferData->vertices;
 
 
 		std::map<Material*, std::vector<FaceTriangle>>& materialTrianglesMap = mesh->m_halfEdgeStructure->m_faceTriangles;
@@ -262,26 +239,25 @@ private:
 			FaceTriangleIndex delFaceTriangleIndex = face->faceTriangleIndices.front();
 			FaceTriangle& delFaceTriangle = faceTriangles.at(delFaceTriangleIndex);
 
-			//before
 			if (delFaceTriangleIndex != faceTriangles.size() - 1)
 			{
 				faceTriangles.back().indexInVAO = delFaceTriangle.indexInVAO;
 
-				//---VAO_DATA_SWAP---
-				utils::containers::reverseSubrange(facesVao, facesVao.size() - 3, facesVao.size() - 1);
+
+				utils::containers::reverseSubrange(meshBufferVertices, meshBufferVertices.size() - 3, meshBufferVertices.size() - 1);
 				for (int i = delFaceTriangle.indexInVAO; i <= delFaceTriangle.indexInVAO + 2; ++i)
 				{
-					utils::containers::swapLastAndPop(facesVao, i);
+					utils::containers::swapLastAndPop(meshBufferVertices, i);
 				}
 			}
 			else
 			{
-				for (int i = facesVao.size() - 1; i >= delFaceTriangle.indexInVAO; --i)
+				for (int i = meshBufferVertices.size() - 1; i >= delFaceTriangle.indexInVAO; --i)
 				{
-					facesVao.erase(facesVao.begin() + i);
+					meshBufferVertices.erase(meshBufferVertices.begin() + i);
 				}
 
-				if (facesVao.empty())
+				if (meshBufferVertices.empty())
 				{
                     materialVertsMap.erase(face->material);
 					if (materialVertsMap.empty())
@@ -295,7 +271,6 @@ private:
 			ExtendedFace* lastTriangleFace = faceTriangles.back().face;
 			lastTriangleFace->faceTriangleIndices.at(faceTriangles.back().indexInFace) = delFaceTriangleIndex;
 
-			//---M_FACE_TRIANGLES_SWAP---
 			utils::containers::swapLastAndPop(faceTriangles, delFaceTriangleIndex);
 
 			if (faceTriangles.empty())
@@ -303,14 +278,11 @@ private:
 				materialTrianglesMap.erase(materialTrianglesIt);
 			}
 
-			//before
-
 			if (face->faceTriangleIndices.size() != 1)
 			{
 				faceTriangles.at(face->faceTriangleIndices.back()).indexInFace = 0;
 			}
 
-			//---FACE_TRIANGLE_INDICES_SWAP---
 			utils::containers::swapLastAndPop(face->faceTriangleIndices, 0);
 		}
 	}

@@ -1,5 +1,4 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
 #include "Window.h"
 #include <iostream>
@@ -19,21 +18,20 @@ public:
 
 	static Window& getWindow()
 	{
-		if (!m_window) {
+		if (!window) {
 			throw std::runtime_error("Application window is not initialized!");
 		}
-		return *m_window;
+		return *window;
 	}
 
 	void close()
 	{
-		if (m_window) {
-			m_window->terminate();
-			delete m_window;
-			m_window = nullptr;
+		if (window) {
+			window->terminate();
+			delete window;
+			window = nullptr;
 		}
 	}
-
 	LayerStack& getLayerStack()
 	{
 		return m_layerStack;
@@ -65,13 +63,13 @@ public:
 private:
 	Application(int width, int height, const std::string& title)
 	{
-		m_window = new Window(width, height, title);
-		m_window->setEventFunc(std::bind(&Application::onEvent, this, std::placeholders::_1));
-		m_window->initialize();
+		window = new Window(width, height, title);
+		window->setEventFunc(std::bind(&Application::onEvent, this, std::placeholders::_1));
+		window->initialize();
 		m_imGuiLayer = new ImGuiLayer("ImGuiLayer");
 		m_imGuiLayer->onAttach();
 		m_layerStack.addOverlay(m_imGuiLayer);
-		glfwSetInputMode(m_window->getWindowHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(window->getWindowHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
 	~Application()
@@ -83,10 +81,8 @@ private:
 	Application& operator=(const Application&) = delete;
 
 public:
-	inline static Window* m_window = nullptr;
+	inline static Window* window = nullptr;
 private:
 	LayerStack m_layerStack;
 	ImGuiLayer* m_imGuiLayer = nullptr;
 };
-
-#endif

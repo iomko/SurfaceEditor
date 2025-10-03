@@ -25,7 +25,6 @@ public:
 	void onImGuiRender() override {
 		ImGui::Begin(this->getName().c_str());
 
-		// Get window position and size
 		ImVec2 windowPos = ImGui::GetWindowPos();
 		ImVec2 windowSize = ImGui::GetWindowSize();
 		ImVec2 mousePos = ImGui::GetMousePos();
@@ -54,10 +53,10 @@ public:
 				ImGui::TreePop();
 			}
 
-			// === Tu prid·me nov˝ TreeNode pre Fetch Surface Data ===
+
 			if (ImGui::TreeNode("Fetch Surface Data (OpenTopography)")) {
 
-				// Text fields pre zadanie s˙radnÌc
+	
 				ImGui::Text("Lower-left corner:");
 				ImGui::InputFloat("Lon LL", &m_lowerLeftLon);
 				ImGui::InputFloat("Lat LL", &m_lowerLeftLat);
@@ -66,10 +65,10 @@ public:
 				ImGui::InputFloat("Lon UR", &m_upperRightLon);
 				ImGui::InputFloat("Lat UR", &m_upperRightLat);
 
-				// Text field pre API Key
+		
 				ImGui::InputText("API Key", m_apiKeyBuffer, IM_ARRAYSIZE(m_apiKeyBuffer));
 
-				// TlaËidlo na naËÌtanie d·t
+			
 				if (ImGui::Button("Fetch and Add to Scene")) {
 
 					OpenTopoParams params;
@@ -79,14 +78,14 @@ public:
 					params.m_upperRightLat = m_upperRightLat;
 					params.m_apiKey = std::string(m_apiKeyBuffer);
 
-					// Tu si zavol·ö tvoju logiku na fetch a pridanie do scÈny
+				
 					FetchSurfaceCommand* fetchCommand = m_commandRegistry.getCommand<FetchSurfaceCommand>();
 					fetchCommand->execute(params);
 				}
 
 				ImGui::TreePop();
 			}
-			// === Koniec Fetch Surface Data ===
+			
 
 			ImGui::TreePop();
 		}
@@ -102,7 +101,7 @@ private:
 	float m_upperRightLon = 0.0f;
 	float m_upperRightLat = 0.0f;
 
-	char m_apiKeyBuffer[256] = ""; // Buffer na API key (mÙûeö nastaviù in˙ veækosù ak potrebujeö)
+	char m_apiKeyBuffer[256] = "";
 
     bool m_isMouseInsideWindow;
     int m_subdivision = 1;

@@ -16,7 +16,7 @@ public:
 	OpParams* execute(const OpParams& input) final override {
 		const auto& castedInput = static_cast<const IParams&>(input);
 		auto output = new OParams();
-		this->invoke(castedInput, *output);
+		invoke(castedInput, *output);
 		return output;
 	}
 
@@ -31,7 +31,7 @@ public:
 
 	OpParams* execute(const OpParams&) final override {
 		auto output = new OParams();
-		this->invoke(*output);
+		invoke(*output);
 		return output;
 	}
 	
@@ -46,7 +46,7 @@ public:
 
 	OpParams* execute(const OpParams& input) final override {
 		const auto& castedInput = static_cast<const IParams&>(input);
-		this->invoke(castedInput);
+		invoke(castedInput);
 		return nullptr;
 	}
 
@@ -60,7 +60,7 @@ public:
 	using OType = void;
 
 	OpParams* execute(const OpParams&) final override {
-		this->invoke();
+		invoke();
 		return nullptr;
 	}
 

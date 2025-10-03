@@ -51,7 +51,7 @@ template <>
 class Callback<OpParams, OpParams> : public CallbackConcept {
 public:
 
-	virtual void execute() override = 0;
+	virtual void execute() = 0;
 
 	void execute(const OpParams&) final override {
 		throw std::logic_error("This callback does not support execution with input parameters.");

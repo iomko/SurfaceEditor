@@ -14,7 +14,6 @@ public:
 
 		for (const auto& importedMesh : objImporter.getMeshes())
 		{
-
 			Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
 			createMeshRenderingData(params, importedMesh);
@@ -25,7 +24,6 @@ public:
 			if (meshesFaceOctreeIt == scene->m_res.meshFaceOctreeCoordsMap.end()) {
 				auto& faceOctreesMap = scene->m_res.meshFaceOctreeCoordsMap[importedMesh];
 
-
 				for (auto faceIter = importedMesh->m_halfEdgeStructure->faceIterBegin(); faceIter != importedMesh->m_halfEdgeStructure->faceIterEnd(); ++faceIter)
 				{
 					std::vector<ExtendedVertex> faceVerts;
@@ -34,8 +32,6 @@ public:
 
 					AABBBoundingRegion faceBounds(faceVerts.begin(), faceVerts.end(),
 						[](ExtendedVertex& point) { return point.m_position; });
-
-					//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
 
 					//calculate the X,Y,Z for MinBound
 
@@ -52,12 +48,10 @@ public:
 							for (int z = voxelIndexMinBound.z; z <= voxelIndexMaxBound.z; ++z)
 							{
 								glm::vec3 currentIndexBound = { x,y,z };
-								//teraz sme ziskali IndexBound pre facu. Teraz sa musime pozriet ci uz existuje octree s tymto indexom
 
 								auto it = scene->m_res.coordsOctreeMap.find(currentIndexBound);
 								if (it != scene->m_res.coordsOctreeMap.end())
 								{
-									//existuje octree s tymto indexom
 									it->second.addDataToOctree(std::make_pair(importedMesh, *faceIter), faceBounds);
 
 								}
@@ -68,7 +62,6 @@ public:
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene->getVoxelSize());
 									auto addedOctree = scene->m_res.coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, ExtendedFace*>>(octreeMinBound, octreeMaxBound)).first;
-									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, *faceIter), faceBounds);
 
 								}
@@ -138,7 +131,6 @@ public:
 						[](ExtendedVertex& p) { return p.getPosition().z; }
 					);
 
-					//musime teraz vytvorit vsetky octrees alebo ak existuju octrees tak tam pridat tuto facu.
 
 					//calculate the X,Y,Z for MinBound
 
@@ -160,7 +152,6 @@ public:
 								auto it = scene->coordsOctreeMap.find(currentIndexBound);
 								if (it != scene->coordsOctreeMap.end())
 								{
-									//existuje octree s tymto indexom
 									it->second.addDataToOctree(std::make_pair(importedMesh, &(*faceIter)), faceBounds);
 
 								}
@@ -170,7 +161,6 @@ public:
 									//auto [octreeMinBound, octreeMaxBound] = scene->calculateOctreeBounds(currentIndexBound, scene->voxelXSize);
 									auto [octreeMinBound, octreeMaxBound] = SceneUtilities::calculateOctreeBounds(currentIndexBound, scene);
 									auto addedOctree = scene->coordsOctreeMap.emplace(currentIndexBound, Octree<std::pair<Mesh*, ExtendedFace*>>(octreeMinBound, octreeMaxBound)).first;
-									//neexistuje octree s tymto indexom
 									addedOctree->second.addDataToOctree(std::make_pair(importedMesh, &(*faceIter)), faceBounds);
 
 								}
@@ -194,11 +184,6 @@ public:
 	}
 private:
 
-	//ale toto nebudeme potrebovat
-	//potrebujeme to nahradit niecim inym.
-
-	//Mesh by v sebe nemal mat este navyse informacie o 
-	//pripravi pre mesh rendering data potrebne na vykreslenie
 	void createMeshRenderingData(const ImportExportMeshesParams& cmdParams, Mesh* mesh)
 	{
 		

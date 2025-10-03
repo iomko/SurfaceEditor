@@ -3,7 +3,7 @@
 ### ViewPortsController
 The central class responsible for managing multiple ViewPortLayer instances. It tracks active layers, the active tool, the scene, and a command queue.
 
-###### Public Methods:
+###### Methods:
 `ViewPortsController()`
 Default constructor that initializes the controller.
 
@@ -16,7 +16,7 @@ A global singleton-style static context holding references to key objects used a
 ### ViewPortLayer
 Represents a renderable and interactive viewport layer. Manages its own camera and interaction logic, including camera movement and tool application.
 
-###### Public Methods:
+###### Methods:
 
 `ViewPortLayer(const std::string& name)`
 Constructs the viewport layer with a given name. Initializes OpenGL renderer and checks framebuffer completeness.

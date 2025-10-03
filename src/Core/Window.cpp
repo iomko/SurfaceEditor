@@ -163,19 +163,19 @@ void Window::setCallBackFunctions()
 			{
 			case GLFW_PRESS:
 			{
-				if(Input::m_mouseButtonClicked[button] == false)
+				if(Input::mouseButtonClicked[button] == false)
 				{
-					Input::m_mouseButtonClicked[button] = true;
+					Input::mouseButtonClicked[button] = true;
 				}
 				MouseButtonPressEvent event(button);
 				instance->m_eventFunc(event);
-				Input::m_mouseButtonClicked[button] = false;
+				Input::mouseButtonClicked[button] = false;
 				break;
 			}
 			case GLFW_RELEASE:
 			{
 				//Input::m_mouseButtonStates[button] = false;
-				Input::m_mouseButtonClicked[button] = false;
+				Input::mouseButtonClicked[button] = false;
 				MouseButtonReleaseEvent event(button);
 				instance->m_eventFunc(event);
 				break;

@@ -1,57 +1,38 @@
 	
 # Callable
-	
-### CallableConcept
-The CallableConcept class defines a polymorphic interface for command-like objects that can be executed with input parameters and optionally return output. This interface is used to decouple the execution logic from specific parameter types.
 
-###### Public Methods
-`virtual ~CallableConcept()`
-Virtual destructor ensures proper cleanup in derived classes.
+Callable is a class that serves as a lambda-like function. 
+To execute this function, the invoke method is used, which can take input and output as parameters. 
+These callable classes can be executed sequentially one after another using the FunctionComposer class. 
+The Callable class is a base class, from which you need to inherit in order to create an instance. 
+It is also necessary to override the invoke method.
 
-`virtual OpParams* execute(const OpParams& input)`
-Executes the command using the provided input parameters and returns a pointer to the resulting output (if any). This method must be overridden by all derived classes.
 
-### Callable&lt;IParams, OParams&gt;
-The Callable template class represents a type-safe executable unit that takes input parameters of type IParams and produces output of type OParams. It inherits from CallableConcept and provides a type-safe casting and delegation mechanism.
+### Callable class
 
-###### Template Parameters
-`IParams` - Input parameter type, derived from OpParams.
+###### Possible methods:
+`virtual void invoke(const IParams& input, OParams& output) = 0`  
+`virtual void invoke(OParams& output) = 0`  
+`virtual void invoke(const IParams& input) = 0`  
+`virtual void invoke() = 0`  
 
-`OParams` - Output parameter type, derived from OpParams.
 
-###### Public Methods
-`OpParams* execute(const OpParams& input)`
-Casts the input to IParams, allocates an OParams object, and calls invoke().
+All the Callable class instances used in the project:  
 
-`virtual void invoke(const IParams& input, OParams& output)`
-Must be implemented by subclasses to define the core logic of the command.
+`EdgesVaoInitCallable` – Adds all necessary data to the line buffer. This buffer is then sent to the GPU for rendering.  
 
-### Callable&lt;void, OParams&gt;
-Specialization for commands that do not require input parameters but produce an output.
+`FaceVaoInitCallable` – Adds all necessary data to the mesh buffer. This buffer is then sent to the GPU for rendering.  
 
-###### Public Methods
-`OpParams* execute(const OpParams&)`
-Ignores the input and only creates and fills the OParams output using invoke().
+`FacesVaoInitCallable` – Adds all necessary data to the mesh buffer. This buffer is then sent to the GPU for rendering.  
 
-`virtual void invoke(OParams& output)`
-Must be implemented to produce output without input.
+`MeshVaoInitCallable` – Adds all necessary data to both the mesh and line buffers. These buffers are then sent to the GPU for rendering.  
 
-### Callable&lt;IParams, void&gt;
-Specialization for commands that require input parameters but produce no output.
+`FetchedSurfaceVertexGenCallable` – Retrieves data from OpenTopography in the form of a heightmap, which is then used to generate a new surface.  
 
-###### Public Methods
-`OpParams* execute(const OpParams& input)`
-Casts the input to IParams and executes the logic via invoke(). Returns nullptr.
+`MeshOutlinerAdderCallable` – Adds a mesh to the Outliner layer.  
 
-`virtual void invoke(const IParams& input)`
-Must be implemented to define logic with input only.
+`PlaneVertexGenCallable` – Creates a new plane-type mesh based on the input parameters.  
 
-### Callable&lt;void, void&gt;
-Specialization for commands that require no input and produce no output.
+`SceneFacesAdderCallable` – Adds the faces of a given mesh to the scene.  
 
-###### Public Methods
-`OpParams* execute(const OpParams&)`
-Ignores input, calls invoke(), and returns nullptr.
-
-`virtual void invoke()`
-Must be implemented to define input/output-free behavior.
+`SceneMeshAdderCallable` – Adds all faces of a given mesh to the scene.  

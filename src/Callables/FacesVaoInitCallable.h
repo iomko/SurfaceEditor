@@ -1,3 +1,4 @@
+#pragma once
 
 #include "../Params/OperationParams.h"
 #include "Callables/Callable.h"
@@ -9,27 +10,23 @@ class FacesVaoInitCallable : public Callable<FaceParams, void>
 public:
 	void invoke(const FaceParams& input) override
 	{
-        Mesh* mesh = input.mesh;
-        std::vector<ExtendedFace*>& faces = *(input.faces);
-    
-		Material* material = mesh->m_defaultMaterial;
+        Mesh* inputMesh = input.mesh;
+        std::vector<ExtendedFace*>& inputFaces = *(input.faces);
+		Material* material = inputMesh->m_defaultMaterial;
+        std::vector<FaceTriangle>& faceTriangles = inputMesh->m_halfEdgeStructure->m_faceTriangles[material];
 
-        std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
-
-        //potrebujeme ziskat materialVaoVertices
+        //Get Raw Mesh Buffer Data For Specified Mesh
         MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
         BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-        meshBufferStorage->getBufferData(mesh, material, meshBufferData);
-        std::vector<RendererBuffersData::MeshVertex>& materialVaoVertices = meshBufferData->vertices;
+        meshBufferStorage->getBufferData(inputMesh, material, meshBufferData);
+        std::vector<RendererBuffersData::MeshVertex>& meshBufferVertices = meshBufferData->vertices;
          
-		//---FOR_FACES---
-        std::unordered_set<ExtendedEdge*> renderedEdges;
-
-        for(ExtendedFace* face : faces) {
-                         //---SET_FACE_MATERIAL---
+        for(ExtendedFace* face : inputFaces) {
             face->material = material;
 
-            //---COLLECT_FACE_VERTICES---
+            glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
+
+            //Triangulation
             std::vector<glm::vec3> faceVertices;
             for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it) {
                 glm::vec3 vertexPosition = (*it).m_position;
@@ -38,42 +35,30 @@ public:
             glm::vec3 firstVertex = faceVertices.at(0);
             faceVertices.emplace_back(firstVertex);
 
-            //---COMPUTE_FACE_NORMAL---
-            glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
-
-            //---TRIANGULATION---
             std::vector<glm::vec3> triangulatedVertices = utils::geometry::triangulatePolygon(faceVertices);
 
-            //---VAO_INITIALIZATION---
-            //---FACE_TRIANGLES_INITIALIZAION---
+            //Update ExtendedFace info
             int indexInFace = 0;
-            for (int i = 0; i < triangulatedVertices.size(); i += 3)
+            for (int i = 0, indexInFace; i < triangulatedVertices.size(); i += 3, ++indexInFace)
             {
-                //---TRIANGLE---
-                materialVaoVertices.emplace_back(triangulatedVertices.at(i), faceNormal, false);
-                materialVaoVertices.emplace_back(triangulatedVertices.at(i + 1), faceNormal, false);
-                materialVaoVertices.emplace_back(triangulatedVertices.at(i + 2), faceNormal, false);
+                meshBufferVertices.emplace_back(triangulatedVertices.at(i), faceNormal, false);
+                meshBufferVertices.emplace_back(triangulatedVertices.at(i + 1), faceNormal, false);
+                meshBufferVertices.emplace_back(triangulatedVertices.at(i + 2), faceNormal, false);
 
-                //---CREATE_FACE_TRIANGLE---
                 FaceTriangle faceTriangle;
                 faceTriangle.face = face;
-                faceTriangle.indexInVAO = materialVaoVertices.size() - 3;
+                faceTriangle.indexInVAO = meshBufferVertices.size() - 3;
                 faceTriangle.indexInFace = indexInFace;
 
-                //---ADD_FACE_TRIANGLE_INTO_HALF_EDGE_STRUCTURE---
-                halfEdgeFaceTriangles.emplace_back(faceTriangle);
+                faceTriangles.emplace_back(faceTriangle);
 
-                //---ADD_FACE_TRIANGLE_INDEX---
-                int faceTriangleIndex = halfEdgeFaceTriangles.size() - 1;
-                //add FaceTriangleIndex
+                int faceTriangleIndex = faceTriangles.size() - 1;
                 face->faceTriangleIndices.emplace_back(faceTriangleIndex);
-
-                ++indexInFace;
             }
 
         }
         
-        meshBufferStorage->updateBufferStorage(mesh, material);
+        meshBufferStorage->updateBufferStorage(inputMesh, material);
     }
 
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
-#include "DataStructures/PrintableMesh.h"
+#include "Structures/PrintableMesh.h"
 
 struct OpParams {
 	virtual ~OpParams() = default;
@@ -23,12 +23,6 @@ public:
 
 	SelectionMode m_selectionMode;
 	Type m_type;
-};
-
-struct TransformMeshParams : public OpParams
-{
-	glm::mat4 m_modelMatrix{};
-	Mesh* m_transformedMesh = nullptr;
 };
 
 struct ImportExportMeshesParams : public OpParams

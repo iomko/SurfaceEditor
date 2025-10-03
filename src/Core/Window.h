@@ -1,9 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-
 #include <functional>
-//#include "/home/samuel/Downloads/SurfaceEditor/build/_deps/glad-build/include/glad/glad.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <string>

@@ -1,15 +1,13 @@
-#ifndef INPUT_H
-#define INPUT_H
-
+#pragma once
 
 #include "Application.h"
 #include <unordered_map>
 class Input
 {
 public:
-	static void resetFrameInput()
+	static void updateButtonClicks()
 	{
-		for (auto& [button, clicked] : m_mouseButtonClicked)
+		for (auto& [button, clicked] : mouseButtonClicked)
 			clicked = false;
 	}
 
@@ -17,16 +15,16 @@ public:
     {
         double xMousePos, yMousePos;
         glfwGetCursorPos(Application::getWindow().getWindowHandle(), &xMousePos, &yMousePos);
-        m_lastMouseX = xMousePos;
-        m_lastMouseY = yMousePos;
+        lastMouseX = xMousePos;
+        lastMouseY = yMousePos;
     }
     
     static float getMouseDx()
     {
         double xMousePos, yMousePos;
         glfwGetCursorPos(Application::getWindow().getWindowHandle(), &xMousePos, &yMousePos);
-        double mouseXDiff = xMousePos - m_lastMouseX;
-        m_lastMouseX = xMousePos;
+        double mouseXDiff = xMousePos - lastMouseX;
+        lastMouseX = xMousePos;
         return mouseXDiff;
     }
 
@@ -34,8 +32,8 @@ public:
     {
         double xMousePos, yMousePos;
         glfwGetCursorPos(Application::getWindow().getWindowHandle(), &xMousePos, &yMousePos);
-        double mouseYDiff = yMousePos - m_lastMouseY;
-        m_lastMouseY = yMousePos;
+        double mouseYDiff = yMousePos - lastMouseY;
+        lastMouseY = yMousePos;
         return mouseYDiff;
     }
 
@@ -44,8 +42,8 @@ public:
         auto keyState = glfwGetKey(Application::getWindow().getWindowHandle(), keycode);
         bool isKeyPressed = keyState == GLFW_PRESS || keyState == GLFW_REPEAT;
 
-        bool wasKeyReleased = !m_keyStates[keycode] && isKeyPressed;
-        m_keyStates[keycode] = isKeyPressed;
+        bool wasKeyReleased = !keyStates[keycode] && isKeyPressed;
+        keyStates[keycode] = isKeyPressed;
 
         return wasKeyReleased;
     }
@@ -64,7 +62,7 @@ public:
 
 	static bool isMouseButtonPressed(int button)
 	{
-		return m_mouseButtonClicked[button];
+		return mouseButtonClicked[button];
 	}
 
     static float getMouseX()
@@ -82,11 +80,10 @@ public:
     }
 
 public:
-    inline static std::unordered_map<int, bool> m_keyStates;
-    inline static std::unordered_map<int, bool> m_mouseButtonClicked;
+    inline static std::unordered_map<int, bool> keyStates;
+    inline static std::unordered_map<int, bool> mouseButtonClicked;
 
-    inline static double m_lastMouseX = 0.0;
-    inline static double m_lastMouseY = 0.0;
+    inline static double lastMouseX = 0.0;
+    inline static double lastMouseY = 0.0;
 };
 
-#endif

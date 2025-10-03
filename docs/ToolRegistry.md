@@ -1,7 +1,7 @@
 # ToolRegistry
 A static registry managing tool instances by their names. Allows registering, retrieving, and deleting tools.
 
-###### Public Static Methods:
+###### Methods:
 `template<typename ToolT, typename... Args> static void registerTool(Args&&... args)`
 Registers a tool of type ToolT by forwarding constructor arguments. Stores the tool instance internally keyed by its static getToolName() string.
 

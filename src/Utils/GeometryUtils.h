@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 #include "../Primitives/Plane.h"
-#include "../DataStructures/ExtendedHalfEdge.h"
+#include "../Structures/ExtendedHalfEdge.h"
 
 #include <algorithm>
 #include <initializer_list>
@@ -25,94 +25,6 @@ namespace utils::geometry {
 
 	enum class ProjectionAxis { ZY, XZ, XY };
     
-    //before
-    /*
-    inline glm::vec2 createPerpendicular2DVector(const glm::vec2& firstPoint, const glm::vec2& secondPoint){
-        glm::vec2 line{secondPoint.x - firstPoint.x, secondPoint.y - firstPoint.y};
-        return glm::vec2{-line.y, line.x};
-    }
-
-    inline bool overlap(float minA, float maxA, float minB, float maxB) {
-        float EPS = 1e-5f * std::max({
-            fabsf(minA), fabsf(maxA), fabsf(minB), fabsf(maxB), 1.0f 
-        });
-
-        // Non-overlap if intervals are separated or just touching
-        return (minA <= maxB - EPS) && (minB <= maxA - EPS);
-    }
-
-    inline bool polygon2DOverlap(const std::vector<glm::vec2>& verticesA, const std::vector<glm::vec2>& verticesB){
-        //najskor si musime ziskat vsetky axis, ktore budeme testovat
-        std::vector<glm::vec2> axes;
-        
-        for (int i = 0; i < verticesA.size(); ++i) {
-            glm::vec2 currentVertex = verticesA.at(i);
-            glm::vec2 nextVertex = verticesA.at((i+1) % verticesA.size());
-
-
-            glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
-            if (glm::length(axis) > 1e-8f) {
-                axes.emplace_back(glm::normalize(axis));
-            }
-        } 
-
-        for (int i = 0; i < verticesB.size(); ++i) {
-            glm::vec2 currentVertex = verticesB.at(i);
-            glm::vec2 nextVertex = verticesB.at((i+1) % verticesB.size());
-
-            //glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
-            //axis = glm::normalize(axis);
-            //axes.emplace_back(axis);
-            
-            glm::vec2 axis = createPerpendicular2DVector(currentVertex, nextVertex);
-            if (glm::length(axis) > 1e-8f) {
-                axes.emplace_back(glm::normalize(axis));
-            }
-        } 
-
-        //mame vytvorene axis
-        //teraz musime ist cez vsetky axes
-        //create projection
-        
-        for (glm::vec2 axis : axes) {
-
-            float minA = glm::dot(verticesA.at(0), axis);
-            float maxA = glm::dot(verticesA.at(0), axis);
-
-            for (int i = 1; i < verticesA.size(); ++i) {
-                float projectedVertex = glm::dot(verticesA.at(i),axis);
-                if(projectedVertex > maxA){
-                    maxA = projectedVertex;
-                }
-                if(projectedVertex < minA){
-                    minA = projectedVertex;
-                }
-            }
-
-            float minB = glm::dot(verticesB.at(0), axis);
-            float maxB = glm::dot(verticesB.at(0), axis);
-
-            for (int i = 1; i < verticesB.size(); ++i) {
-                float projectedVertex = glm::dot(verticesB.at(i),axis);
-                if(projectedVertex > maxB){
-                    maxB = projectedVertex;
-                }
-                if(projectedVertex < minB){
-                    minB = projectedVertex;
-                }
-            }
-
-            if (!overlap(minA, maxA, minB, maxB)) {
-                return false;
-            } else {
-
-            }
-
-        }
-        return true;
-    }
-    */
-
     struct PlaneFaceIntersection {
         bool intersects;              // true if intersects in any way
         enum Type { None, Point, Edge, FullTriangle } type;
@@ -170,36 +82,31 @@ namespace utils::geometry {
     }
 
 
-    //after
     inline glm::vec2 createPerpendicular2DVector(const glm::vec2& a, const glm::vec2& b){
-        // return unnormalized perpendicular (no normalization here)
         glm::vec2 line = b - a;
         return glm::vec2(-line.y, line.x);
     }
 
-    // return true if polygons A and B overlap (touching = NOT overlap)
     inline bool polygon2DOverlap(const std::vector<glm::vec2>& verticesA,
                                  const std::vector<glm::vec2>& verticesB)
     {
         if (verticesA.empty() || verticesB.empty()) return false;
 
-        // collect unique axes (store raw perpendiculars)
         std::vector<glm::vec2> axes;
         auto add_axis = [&](const glm::vec2 &axis_raw) {
             const float len2 = glm::dot(axis_raw, axis_raw);
-            if (len2 < 1e-12f) return; // degenerate edge -> skip
+            if (len2 < 1e-12f) return; 
 
-            // compare direction (use normalized direction for comparison only)
             glm::vec2 na = axis_raw / std::sqrt(len2);
 
-            const float DEDUPE_DOT_TOL = 1.0f - 1e-6f; // nearly parallel
+            const float DEDUPE_DOT_TOL = 1.0f - 1e-6f;
             for (const glm::vec2 &existing : axes) {
                 glm::vec2 ne = existing / glm::length(existing);
                 if (std::fabs(glm::dot(na, ne)) > DEDUPE_DOT_TOL) {
-                    return; // same axis already present
+                    return;
                 }
             }
-            axes.push_back(axis_raw); // store raw
+            axes.push_back(axis_raw);
         };
 
         auto collect_axes_from = [&](const std::vector<glm::vec2>& V) {
@@ -421,7 +328,7 @@ namespace utils::geometry {
 		allCoplanar = false;
 
 		if (vertices.size() < 3) {
-			return Plane{ glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f) }; // fallback/default plane
+			return Plane{ glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f) };
 		}
 
 		const glm::vec3& p0 = vertices[0];
@@ -430,13 +337,13 @@ namespace utils::geometry {
 
 		glm::vec3 normal = glm::normalize(glm::cross(p1 - p0, p2 - p0));
 		if (glm::length(normal) < epsilon) {
-			return Plane{ p0, normal }; // Degenerate normal, not a valid plane
+			return Plane{ p0, normal };
 		}
 
 		for (size_t i = 3; i < vertices.size(); ++i) {
 			float dist = glm::dot(vertices[i] - p0, normal);
 			if (std::abs(dist) > epsilon) {
-				return Plane{ p0, normal }; // Not coplanar
+				return Plane{ p0, normal };
 			}
 		}
 
@@ -451,13 +358,13 @@ namespace utils::geometry {
 
 		float denom = glm::dot(plane.normal, direction);
 		if (std::abs(denom) < epsilon) {
-			return glm::vec3(0.0f); // No intersection, direction is parallel to plane
+			return glm::vec3(0.0f);
 		}
 
 		float t = glm::dot(plane.point - origin, plane.normal) / denom;
 
 		if (t < 0.0f) {
-			return glm::vec3(0.0f); // Intersection is behind the origin
+			return glm::vec3(0.0f);
 		}
 
 		hit = true;

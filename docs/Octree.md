@@ -5,7 +5,7 @@ Represents a node in an octree structure, which partitions 3D space recursively 
 
 Stores bounding region, depth, pointers to children and parent, data contained in the node, and status flags.
 
-###### Public Methods:
+###### Methods:
 
 `OctreeNode(glm::vec3 minVector, glm::vec3 maxVector, size_t depth, int childIndex, OctreeNode<T>* parentNode = nullptr)`
 Constructor that initializes node boundaries, depth, child index, and parent pointer.
@@ -36,7 +36,7 @@ Iterator for traversing an Octree in a depth-first (postorder) manner.
 
 Provides standard iterator operations.
 
-###### Public Methods:
+###### Methods:
 
 `OctreeIterator()` - Default constructor.
 
@@ -57,7 +57,7 @@ Main octree class managing the root node and providing methods for insertion, se
 
 Maps data elements to the leaf nodes containing them.
 
-###### Public Methods:
+###### Methods:
 
 `Octree(glm::vec3 minVector, glm::vec3 maxVector)` - Constructor initializing the root node with given boundaries.
 

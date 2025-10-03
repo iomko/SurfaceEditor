@@ -1,83 +1,57 @@
 # Command
-Generic command interface for executing and undoing operations with optional strongly-typed input and output parameters.
+Command is a class that represents the execution of specific functionality within the application. Currently, all instances of this class are also associated with their corresponding Callback instance.
 
-### CommandConcept
-Abstract base interface for all commands.
+### Command class
 
-Defines standard polymorphic execution and undo functionality.
-
-###### Public Methods:
-`virtual ~CommandConcept()`
-Virtual destructor.
-
-`virtual void execute()`
-Executes the command with no parameters.
-
-`virtual void execute(const OpParams& iParams)`
-Executes the command with input parameters.
-
-`virtual void execute(const OpParams& iParams, OpParams& oParams)`
-Executes the command with both input and output parameters.
-
+###### Possible methods:
 `virtual void undo()`
-Performs undo operation if implemented by derived class.
 
-### Command<IParams, OParams>
-Primary template class for commands that use both input and output parameter structures.
+`virtual void execute() = 0`
 
-Derives from CommandConcept. You must override the typed execute(const IParams&, OParams&) in derived classes.
+`virtual void execute(const IParams& iParams) = 0`
 
-###### Public Methods:
-`void undo()`
-Default empty undo operation.
+`virtual void execute(const IParams& iParams, OParams& oParams) = 0`
 
-`void execute()`
-Default no-op.
 
-`void execute(const OpParams& iParams)`
-Default no-op.
+#### All the Command class instances used in the project:
 
-`virtual void execute(const IParams& iParams, OParams& oParams)`
-Pure virtual method to be implemented for actual command logic.
+`AddPlaneCommand` – Creates and adds a plane-type mesh to the scene.  
 
-`void execute(const OpParams& iParams, OpParams& oParams)`
-Casts to specific types and forwards to execute(const IParams&, OParams&).
+`BasicSculptToolCommand` – Allows deformation of the surface.  
 
-### Command<IParams, OpParams>
-Specialization for commands that only need input parameters but no output.
+`BrushToolCommand` – Currently replaces the BasicSculptToolCommand class.  
 
-You must override the typed execute(const IParams&).
+`CreatePrintCommand` – Creates and adds a PrintableMesh to the scene.  
 
-###### Public Methods:
-`void undo()`
-Default empty undo operation.
+`DeleteSelectedFacesCommand` – Deletes all selected faces from the scene.  
 
-`void execute()`
-Default no-op.
+`DeleteSelectedMeshesCommand` – Deletes all selected meshes from the scene.  
 
-`void execute(const OpParams& iParams, OpParams& oParams)`
-Default no-op.
+`DeselectFaceCommand` – If it exists, unregisters a selected face from the selected faces list.  
 
-`virtual void execute(const IParams& iParams)`
-Pure virtual method to be implemented by derived class.
+`DeselectMeshCommand` – If it exists, unregisters a selected mesh from the selected meshes list.  
 
-`void execute(const OpParams& iParams)`
-Casts input and forwards to execute(const IParams&).
+`ExportMeshesCommand` – Exports selected meshes to the OBJ format.  
 
-### Command<OpParams>
-Specialization for commands that take no input and produce no output.
+`FetchSurfaceCommand` – Creates and adds to the scene a mesh whose data was retrieved from the OpenTopography source.  
 
-You must override the parameterless execute().
+`ImportMeshesCommand` – Imports selected meshes from the OBJ format.  
 
-###### Public Methods:
-`void undo()`
-Default empty undo operation.
+`SelectFaceCommand` – Selects a face chosen in the scene.  
 
-`virtual void execute()`
-Pure virtual method for executing the command.
+`SelectMeshCommand` – Selects a mesh chosen in the scene.  
 
-`void execute(const OpParams&)`
-Default no-op.
+`SolidifyMeshesCommand` – Adds thickness (depth) to a mesh.  
 
-`void execute(const OpParams& iParams, OpParams& oParams)`
-Default no-op.
+# CommandRegistry
+
+CommandRegistry is a class that stores all registered instances of the Command type.
+
+### CommandRegistry class
+
+###### Methods:
+`template<typename CommandT, typename... Args> void registerCommand(Args&&... args)` – Registers a new command in the registry.
+
+`template<typename CommandT> CommandT* getCommand()` – Retrieves a specific command.
+
+`void deleteRegistry()` – Clears the entire registry, deleting all stored commands.

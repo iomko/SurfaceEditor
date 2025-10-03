@@ -44,7 +44,6 @@ class ViewPortLayer : public Layer, public Observable
 private:
 	float m_deltaTime = 0.0f;
 public:
-	//Rendering
 	ViewPortLayerRenderSettings m_shaderSettings;
 	Camera* m_camera = nullptr;
 

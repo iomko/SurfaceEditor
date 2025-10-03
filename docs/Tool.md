@@ -1,23 +1,24 @@
 # Tool
 
-### ITool
-Abstract interface class representing a generic tool that holds an interaction handler.
+### Tool<CommandT, InteractionHandlerT> class
+Template class that represents a tool that has been binded with a command.  
 
-###### Public Methods:
-`ITool(InteractionHandlerConcept* interactionHandler)`
-Constructor that initializes the tool with a given interaction handler pointer.
+######  Methods:
+`Tool(CommandT* command)` - Constructor that creates an instance of the interaction handler using the given command pointer.  
 
-`virtual ~ITool()`
-Virtual destructor for safe polymorphic destruction.
+#### All the Tool class instances used in the project:
 
-`virtual InteractionHandlerConcept* getInteractionHandler()`
-Returns a pointer to the associated interaction handler.
+`BrushTool` – Tool that deforms surface by applying a default brush.  
 
-### Tool<CommandT, InteractionHandlerT>
-Template class representing a concrete tool binding a specific command type with a specific interaction handler type.
+`FaceDeselectionTool` – Tool that deselects face.  
 
-Inherits from ITool.
+`FaceSelectionTool` – Tool that selects face.  
 
-###### Public Methods:
-`Tool(CommandT* command)`
-Constructor that creates an instance of the interaction handler InteractionHandlerT using the given command pointer and passes it to the base ITool constructor.
+`MeshSelectionTool` – Tool that selects mesh.  
+
+### ToolRegistry class
+Class that stores all registered tools.  
+
+`template<typename ToolT, typename... Args> static void registerTool(Args&&... args)` - Registers tool that will be added to a map.  
+`template<typename ToolT> static ToolT* getTool()` - Retrieve tool from registry.  
+`static void deleteRegistry()` - Deletes all the registered tools.  

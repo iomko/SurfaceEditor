@@ -3,9 +3,9 @@
 #include "../Scene/Mesh.h"
 #include "../Primitives/AABB.h"
 #include "../Scene/Camera.h"
-#include "../DataStructures/Octree.h"
+#include "../Structures/Octree.h"
 #include "../Core/Window.h"
-#include "DataStructures/PrintableMesh.h"
+#include "Structures/PrintableMesh.h"
 
 struct SceneResources
 {

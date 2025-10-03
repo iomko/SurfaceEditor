@@ -1,7 +1,7 @@
 # Ray
 Provides functionality for ray construction, camera-based ray generation, and geometric intersection tests (sphere, plane, triangle).
 
-###### Public Methods:
+###### Methods:
 
 `Ray()`
 Default constructor creating an empty ray.

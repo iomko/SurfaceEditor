@@ -3,11 +3,20 @@
 class BasicSculptToolCommand : public Command<>
 {
 public:
-
     virtual void execute() override
     {
 
     }
+
+    void undo()
+    {
+
+    }
+
+    static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
+
+
+private:
 
     glm::vec3 computeAverageNormal(const std::vector<glm::vec3>& normals) {
         glm::vec3 sum(0.0f);
@@ -28,16 +37,13 @@ public:
     }
 
     float logarithmicInterpolation(float edge0, float edge1, float x) {
-        // Scale, bias and saturate x to 0..1 range
         x = std::max(0.0f, std::min((x - edge0) / (edge1 - edge0), 1.0f));
         return log(x * (exp(1) - 1) + 1) / log(exp(1));
     }
 
     float smoothstep(float edge0, float edge1, float x) {
-        // Scale, bias and saturate x to 0..1 range
         x = std::max(0.0f, std::min((x - edge0) / (edge1 - edge0), 1.0f));
         return x * x * (3 - 2 * x);
-        //return x * x * x * (x * (x * 6 - 15) + 10);
     }
 
     float calculateBrushScalingFactor(float distance, float radius, float brushStrength) {
@@ -185,17 +191,4 @@ public:
 
         return std::make_pair(returnedVerticesIndices, returnedFacesIndices);
     }
-    
-
-    void applyBrush(Ray& ray, float brushRadius, float brushStrength)
-    {
-
-    }
-
-    void undo()
-    {
-
-    }
-
-    static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
 };

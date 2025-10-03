@@ -1,90 +1,57 @@
 # Callback
 
-### CallbackConcept
-An abstract base interface defining the callback concept with three execute method variants:
+Callback is a class that is executed automatically when something happens. 
+For example, when a new plane-type mesh is added to the scene, an instance of AddPlaneCallback is automatically triggered. 
+Currently, callbacks in the project are always used in connection with instances of the Command class.
 
-- without parameters
+Similar to the Callable class, the Callback class is a base class from which you need to inherit in order to create an instance.
+It is also necessary to override the execute method.
 
-- with input parameters (OpParams)
 
-- with input and output parameters (OpParams).
+### Callback class
 
-### Callback&lt;IParams, OParams&gt;
-A templated abstract class extending CallbackConcept for callbacks with input and output parameters of types IParams and OParams.
-Supports execution with these parameters, while other execute variants throw exceptions if unsupported.
+###### Possible methods:  
+`virtual void execute(const IParams& iParams, OParams& oParams) = 0`  
+`virtual void execute(const IParams& iParams) = 0`  
+`virtual void execute() = 0`   
 
-###### Public Methods
-`virtual void execute(const IParams& iParams, OParams& oParams)`
-Pure virtual method to execute the callback with input and output parameters.
+Additionally, there is a ComposedCallback class, which takes a FunctionComposer as a constructor parameter. 
+The FunctionComposer is pre-filled with the required callable instances, and this class then internally triggers sequential execution of the callables within its execute method.
 
-`void execute(const OpParams& iParams, OpParams& oParams)`
-Overrides base method by casting parameters to proper types and calling the implemented version.
 
-`void execute()`
-Throws a logic error if called without any parameters.
+### ComposedCallback class
 
-`void execute(const OpParams&)`
-Throws a logic error if called with only input parameters (no output).
+`void execute()`  
 
-### Callback&lt;IParams, OpParams&gt;
-A templated abstract class specialization for callbacks with input parameters IParams but no output parameters.
 
-###### Public Methods
-`virtual void execute(const IParams& iParams)`
-Pure virtual method to execute the callback with input parameters.
+All the Callback class instances used in the project:
 
-`void execute(const OpParams& iParams)`
-Overrides base method by casting input parameters and calling the implemented version.
+`AddPlaneCallback` – Creates and adds a plane-type mesh to the scene.  
 
-`void execute()`
-Throws a logic error if called without parameters.
+`BrushToolCallback` – Allows deformation of the surface.  
 
-`void execute(const OpParams&, OpParams&)`
-Throws a logic error if called with both input and output parameters.
+`ConnectEdgesCallback` – Connects two mesh edges together.  
 
-### Callback&lt;OpParams, OpParams&gt;
-Full specialization for callbacks without parameters.
+`CreatePrintStructureCallback` – Creates and adds a PrintableMesh to the scene.  
 
-###### Public Methods
-`virtual void execute()`
-Pure virtual method to execute the callback without parameters.
+`DeleteSelectedFacesCallback` – Deletes all selected faces from the scene.  
 
-`void execute(const OpParams&)`
-Throws a logic error if called with input parameters.
+`DeleteSelectedMeshesCallback` – Deletes all selected meshes from the scene.  
 
-`void execute(const OpParams&, OpParams&)`
-Throws a logic error if called with input and output parameters.
+`DeselectFaceCallback` – If it exists, unregisters a selected face from the selected faces list.  
 
-# ComposedCallback
+`DeselectMeshCallback` – If it exists, unregisters a selected mesh from the selected meshes list.  
 
-### ComposedCallback&lt;IParams&gt;
-Templated class implementing CallbackConcept that composes multiple functions via a FunctionComposer object and supports execution with input parameters IParams.
+`ExportMeshesCallback` – Exports selected meshes to the OBJ format.  
 
-###### Public Methods
-`ComposedCallback(const FunctionComposer& functionComposer)`
-Constructor that initializes the composed callback with a given FunctionComposer.
+`FetchSurfaceCallback` – Creates and adds to the scene a mesh whose data was retrieved from the OpenTopography source.  
 
-`void execute(const OpParams& iParams)`
-Casts and forwards input parameters to the internal FunctionComposer for execution.
+`ImportMeshesCallback` – Imports meshes from the OBJ format into the scene.  
 
-`void execute()`
-Throws a logic error if called without parameters.
+`SelectFaceCallback` – Selects a face chosen in the scene.  
 
-`void execute(const OpParams&, OpParams&)`
-Throws a logic error if called with input and output parameters.
+`SelectMeshCallback` – Selects a mesh chosen in the scene.  
 
-### ComposedCallback&lt;OpParams&gt;
-Full specialization for parameterless composed callbacks.
+`SelectionLayerCallback` – Chooses the correct tool from the Selection Layer and applies it.  
 
-###### Public Methods
-`ComposedCallback(const FunctionComposer& functionComposer)`
-Constructor that initializes with a FunctionComposer.
-
-`void execute()`
-Executes the composed function sequence without parameters.
-
-`void execute(const OpParams&)`
-Throws a logic error if called with input parameters.
-
-`void execute(const OpParams&, OpParams&)`
-Throws a logic error if called with input and output parameters.
+`SolidifyMeshesCallback` – Adds thickness (depth) to a mesh.  
