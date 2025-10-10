@@ -3,12 +3,12 @@
 #include "../Structures/ExtendedHalfEdge.h"
 #include "Primitives/AABB.h"
 #include <limits>
+#include "../Renderer/BufferLayouts.h"
 
 class Mesh
 {
 public:
 	ExtendedHalfEdgeMesh* m_halfEdgeStructure = nullptr;
-	Material* m_defaultMaterial;
 
 	std::string m_meshID;
 	
@@ -18,20 +18,20 @@ public:
 	bool m_buildSuccessful = false;
     
     AABBBoundingRegion m_meshBounds;
+
+    MeshBufferLayout bufferLayout;
 public:
 
-	Mesh(Material* defaultMaterial, std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
+	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
-		m_defaultMaterial = defaultMaterial;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
        
         calculateMeshBounds();
 	}
 
-	Mesh(Material* defaultMaterial, std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
+	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
 	{
-		m_defaultMaterial = defaultMaterial;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
 

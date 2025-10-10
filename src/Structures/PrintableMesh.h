@@ -13,6 +13,7 @@
 #include "Utils/GeometryUtils.h"
 #include "Ray2D.h"
 #include "Scene/Mesh.h"
+#include "../Renderer/BufferLayouts.h"
 
 
 struct ExtrudeEdge {
@@ -96,10 +97,6 @@ public:
         m_structure.printLayers.clear();
     }
 
-    void test() {
-
-    }
-
     void updateQuadtreeBounds(const ExtrudeEdge& edge, glm::vec2& minBounds, glm::vec2& maxBounds) {
         minBounds.x = std::min(minBounds.x, std::min(edge.firstPoint.x, edge.secondPoint.x));
         minBounds.y = std::min(minBounds.y, std::min(edge.firstPoint.z, edge.secondPoint.z));
@@ -107,18 +104,6 @@ public:
         maxBounds.x = std::max(maxBounds.x, std::max(edge.firstPoint.x, edge.secondPoint.x));
         maxBounds.y = std::max(maxBounds.y, std::max(edge.firstPoint.z, edge.secondPoint.z));
     }
-
-    /*
-    void updateQuadtreeBounds(const ExtrudeEdge& edge, glm::vec2& minBounds, glm::vec2& maxBounds) {
-        //update min
-        minBounds.x = std::min({edge.firstPoint.x, edge.secondPoint.x, minBounds.x});
-        minBounds.y = std::min({edge.firstPoint.y, edge.secondPoint.y, minBounds.y});
-
-        //update max
-        maxBounds.x = std::max({edge.firstPoint.x, edge.secondPoint.x, maxBounds.x});
-        maxBounds.y = std::max({edge.firstPoint.y, edge.secondPoint.y, maxBounds.y});
-    }
-    */
 
     void addInfillLayerLevel(Quadtree<OutlinerEdgeHelperData>& outlinerQuadtree, float yTemp) {
         std::vector<InfillLine>& infillLines = m_structure.printLayers.back().infillLines;
@@ -582,4 +567,6 @@ public:
 
 public:
     PrintableMeshStructure m_structure;
+
+    PrintableMeshBufferLayout bufferLayout;
 };

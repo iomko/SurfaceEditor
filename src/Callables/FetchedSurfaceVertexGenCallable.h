@@ -62,8 +62,8 @@ class FetchedSurfaceVertexGenCallable : public Callable<OpenTopoParams, MeshPara
 		}
        
         //Generate Mesh
-        Shader* meshShader = ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader;
-		Mesh* mesh = new Mesh(new Material(meshShader), surfaceIndices, surfaceVertices);
+        //Shader* meshShader = ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader;
+		Mesh* mesh = new Mesh(surfaceIndices, surfaceVertices);
 		output.m_mesh = mesh;
 	}
 };

@@ -3,6 +3,8 @@
 #include "Callbacks/Callback.h"
 #include "Patterns/Observer.h"
 #include "Utils/ContainerUtils.h"
+#include "../Renderer/BufferStorages.h"
+#include "../Renderer/MaterialRegistry.h"
 #include "Renderer/Renderer.h"
 
 class ConnectEdgesCallBack : public Callback<EdgeConnectionsParams>, public Observer
@@ -22,35 +24,34 @@ private:
 
 	void deleteEdgeVaoData(Mesh* mesh, ExtendedEdge* edge)
 	{
-        //Get Raw Line Buffer Data For Specified Mesh
-        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
-        LineBufferStorage::MeshBuffMap& meshLinesMap = lineBufferStorage->meshBuffMap;
-        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-        lineBufferStorage->getBufferData(mesh, lineBufferData);
-        std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = lineBufferData->vertices;
 
-		if (edge->m_EdgeLineIndex != (lineBufferVertices.size() - 2))
-		{
-			utils::containers::reverseSubrange(lineBufferVertices, lineBufferVertices.size() - 2, lineBufferVertices.size() - 1);
-			for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 1; ++i)
-			{
-				utils::containers::swapLastAndPop(lineBufferVertices, i);
-			}
+        Material* defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
+        if(auto opt = mesh->bufferLayout.getLineBufferStorage(defaultLineMaterial)) {
 
-			mesh->m_halfEdgeStructure->m_edges.back()->m_EdgeLineIndex = edge->m_EdgeLineIndex;
+            LineBufferStorage& lineBufferStorage = opt->get();
+            std::vector<BufferStorageDataType::LineVertex>& lineBufferVertices = lineBufferStorage.data.vertices;
 
-		} else
-		{
-			for (int i = lineBufferVertices.size() - 1; i >= edge->m_EdgeLineIndex; --i)
-			{
-				lineBufferVertices.erase(lineBufferVertices.begin() + i);
-			}
+            if (edge->m_EdgeLineIndex != (lineBufferVertices.size() - 2))
+            {
+                utils::containers::reverseSubrange(lineBufferVertices, lineBufferVertices.size() - 2, lineBufferVertices.size() - 1);
+                for (int i = edge->m_EdgeLineIndex; i <= edge->m_EdgeLineIndex + 1; ++i)
+                {
+                    utils::containers::swapLastAndPop(lineBufferVertices, i);
+                }
 
-			if(lineBufferVertices.empty())
-			{
-                meshLinesMap.erase(mesh);
-			}
-		}
+                mesh->m_halfEdgeStructure->m_edges.back()->m_EdgeLineIndex = edge->m_EdgeLineIndex;
+
+            } else
+            {
+                for (int i = lineBufferVertices.size() - 1; i >= edge->m_EdgeLineIndex; --i)
+                {
+                    lineBufferVertices.erase(lineBufferVertices.begin() + i);
+                }
+                
+            }
+
+
+        }
 
 	}
 };

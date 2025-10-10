@@ -48,7 +48,7 @@ public:
                 } else
                 {
 	                
-                    Mesh* addedMesh = new Mesh(new Material(line.substr(2)), polygonsIndices, vertices, polygonNormalIndices, normals);
+                    Mesh* addedMesh = new Mesh(polygonsIndices, vertices, polygonNormalIndices, normals);
                     if(addedMesh->isBuildSuccessful())
                     {
                         m_meshes.push_back(addedMesh);
@@ -165,7 +165,7 @@ public:
             }
         }
 
-        Mesh* addedMesh = new Mesh(new Material("1"), polygonsIndices, vertices, polygonNormalIndices, normals);
+        Mesh* addedMesh = new Mesh(polygonsIndices, vertices, polygonNormalIndices, normals);
 
         if (addedMesh->isBuildSuccessful())
         {

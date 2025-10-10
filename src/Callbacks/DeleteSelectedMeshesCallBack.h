@@ -181,6 +181,7 @@ private:
 
 	void deleteEdgeVaoData(Mesh* mesh, ExtendedEdge* edge)
 	{
+        /*
         LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
 
         LineBufferStorage::MeshBuffMap& meshLinesMap = lineBufferStorage->meshBuffMap;
@@ -215,11 +216,12 @@ private:
 			}
 
 		}
-
+        */
 	}
 
 	void deleteFaceVaoData(Mesh* mesh, ExtendedFace* face)
 	{
+        /*
         MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
 
         MeshBufferStorage::MeshMatsMap& meshMatsMap = meshBufferStorage->meshMatsMap;
@@ -286,5 +288,6 @@ private:
 			//---FACE_TRIANGLE_INDICES_SWAP---
 			utils::containers::swapLastAndPop(face->faceTriangleIndices, 0);
 		}
+        */
 	}
 };

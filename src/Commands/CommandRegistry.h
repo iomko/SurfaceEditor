@@ -2,18 +2,19 @@
 #include <string_view>
 #include <unordered_map>
 #include "Patterns/Command.h"
+#include <typeinfo>
+#include <typeindex>
 
 class CommandRegistry {
 public:
     template<typename CommandT, typename... Args>
     void registerCommand(Args&&... args) {
-        constexpr std::string_view commandName = CommandT::getCommandName();
-        m_commands[commandName] = new CommandT(std::forward<Args>(args)...);
+        m_commands[typeid(CommandT)] = new CommandT(std::forward<Args>(args)...);
     }
 
     template<typename CommandT>
     CommandT* getCommand() {
-        auto it = m_commands.find(CommandT::getCommandName());
+        auto it = m_commands.find(typeid(CommandT));
         if (it != m_commands.end()) {
             return static_cast<CommandT*>(it->second);
         }
@@ -27,5 +28,5 @@ public:
     }
 
 private:
-    std::unordered_map<std::string_view, CommandConcept*> m_commands;
+    std::unordered_map<std::type_index, CommandConcept*> m_commands;
 };

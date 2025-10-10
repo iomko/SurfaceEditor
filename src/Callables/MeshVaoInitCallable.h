@@ -1,7 +1,9 @@
 #pragma once
 #include "../Utils/GeometryUtils.h"
 #include "Structures/ExtendedHalfEdge.h"
-#include "Renderer/Renderer.h"
+//#include "Renderer/Renderer.h"
+#include "../Renderer/BufferStorages.h"
+#include "../Renderer/MaterialRegistry.h"
 
 class MeshVaoInitCallable : public Callable<MeshParams, void>
 {
@@ -9,36 +11,40 @@ public:
 	void invoke(const MeshParams& input) override
 	{
 		Mesh* mesh = input.m_mesh;
+        Material* defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
+        Material* defaultMeshMaterial = MaterialRegistry::getMaterial("defaultMeshMaterial");
 
 		std::vector<ExtendedFace*>& meshFaces = input.m_mesh->getHalfEdgeStructure()->m_faces;
 		std::vector<ExtendedEdge*>& meshEdges = input.m_mesh->getHalfEdgeStructure()->m_edges;
 
-		Material* material = mesh->m_defaultMaterial;
-
-		std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[material];
-
+		std::vector<FaceTriangle>& halfEdgeFaceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[defaultMeshMaterial];
         //Register Mesh BufferStorage
-        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-        meshBufferStorage->registerBufferStorage(mesh, material);
+        //
+        TriangleBufferStorage& triangleBufferStorage = mesh->bufferLayout.registerTriangleBufferStorage(defaultMeshMaterial);
+        triangleBufferStorage.create();
+        //MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
+        //meshBufferStorage->registerBufferStorage(mesh, material);
 
         //Get Raw Mesh Buffer Data For Specified Mesh
-        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-        meshBufferStorage->getBufferData(mesh, material, meshBufferData);
-        std::vector<RendererBuffersData::MeshVertex>& meshBufferVertices = meshBufferData->vertices;
+        //
+        std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
+
         
         //Register Line BufferStorage
-        LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
-        lineBufferStorage->registerBufferStorage(mesh);
+        //
+        LineBufferStorage& lineBufferStorage = mesh->bufferLayout.registerLineBufferStorage(defaultLineMaterial);
+        lineBufferStorage.create();
+
 
         //Get Raw Line Buffer Data For Specified Mesh
-        BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-        lineBufferStorage->getBufferData(mesh, lineBufferData);
-        std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = lineBufferData->vertices;
+        //
+        std::vector<BufferStorageDataType::LineVertex>& lineBufferVertices = lineBufferStorage.data.vertices;
+
 
 
 		for (ExtendedFace* meshFace : meshFaces)
 		{
-			meshFace->material = material;
+			meshFace->material = defaultMeshMaterial;
 			glm::vec3 faceNormal = utils::geometry::computePolygonNormal(meshFace);
 
             //Triangulation
@@ -55,13 +61,13 @@ public:
             //Update ExtendedFace info
 			for (int i = 0, indexInFace; i < triangulatedVertices.size(); i += 3, ++indexInFace)
 			{
-				meshBufferVertices.emplace_back(triangulatedVertices.at(i), faceNormal, false);
-				meshBufferVertices.emplace_back(triangulatedVertices.at(i + 1), faceNormal, false);
-				meshBufferVertices.emplace_back(triangulatedVertices.at(i + 2), faceNormal, false);
+				triangleBufferVertices.emplace_back(triangulatedVertices.at(i), faceNormal, false);
+				triangleBufferVertices.emplace_back(triangulatedVertices.at(i + 1), faceNormal, false);
+				triangleBufferVertices.emplace_back(triangulatedVertices.at(i + 2), faceNormal, false);
 
 				FaceTriangle faceTriangle;
 				faceTriangle.face = meshFace;
-				faceTriangle.indexInVAO = meshBufferVertices.size() - 3;
+				faceTriangle.indexInVAO = triangleBufferVertices.size() - 3;
 				faceTriangle.indexInFace = indexInFace;
 
 				halfEdgeFaceTriangles.emplace_back(faceTriangle);
@@ -94,7 +100,9 @@ public:
 			edge->m_EdgeLineIndex = edgeLineIndex;
 		}
 
-        meshBufferStorage->updateBufferStorage(mesh, material);
-        lineBufferStorage->updateBufferStorage(mesh);
+        triangleBufferStorage.update();
+        lineBufferStorage.update();
+        //meshBufferStorage->updateBufferStorage(mesh, material);
+        //lineBufferStorage->updateBufferStorage(mesh);
 	}
 };

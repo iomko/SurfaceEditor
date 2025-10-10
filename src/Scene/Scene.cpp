@@ -13,31 +13,37 @@ std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHit
 
 			//---MESH_VAO_MAP---
             //potrebujeme ziskat materialVaoVertices
-            MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-            BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-            meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
-            std::vector<RendererBuffersData::MeshVertex>& materialVaoFaces = meshBufferData->vertices;
+            //
 
-			std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+            if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+                TriangleBufferStorage& triangleBufferStorage = opt->get();
+                std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
 
-			//---WE NEED TO CHECK WITH THE VAO DATA OF THE FACE, IF WE ACTUALLY HIT THE FACE---
-			for (FaceTriangleIndex triangleIndex : face->faceTriangleIndices)
-			{
-				int vaoStartIndex = faceTriangles[triangleIndex].indexInVAO;
 
-				//GET VERTICES OF TRIANGLE
-				const glm::vec3& firstVertex = materialVaoFaces[vaoStartIndex].position;
-				const glm::vec3& secondVertex = materialVaoFaces[vaoStartIndex + 1].position;
-				const glm::vec3& thirdVertex = materialVaoFaces[vaoStartIndex + 2].position;
+                std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
-				float rayMultiplyAmount;
-				if (Ray::intersectsTriangle(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, rayMultiplyAmount))
-				{
-					return std::make_pair(true, rayMultiplyAmount);
-				}
-			}
+                //---WE NEED TO CHECK WITH THE VAO DATA OF THE FACE, IF WE ACTUALLY HIT THE FACE---
+                for (FaceTriangleIndex triangleIndex : face->faceTriangleIndices)
+                {
+                    int vaoStartIndex = faceTriangles[triangleIndex].indexInVAO;
 
-			return std::make_pair(false, -1.0f);
+                    //GET VERTICES OF TRIANGLE
+                    const glm::vec3& firstVertex = triangleBufferVertices[vaoStartIndex].position;
+                    const glm::vec3& secondVertex = triangleBufferVertices[vaoStartIndex + 1].position;
+                    const glm::vec3& thirdVertex = triangleBufferVertices[vaoStartIndex + 2].position;
+
+                    float rayMultiplyAmount;
+                    if (Ray::intersectsTriangle(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, rayMultiplyAmount))
+                    {
+                        return std::make_pair(true, rayMultiplyAmount);
+                    }
+                }
+
+                return std::make_pair(false, -1.0f);
+
+            }
+            return std::make_pair(false, -1.0f);
+
 		};
 
 	std::vector<OctreeNode<SceneResources::MeshFacePair>*> octreeNodes;

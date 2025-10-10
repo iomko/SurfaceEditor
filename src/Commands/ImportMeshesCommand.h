@@ -12,6 +12,4 @@ public:
 	{
 		notifyObservers(params);
 	}
-
-	static constexpr std::string_view getCommandName() noexcept { return "ImportMeshesCommand"; }
 };

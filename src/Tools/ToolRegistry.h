@@ -2,19 +2,20 @@
 #include <unordered_map>
 #include "Tool.h"
 #include <string>
+#include <typeinfo>
+#include <typeindex>
 
 class ToolRegistry
 {
 public:
 	template<typename ToolT, typename... Args>
 	static void registerTool(Args&&... args) {
-		const std::string& toolName = ToolT::getToolName();
-		m_tools[toolName] = new ToolT(std::forward<Args>(args)...);
+        m_tools[typeid(ToolT)] = new ToolT(std::forward<Args>(args)...);
 	}
 
 	template<typename ToolT>
 	static ToolT* getTool() {
-		auto it = m_tools.find(ToolT::getToolName());
+		auto it = m_tools.find(std::type_index(typeid(ToolT)));
 		if (it != m_tools.end()) {
 			return static_cast<ToolT*>(it->second);
 		}
@@ -29,5 +30,5 @@ public:
 	}
 
 private:
-	static inline std::unordered_map<std::string, ITool*> m_tools;
+	static inline std::unordered_map<std::type_index, ITool*> m_tools;
 };

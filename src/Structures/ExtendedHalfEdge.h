@@ -70,7 +70,6 @@ class ExtendedVertex : public HalfEdgeDS::Vertex<ExtendedHalfEdgeTraits> {
 public:
     ExtendedVertex(ExtendedHalfEdgeMesh& mesh) : ExtendedVertex::Vertex(mesh) {
     }
-
     //graph
     std::vector<GraphEdge*> m_graphEdges;
 

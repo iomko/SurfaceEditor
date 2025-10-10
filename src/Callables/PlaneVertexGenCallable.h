@@ -1,4 +1,5 @@
 #pragma once
+#include "../Renderer/MaterialRegistry.h"
 
 class PlaneVertexGenCallable : public Callable<PlaneParams, MeshParams>
 {
@@ -34,8 +35,8 @@ public:
 			}
 		}
         
-        Shader* meshShader = ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader;
-		Mesh* mesh = new Mesh(new Material(meshShader), planeIndices, planeVertices);
+        //get proper material
+		Mesh* mesh = new Mesh(planeIndices, planeVertices);
 
 		output.m_mesh = mesh; 
 	}

@@ -10,6 +10,7 @@
 #include "Params/OperationParams.h"
 #include "UI/OutlinerLayer.h"
 #include <print>
+#include "../Renderer/MaterialRegistry.h"
 
 class CreatePrintStructureCallBack : public Callback<PrintMeshSettingsParams>, public Observer {
 
@@ -93,13 +94,12 @@ public:
         }
 
         //Register Printable Mesh BufferStorage
-        PrintableMeshBufferStorage* printableMeshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<PrintableMeshBufferStorage>();
-        printableMeshBufferStorage->registerBufferStorage(outputPrintableMesh);
+        Material* defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
+        LineBufferStorage& lineBufferStorage = outputPrintableMesh->bufferLayout.registerLineBufferStorage(defaultLineMaterial);
+        lineBufferStorage.create();
 
-        //Get Raw Line Buffer Data For Specified Printable Mesh
-        BufferData<RendererBuffersData::LineVertex>* printableMeshBufferData;
-        printableMeshBufferStorage->getBufferData(outputPrintableMesh, printableMeshBufferData);
-        std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = printableMeshBufferData->vertices;
+        //Get Raw Mesh Buffer Data For Specified Mesh
+        std::vector<BufferStorageDataType::LineVertex>& lineBufferVertices = lineBufferStorage.data.vertices;
         lineBufferVertices.clear();
 
 
@@ -131,16 +131,17 @@ public:
             }
 
         }
-        printableMeshBufferStorage->updateBufferStorage(outputPrintableMesh);
+
+        lineBufferStorage.update();
 
         //Add Printable Mesh into the scene
         SceneResources::PrintableMeshMap& printableMeshesMap = scene->m_res.printableMeshMap;
         auto [it, inserted] = printableMeshesMap.emplace(inputMesh, outputPrintableMesh); 
-        printableMeshBufferStorage->updateBufferStorage(outputPrintableMesh);
         
         //Add created printable mesh into the outliner layer
         if(OutlinerLayer::m_state.m_currentSelectedNode != nullptr) {
             OutlinerLayer::addChildNode(OutlinerLayer::m_state.m_currentSelectedNode, 1, "PrintableMesh1", outputPrintableMesh);
         }
+
     }
 };

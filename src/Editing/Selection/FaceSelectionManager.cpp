@@ -17,21 +17,25 @@ void FaceSelectionManager::registerFace(ExtendedFace* face, Mesh* mesh)
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
         //potrebujeme ziskat materialVaoVertices
-        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-        meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
-        std::vector<RendererBuffersData::MeshVertex>& meshVaoVertices = meshBufferData->vertices;
+        //
+        //
+        //
+        if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+            TriangleBufferStorage& triangleBufferStorage = opt->get();
+            std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
 
-		for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
-		{
-			int faceVaoIndex = faceTriangles.at(faceTriangleIndex).indexInVAO;
-			meshVaoVertices.at(faceVaoIndex).isHighlited = true;
-			meshVaoVertices.at(faceVaoIndex + 1).isHighlited = true;
-			meshVaoVertices.at(faceVaoIndex + 2).isHighlited = true;
-		}
 
-		face->m_selected = true;
-		face->m_selectionIndex = selectionVector.size() - 1;
+            for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
+            {
+                int faceVaoIndex = faceTriangles.at(faceTriangleIndex).indexInVAO;
+                triangleBufferVertices.at(faceVaoIndex).isHighlited = true;
+                triangleBufferVertices.at(faceVaoIndex + 1).isHighlited = true;
+                triangleBufferVertices.at(faceVaoIndex + 2).isHighlited = true;
+            }
+
+            face->m_selected = true;
+            face->m_selectionIndex = selectionVector.size() - 1;
+        }
 	}
 }
 
@@ -47,34 +51,39 @@ void FaceSelectionManager::unregisterFace(ExtendedFace* face, Mesh* mesh)
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
         //potrebujeme ziskat materialVaoVertices
-        MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-        BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-        meshBufferStorage->getBufferData(mesh, face->material, meshBufferData);
-        std::vector<RendererBuffersData::MeshVertex>& meshVaoVertices = meshBufferData->vertices;
+        //
+        //
+        //
 
-		if (indexInSelection != selectionVector.size() - 1)
-		{
-			//vymenime entry s poslednym vo vectore
-			selectionVector.back()->m_selectionIndex = indexInSelection;
-			utils::containers::swapWithLast(selectionVector, indexInSelection);
-		}
+        if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+            TriangleBufferStorage& triangleBufferStorage = opt->get();
+            std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
 
-		for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
-		{
-			int faceVaoIndex = faceTriangles.at(faceTriangleIndex).indexInVAO;
-			meshVaoVertices.at(faceVaoIndex).isHighlited = false;
-			meshVaoVertices.at(faceVaoIndex + 1).isHighlited = false;
-			meshVaoVertices.at(faceVaoIndex + 2).isHighlited = false;
-		}
+            if (indexInSelection != selectionVector.size() - 1)
+            {
+                //vymenime entry s poslednym vo vectore
+                selectionVector.back()->m_selectionIndex = indexInSelection;
+                utils::containers::swapWithLast(selectionVector, indexInSelection);
+            }
 
-		face->m_selected = false;
-		face->m_selectionIndex = -1;
+            for (FaceTriangleIndex faceTriangleIndex : face->faceTriangleIndices)
+            {
+                int faceVaoIndex = faceTriangles.at(faceTriangleIndex).indexInVAO;
+                triangleBufferVertices.at(faceVaoIndex).isHighlited = false;
+                triangleBufferVertices.at(faceVaoIndex + 1).isHighlited = false;
+                triangleBufferVertices.at(faceVaoIndex + 2).isHighlited = false;
+            }
 
-		selectionVector.erase(selectionVector.end() - 1);
+            face->m_selected = false;
+            face->m_selectionIndex = -1;
 
+            selectionVector.erase(selectionVector.end() - 1);
 
-		if (selectionVector.empty()) {
-			m_holder.faces.erase(mesh);
-		}
+            if (selectionVector.empty()) {
+                m_holder.faces.erase(mesh);
+            }
+
+        }
+
 	}
 }

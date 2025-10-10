@@ -13,9 +13,6 @@ public:
 
     }
 
-    static constexpr std::string_view getCommandName() noexcept { return "BasicSculptToolCommand"; }
-
-
 private:
 
     glm::vec3 computeAverageNormal(const std::vector<glm::vec3>& normals) {

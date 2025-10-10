@@ -9,5 +9,4 @@ public:
 		: Tool(command)
 	{
 	}
-	static std::string getToolName() { return "FaceSelectionTool"; }
 };

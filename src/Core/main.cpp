@@ -96,6 +96,8 @@
 #include "Callables/MeshOutlinerAdderCallable.h"
 #include "Structures/PrintableMesh.h"
 
+#include "../Renderer/MaterialRegistry.h"
+
 //INTERACTION_HANDLER
 #include "../Tools/InteractionHandler.h"
 #include "../Tools/Tool.h"
@@ -337,6 +339,9 @@ int main()
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
 
+    
+    MaterialRegistry::registerMaterial("defaultMeshMaterial", &meshShader);
+    MaterialRegistry::registerMaterial("defaultLineMaterial", &linesShader);
 
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
@@ -384,13 +389,28 @@ int main()
 
         //draw meshes
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
-                Renderer::drawMesh(mesh);
-                Renderer::drawMeshLines(mesh, &linesShader);
+
+            for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                Shader* shader = it->first->m_shader;
+                BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;
+                Renderer::drawTriangles(triangleBufferData, shader);
+            }
+            
+            for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
+                Shader* shader = it->first->m_shader;
+                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+                Renderer::drawLines(lineBufferData, shader);
+            }
         }
 
         //draw printableMeshes
         for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
-            Renderer::drawPrintableMesh(printableMesh, &linesShader);
+
+            for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it) {
+                Shader* shader = it->first->m_shader;
+                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+                Renderer::drawLines(lineBufferData, shader);
+            }
         }
 
 		app.run();

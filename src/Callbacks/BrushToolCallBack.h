@@ -2,12 +2,77 @@
 #include "../ViewPortsController.h"
 #include "../Utils/InterpolationUtils.h"
 #include "../Utils/GeometryUtils.h"
+#include "MoveVertexCallBack.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
 public:
+
 	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
 	{
+        
+		const float epsilon = 0.001f;
+
+        //Get closest mesh and it's face that was hit by the ray from the camera
+		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+		Camera* camera = ViewPortsHolderContext::s_camera;
+		Window* window = ViewPortsHolderContext::s_window;
+		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
+
+		glm::vec3 hitPoint = meshFaceHitPair.second;
+		Mesh* closestMesh = meshFacePair.first;
+		ExtendedFace* closestFace = meshFacePair.second;
+
+		oParams.hitPoint = hitPoint;
+		oParams.meshFacePair = meshFacePair;
+
+		if (closestMesh != nullptr)
+		{
+            //Find vertex on the face, which was closest to the hit point
+			Sphere sphere{ hitPoint, iParams.radius };
+			ExtendedVertex* closestVertex = findClosestVertexOnFace(closestFace, hitPoint);
+            
+            //Collect all data that needs to change/move
+			glm::vec3 normal = computeAvgNormal(closestVertex);
+			auto elementsToChange = collectIntersectingElements(sphere, closestMesh);
+			std::unordered_set<ExtendedVertex*>& verticesToChange = elementsToChange.first;
+			//std::unordered_set<ExtendedFace*>& facesToChange = elementsToChange.second;
+
+			for (ExtendedVertex* vertex : verticesToChange)
+			{
+				float distance = glm::length(vertex->m_position - sphere.position);
+				float scalingFactor = calculateNormalScaleFactor(distance, iParams.radius, iParams.brushStrength);
+
+                //moveByVector
+                glm::vec3 moveByVector = normal * scalingFactor;
+
+                MoveVertexCallBack moveVertexCallBack;
+                VertexParams vertexParams;
+                vertexParams.moveByVector = moveByVector;
+                vertexParams.mesh = closestMesh;
+                vertexParams.vertex = vertex;
+                moveVertexCallBack.execute(vertexParams);
+
+			}
+
+            /*
+			for (ExtendedFace* face : facesToChange)
+			{
+				scene->deleteFaceFromOctrees(closestMesh, face);
+				scene->addFaceIntoOctrees(closestMesh, face);
+			}
+            */
+		}
+    
+	}
+
+
+
+    /*
+	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
+	{
+        
 		const float epsilon = 0.001f;
 
         //Get closest mesh and it's face that was hit by the ray from the camera
@@ -100,7 +165,9 @@ public:
 				scene->addFaceIntoOctrees(closestMesh, face);
 			}
 		}
+    
 	}
+    */
 
 private:
 

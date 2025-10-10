@@ -23,6 +23,7 @@ class SolidifyMeshesCallBack : public Callback<>, public Observer {
 public:
 
 	void execute() override {
+        
         //Get Selected Meshes 
         SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
         Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
@@ -224,12 +225,16 @@ public:
                 }
             }
 
+            for(auto it = selectedMesh->bufferLayout.lineBuffersBegin(); it != selectedMesh->bufferLayout.lineBuffersEnd(); ++it) {
+                LineBufferStorage& lineBufferStorage = it->second;
+                lineBufferStorage.update();
+            }
 
-            LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
-            lineBufferStorage->updateBufferStorage(selectedMesh);
+            for(auto it = selectedMesh->bufferLayout.triangleBuffersBegin(); it != selectedMesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
+            }
 
-            MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-            meshBufferStorage->updateBufferStorage(selectedMesh, selectedMesh->m_defaultMaterial);
 
             SceneFacesAdderCallable sceneFacesAdderCallable;
             FaceParams faceParams;
@@ -239,5 +244,6 @@ public:
 
             selectedMesh->calculateMeshBounds();
         }
+    
     }
 }; 

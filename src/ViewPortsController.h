@@ -50,8 +50,6 @@ public:
 	ViewPortLayer(const std::string& name)
 		: Layer(name)
 	{
-		Renderer::init();
-
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cout << "Framebuffer not complete!" << std::endl;
 

@@ -8,5 +8,4 @@ public:
 	BrushTool(BrushToolCommand* command)
 		: Tool(command) {}
 
-	static std::string getToolName() { return "BrushTool"; }
 };

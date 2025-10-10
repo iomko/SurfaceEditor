@@ -86,6 +86,13 @@ struct EdgeParams : public OpParams
     std::vector<ExtendedEdge*>* edges;
 };
 
+struct VertexParams : public OpParams
+{
+    Mesh* mesh = nullptr;
+    ExtendedVertex* vertex = nullptr;
+    glm::vec3 newPosition;
+};
+
 struct BrushToolParams : public OpParams
 {
 	float radius;
