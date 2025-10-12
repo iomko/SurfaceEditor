@@ -39,7 +39,8 @@
 #include "../Commands/AddPlaneCommand.h"
 #include "../Tools/ToolRegistry.h"
 //#include "../Commands/CommandRegistry.h"
-
+#include "../Commands/AddCubeCommand.h"
+#include "../Callbacks/AddCubeCallback.h"
 
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
@@ -73,6 +74,7 @@
 #include "../Callables/PlaneVertexGenCallable.h"
 #include "../Callables/MeshVaoInitCallable.h"
 #include "../Callables/SceneMeshAdderCallable.h"
+#include "../Callables/CubeVertexGenCallable.h"
 
 //ImportExportLayer
 #include "../Callbacks/ImportMeshesCallBack.h"
@@ -129,6 +131,15 @@ int main()
 	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
     addPlaneComposer.addFunc<MeshOutlinerAdderCallable>(addPlaneRoot);
 	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
+
+	//--ADD_CUBE_COMPOSER
+
+	FunctionComposer addCubeComposer;
+	FunctionNode* addCubeRoot = addCubeComposer.initRoot<CubeVertexGenCallable>();
+	addCubeComposer.addFunc<MeshVaoInitCallable>(addCubeRoot);
+	addCubeComposer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
+    addCubeComposer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
+	AddCubeCallback addCubeCallBack(addCubeComposer);
 
     SolidifyMeshesCallBack solidifyMeshesCallBack;
     CreatePrintStructureCallBack createPrintStructureCallBack;
@@ -214,6 +225,12 @@ int main()
 
 	addPlaneCommand->addObserver(&addPlaneCallBack);
 	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+
+	commandRegistry->registerCommand<AddCubeCommand>();
+	AddCubeCommand* addCubeCommand = commandRegistry->getCommand<AddCubeCommand>();
+
+	addCubeCommand->addObserver(&addCubeCallBack);
+	addCubeCallBack.observe(addCubeCommand, &addCubeCallBack);
 
     commandRegistry->registerCommand<SolidifyMeshesCommand>();
     SolidifyMeshesCommand* solidifyMeshesCommand = commandRegistry->getCommand<SolidifyMeshesCommand>();

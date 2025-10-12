@@ -62,10 +62,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
 
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
+
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_executable(SurfaceEditor ${SRC_FILES})
 
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw3 OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
 
 target_include_directories(SurfaceEditor PRIVATE "${PROJECT_SOURCE_DIR}/src")
 

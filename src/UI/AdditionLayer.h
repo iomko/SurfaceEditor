@@ -50,6 +50,25 @@ public:
 					ImGui::TreePop();
 				}
 
+				if (ImGui::TreeNode("Cube"))
+				{
+					ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
+					ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
+					
+    				ImGui::InputInt3("Position", glm::value_ptr(m_position));					
+					if (ImGui::Button("AddToScene")) 
+					{
+						AddCubeCommand* addCubeCommand = m_commandRegistry.getCommand<AddCubeCommand>();
+
+						CubeParams addCubeParams;
+						addCubeParams.m_size = m_size;
+						addCubeParams.m_subdivisionLevel = m_subdivision;
+        				addCubeParams.m_position = glm::vec3(m_position);		
+						addCubeCommand->execute(addCubeParams);
+					}
+					ImGui::TreePop();
+				}
+
 				ImGui::TreePop();
 			}
 
@@ -106,4 +125,5 @@ private:
     bool m_isMouseInsideWindow;
     int m_subdivision = 1;
     float m_size = 1.0f;
+	glm::ivec3 m_position = {0, 0, 0};
 };

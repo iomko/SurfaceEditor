@@ -46,6 +46,14 @@ struct PlaneParams : public OpParams
 	int m_subdivisionLevel;
 };
 
+struct CubeParams : public OpParams
+{
+	float m_size;
+	float m_subdivisionLevel;
+
+	glm::vec3 m_position;
+};
+
 struct SelectFaceParamsOut : public OpParams
 {
 	Mesh* mesh = nullptr;
@@ -90,7 +98,7 @@ struct VertexParams : public OpParams
 {
     Mesh* mesh = nullptr;
     ExtendedVertex* vertex = nullptr;
-    glm::vec3 newPosition;
+    glm::vec3 moveByVector; //newPosition;
 };
 
 struct BrushToolParams : public OpParams
