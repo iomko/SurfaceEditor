@@ -1,6 +1,5 @@
 
 #pragma once
-#include <print>
 #include <string>
 #include <typeindex>
 #include "imgui.h"
@@ -103,7 +102,7 @@ public:
                 outlinerLayerState.m_currentSelectedNode = node;
 
                 m_windowLayerBus.emit<OutlinerLayerState>(m_state);
-                std::println("Selected currentTreeNode");
+                std::cout << "Selected currentTreeNode" << std::endl;
             }
 
             if(expanded){

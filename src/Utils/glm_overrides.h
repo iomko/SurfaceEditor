@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <algorithm>
 
 namespace glm {
     bool operator<(const glm::vec3& lhs, const glm::vec3& rhs);

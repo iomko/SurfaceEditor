@@ -6,7 +6,6 @@
 
 #include <limits>
 //#include <Windows.h>
-#include <print>
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>

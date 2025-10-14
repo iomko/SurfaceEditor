@@ -49,7 +49,7 @@ public:
 
                 MoveVertexCallBack moveVertexCallBack;
                 VertexParams vertexParams;
-                vertexParams.moveByVector = moveByVector;
+                vertexParams.newPosition = moveByVector;
                 vertexParams.mesh = closestMesh;
                 vertexParams.vertex = vertex;
                 moveVertexCallBack.execute(vertexParams);
@@ -68,106 +68,6 @@ public:
 	}
 
 
-
-    /*
-	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
-	{
-        
-		const float epsilon = 0.001f;
-
-        //Get closest mesh and it's face that was hit by the ray from the camera
-		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-		Camera* camera = ViewPortsHolderContext::s_camera;
-		Window* window = ViewPortsHolderContext::s_window;
-		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
-		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
-
-		glm::vec3 hitPoint = meshFaceHitPair.second;
-		Mesh* closestMesh = meshFacePair.first;
-		ExtendedFace* closestFace = meshFacePair.second;
-
-		oParams.hitPoint = hitPoint;
-		oParams.meshFacePair = meshFacePair;
-
-		if (closestMesh != nullptr)
-		{
-            //Get Raw Line Buffer Data For Specified Mesh 
-            LineBufferStorage* lineBufferStorage = Renderer::s_bufferRegistry.queryBuffer<LineBufferStorage>();
-            BufferData<RendererBuffersData::LineVertex>* lineBufferData;
-            lineBufferStorage->getBufferData(closestMesh, lineBufferData);
-            std::vector<RendererBuffersData::LineVertex>& lineBufferVertices = lineBufferData->vertices;
-		
-            //Find vertex on the face, which was closest to the hit point
-			Sphere sphere{ hitPoint, iParams.radius };
-			ExtendedVertex* closestVertex = findClosestVertexOnFace(closestFace, hitPoint);
-            
-            //Collect all data that needs to change/move
-			glm::vec3 normal = computeAvgNormal(closestVertex);
-			auto elementsToChange = collectIntersectingElements(sphere, closestMesh);
-			std::unordered_set<ExtendedVertex*>& verticesToChange = elementsToChange.first;
-			std::unordered_set<ExtendedFace*>& facesToChange = elementsToChange.second;
-
-			for (ExtendedVertex* vertex : verticesToChange)
-			{
-				float distance = glm::length(vertex->m_position - sphere.position);
-				float scalingFactor = calculateNormalScaleFactor(distance, iParams.radius, iParams.brushStrength);
-
-				for (GraphEdge* graphEdge : vertex->m_graphEdges)
-				{
-					ExtendedFace* face = graphEdge->face;
-
-                    //Get Raw Mesh Buffer Data For Specified Mesh 
-                    MeshBufferStorage* meshBufferStorage = Renderer::s_bufferRegistry.queryBuffer<MeshBufferStorage>();
-                    BufferData<RendererBuffersData::MeshVertex>* meshBufferData;
-                    meshBufferStorage->getBufferData(closestMesh, face->material, meshBufferData);
-                    std::vector<RendererBuffersData::MeshVertex>& meshBufferVertices = meshBufferData->vertices;
-
-					FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
-
-					FaceTriangle& faceTriangle =
-						closestMesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
-
-					int faceIndexInVao = faceTriangle.indexInVAO;
-					for (int i = faceIndexInVao; i < faceIndexInVao + 3; ++i)
-					{
-						if (glm::all(glm::epsilonEqual(meshBufferVertices.at(i).position, vertex->m_position, epsilon)))
-						{
-							meshBufferVertices.at(i).position += (normal * scalingFactor);
-							break;
-						}
-					}
-				}
-
-
-				for (ExtendedEdge* edge : vertex->m_neighbourEdges)
-				{
-					int edgeIndexInVao = edge->m_EdgeLineIndex;
-
-					if (glm::all(glm::epsilonEqual(edge->m_firstVertex->m_position, vertex->m_position, epsilon)))
-					{
-						lineBufferVertices.at(edgeIndexInVao).position += (normal * scalingFactor);
-						lineBufferVertices.at(edgeIndexInVao + 2).position += (normal * scalingFactor);
-					}
-					else if (glm::all(glm::epsilonEqual(edge->m_secondVertex->m_position, vertex->m_position, epsilon)))
-					{
-						lineBufferVertices.at(edgeIndexInVao + 1).position += (normal * scalingFactor);
-						lineBufferVertices.at(edgeIndexInVao + 3).position += (normal * scalingFactor);
-					}
-				}
-
-				vertex->m_position += (normal * scalingFactor);
-			}
-
-
-			for (ExtendedFace* face : facesToChange)
-			{
-				scene->deleteFaceFromOctrees(closestMesh, face);
-				scene->addFaceIntoOctrees(closestMesh, face);
-			}
-		}
-    
-	}
-    */
 
 private:
 

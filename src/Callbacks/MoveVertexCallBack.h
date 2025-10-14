@@ -14,7 +14,7 @@ public:
 
         ExtendedVertex* vertex = iParams.vertex;
         Mesh* mesh = iParams.mesh;
-        glm::vec3 moveByVector = iParams.moveByVector;
+        glm::vec3 moveByVector = iParams.newPosition;
 
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 

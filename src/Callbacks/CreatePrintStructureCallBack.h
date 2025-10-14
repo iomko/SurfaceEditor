@@ -9,7 +9,6 @@
 #include "ViewPortsController.h"
 #include "Params/OperationParams.h"
 #include "UI/OutlinerLayer.h"
-#include <print>
 #include "../Renderer/MaterialRegistry.h"
 
 class CreatePrintStructureCallBack : public Callback<PrintMeshSettingsParams>, public Observer {
