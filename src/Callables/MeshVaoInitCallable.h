@@ -59,7 +59,7 @@ public:
 			std::vector<glm::vec3> triangulatedVertices = utils::geometry::triangulatePolygon(faceVertices);
 
             //Update ExtendedFace info
-			for (int i = 0, indexInFace; i < triangulatedVertices.size(); i += 3, ++indexInFace)
+			for (int i = 0, indexInFace = 0; i < triangulatedVertices.size(); i += 3, ++indexInFace)
 			{
 				triangleBufferVertices.emplace_back(triangulatedVertices.at(i), faceNormal, false);
 				triangleBufferVertices.emplace_back(triangulatedVertices.at(i + 1), faceNormal, false);

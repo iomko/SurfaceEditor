@@ -79,10 +79,10 @@ public:
                 toBeAddedOctreeFaces.emplace_back(newFace);
 
                 FaceVaoInitCallable faceVaoInitCallable;
-                NewFaceParams newFaceParams;
-                newFaceParams.face = newFace;
-                newFaceParams.mesh = selectedMesh;
-                faceVaoInitCallable.invoke(newFaceParams);
+                SingleFaceParams singleFaceParams;
+                singleFaceParams.face = newFace;
+                singleFaceParams.mesh = selectedMesh;
+                faceVaoInitCallable.invoke(singleFaceParams);
 
                 std::vector<ExtendedEdge*> edges;
                 for (auto it = newFace->faceHalfEdgeEnd(); it != newFace->faceHalfEdgeEnd(); ++it) {
@@ -146,10 +146,11 @@ public:
                 toBeAddedOctreeFaces.emplace_back(firstOuterFace);
 
                 FaceVaoInitCallable faceVaoInitCallable1;
-                NewFaceParams newFaceParams1;
-                newFaceParams1.face = firstOuterFace;
-                newFaceParams1.mesh = selectedMesh;
-                faceVaoInitCallable1.invoke(newFaceParams1);
+
+                SingleFaceParams singleFaceParams1;
+                singleFaceParams1.face = firstOuterFace;
+                singleFaceParams1.mesh = selectedMesh;
+                faceVaoInitCallable1.invoke(singleFaceParams1);
 
                 std::vector<ExtendedEdge*> edges1;
                 for (auto it = firstOuterFace->faceHalfEdgeEnd(); it != firstOuterFace->faceHalfEdgeEnd(); ++it) {
@@ -186,10 +187,11 @@ public:
                 toBeAddedOctreeFaces.emplace_back(secondOuterFace);
 
                 FaceVaoInitCallable faceVaoInitCallable2;
-                NewFaceParams newFaceParams2;
-                newFaceParams2.face = secondOuterFace;
-                newFaceParams2.mesh = selectedMesh;
-                faceVaoInitCallable2.invoke(newFaceParams2);
+
+                SingleFaceParams singleFaceParams2;
+                singleFaceParams2.face = secondOuterFace;
+                singleFaceParams2.mesh = selectedMesh;
+                faceVaoInitCallable2.invoke(singleFaceParams2);
 
                 std::vector<ExtendedEdge*> edges2;
                 for (auto it = secondOuterFace->faceHalfEdgeEnd(); it != secondOuterFace->faceHalfEdgeEnd(); ++it) {

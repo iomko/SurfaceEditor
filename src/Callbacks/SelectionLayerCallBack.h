@@ -2,6 +2,7 @@
 #include "../Tools/FaceSelectionTool.h"
 #include "../Tools/FaceDeselectionTool.h"
 #include "../Tools/MeshSelectionTool.h"
+#include "../Tools/MeshDeselectionTool.h"
 
 class SelectionLayerCallBack : public Callback<SelectionLayerParams>, public Observer
 {
@@ -23,6 +24,7 @@ public:
 					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
 					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
 				}
+
 			} else if(selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
 				//ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
@@ -69,6 +71,16 @@ public:
 			}
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
+                
+				MeshDeselectionTool* meshDeselectionTool = ToolRegistry::getTool<MeshDeselectionTool>();
+				ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshDeselectionTool;
+
+				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				{
+					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+				}
+                
 				//create object command
 				//ViewPortsHolderContext::s_viewPortsController->m_currentCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
 			}

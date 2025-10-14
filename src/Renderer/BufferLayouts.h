@@ -45,7 +45,7 @@ public:
     LineIterator lineBuffersBegin() { return m_matLineBuff.begin(); }
     LineIterator lineBuffersEnd() { return m_matLineBuff.end(); }
 
-private:
+public:
     std::map<Material*, TriangleBufferStorage> m_matTriangleBuff;
     std::map<Material*, LineBufferStorage> m_matLineBuff;
 };

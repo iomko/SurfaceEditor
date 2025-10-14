@@ -3,14 +3,17 @@
 #include "../Utils/InterpolationUtils.h"
 #include "../Utils/GeometryUtils.h"
 #include "MoveVertexCallBack.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Commands/MoveVertexCommand.h"
+#include "../Commands/CommandRegistry.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
 public:
+    BrushToolCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
 
 	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
 	{
-        
 		const float epsilon = 0.001f;
 
         //Get closest mesh and it's face that was hit by the ray from the camera
@@ -47,27 +50,18 @@ public:
                 //moveByVector
                 glm::vec3 moveByVector = normal * scalingFactor;
 
-                MoveVertexCallBack moveVertexCallBack;
                 VertexParams vertexParams;
                 vertexParams.newPosition = moveByVector;
                 vertexParams.mesh = closestMesh;
                 vertexParams.vertex = vertex;
-                moveVertexCallBack.execute(vertexParams);
 
+                MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
+                moveVertexCommand->execute(vertexParams);
 			}
 
-            /*
-			for (ExtendedFace* face : facesToChange)
-			{
-				scene->deleteFaceFromOctrees(closestMesh, face);
-				scene->addFaceIntoOctrees(closestMesh, face);
-			}
-            */
 		}
     
 	}
-
-
 
 private:
 
@@ -169,4 +163,6 @@ private:
 		}
 		return closestVertex;
 	}
+
+    CommandRegistry* m_commandRegistry = nullptr;
 };
