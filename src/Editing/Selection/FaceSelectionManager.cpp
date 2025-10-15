@@ -16,10 +16,7 @@ void FaceSelectionManager::registerFace(ExtendedFace* face, Mesh* mesh)
 
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
-        //potrebujeme ziskat materialVaoVertices
-        //
-        //
-        //
+
         if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
             TriangleBufferStorage& triangleBufferStorage = opt->get();
             std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
@@ -35,7 +32,15 @@ void FaceSelectionManager::registerFace(ExtendedFace* face, Mesh* mesh)
 
             face->m_selected = true;
             face->m_selectionIndex = selectionVector.size() - 1;
+
+
+            //update triangle buffer storages
+            for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
+            }
         }
+
 	}
 }
 
@@ -50,10 +55,6 @@ void FaceSelectionManager::unregisterFace(ExtendedFace* face, Mesh* mesh)
 
 		std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
 
-        //potrebujeme ziskat materialVaoVertices
-        //
-        //
-        //
 
         if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
             TriangleBufferStorage& triangleBufferStorage = opt->get();
@@ -81,6 +82,13 @@ void FaceSelectionManager::unregisterFace(ExtendedFace* face, Mesh* mesh)
 
             if (selectionVector.empty()) {
                 m_holder.faces.erase(mesh);
+            }
+
+
+            //update triangle buffer storages
+            for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
             }
 
         }

@@ -75,9 +75,15 @@ struct FaceParams : public OpParams
     std::vector<ExtendedFace*>* faces;
 };
 
-struct NewFaceParams : public OpParams {
+struct SingleFaceParams : public OpParams {
     Mesh* mesh;
     ExtendedFace* face;
+};
+
+struct MoveFaceParams : public OpParams {
+    Mesh* mesh;
+    ExtendedFace* face;
+    glm::vec3 moveByVector;
 };
 
 struct EdgeParams : public OpParams

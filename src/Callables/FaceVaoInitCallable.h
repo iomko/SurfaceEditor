@@ -6,10 +6,10 @@
 #include "../Renderer/Renderer.h"
 #include "../Renderer/MaterialRegistry.h"
 
-class FaceVaoInitCallable : public Callable<NewFaceParams, void>
+class FaceVaoInitCallable : public Callable<SingleFaceParams, void>
 {
 public:
-	void invoke(const NewFaceParams& input) override
+	void invoke(const SingleFaceParams& input) override
 	{
         Mesh* inputMesh = input.mesh;
         Material* defaultMeshMaterial = MaterialRegistry::getMaterial("defaultMeshMaterial");

@@ -49,6 +49,8 @@
 #include "../UI/SelectionLayer.h"
 
 #include "../Callbacks/SelectFaceCallBack.h"
+#include "../Callbacks/MoveVertexCallBack.h"
+#include "../Commands/MoveVertexCommand.h"
 
 #include "../Callbacks/DeselectMeshCallBack.h"
 #include "../Commands/DeselectMeshCommand.h"
@@ -59,12 +61,16 @@
 #include "../Callbacks/DeleteSelectedFacesCallBack.h"
 #include "../Commands/DeleteSelectedFacesCommand.h"
 
+#include "../Callbacks/DeleteFaceCallBack.h"
+#include "../Commands/DeleteFaceCommand.h"
+
 #include "../Callbacks/DeleteSelectedMeshesCallBack.h"
 #include "../Commands/DeleteSelectedMeshesCommand.h"
 
 #include "../Commands/BasicSculptToolCommand.h"
 
 #include "../Commands/BrushToolCommand.h"
+#include "../Tools/MeshDeselectionTool.h"
 #include "../Tools/BrushTool.h"
 #include "../Tools/FaceSelectionTool.h"
 #include "../Tools/FaceDeselectionTool.h"
@@ -86,6 +92,8 @@
 
 #include "../Callbacks/SolidifyMeshesCallBack.h"
 #include "../Commands/SolidifyMeshesCommand.h"
+#include "../Commands/DeleteMeshCommand.h"
+#include "../Callbacks/DeleteMeshCallBack.h"
 
 #include "../Structures/ExtendedHalfEdge.h"
 
@@ -242,7 +250,7 @@ int main()
 	selectMeshCommand->addObserver(&selectMeshCallBack);
 	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
 
-	BrushToolCallBack brushToolCallBack;
+	BrushToolCallBack brushToolCallBack(commandRegistry);
 	commandRegistry->registerCommand<BrushToolCommand>();
 	BrushToolCommand* brushToolCommand = commandRegistry->getCommand<BrushToolCommand>();
 
@@ -256,6 +264,8 @@ int main()
 	commandRegistry->registerCommand<DeselectMeshCommand>();
 	DeselectMeshCommand* deselectMeshCommand = commandRegistry->getCommand<DeselectMeshCommand>();
 
+    ToolRegistry::registerTool<MeshDeselectionTool>(deselectMeshCommand);
+
 	deselectMeshCommand->addObserver(&deselectMeshCallBack);
 	deselectMeshCallBack.observe(deselectMeshCommand, &deselectMeshCallBack);
 
@@ -264,6 +274,14 @@ int main()
 	SelectFaceCommand* selectFaceCommand = commandRegistry->getCommand<SelectFaceCommand>();
 	selectFaceCommand->addObserver(&selectFaceCallBack);
 	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
+
+
+    MoveVertexCallBack moveVertexCallBack;
+	commandRegistry->registerCommand<MoveVertexCommand>();
+	MoveVertexCommand* moveVertexCommand = commandRegistry->getCommand<MoveVertexCommand>();
+	moveVertexCommand->addObserver(&moveVertexCallBack);
+	moveVertexCallBack.observe(moveVertexCommand, &moveVertexCallBack);
+
 
 	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
 
@@ -275,13 +293,28 @@ int main()
 
 	ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
 
-	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack;
+
+	DeleteFaceCallBack deleteFaceCallBack;
+	commandRegistry->registerCommand<DeleteFaceCommand>();
+	DeleteFaceCommand* deleteFaceCommand = commandRegistry->getCommand<DeleteFaceCommand>();
+	deleteFaceCommand->addObserver(&deleteFaceCallBack);
+	deleteFaceCallBack.observe(deleteFaceCommand, &deleteFaceCallBack);
+
+
+	DeleteMeshCallBack deleteMeshCallBack(commandRegistry);
+	commandRegistry->registerCommand<DeleteMeshCommand>();
+	DeleteMeshCommand* deleteMeshCommand = commandRegistry->getCommand<DeleteMeshCommand>();
+	deleteMeshCommand->addObserver(&deleteMeshCallBack);
+	deleteMeshCallBack.observe(deleteMeshCommand, &deleteMeshCallBack);
+
+
+	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack(commandRegistry);
 	commandRegistry->registerCommand<DeleteSelectedFacesCommand>();
 	DeleteSelectedFacesCommand* deleteSelectedFacesCommand = commandRegistry->getCommand<DeleteSelectedFacesCommand>();
 	deleteSelectedFacesCommand->addObserver(&deleteSelectedFacesCallBack);
 	deleteSelectedFacesCallBack.observe(deleteSelectedFacesCommand, &deleteSelectedFacesCallBack);
 
-	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack;
+	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack(commandRegistry);
 	commandRegistry->registerCommand<DeleteSelectedMeshesCommand>();
 	DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = commandRegistry->getCommand<DeleteSelectedMeshesCommand>();
 	deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
