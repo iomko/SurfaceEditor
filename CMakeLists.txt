@@ -62,6 +62,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
 
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
+
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_executable(SurfaceEditor ${SRC_FILES})
 

@@ -46,6 +46,14 @@ struct PlaneParams : public OpParams
 	int m_subdivisionLevel;
 };
 
+struct CubeParams : public OpParams
+{
+	float m_size;
+	float m_subdivisionLevel;
+
+	glm::vec3 m_position;
+};
+
 struct SelectFaceParamsOut : public OpParams
 {
 	Mesh* mesh = nullptr;
