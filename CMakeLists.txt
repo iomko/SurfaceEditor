@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #FIND
 find_package(X11 REQUIRED)
 
-find_package(glfw3 3.4 REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
@@ -65,7 +65,7 @@ glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_executable(SurfaceEditor ${SRC_FILES})
 
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw3 OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
 
 target_include_directories(SurfaceEditor PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
