@@ -30,6 +30,18 @@ struct ImportExportMeshesParams : public OpParams
 	std::string m_filePathMeshes = "";
 };
 
+struct GizmoLayerParams : public OpParams
+{
+    enum Type
+    {
+        Move,
+        Rotate,
+        Disable
+    };
+ 
+    Type m_type;
+};
+
 struct OpenTopoParams : public OpParams
 {
 	float m_lowerLeftLon = 0.0f;

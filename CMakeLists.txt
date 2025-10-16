@@ -41,7 +41,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-add_library(imgui_lib
+add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_demo.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -50,6 +50,11 @@ add_library(imgui_lib
 
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+target_include_directories(ImGui PUBLIC
+    ${imgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}/backends
 )
 
 FetchContent_Declare(
@@ -62,16 +67,22 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
 
+FetchContent_Declare(
+    ImGuizmo
+    GIT_REPOSITORY https://github.com/Gl1tchs/ImGuizmo.git
+    GIT_TAG master
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(ImGuizmo)
+
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_executable(SurfaceEditor ${SRC_FILES})
 
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm imgui_lib CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
 
-target_include_directories(SurfaceEditor PRIVATE "${PROJECT_SOURCE_DIR}/src")
-
-target_include_directories(imgui_lib PUBLIC
-    ${imgui_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}/backends
+target_include_directories(SurfaceEditor PRIVATE
+    "${PROJECT_SOURCE_DIR}/src"
+    ${ImGuizmo_SOURCE_DIR}
 )

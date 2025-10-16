@@ -107,6 +107,8 @@
 
 #include "../Renderer/MaterialRegistry.h"
 
+#include "../UI/GizmoLayer.h"
+
 //INTERACTION_HANDLER
 #include "../Tools/InteractionHandler.h"
 #include "../Tools/Tool.h"
@@ -203,6 +205,10 @@ int main()
 	//ImporExportLayer
 	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer", *commandRegistry);
 	app.getLayerStack().addLayer(importExportLayer);
+
+    //GizmoLayer
+    GizmoLayer gizmoLayer("GizmoLayer", camera);
+    app.getLayerStack().addLayer(&gizmoLayer);
 
 	//importMeshesCommand
 
