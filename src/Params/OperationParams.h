@@ -106,6 +106,10 @@ struct MoveFaceParams : public OpParams {
     glm::vec3 moveByVector;
 };
 
+struct MoveSelectedFacesParams : public OpParams {
+    glm::vec3 moveByVector;
+};
+
 struct EdgeParams : public OpParams
 {
     Mesh* mesh;

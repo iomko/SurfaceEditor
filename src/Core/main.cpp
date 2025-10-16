@@ -96,6 +96,8 @@
 #include "../Commands/SolidifyMeshesCommand.h"
 #include "../Commands/DeleteMeshCommand.h"
 #include "../Callbacks/DeleteMeshCallBack.h"
+#include "../Callbacks/MoveSelectedFacesCallBack.h"
+#include "../Commands/MoveSelectedFacesCommand.h"
 
 #include "../Structures/ExtendedHalfEdge.h"
 
@@ -304,6 +306,13 @@ int main()
 	MoveVertexCommand* moveVertexCommand = commandRegistry->getCommand<MoveVertexCommand>();
 	moveVertexCommand->addObserver(&moveVertexCallBack);
 	moveVertexCallBack.observe(moveVertexCommand, &moveVertexCallBack);
+
+
+    MoveSelectedFacesCallBack moveSelectedFacesCallBack(commandRegistry);
+	commandRegistry->registerCommand<MoveSelectedFacesCommand>();
+	MoveSelectedFacesCommand* moveSelectedFacesCommand = commandRegistry->getCommand<MoveSelectedFacesCommand>();
+	moveSelectedFacesCommand->addObserver(&moveSelectedFacesCallBack);
+	moveSelectedFacesCallBack.observe(moveSelectedFacesCommand, &moveSelectedFacesCallBack);
 
 
 	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);

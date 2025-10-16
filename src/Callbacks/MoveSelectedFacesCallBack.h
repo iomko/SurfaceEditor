@@ -8,15 +8,13 @@
 #include "../Commands/MoveVertexCommand.h"
 
 
-class MoveSelectedFacesCallBack : public Callback<>, public Observer
+class MoveSelectedFacesCallBack : public Callback<MoveSelectedFacesParams>, public Observer
 {
 public:
     MoveSelectedFacesCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
 
-	void execute() override
+	void execute(const MoveSelectedFacesParams& iParams) override
 	{
-        Mesh* mesh = iParams.mesh;
-        ExtendedFace* face = iParams.face;
         glm::vec3 moveByVector = iParams.moveByVector;
 
         //Get selected meshes
@@ -36,7 +34,7 @@ public:
                
                 for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it) {
                     
-                    ExtendedVertex* vertex = (*it);
+                    ExtendedVertex* vertex = &(*it);
                     verticesToMove.insert(vertex);
                 }
             }
