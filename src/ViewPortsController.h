@@ -6,7 +6,7 @@
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Tools/Tool.h"
 #include "Core/Input.h"
-#include "Renderer/Renderer.h"
+//#include "Renderer/Renderer.h"
 
 class ViewPortLayer;
 
