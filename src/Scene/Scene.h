@@ -28,6 +28,7 @@ class SceneUtilities
 {
 public:
 	static std::pair<SceneResources::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneResources& res);
+	static std::vector<SceneResources::MeshFacePair> retAllHitDataInBoxSelection(Camera* camera, Window* window, SceneResources& res, const glm::vec2& startMousePos, const glm::vec2& endMousePos);
 	static std::pair<glm::vec3, glm::vec3> calculateOctreeBounds(const glm::vec3& voxelIndex, const glm::vec3& voxelSize);
 	static glm::vec3 calculateOctreeIDFromOctree(Octree<ExtendedFace*>* octree, const glm::vec3& voxelSize);
 	static glm::vec3 getVoxelIndex(const glm::vec3& bounds, const glm::vec3& voxelSize);

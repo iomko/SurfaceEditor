@@ -21,7 +21,14 @@ public:
 
     void onImGuiRender() override {
         ImGui::Begin(this->getName().c_str());
+        if (ImGui::Button("Box Selection Mode")) {
+            m_selectionMode = SelectionLayerParams::SelectionMode::BoxSelection;
 
+            SelectionLayerParams toolBarParams;
+            toolBarParams.m_selectionMode = m_selectionMode;
+            toolBarParams.m_type = SelectionLayerParams::Type::Selection;
+            notifyObservers(toolBarParams);
+        }
         if (ImGui::TreeNode("Selection Mode")) {
             int selectionModeInt = static_cast<int>(m_selectionMode);
             if (ImGui::RadioButton("Face Mode", &selectionModeInt, SelectionLayerParams::SelectionMode::Face) ||

@@ -13,7 +13,8 @@ public:
 		Face,
 		Edge,
 		Vertex,
-		Object
+		Object, 
+		BoxSelection
 	};
 
 	enum Type {
@@ -29,7 +30,10 @@ struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
 };
-
+struct BoxSelectionParams : public OpParams
+{
+	glm::vec2 start_mouse_pos;
+};
 struct GizmoLayerParams : public OpParams
 {
     enum Type

@@ -3,6 +3,7 @@
 #include "../Tools/FaceDeselectionTool.h"
 #include "../Tools/MeshSelectionTool.h"
 #include "../Tools/MeshDeselectionTool.h"
+#include "../Tools/BoxSelectionTool.h"
 
 class SelectionLayerCallBack : public Callback<SelectionLayerParams>, public Observer
 {
@@ -38,6 +39,16 @@ public:
 			{
 				MeshSelectionTool* meshSelectionTool = ToolRegistry::getTool<MeshSelectionTool>();
 				ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshSelectionTool;
+
+				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				{
+					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+				}
+			} else if(selectionMode == SelectionLayerParams::SelectionMode::BoxSelection)
+			{
+				BoxSelectionTool* boxSelectionTool = ToolRegistry::getTool<BoxSelectionTool>();
+				ViewPortsHolderContext::s_viewPortsController->m_currentTool = boxSelectionTool;
 
 				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
 				{

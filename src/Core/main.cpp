@@ -115,6 +115,10 @@
 #include "../Tools/InteractionHandler.h"
 #include "../Tools/Tool.h"
 
+#include "../Callbacks/BoxSelectionCallback.h"
+#include "../Commands/BoxSelectionCommand.h"
+#include "../Tools/BoxSelectionTool.h"
+
 #include "bootstrap.h"
 
 // settings
@@ -303,7 +307,14 @@ int main()
 	SelectFaceCommand* selectFaceCommand = commandRegistry->getCommand<SelectFaceCommand>();
 	selectFaceCommand->addObserver(&selectFaceCallBack);
 	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
+	//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+	BoxSelectionCallBack boxSelectionCallBack;
+	commandRegistry->registerCommand<BoxSelectionCommand>();
+	BoxSelectionCommand* boxSelectionCommand = commandRegistry->getCommand<BoxSelectionCommand>();
+	boxSelectionCommand->addObserver(&boxSelectionCallBack);
+	boxSelectionCallBack.observe(boxSelectionCommand, &boxSelectionCallBack);
 
+	ToolRegistry::registerTool<BoxSelectionTool>(boxSelectionCommand);
 
     MoveVertexCallBack moveVertexCallBack;
 	commandRegistry->registerCommand<MoveVertexCommand>();

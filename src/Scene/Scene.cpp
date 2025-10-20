@@ -1,6 +1,66 @@
 #include "Scene.h"
 #include "../Renderer/Renderer.h"
 
+std::vector<SceneResources::MeshFacePair> SceneUtilities::retAllHitDataInBoxSelection(Camera* camera, Window* window, SceneResources& res, const glm::vec2& startMousePos, const glm::vec2& endMousePos)
+{
+	std::vector<SceneResources::MeshFacePair> hitDataInBoxSelection;
+	
+	glm::vec2 min = glm::min(startMousePos, endMousePos);
+    glm::vec2 max = glm::max(startMousePos, endMousePos);
+
+	auto isInScreenBox = [&](const glm::vec3& worldPos) -> bool {
+        glm::vec4 clipPos = camera->m_matrices.perspectiveMatrix * camera->m_matrices.viewMatrix * glm::vec4(worldPos, 1.0f);
+        if (clipPos.w == 0.0f) return false;
+        glm::vec3 ndc = glm::vec3(clipPos) / clipPos.w; // Normalized Device Coordinates (-1..1)
+        glm::vec2 screenPos;
+        screenPos.x = (ndc.x * 0.5f + 0.5f) * window->getScreenWidth();
+        screenPos.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * window->getScreenHeight(); // y-flip
+
+        return screenPos.x >= min.x && screenPos.x <= max.x &&
+               screenPos.y >= min.y && screenPos.y <= max.y;
+    };
+
+	for (auto& entry : res.coordsOctreeMap)
+    {
+        Octree<SceneResources::MeshFacePair>& octree = entry.second;
+        std::vector<OctreeNode<SceneResources::MeshFacePair>*> nodes;
+
+		//find octree nodes
+		
+		printf("Found %zu octree nodes in box selection\n", nodes.size()); // --- IGNORE ---
+		for (OctreeNode<SceneResources::MeshFacePair>* node : nodes)
+        {
+            for (auto& meshFacePair : node->nodeData)
+            {
+                ExtendedFace* face = meshFacePair.second;
+                Mesh* mesh = meshFacePair.first;
+
+                if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material))
+                {
+                    auto& storage = opt->get();
+                    auto& vertices = storage.data.vertices;
+                    auto& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles[face->material];
+
+                    for (auto triIndex : face->faceTriangleIndices)
+                    {
+                        int idx = faceTriangles[triIndex].indexInVAO;
+                        glm::vec3 v1 = vertices[idx].position;
+                        glm::vec3 v2 = vertices[idx + 1].position;
+                        glm::vec3 v3 = vertices[idx + 2].position;
+
+                        if (isInScreenBox(v1) || isInScreenBox(v2) || isInScreenBox(v3))
+                        {
+                            hitDataInBoxSelection.push_back(meshFacePair);
+                            break;
+                        }
+                    }
+                }
+            }
+	    }		
+	}
+	return hitDataInBoxSelection;
+}
+
 std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, SceneResources& res)
 {
 	Ray ray = Ray::fromMousePos(*camera, *window);
