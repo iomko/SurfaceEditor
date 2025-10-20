@@ -21,6 +21,10 @@ public:
         return nullptr;
     }
 
+    bool hasCommand(std::type_index commandType) const {
+        return m_commands.find(commandType) != m_commands.end();
+    }
+
     void deleteRegistry() {
         for (auto& pair : m_commands) {
             delete pair.second;

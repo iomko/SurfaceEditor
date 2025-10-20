@@ -3,6 +3,7 @@
 #include "../IO/TiffGrayscaleMapLoader.h"
 #include "../IO/CurlFileFetcher.h"
 #include "../Utils/ThirdApiUtils.h"
+#include <filesystem>
 
 class FetchedSurfaceVertexGenCallable : public Callable<OpenTopoParams, MeshParams>
 {

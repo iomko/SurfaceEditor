@@ -1,6 +1,8 @@
 #pragma once
 #include "../Utils/ContainerUtils.h"
 #include "Structures/ExtendedHalfEdge.h"
+#include "Callback.h"
+#include "../Patterns/Observer.h"
 
 
 class DeleteFaceCallBack : public Callback<SingleFaceParams>, public Observer

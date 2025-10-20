@@ -1,4 +1,5 @@
 #pragma once
+#include "../Patterns/Observer.h"
 
 class FetchSurfaceCommand : public Command<OpenTopoParams>, public Observable
 {

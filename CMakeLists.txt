@@ -86,3 +86,18 @@ target_include_directories(SurfaceEditor PRIVATE
     "${PROJECT_SOURCE_DIR}/src"
     ${ImGuizmo_SOURCE_DIR}
 )
+
+option(ENABLE_ADD_PLANE "Enable add plane feature" ON)
+if(ENABLE_ADD_PLANE)
+    add_compile_definitions(ENABLE_ADD_PLANE)
+endif()
+
+option(ENABLE_ADD_CUBE "Enable add cube feature" ON)
+if(ENABLE_ADD_CUBE)
+    add_compile_definitions(ENABLE_ADD_CUBE)
+endif()
+
+option(ENABLE_FETCH_SURFACE "Enable fetch surface feature" ON)
+if(ENABLE_FETCH_SURFACE)
+    add_compile_definitions(ENABLE_FETCH_SURFACE)
+endif()
