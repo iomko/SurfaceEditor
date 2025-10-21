@@ -11,18 +11,21 @@
 CubeFeature registerAddCubeFeature(CommandRegistry* commandRegistry)
 {
     FunctionComposer* addCubeComposer = new FunctionComposer();
+    CubeVertexGenCallable::setupFuncionComposer(*addCubeComposer);
+    /*
     FunctionNode* addCubeRoot = addCubeComposer->initRoot<CubeVertexGenCallable>();
     addCubeComposer->addFunc<MeshVaoInitCallable>(addCubeRoot);
     addCubeComposer->addFunc<SceneMeshAdderCallable>(addCubeRoot);
-    addCubeComposer->addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
+    addCubeComposer->addFunc<MeshOutlinerAdderCallable>(addCubeRoot);*/
     
     AddCubeCallback* addCubeCallBack = new AddCubeCallback(*addCubeComposer);
-
-    commandRegistry->registerCommand<AddCubeCommand>();
+    addCubeCallBack->registerToCommand(*commandRegistry);
+    /*commandRegistry->registerCommand<AddCubeCommand>();
     auto* addCubeCommand = commandRegistry->getCommand<AddCubeCommand>();
 
     addCubeCommand->addObserver(addCubeCallBack);
-    addCubeCallBack->observe(addCubeCommand, addCubeCallBack);
+    addCubeCallBack->observe(addCubeCommand, addCubeCallBack);*/
+
     CubeFeature feature(addCubeComposer, addCubeCallBack);
     return feature;
 }

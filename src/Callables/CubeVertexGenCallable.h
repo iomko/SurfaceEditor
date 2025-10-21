@@ -1,9 +1,23 @@
 #pragma once
 #include "../Renderer/MaterialRegistry.h"
+#include "Callable.h"
+#include "../Callables/FunctionComposer.h"
+#include "../Params/OperationParams.h"
+#include "MeshVaoInitCallable.h"
+#include "SceneMeshAdderCallable.h"
+#include "MeshOutlinerAdderCallable.h"
+
 
 class CubeVertexGenCallable : public Callable<CubeParams, MeshParams>
 {
 public:
+	static void setupFuncionComposer(FunctionComposer& composer) 
+	{		
+		FunctionNode* addCubeRoot = composer.initRoot<CubeVertexGenCallable>();
+		composer.addFunc<MeshVaoInitCallable>(addCubeRoot);
+		composer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
+		composer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
+	}
 	void invoke(const CubeParams& input, MeshParams& output) override
 	{
 		float cubeSize = input.m_size;
