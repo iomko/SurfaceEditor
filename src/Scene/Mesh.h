@@ -4,6 +4,8 @@
 #include "Primitives/AABB.h"
 #include <limits>
 #include "../Renderer/BufferLayouts.h"
+#include <glm/gtx/matrix_decompose.hpp>
+
 
 class Mesh
 {
@@ -20,6 +22,9 @@ public:
     AABBBoundingRegion m_meshBounds;
 
     MeshBufferLayout bufferLayout;
+
+    glm::mat4 m_transform = glm::mat4(1.0f);
+
 public:
 
 	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())

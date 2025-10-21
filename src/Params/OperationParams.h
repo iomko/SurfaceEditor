@@ -40,6 +40,7 @@ struct GizmoLayerParams : public OpParams
     {
         Move,
         Rotate,
+		Scale,
         Disable
     };
  
