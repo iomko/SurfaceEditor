@@ -209,7 +209,7 @@ int main()
 	app.getLayerStack().addLayer(importExportLayer);
 
     //GizmoLayer
-    GizmoLayer gizmoLayer("GizmoLayer", camera);
+    GizmoLayer gizmoLayer("GizmoLayer");
     app.getLayerStack().addLayer(&gizmoLayer);
 
 	//importMeshesCommand
@@ -456,14 +456,14 @@ int main()
 
             for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
                 Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;
-                Renderer::drawTriangles(triangleBufferData, shader);
+                BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
+				Renderer::drawTriangles(triangleBufferData, shader, mesh);
             }
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
                 Shader* shader = it->first->m_shader;
                 BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-                Renderer::drawLines(lineBufferData, shader);
+				Renderer::drawLines(lineBufferData, shader, mesh);
             }
         }
 
