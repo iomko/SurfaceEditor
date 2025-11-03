@@ -18,7 +18,7 @@
 #include "../Core/Window.h"
 #include "../Renderer/Renderer.h"
 //#include "../Mesh.h"
-//#include "../Callables/FunctionComposer.h"
+#include "../Callables/FunctionComposer.h"
 #include "../Callbacks/BrushToolCallBack.h"
 #include "../UI/SculptToolsLayer.h"
 #include "../Scene/Mesh.h"
@@ -34,12 +34,12 @@
 
 //#include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-//#include "../Callbacks/AddPlaneCallback.h"
-//#include "../Commands/AddPlaneCommand.h"
+#include "../Callbacks/AddPlaneCallback.h"
+#include "../Commands/AddPlaneCommand.h"
 #include "../Tools/ToolRegistry.h"
-//#include "../Commands/CommandRegistry.h"
-//#include "../Commands/AddCubeCommand.h"
-//#include "../Callbacks/AddCubeCallback.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Commands/AddCubeCommand.h"
+#include "../Callbacks/AddCubeCallback.h"
 
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
@@ -76,10 +76,10 @@
 #include "../Tools/FaceSelectionTool.h"
 #include "../Tools/FaceDeselectionTool.h"
 
-//#include "../Callables/PlaneVertexGenCallable.h"
+#include "../Callables/PlaneVertexGenCallable.h"
 #include "../Callables/MeshVaoInitCallable.h"
 #include "../Callables/SceneMeshAdderCallable.h"
-//#include "../Callables/CubeVertexGenCallable.h"
+#include "../Callables/CubeVertexGenCallable.h"
 
 //ImportExportLayer
 #include "../Callbacks/ImportMeshesCallBack.h"
@@ -89,8 +89,8 @@
 #include "../Callbacks/ExportMeshesCallBack.h"
 #include "../Commands/ExportMeshesCommand.h"
 
-//#include "../Callables/FetchedSurfaceVertexGenCallable.h"
-//#include "../Callbacks/FetchSurfaceCallBack.h"
+#include "../Callables/FetchedSurfaceVertexGenCallable.h"
+#include "../Callbacks/FetchSurfaceCallBack.h"
 
 #include "../Callbacks/SolidifyMeshesCallBack.h"
 #include "../Commands/SolidifyMeshesCommand.h"
@@ -119,7 +119,6 @@
 #include "../Commands/BoxSelectionCommand.h"
 #include "../Tools/BoxSelectionTool.h"
 
-#include "bootstrap.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -142,23 +141,21 @@ int main()
 
 	//--ADD_PLANE_COMPOSER--
 
-	/*FunctionComposer addPlaneComposer;
+	FunctionComposer addPlaneComposer;
 	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<PlaneVertexGenCallable>();
 	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
 	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
     addPlaneComposer.addFunc<MeshOutlinerAdderCallable>(addPlaneRoot);
-	AddPlaneCallback addPlaneCallBack(addPlaneComposer);*/
+	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
 
 	//--ADD_CUBE_COMPOSER
 
-	std::vector<IFeature*> features = registerFeatures(commandRegistry);
-
-	/*FunctionComposer addCubeComposer;
+	FunctionComposer addCubeComposer;
 	FunctionNode* addCubeRoot = addCubeComposer.initRoot<CubeVertexGenCallable>();
 	addCubeComposer.addFunc<MeshVaoInitCallable>(addCubeRoot);
 	addCubeComposer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
     addCubeComposer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
-	AddCubeCallback addCubeCallBack(addCubeComposer);*/
+	AddCubeCallback addCubeCallBack(addCubeComposer);
 
     SolidifyMeshesCallBack solidifyMeshesCallBack;
     CreatePrintStructureCallBack createPrintStructureCallBack;
@@ -166,12 +163,12 @@ int main()
 
 
 	//---FETCH_SURFACE_COMPOSER---
-	/*FunctionComposer fetchSurfaceComposer;
+	FunctionComposer fetchSurfaceComposer;
 	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<FetchedSurfaceVertexGenCallable>();
 	fetchSurfaceComposer.addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
 	fetchSurfaceComposer.addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
     fetchSurfaceComposer.addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
-	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);*/
+	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
 
 
 	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
@@ -243,17 +240,17 @@ int main()
 	exportMeshesCommand->addObserver(&exportMeshesCallback);
 	exportMeshesCallback.observe(exportMeshesCommand, &exportMeshesCallback);
 
-	/*commandRegistry->registerCommand<AddPlaneCommand>();
+	commandRegistry->registerCommand<AddPlaneCommand>();
 	AddPlaneCommand* addPlaneCommand = commandRegistry->getCommand<AddPlaneCommand>();
 
 	addPlaneCommand->addObserver(&addPlaneCallBack);
-	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);*/
+	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
 
-	/*commandRegistry->registerCommand<AddCubeCommand>();
+	commandRegistry->registerCommand<AddCubeCommand>();
 	AddCubeCommand* addCubeCommand = commandRegistry->getCommand<AddCubeCommand>();
 
 	addCubeCommand->addObserver(&addCubeCallBack);
-	addCubeCallBack.observe(addCubeCommand, &addCubeCallBack);*/
+	addCubeCallBack.observe(addCubeCommand, &addCubeCallBack);
 
     commandRegistry->registerCommand<SolidifyMeshesCommand>();
     SolidifyMeshesCommand* solidifyMeshesCommand = commandRegistry->getCommand<SolidifyMeshesCommand>();
@@ -266,11 +263,11 @@ int main()
     createPrintCommand->addObserver(&createPrintStructureCallBack);
     createPrintStructureCallBack.observe(createPrintCommand, &createPrintStructureCallBack);
 
-	/*commandRegistry->registerCommand<FetchSurfaceCommand>();
+	commandRegistry->registerCommand<FetchSurfaceCommand>();
 	FetchSurfaceCommand* fetchSurfaceCommand = commandRegistry->getCommand<FetchSurfaceCommand>();
 
 	fetchSurfaceCommand->addObserver(&fetchSurfaceCallBack);
-	fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);*/
+	fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);
 
 	SelectMeshCallBack selectMeshCallBack;
 	commandRegistry->registerCommand<SelectMeshCommand>();
@@ -498,8 +495,5 @@ int main()
 	}
 
 	app.close();
-	for (IFeature* feature : features) {
-		delete feature;
-	}
 	return 0;
 }
