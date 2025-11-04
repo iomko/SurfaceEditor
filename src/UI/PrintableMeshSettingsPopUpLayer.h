@@ -1,11 +1,9 @@
 #pragma once
 #include <string>
-#include "Commands/CreatePrintCommand.h"
 #include "imgui.h"
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/FetchSurfaceCommand.h"
 #include "OutlinerLayer.h"
 
 struct PrintableMeshSettingsPopUpLayerState : LayerState {
@@ -19,8 +17,8 @@ struct PrintableMeshSettingsPopUpLayerState : LayerState {
 
 class PrintableMeshSettingsPopUpLayer : public Layer, public Observable, public Observer {
 public:
-    PrintableMeshSettingsPopUpLayer(const std::string& name, CommandRegistry& commandRegistry, WindowLayerBus& windowLayerBus)
-        : Layer(name), m_commandRegistry(commandRegistry) {
+    PrintableMeshSettingsPopUpLayer(const std::string& name, WindowLayerBus& windowLayerBus)
+        : Layer(name) {
             windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState& outlinerLayerState){
                 if(OutlinerNode<PrintableMesh*>* node = dynamic_cast<OutlinerNode<PrintableMesh*>*>(outlinerLayerState.m_currentSelectedNode)) {
                     m_state.m_selectedPrintableMesh = node->m_data;
@@ -63,7 +61,7 @@ public:
             if (ImGui::IsItemDeactivatedAfterEdit()) {
                 // This triggers when the user presses Enter OR when the field loses focus.
                 m_state.m_selectedPrintableMesh->removeAllLevelLayers();
-                CreatePrintCommand* printCommand = m_commandRegistry.getCommand<CreatePrintCommand>();
+                auto* printCommand = CommandRegistry::instance().getCommand("CreatePrint");
                 PrintMeshSettingsParams printMeshSettingsParams;
                 printMeshSettingsParams.height = m_state.m_layerHeight;
                 printMeshSettingsParams.mesh = m_state.m_selectedMesh;
@@ -76,5 +74,4 @@ public:
 
 private:
     PrintableMeshSettingsPopUpLayerState m_state;
-    CommandRegistry& m_commandRegistry;
 };

@@ -4,15 +4,12 @@
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/FetchSurfaceCommand.h"
-#include "../Commands/AddPlaneCommand.h"
-#include "../Commands/AddCubeCommand.h"
 
 
 class AdditionLayer : public Layer, public Observable, public Observer {
 public:
-    AdditionLayer(const std::string& name, CommandRegistry& commandRegistry)
-        : Layer(name), m_commandRegistry(commandRegistry) {}
+    AdditionLayer(const std::string& name)
+        : Layer(name) {}
 
     void onEvent(Event& event) override
     {
@@ -36,81 +33,72 @@ public:
 
 		if (ImGui::TreeNode("Add")) {
 			if (ImGui::TreeNode("Mesh")) {
-				if (m_commandRegistry.hasCommand(typeid(AddPlaneCommand)))
+				if (ImGui::TreeNode("TriangulatedPlane"))
 				{
-					if (ImGui::TreeNode("TriangulatedPlane")) {
-						ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
-						ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
+					ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
+					ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
 
-						if (ImGui::Button("AddToScene")) {
-							AddPlaneCommand* addPlaneCommand = m_commandRegistry.getCommand<AddPlaneCommand>();
-
-							PlaneParams addPlaneCommandParams;
-							addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
-							addPlaneCommandParams.m_size = m_size;
-							addPlaneCommand->execute(addPlaneCommandParams);
-						}
-
-						ImGui::TreePop();
-					}
-				}
-				if (m_commandRegistry.hasCommand(typeid(AddCubeCommand)))
-				{
-					if (ImGui::TreeNode("Cube"))
+					if (ImGui::Button("AddToScene"))
 					{
-						ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
-						ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
-						
-						ImGui::InputInt3("Position", glm::value_ptr(m_position));					
-						if (ImGui::Button("AddToScene")) 
-						{
-							AddCubeCommand* addCubeCommand = m_commandRegistry.getCommand<AddCubeCommand>();
+						auto *addPlaneCommand = CommandRegistry::instance().getCommand("AddPlane");
 
-							CubeParams addCubeParams;
-							addCubeParams.m_size = m_size;
-							addCubeParams.m_subdivisionLevel = m_subdivision;
-							addCubeParams.m_position = glm::vec3(m_position);		
-							addCubeCommand->execute(addCubeParams);
-						}
-						ImGui::TreePop();
-					}
-				}				
-
-				ImGui::TreePop();
-			}
-
-			if(m_commandRegistry.hasCommand(typeid(FetchSurfaceCommand))) 
-			{
-				if (ImGui::TreeNode("Fetch Surface Data (OpenTopography)")) {
-		
-					ImGui::Text("Lower-left corner:");
-					ImGui::InputFloat("Lon LL", &m_lowerLeftLon);
-					ImGui::InputFloat("Lat LL", &m_lowerLeftLat);
-
-					ImGui::Text("Upper-right corner:");
-					ImGui::InputFloat("Lon UR", &m_upperRightLon);
-					ImGui::InputFloat("Lat UR", &m_upperRightLat);
-
-			
-					ImGui::InputText("API Key", m_apiKeyBuffer, IM_ARRAYSIZE(m_apiKeyBuffer));
-
-				
-					if (ImGui::Button("Fetch and Add to Scene")) {
-
-						OpenTopoParams params;
-						params.m_lowerLeftLon = m_lowerLeftLon;
-						params.m_lowerLeftLat = m_lowerLeftLat;
-						params.m_upperRightLon = m_upperRightLon;
-						params.m_upperRightLat = m_upperRightLat;
-						params.m_apiKey = std::string(m_apiKeyBuffer);
-
-					
-						FetchSurfaceCommand* fetchCommand = m_commandRegistry.getCommand<FetchSurfaceCommand>();
-						fetchCommand->execute(params);
+						PlaneParams addPlaneCommandParams;
+						addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
+						addPlaneCommandParams.m_size = m_size;
+						addPlaneCommand->execute(addPlaneCommandParams);
 					}
 
 					ImGui::TreePop();
 				}
+				if (ImGui::TreeNode("Cube"))
+				{
+					ImGui::SliderInt("Subdivision", &m_subdivision, 1, 300);
+					ImGui::SliderFloat("Size", &m_size, 1.0f, 1000.0f, "%.0f");
+
+					ImGui::InputInt3("Position", glm::value_ptr(m_position));
+					if (ImGui::Button("AddToScene"))
+					{
+						auto *addCubeCommand = CommandRegistry::instance().getCommand("AddCube");
+
+						CubeParams addCubeParams;
+						addCubeParams.m_size = m_size;
+						addCubeParams.m_subdivisionLevel = m_subdivision;
+						addCubeParams.m_position = glm::vec3(m_position);
+						addCubeCommand->execute(addCubeParams);
+					}
+					ImGui::TreePop();
+				}
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("Fetch Surface Data (OpenTopography)"))
+			{
+				ImGui::Text("Lower-left corner:");
+				ImGui::InputFloat("Lon LL", &m_lowerLeftLon);
+				ImGui::InputFloat("Lat LL", &m_lowerLeftLat);
+
+				ImGui::Text("Upper-right corner:");
+				ImGui::InputFloat("Lon UR", &m_upperRightLon);
+				ImGui::InputFloat("Lat UR", &m_upperRightLat);
+
+				ImGui::InputText("API Key", m_apiKeyBuffer, IM_ARRAYSIZE(m_apiKeyBuffer));
+
+				if (ImGui::Button("Fetch and Add to Scene"))
+				{
+
+					OpenTopoParams params;
+					params.m_lowerLeftLon = m_lowerLeftLon;
+					params.m_lowerLeftLat = m_lowerLeftLat;
+					params.m_upperRightLon = m_upperRightLon;
+					params.m_upperRightLat = m_upperRightLat;
+					params.m_apiKey = std::string(m_apiKeyBuffer);
+
+					auto* fetchCommand = CommandRegistry::instance().getCommand("FetchSurface");
+					fetchCommand->execute(params);
+				}
+
+				ImGui::TreePop();
 			}
 			ImGui::TreePop();
 		}
@@ -119,7 +107,6 @@ public:
 	}
 
 private:
-	CommandRegistry& m_commandRegistry;
 
 	float m_lowerLeftLon = 0.0f;
 	float m_lowerLeftLat = 0.0f;

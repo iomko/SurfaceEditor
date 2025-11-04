@@ -1,5 +1,4 @@
 #pragma once
-#include "../Commands/DeleteFaceCommand.h"
 #include "../Params/OperationParams.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Utils/ContainerUtils.h"
@@ -8,7 +7,7 @@
 class DeleteSelectedFacesCallBack : public Callback<>, public Observer
 {
 public:
-    DeleteSelectedFacesCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {} 
+    DeleteSelectedFacesCallBack() {} 
 
 	void execute() override
 	{
@@ -31,8 +30,8 @@ public:
                 singleFaceParams.mesh = selectedMesh;
                 singleFaceParams.face = selectedFace;
 
-                DeleteFaceCommand* deleteFaceCommand = m_commandRegistry->getCommand<DeleteFaceCommand>(); 
-                deleteFaceCommand->execute(singleFaceParams);
+                auto* deleteFaceCommand = CommandRegistry::instance().getCommand("DeleteFace"); 
+                if(deleteFaceCommand) deleteFaceCommand->execute(singleFaceParams);
 
 		        //Delete face/mesh from selection	
 				if(selectedMesh->m_halfEdgeStructure->m_faces.empty())
@@ -49,6 +48,4 @@ public:
 	}
 
 private:
-
-    CommandRegistry* m_commandRegistry = nullptr;
 };

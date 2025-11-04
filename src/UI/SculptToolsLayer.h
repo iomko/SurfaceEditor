@@ -4,7 +4,6 @@
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/FetchSurfaceCommand.h"
 #include "../ViewPortsController.h"
 #include "../Tools/ToolRegistry.h"
 #include "../Tools/BrushTool.h"

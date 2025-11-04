@@ -4,13 +4,11 @@
 #include "../Utils/GeometryUtils.h"
 #include "MoveVertexCallBack.h"
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/MoveVertexCommand.h"
-#include "../Commands/CommandRegistry.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
 public:
-    BrushToolCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
+    BrushToolCallBack() {}
 
 	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
 	{
@@ -55,7 +53,7 @@ public:
                 vertexParams.mesh = closestMesh;
                 vertexParams.vertex = vertex;
 
-                MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
+                auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
                 moveVertexCommand->execute(vertexParams);
 			}
 
@@ -164,5 +162,4 @@ private:
 		return closestVertex;
 	}
 
-    CommandRegistry* m_commandRegistry = nullptr;
 };

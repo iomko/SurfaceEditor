@@ -6,7 +6,6 @@
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/FetchSurfaceCommand.h"
 #include <map>
 
 

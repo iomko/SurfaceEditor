@@ -13,8 +13,7 @@ public:
 		Face,
 		Edge,
 		Vertex,
-		Object, 
-		BoxSelection
+		Object
 	};
 
 	enum Type {

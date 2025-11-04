@@ -86,8 +86,3 @@ target_include_directories(SurfaceEditor PRIVATE
     "${PROJECT_SOURCE_DIR}/src"
     ${ImGuizmo_SOURCE_DIR}
 )
-
-option(ENABLE_ADD_PLANE "Enable add plane feature" ON)
-if(ENABLE_ADD_PLANE)
-    add_compile_definitions(ENABLE_ADD_PLANE)
-endif()

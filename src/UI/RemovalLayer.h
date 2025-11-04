@@ -4,14 +4,12 @@
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/DeleteSelectedFacesCommand.h"
-#include "../Commands/DeleteSelectedMeshesCommand.h"
 
 class RemovalLayer : public Layer, public Observable, public Observer {
 public:
-	RemovalLayer(const std::string& name, CommandRegistry& commandRegistry)
-		: Layer(name), m_commandRegistry(commandRegistry) {}
-
+	RemovalLayer(const std::string& name)
+		: Layer(name) {}
+CommandRegistry::instance().getCommand("DeleteSelectedFaces")
 	void onEvent(Event& event) override
 	{
 		if (event.getType() == EventType::MouseButtonPress)
@@ -35,12 +33,12 @@ public:
 			mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
 		if (ImGui::Button("Delete Selected Faces")) {
-			DeleteSelectedFacesCommand* deleteSelectedFacesCommand = m_commandRegistry.getCommand<DeleteSelectedFacesCommand>();
+			auto* deleteSelectedFacesCommand = CommandRegistry::instance().getCommand("DeleteSelectedFaces");
 			deleteSelectedFacesCommand->execute();
 		}
 
 		if (ImGui::Button("Delete Selected Meshes")) {
-			DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = m_commandRegistry.getCommand<DeleteSelectedMeshesCommand>();
+			auto* deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand("DeleteSelectedMeshes");
 			deleteSelectedMeshesCommand->execute();
 		}
 
@@ -48,7 +46,6 @@ public:
 	}
 
 private:
-	CommandRegistry& m_commandRegistry;
 
 	bool m_isMouseInsideWindow;
 };

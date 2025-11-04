@@ -5,13 +5,12 @@
 #include "../Utils/GeometryUtils.h"
 #include "../Renderer/MaterialRegistry.h"
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/MoveVertexCommand.h"
 
 
 class MoveSelectedFacesCallBack : public Callback<MoveSelectedFacesParams>, public Observer
 {
 public:
-    MoveSelectedFacesCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
+    MoveSelectedFacesCallBack() {}
 
 	void execute(const MoveSelectedFacesParams& iParams) override
 	{
@@ -46,16 +45,13 @@ public:
                 vertexParams.vertex = vertex;
                 vertexParams.newPosition = vertex->m_position + moveByVector;
 
-                MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
-                moveVertexCommand->execute(vertexParams);
+                auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
+                if(moveVertexCommand) moveVertexCommand->execute(vertexParams);
             }
-
-
             selectedMesh->calculateMeshBounds();
 		}
 
     }
 
 private:
-    CommandRegistry* m_commandRegistry = nullptr;
 };

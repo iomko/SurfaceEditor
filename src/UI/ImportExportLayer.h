@@ -2,14 +2,12 @@
 #include "../Core/Layer.h"
 #include "imgui.h" 
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/ImportMeshesCommand.h"
-#include "../Commands/ExportMeshesCommand.h"
 
 class ImportExportLayer : public Layer, public Observable
 {
 public:
-    ImportExportLayer(const std::string& name, CommandRegistry& commandRegistry)
-        : Layer(name), m_commandRegistry(commandRegistry) {}
+    ImportExportLayer(const std::string& name)
+        : Layer(name) {}
 
 	void onEvent(Event& event) override
 	{
@@ -47,7 +45,7 @@ public:
         if (importClicked && !filePath.empty()) {
             /* 
             std::cout << "filePath: " << filePath << std::endl;
-            ImportMeshesCommand* importMeshesCommand = m_commandRegistry.getCommand<ImportMeshesCommand>();
+            auto* importMeshesCommand = CommandRegistry::instance().getCommand("ImportMeshes");
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
@@ -67,7 +65,7 @@ public:
         if (exportClicked && !filePath.empty()) {
             /*
             std::cout << "filePath: " << filePath << std::endl;
-            ExportMeshesCommand* exportMeshesCommand = m_commandRegistry.getCommand<ExportMeshesCommand>();
+            auto* exportMeshesCommand = CommandRegistry::instance().getCommand("ExportMeshes");
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
@@ -78,8 +76,6 @@ public:
         ImGui::End();
     }
 
-private:
-    CommandRegistry& m_commandRegistry;
-    
+private:    
     bool m_isMouseInsideWindow = false;
 };

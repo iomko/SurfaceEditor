@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../Params/OperationParams.h"
+#include "../Patterns/Observer.h"
 
-struct CommandConcept {
+struct CommandConcept :public Observable{
 	virtual ~CommandConcept() = default;
 	virtual void execute() = 0;
 	virtual void execute(const OpParams& iParams) = 0;

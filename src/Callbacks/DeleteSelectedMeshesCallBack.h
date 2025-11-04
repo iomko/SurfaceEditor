@@ -1,12 +1,11 @@
 #pragma once
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/DeleteMeshCommand.h"
 
 
 class DeleteSelectedMeshesCallBack : public Callback<>, public Observer
 {
 public:
-    DeleteSelectedMeshesCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
+    DeleteSelectedMeshesCallBack() {}
 
 	void execute() override
 	{
@@ -20,14 +19,12 @@ public:
             MeshParams meshParams;
             meshParams.m_mesh = mesh;
 
-            DeleteMeshCommand* deleteMeshCommand = m_commandRegistry->getCommand<DeleteMeshCommand>();
-            deleteMeshCommand->execute(meshParams); 
+            auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DeleteMesh");
+            if(deleteMeshCommand) deleteMeshCommand->execute(meshParams); 
 
 			ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
 		}
 	}
 
 private:
-    
-    CommandRegistry* m_commandRegistry = nullptr;
 };
