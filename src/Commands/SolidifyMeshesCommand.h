@@ -5,13 +5,7 @@
 class SolidifyMeshesCommand : public Command<>, public Observable
 {
 public:
-	virtual void execute() override
-	{
-		notifyObservers();
-	}
+	virtual void execute() override;
 
-	void undo() override
-	{
-		
-	}
+	void undo() override;
 };

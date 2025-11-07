@@ -1,12 +1,11 @@
 #pragma once
-#include "../Commands/DeselectFaceCommand.h"
 #include "../Tools/DeselectionHandler.h"
 #include "Tool.h"
 
-class FaceDeselectionTool : public Tool<DeselectFaceCommand, DeselectionHandler<DeselectFaceCommand>>
+class FaceDeselectionTool : public Tool<CommandConcept, DeselectionHandler<CommandConcept>>
 {
 public:
-	FaceDeselectionTool(DeselectFaceCommand* command)
+	FaceDeselectionTool(CommandConcept* command)
 		: Tool(command)
 	{
 	}

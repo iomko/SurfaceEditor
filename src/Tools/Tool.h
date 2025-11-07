@@ -18,10 +18,10 @@ private:
 	InteractionHandlerConcept* m_interactionHandler = nullptr;
 };
 
-template<typename CommandT, typename InteractionHandlerT>
+template<typename CommandConcept, typename InteractionHandlerT>
 class Tool : public ITool
 {
 public:
-	Tool(CommandT* command)
+	Tool(CommandConcept* command)
 		: ITool(new InteractionHandlerT(command)) {}
 };

@@ -1,4 +1,5 @@
-﻿#include "Callbacks/CreatePrintStructureCallBack.h"
+﻿//#include "../Callbacks/Callback.h"
+#include "Callbacks/CreatePrintStructureCallBack.h"
 #include "UI/ModifiersLayer.h"
 #include "UI/PrintableMeshSettingsPopUpLayer.h"
 #define NOMINMAX  // Prevents Windows.h from defining min/max macros
@@ -195,151 +196,168 @@ int main()
 
 	ImportMeshesCallback importMeshesCallback;
 	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
-
-	importMeshesCommand->addObserver(&importMeshesCallback);
-
-	//importMeshesCommand->addObserver(&importMeshesCallBack);	
-	importMeshesCallback.observe(CommandRegistry::instance().getCommand("ImportMeshes"), &importMeshesCallback);
-	//importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
+	
+	auto* importMeshesCommand = CommandRegistry::instance().getCommand("ImportMeshes");
+	auto* observableImportMeshes = dynamic_cast<Observable*>(importMeshesCommand);
+	if(observableImportMeshes)
+	{
+		observableImportMeshes->addObserver(&importMeshesCallback);
+		importMeshesCallback.observe(observableImportMeshes, &importMeshesCallback);
+	}
 
 	ExportMeshesCallback exportMeshesCallback;
 	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
-
-	exportMeshesCommand->addObserver(&exportMeshesCallback);
-	exportMeshesCallback.observe(CommandRegistry::instance().getCommand("ExportMeshes"), &exportMeshesCallback);
+	auto* exportMeshesCommand = CommandRegistry::instance().getCommand("ExportMeshes");
+	auto* observableExportMeshes = dynamic_cast<Observable*>(exportMeshesCommand);
+	if(observableExportMeshes)
+	{
+		observableExportMeshes->addObserver(&exportMeshesCallback);
+		exportMeshesCallback.observe(observableExportMeshes, &exportMeshesCallback);
+	}
 
 	auto* addPlaneCommand = CommandRegistry::instance().getCommand("AddPlane");
-
-	if(addPlaneCommand) 
+	auto* observableAddPlane = dynamic_cast<Observable*>(addPlaneCommand);
+	if(observableAddPlane) 
 	{
-		addPlaneCommand->addObserver(&addPlaneCallBack);
-		addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+		observableAddPlane->addObserver(&addPlaneCallBack);
+		addPlaneCallBack.observe(observableAddPlane, &addPlaneCallBack);
 	}
 	auto* addCubeCommand = CommandRegistry::instance().getCommand("AddCube");
-
-	if(addCubeCommand) 
+	auto* observableAddCube = dynamic_cast<Observable*>(addCubeCommand);
+	if(observableAddCube) 
 	{
-		addCubeCommand->addObserver(&addCubeCallBack);
-		addCubeCallBack.observe(addCubeCommand, &addCubeCallBack);
+		observableAddCube->addObserver(&addCubeCallBack);
+		addCubeCallBack.observe(observableAddCube, &addCubeCallBack);
 	}
 
     auto* solidifyMeshesCommand = CommandRegistry::instance().getCommand("SolidifyMeshes");
-
-    if(solidifyMeshesCommand)
+	auto* observableSolidifyMeshes = dynamic_cast<Observable*>(solidifyMeshesCommand);
+    if(observableSolidifyMeshes)
 	{
-		solidifyMeshesCommand->addObserver(&solidifyMeshesCallBack);
-		solidifyMeshesCallBack.observe(solidifyMeshesCommand, &solidifyMeshesCallBack);
+		observableSolidifyMeshes->addObserver(&solidifyMeshesCallBack);
+		solidifyMeshesCallBack.observe(observableSolidifyMeshes, &solidifyMeshesCallBack);
 	} 
     auto* createPrintCommand = CommandRegistry::instance().getCommand("CreatePrint");
-    if(createPrintCommand) 
+    auto* observableCreatePrint = dynamic_cast<Observable*>(createPrintCommand);
+	if(observableCreatePrint) 
 	{
-		createPrintCommand->addObserver(&createPrintStructureCallBack);
-    	createPrintStructureCallBack.observe(createPrintCommand, &createPrintStructureCallBack);
+		observableCreatePrint->addObserver(&createPrintStructureCallBack);
+    	createPrintStructureCallBack.observe(observableCreatePrint, &createPrintStructureCallBack);
 	}
 	auto* fetchSurfaceCommand = CommandRegistry::instance().getCommand("FetchSurface");
-
-	if(fetchSurfaceCommand) 
+	auto* observableFetchSurface = dynamic_cast<Observable*>(fetchSurfaceCommand);
+	if(observableFetchSurface) 
 	{
-		fetchSurfaceCommand->addObserver(&fetchSurfaceCallBack);
-		fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);
+		observableFetchSurface->addObserver(&fetchSurfaceCallBack);
+		fetchSurfaceCallBack.observe(observableFetchSurface, &fetchSurfaceCallBack);
 	}
 
 	SelectMeshCallBack selectMeshCallBack;
 	auto* selectMeshCommand = CommandRegistry::instance().getCommand("SelectMesh");
-
-	if(selectMeshCommand)
+	auto* observableSelectMesh = dynamic_cast<Observable*>(selectMeshCommand);
+	if(observableSelectMesh)
 	{
 		ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand);
 
 		ToolRegistry::getTool<MeshSelectionTool>();
 
-		selectMeshCommand->addObserver(&selectMeshCallBack);
-		selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
+		observableSelectMesh->addObserver(&selectMeshCallBack);
+		selectMeshCallBack.observe(observableSelectMesh, &selectMeshCallBack);
 	} 
 	
-	BrushToolCallBack brushToolCallBack();
+	BrushToolCallBack brushToolCallBack = BrushToolCallBack();//();
 	auto* brushToolCommand = CommandRegistry::instance().getCommand("BrushTool");
-	if(brushToolCommand)
+	auto* observableBrushToolCommand = dynamic_cast<Observable*>(brushToolCommand);
+	if(observableBrushToolCommand)
 	{
-		brushToolCommand->addObserver(&brushToolCallBack);
-		brushToolCallBack.observe(brushToolCommand, &brushToolCallBack);
+		observableBrushToolCommand->addObserver(&brushToolCallBack);
+		brushToolCallBack.observe(observableBrushToolCommand, &brushToolCallBack);
 
 		//ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
 		ToolRegistry::registerTool<BrushTool>(brushToolCommand);
 	}
 	DeselectMeshCallBack deselectMeshCallBack;
 	auto* deselectMeshCommand = CommandRegistry::instance().getCommand("DeselectMesh");
-	if(deselectMeshCommand)
+	auto observableDeselectMesh = dynamic_cast<Observable*>(deselectMeshCommand);
+	if(observableDeselectMesh)
 	{
 		ToolRegistry::registerTool<MeshDeselectionTool>(deselectMeshCommand);
 
-		deselectMeshCommand->addObserver(&deselectMeshCallBack);
-		deselectMeshCallBack.observe(deselectMeshCommand, &deselectMeshCallBack);
+		observableDeselectMesh->addObserver(&deselectMeshCallBack);
+		deselectMeshCallBack.observe(observableDeselectMesh, &deselectMeshCallBack);
 	}
 	SelectFaceCallBack selectFaceCallBack;
 	auto* selectFaceCommand = CommandRegistry::instance().getCommand("SelectFace");
-	if(selectFaceCommand)
+	auto* observableSelectFace = dynamic_cast<Observable*>(selectFaceCommand);
+	if(observableSelectFace)
 	{
-		selectFaceCommand->addObserver(&selectFaceCallBack);
-		selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);	
+		observableSelectFace->addObserver(&selectFaceCallBack);
+		selectFaceCallBack.observe(observableSelectFace, &selectFaceCallBack);	
 
 		ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
 	}
 
     MoveVertexCallBack moveVertexCallBack;
 	auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
-	if(moveVertexCommand)
+	auto* observableMoveVertex = dynamic_cast<Observable*>(moveVertexCommand);
+	if(observableMoveVertex)
 	{
-		moveVertexCommand->addObserver(&moveVertexCallBack);
-		moveVertexCallBack.observe(moveVertexCommand, &moveVertexCallBack);
+		observableMoveVertex->addObserver(&moveVertexCallBack);
+		moveVertexCallBack.observe(observableMoveVertex, &moveVertexCallBack);
 	}
 
-    MoveSelectedFacesCallBack moveSelectedFacesCallBack();
+    MoveSelectedFacesCallBack moveSelectedFacesCallBack = MoveSelectedFacesCallBack();//();
 	auto* moveSelectedFacesCommand = CommandRegistry::instance().getCommand("MoveSelectedFace");
-	if(moveSelectedFacesCommand)
+	auto* observableMoveSelectedFaces = dynamic_cast<Observable*>(moveSelectedFacesCommand);
+	if(observableMoveSelectedFaces)
 	{
-		moveSelectedFacesCommand->addObserver(&moveSelectedFacesCallBack);
-		moveSelectedFacesCallBack.observe(moveSelectedFacesCommand, &moveSelectedFacesCallBack);
+		observableMoveSelectedFaces->addObserver(&moveSelectedFacesCallBack);
+		moveSelectedFacesCallBack.observe(observableMoveSelectedFaces, &moveSelectedFacesCallBack);
 	}
 	DeselectFaceCallBack deselectFaceCallBack;
 	auto* deselectFaceCommand = CommandRegistry::instance().getCommand("DeselectFace");
-	if(deselectFaceCommand)
+	auto* observableDeselectFace = dynamic_cast<Observable*>(deselectFaceCommand);
+	if(observableDeselectFace)
 	{
-		deselectFaceCommand->addObserver(&deselectFaceCallBack);
-		deselectFaceCallBack.observe(deselectFaceCommand, &deselectFaceCallBack);
+		observableDeselectFace->addObserver(&deselectFaceCallBack);
+		deselectFaceCallBack.observe(observableDeselectFace, &deselectFaceCallBack);
 
 		ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
 	}
 	DeleteFaceCallBack deleteFaceCallBack;
 	auto* deleteFaceCommand = CommandRegistry::instance().getCommand("DeleteFace");
-	if(deleteFaceCommand)
+	auto* observableDeleteFace = dynamic_cast<Observable*>(deleteFaceCommand);
+	if(observableDeleteFace)
 	{
-		deleteFaceCommand->addObserver(&deleteFaceCallBack);
-		deleteFaceCallBack.observe(deleteFaceCommand, &deleteFaceCallBack);
+		observableDeleteFace->addObserver(&deleteFaceCallBack);
+		deleteFaceCallBack.observe(observableDeleteFace, &deleteFaceCallBack);
 	}
 
-	DeleteMeshCallBack deleteMeshCallBack(commandRegistry);
+	DeleteMeshCallBack deleteMeshCallBack = DeleteMeshCallBack();
 	auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DeleteMesh");
-	if(deleteMeshCommand)
+	auto* observableDeleteMesh = dynamic_cast<Observable*>(deleteMeshCommand);
+	if(observableDeleteMesh)
 	{
-		deleteMeshCommand->addObserver(&deleteMeshCallBack);
-		deleteMeshCallBack.observe(deleteMeshCommand, &deleteMeshCallBack);
+		observableDeleteMesh->addObserver(&deleteMeshCallBack);
+		deleteMeshCallBack.observe(observableDeleteMesh, &deleteMeshCallBack);
 	}
 
-	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack(commandRegistry);
+	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack = DeleteSelectedFacesCallBack();
 	auto* deleteSelectedFacesCommand = CommandRegistry::instance().getCommand("DeleteSelectedFaces");
-	if(deleteSelectedFacesCommand)
+	auto* observableDeleteSelectedFaces = dynamic_cast<Observable*>(deleteSelectedFacesCommand);
+	if(observableDeleteSelectedFaces)
 	{
-		deleteSelectedFacesCommand->addObserver(&deleteSelectedFacesCallBack);
-		deleteSelectedFacesCallBack.observe(deleteSelectedFacesCommand, &deleteSelectedFacesCallBack);
+		observableDeleteSelectedFaces->addObserver(&deleteSelectedFacesCallBack);
+		deleteSelectedFacesCallBack.observe(observableDeleteSelectedFaces, &deleteSelectedFacesCallBack);
 	}
 	
-	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack(commandRegistry);
+	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack = DeleteSelectedMeshesCallBack();
 	auto* deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand("DeleteSelectedMeshes");
-	if(deleteSelectedMeshesCommand)
+	auto* observableDeleteSelectedMeshes = dynamic_cast<Observable*>(deleteSelectedMeshesCommand);
+	if(observableDeleteSelectedMeshes)
 	{
-		deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
-		deleteSelectedMeshesCallBack.observe(deleteSelectedMeshesCommand, &deleteSelectedMeshesCallBack);
+		observableDeleteSelectedMeshes->addObserver(&deleteSelectedMeshesCallBack);
+		deleteSelectedMeshesCallBack.observe(observableDeleteSelectedMeshes, &deleteSelectedMeshesCallBack);
 	}
 	
 	SelectionLayer selectionLayer("SelectionLayer");

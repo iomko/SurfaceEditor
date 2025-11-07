@@ -17,13 +17,13 @@ public:
 	virtual CommandConcept* getCommand() const { return nullptr; }
 };
 
-template <typename CommandT, typename IParams = OpParams>
+template <typename CommandConcpet, typename IParams = OpParams>
 class InteractionHandler;
 
-template <typename CommandT>
-class InteractionHandler<CommandT, OpParams> : public InteractionHandlerConcept {
+template <typename CommandConcept>
+class InteractionHandler<CommandConcept, OpParams> : public InteractionHandlerConcept {
 public:
-	explicit InteractionHandler(CommandT* command) : m_command(command) {}
+	explicit InteractionHandler(CommandConcept* command) : m_command(command) {}
 
 	virtual void onBegin() override = 0;
 	virtual void onUpdate() override = 0;
@@ -39,19 +39,19 @@ public:
 		throw std::logic_error("onEnd with params not supported.");
 	}
 
-	CommandT* getCommand() const override {
-		return static_cast<CommandT*>(m_command);
+	CommandConcept* getCommand() const override {
+		return static_cast<CommandConcept*>(m_command);
 	}
 
 private:
-	CommandT* m_command;
+	CommandConcept* m_command;
 };
 
 
-template <typename CommandT, typename IParams>
+template <typename CommandConcept, typename IParams>
 class InteractionHandler : public InteractionHandlerConcept {
 public:
-	explicit InteractionHandler(CommandT* command) : m_command(command) {}
+	explicit InteractionHandler(CommandConcept* command) : m_command(command) {}
 
 	virtual void onBegin(const IParams&) = 0;
 	virtual void onUpdate(const IParams&) = 0;
@@ -77,10 +77,10 @@ public:
 		throw std::logic_error("onEnd without params not supported.");
 	}
 
-	CommandT* getCommand() const override {
-		return static_cast<CommandT*>(m_command);
+	CommandConcept* getCommand() const override {
+		return static_cast<CommandConcept*>(m_command);
 	}
 
 private:
-	CommandT* m_command;
+	CommandConcept* m_command;
 };

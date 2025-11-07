@@ -1,11 +1,11 @@
 #pragma once
-#include "../Commands/DeselectMeshCommand.h"
+#include "../Patterns/Command.h"
 #include "../Tools/DeselectionHandler.h"
 
-class MeshDeselectionTool : public Tool<DeselectMeshCommand, DeselectionHandler<DeselectMeshCommand>>
+class MeshDeselectionTool : public Tool<CommandConcept, DeselectionHandler<CommandConcept>>
 {
 public:
-	MeshDeselectionTool(DeselectMeshCommand* command)
+	MeshDeselectionTool(CommandConcept* command)
 		: Tool(command)
 	{
 	}

@@ -1,11 +1,11 @@
 #pragma once
-#include "../Commands/SelectFaceCommand.h"
+#include "../Patterns/Command.h"
 #include "../Tools/SelectionHandler.h"
 
-class FaceSelectionTool : public Tool<SelectFaceCommand, SelectionHandler<SelectFaceCommand>>
+class FaceSelectionTool : public Tool<CommandConcept, SelectionHandler<CommandConcept>>
 {
 public:
-	FaceSelectionTool(SelectFaceCommand* command)
+	FaceSelectionTool(CommandConcept* command)
 		: Tool(command)
 	{
 	}

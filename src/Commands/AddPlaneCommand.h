@@ -8,4 +8,4 @@ public:
 	virtual void execute(const PlaneParams& params) override;
 
 	void undo() override;
-};
+};			

@@ -9,7 +9,6 @@ class RemovalLayer : public Layer, public Observable, public Observer {
 public:
 	RemovalLayer(const std::string& name)
 		: Layer(name) {}
-CommandRegistry::instance().getCommand("DeleteSelectedFaces")
 	void onEvent(Event& event) override
 	{
 		if (event.getType() == EventType::MouseButtonPress)
