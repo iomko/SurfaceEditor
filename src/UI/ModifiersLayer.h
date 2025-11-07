@@ -49,7 +49,7 @@ public:
 
         if (ImGui::Button("Solidify")){
             auto* solidifyMeshesCommand = CommandRegistry::instance().getCommand("SolidifyMeshes");
-            solidifyMeshesCommand->execute(); 
+            if(solidifyMeshesCommand) solidifyMeshesCommand->execute(); 
         }
 
         if (ImGui::Button("CreatePrint")){
@@ -58,7 +58,7 @@ public:
                 PrintMeshSettingsParams printMeshSettingsParams;
                 printMeshSettingsParams.mesh = m_state.m_selectedMesh;
                 printMeshSettingsParams.height = 1.0f;
-                createPrintCommand->execute(printMeshSettingsParams);
+                if(createPrintCommand) createPrintCommand->execute(printMeshSettingsParams);
             }
         }
 

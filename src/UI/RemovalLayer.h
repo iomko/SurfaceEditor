@@ -33,12 +33,12 @@ public:
 
 		if (ImGui::Button("Delete Selected Faces")) {
 			auto* deleteSelectedFacesCommand = CommandRegistry::instance().getCommand("DeleteSelectedFaces");
-			deleteSelectedFacesCommand->execute();
+			if(deleteSelectedFacesCommand) deleteSelectedFacesCommand->execute();
 		}
 
 		if (ImGui::Button("Delete Selected Meshes")) {
 			auto* deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand("DeleteSelectedMeshes");
-			deleteSelectedMeshesCommand->execute();
+			if(deleteSelectedMeshesCommand) deleteSelectedMeshesCommand->execute();
 		}
 
 		ImGui::End();

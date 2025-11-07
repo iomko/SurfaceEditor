@@ -78,6 +78,11 @@ FetchContent_MakeAvailable(ImGuizmo)
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+
+# Až potom include commandov
+include("${PROJECT_SOURCE_DIR}/src/Commands/CMakeLists.txt")
+
+# Teraz vytvor executable
 add_executable(SurfaceEditor ${SRC_FILES})
 
 target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)

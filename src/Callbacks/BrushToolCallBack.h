@@ -54,7 +54,7 @@ public:
                 vertexParams.vertex = vertex;
 
                 auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
-                moveVertexCommand->execute(vertexParams);
+                if(moveVertexCommand) moveVertexCommand->execute(vertexParams);
 			}
 
 		}

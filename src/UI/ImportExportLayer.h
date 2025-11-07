@@ -49,7 +49,7 @@ public:
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
-            importMeshesCommand->execute(importExportMeshesParams);
+            if(importMeshesCommand) importMeshesCommand->execute(importExportMeshesParams);
             */
         }
 
@@ -69,7 +69,7 @@ public:
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
-            exportMeshesCommand->execute(importExportMeshesParams);
+            if(exportMeshesCommand) exportMeshesCommand->execute(importExportMeshesParams);
             */
         }
 

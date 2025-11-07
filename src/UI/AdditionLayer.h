@@ -41,11 +41,13 @@ public:
 					if (ImGui::Button("AddToScene"))
 					{
 						auto *addPlaneCommand = CommandRegistry::instance().getCommand("AddPlane");
-
-						PlaneParams addPlaneCommandParams;
-						addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
-						addPlaneCommandParams.m_size = m_size;
-						addPlaneCommand->execute(addPlaneCommandParams);
+						if(addPlaneCommand)
+						{
+							PlaneParams addPlaneCommandParams;
+							addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
+							addPlaneCommandParams.m_size = m_size;
+							addPlaneCommand->execute(addPlaneCommandParams);		
+						}							
 					}
 
 					ImGui::TreePop();
@@ -59,12 +61,14 @@ public:
 					if (ImGui::Button("AddToScene"))
 					{
 						auto *addCubeCommand = CommandRegistry::instance().getCommand("AddCube");
-
-						CubeParams addCubeParams;
-						addCubeParams.m_size = m_size;
-						addCubeParams.m_subdivisionLevel = m_subdivision;
-						addCubeParams.m_position = glm::vec3(m_position);
-						addCubeCommand->execute(addCubeParams);
+						if(addCubeCommand)
+						{
+							CubeParams addCubeParams;
+							addCubeParams.m_size = m_size;
+							addCubeParams.m_subdivisionLevel = m_subdivision;
+							addCubeParams.m_position = glm::vec3(m_position);
+							addCubeCommand->execute(addCubeParams);
+						}
 					}
 					ImGui::TreePop();
 				}
@@ -87,15 +91,20 @@ public:
 				if (ImGui::Button("Fetch and Add to Scene"))
 				{
 
-					OpenTopoParams params;
-					params.m_lowerLeftLon = m_lowerLeftLon;
-					params.m_lowerLeftLat = m_lowerLeftLat;
-					params.m_upperRightLon = m_upperRightLon;
-					params.m_upperRightLat = m_upperRightLat;
-					params.m_apiKey = std::string(m_apiKeyBuffer);
+					
 
 					auto* fetchCommand = CommandRegistry::instance().getCommand("FetchSurface");
-					fetchCommand->execute(params);
+					if(fetchCommand) 
+					{
+						OpenTopoParams params;
+						params.m_lowerLeftLon = m_lowerLeftLon;
+						params.m_lowerLeftLat = m_lowerLeftLat;
+						params.m_upperRightLon = m_upperRightLon;
+						params.m_upperRightLat = m_upperRightLat;
+						params.m_apiKey = std::string(m_apiKeyBuffer);
+
+						fetchCommand->execute(params);
+					}
 				}
 
 				ImGui::TreePop();

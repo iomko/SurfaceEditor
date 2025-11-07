@@ -65,7 +65,7 @@ public:
                 PrintMeshSettingsParams printMeshSettingsParams;
                 printMeshSettingsParams.height = m_state.m_layerHeight;
                 printMeshSettingsParams.mesh = m_state.m_selectedMesh;
-                printCommand->execute(printMeshSettingsParams);
+                if(printCommand) printCommand->execute(printMeshSettingsParams);
             }
 
             ImGui::End();
