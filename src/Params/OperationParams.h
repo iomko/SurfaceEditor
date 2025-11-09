@@ -85,6 +85,12 @@ struct OctreeNodeDataParams : public OpParams
 	glm::vec3 hitPoint;
 };
 
+struct MoveMeshParams : public OpParams
+{
+    Mesh* mesh = nullptr;
+    glm::vec3 moveByVector;
+};
+
 struct MeshParams : public OpParams
 {
 	Mesh* m_mesh = nullptr;
@@ -104,6 +110,10 @@ struct SingleFaceParams : public OpParams {
 struct MoveFaceParams : public OpParams {
     Mesh* mesh;
     ExtendedFace* face;
+    glm::vec3 moveByVector;
+};
+
+struct MoveSelectedMeshesParams : public OpParams {
     glm::vec3 moveByVector;
 };
 

@@ -53,6 +53,12 @@
 #include "../Callbacks/MoveVertexCallBack.h"
 #include "../Commands/MoveVertexCommand.h"
 
+#include "../Callbacks/MoveMeshCallBack.h"
+#include "../Commands/MoveMeshCommand.h"
+
+#include "../Callbacks/MoveSelectedMeshesCallBack.h"
+#include "../Commands/MoveSelectedMeshesCommand.h"
+
 #include "../Callbacks/DeselectMeshCallBack.h"
 #include "../Commands/DeselectMeshCommand.h"
 
@@ -307,6 +313,17 @@ int main()
 	moveVertexCommand->addObserver(&moveVertexCallBack);
 	moveVertexCallBack.observe(moveVertexCommand, &moveVertexCallBack);
 
+    MoveMeshCallBack moveMeshCallBack(commandRegistry);
+	commandRegistry->registerCommand<MoveMeshCommand>();
+	MoveMeshCommand* moveMeshCommand = commandRegistry->getCommand<MoveMeshCommand>();
+	moveMeshCommand->addObserver(&moveMeshCallBack);
+	moveMeshCallBack.observe(moveMeshCommand, &moveMeshCallBack);
+
+    MoveSelectedMeshesCallBack moveSelectedMeshesCallBack(commandRegistry);
+	commandRegistry->registerCommand<MoveSelectedMeshesCommand>();
+	MoveSelectedMeshesCommand* moveSelectedMeshesCommand = commandRegistry->getCommand<MoveSelectedMeshesCommand>();
+	moveSelectedMeshesCommand->addObserver(&moveSelectedMeshesCallBack);
+	moveSelectedMeshesCallBack.observe(moveSelectedMeshesCommand, &moveSelectedMeshesCallBack);
 
     MoveSelectedFacesCallBack moveSelectedFacesCallBack(commandRegistry);
 	commandRegistry->registerCommand<MoveSelectedFacesCommand>();
