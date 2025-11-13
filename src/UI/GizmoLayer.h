@@ -9,10 +9,10 @@ class GizmoLayer : public Layer, public Observable
 {
 private:
     GizmoLayerParams::Type m_type = GizmoLayerParams::Type::Disable;
-    glm::mat4 m_model = glm::mat4(1.0f);
+    CommandRegistry* m_commandRegistry;
 
 public:
-    GizmoLayer(const std::string& name) : Layer(name) {}
+    GizmoLayer(const std::string& name, CommandRegistry* commandRegistry) : Layer(name), m_commandRegistry(commandRegistry) {}
 
     void onImGuiRender() override
     {
@@ -55,12 +55,15 @@ public:
 
     void displayGizmo()
     {
+        static bool makeMove = false;
+
         ImGuizmo::BeginFrame();
         ImGuizmo::SetOrthographic(false);
 
-        int width, height;
+        int width, height, x, y;
+        glfwGetWindowPos(Application::getWindow().getWindowHandle(), &x, &y);
         glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
-        ImGuizmo::SetRect(0, 0, (float)width, (float)height);
+        ImGuizmo::SetRect(x, y, (float)width, (float)height);
 
         SelectionController*  selectionController = ViewPortsHolderContext::s_selectionController;
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
@@ -77,7 +80,38 @@ public:
             glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.perspectiveMatrix),
             operation(),
             ImGuizmo::LOCAL,
-            glm::value_ptr(mesh->m_transform)
+            glm::value_ptr(mesh->m_gizmoTransform)
         );
+
+        static glm::mat4 originalMatrix;
+        if (ImGuizmo::IsUsing())
+        {
+            if (!makeMove)
+            {
+                originalMatrix = mesh->m_gizmoTransform;
+                makeMove = true;
+            }
+            return;
+        }
+
+        if (makeMove)
+        {
+            VertexParams vertexParams;
+            vertexParams.mesh = mesh;
+            vertexParams.newPosition = glm::vec3(mesh->m_gizmoTransform[3] - originalMatrix[3]);
+
+            auto command = m_commandRegistry->getCommand<MoveVertexCommand>();
+
+            auto& vertices = mesh->m_halfEdgeStructure->m_vertices;
+            
+            for (auto& vertex : vertices)
+            {
+                vertexParams.vertex = vertex;
+                command->execute(vertexParams);
+            }
+            
+            mesh->m_gizmoTransform = glm::mat4(1.0f);
+            makeMove = false;
+        }
     }
 };
