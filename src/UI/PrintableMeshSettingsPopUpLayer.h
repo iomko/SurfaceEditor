@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 #include "../Core/Layer.h"
 #include "OutlinerLayer.h"
 
@@ -61,7 +62,7 @@ public:
             if (ImGui::IsItemDeactivatedAfterEdit()) {
                 // This triggers when the user presses Enter OR when the field loses focus.
                 m_state.m_selectedPrintableMesh->removeAllLevelLayers();
-                auto* printCommand = CommandRegistry::instance().getCommand("CreatePrint");
+                auto* printCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
                 PrintMeshSettingsParams printMeshSettingsParams;
                 printMeshSettingsParams.height = m_state.m_layerHeight;
                 printMeshSettingsParams.mesh = m_state.m_selectedMesh;

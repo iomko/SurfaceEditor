@@ -1,7 +1,7 @@
 #pragma once
 #include "../Patterns/Command.h"
 
-class BasicSculptToolCommand : public Command<>
+class BasicSculptToolCommand : public Command<BASIC_SCULPT_TOOL_COMMAND>
 {
 public:
     virtual void execute() override;

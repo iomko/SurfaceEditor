@@ -2,6 +2,7 @@
 #include "../Core/Layer.h"
 #include "imgui.h" 
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 class ImportExportLayer : public Layer, public Observable
 {
@@ -45,7 +46,7 @@ public:
         if (importClicked && !filePath.empty()) {
             /* 
             std::cout << "filePath: " << filePath << std::endl;
-            auto* importMeshesCommand = CommandRegistry::instance().getCommand("ImportMeshes");
+            auto* importMeshesCommand = CommandRegistry::instance().getCommand(IMPORT_MESHES_COMMAND);
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;
@@ -65,7 +66,7 @@ public:
         if (exportClicked && !filePath.empty()) {
             /*
             std::cout << "filePath: " << filePath << std::endl;
-            auto* exportMeshesCommand = CommandRegistry::instance().getCommand("ExportMeshes");
+            auto* exportMeshesCommand = CommandRegistry::instance().getCommand(EXPORT_MESHES_COMMAND);
 
             ImportExportMeshesParams importExportMeshesParams;
             importExportMeshesParams.m_filePathMeshes = filePath;

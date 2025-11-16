@@ -10,4 +10,4 @@ void SelectFaceCommand::undo()
 {
 }
 
-static AutoRegister<SelectFaceCommand> regSelectFace("SelectFace");
+static AutoRegister<SelectFaceCommand> regSelectFace;

@@ -5,6 +5,7 @@
 #include "../Utils/GeometryUtils.h"
 #include "../Renderer/MaterialRegistry.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 
 class MoveSelectedFacesCallBack : public Callback<MoveSelectedFacesParams>, public Observer
@@ -45,7 +46,7 @@ public:
                 vertexParams.vertex = vertex;
                 vertexParams.newPosition = vertex->m_position + moveByVector;
 
-                auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
+                auto* moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
                 if(moveVertexCommand) moveVertexCommand->execute(vertexParams);
             }
             selectedMesh->calculateMeshBounds();

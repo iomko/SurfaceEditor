@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 #include "../Core/Layer.h"
 
 
@@ -40,7 +41,7 @@ public:
 
 					if (ImGui::Button("AddToScene"))
 					{
-						auto *addPlaneCommand = CommandRegistry::instance().getCommand("AddPlane");
+						auto *addPlaneCommand = CommandRegistry::instance().getCommand(ADD_PLANE_COMMAND);
 						if(addPlaneCommand)
 						{
 							PlaneParams addPlaneCommandParams;
@@ -60,7 +61,7 @@ public:
 					ImGui::InputInt3("Position", glm::value_ptr(m_position));
 					if (ImGui::Button("AddToScene"))
 					{
-						auto *addCubeCommand = CommandRegistry::instance().getCommand("AddCube");
+						auto *addCubeCommand = CommandRegistry::instance().getCommand(ADD_CUBE_COMMAND);
 						if(addCubeCommand)
 						{
 							CubeParams addCubeParams;
@@ -93,7 +94,7 @@ public:
 
 					
 
-					auto* fetchCommand = CommandRegistry::instance().getCommand("FetchSurface");
+					auto* fetchCommand = CommandRegistry::instance().getCommand(FETCH_SURFACE_COMMAND);
 					if(fetchCommand) 
 					{
 						OpenTopoParams params;

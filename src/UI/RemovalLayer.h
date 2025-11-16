@@ -3,6 +3,7 @@
 #include "imgui.h" 
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 #include "../Core/Layer.h"
 
 class RemovalLayer : public Layer, public Observable, public Observer {
@@ -32,12 +33,12 @@ public:
 			mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
 		if (ImGui::Button("Delete Selected Faces")) {
-			auto* deleteSelectedFacesCommand = CommandRegistry::instance().getCommand("DeleteSelectedFaces");
+			auto* deleteSelectedFacesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_FACES_COMMAND);
 			if(deleteSelectedFacesCommand) deleteSelectedFacesCommand->execute();
 		}
 
 		if (ImGui::Button("Delete Selected Meshes")) {
-			auto* deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand("DeleteSelectedMeshes");
+			auto* deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_MESHES_COMMAND);
 			if(deleteSelectedMeshesCommand) deleteSelectedMeshesCommand->execute();
 		}
 

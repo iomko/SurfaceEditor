@@ -9,4 +9,4 @@ void SolidifyMeshesCommand::execute()
 void SolidifyMeshesCommand::undo()
 {
 }
-static AutoRegister<SolidifyMeshesCommand> regSolidifyMeshes("SolidifyMeshes");
+static AutoRegister<SolidifyMeshesCommand> regSolidifyMeshes;

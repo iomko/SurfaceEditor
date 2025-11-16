@@ -3,7 +3,7 @@
 #include "../Patterns/Command.h"
 #include "../Structures/Octree.h"
 
-class BrushToolCommand : public Command<BrushToolParams, OctreeNodeDataParams>, public Observable
+class BrushToolCommand : public Command<BRUSH_TOOL_COMMAND ,BrushToolParams, OctreeNodeDataParams>, public Observable
 {
 public:
 	virtual void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override;

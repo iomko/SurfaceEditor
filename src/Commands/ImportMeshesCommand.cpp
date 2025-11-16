@@ -5,4 +5,4 @@ void ImportMeshesCommand::execute(const ImportExportMeshesParams &params)
 {
     notifyObservers(params);
 }
-static AutoRegister<ImportMeshesCommand> regImportMeshes("ImportMeshes");
+static AutoRegister<ImportMeshesCommand> regImportMeshes;

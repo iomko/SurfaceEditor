@@ -2,7 +2,7 @@
 #include "../Patterns/Observer.h"
 #include "../Patterns/Command.h"
 
-class AddPlaneCommand : public Command<PlaneParams>, public Observable
+class AddPlaneCommand : public Command<ADD_PLANE_COMMAND, PlaneParams>, public Observable
 {
 public:
 	virtual void execute(const PlaneParams& params) override;

@@ -2,7 +2,7 @@
 #include "CommandRegistry.h"
 #include <glm/glm.hpp>
 
-static AutoRegister<BasicSculptToolCommand> regAddCube("BasicSculptTool");
+static AutoRegister<BasicSculptToolCommand> regBasicSculptTool;
 
 void BasicSculptToolCommand::execute(){}
 void BasicSculptToolCommand::undo(){}

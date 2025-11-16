@@ -9,4 +9,4 @@ void MoveSelectedFacesCommand::execute(const MoveSelectedFacesParams& iParams)
 void MoveSelectedFacesCommand::undo()
 {
 }
-static AutoRegister<MoveSelectedFacesCommand> regMoveSelectedFaces("MoveSelectedFaces");
+static AutoRegister<MoveSelectedFacesCommand> regMoveSelectedFaces;

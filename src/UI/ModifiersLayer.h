@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "../Patterns/Observer.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 #include "../Core/Layer.h"
 
 struct ModifiersLayerState : public LayerState{
@@ -48,13 +49,13 @@ public:
 
 
         if (ImGui::Button("Solidify")){
-            auto* solidifyMeshesCommand = CommandRegistry::instance().getCommand("SolidifyMeshes");
+            auto* solidifyMeshesCommand = CommandRegistry::instance().getCommand(SOLIDIFY_MESHES_COMMAND);
             if(solidifyMeshesCommand) solidifyMeshesCommand->execute(); 
         }
 
         if (ImGui::Button("CreatePrint")){
             if(m_state.m_selectedMesh != nullptr) {
-                auto* createPrintCommand = CommandRegistry::instance().getCommand("CreatePrint");
+                auto* createPrintCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
                 PrintMeshSettingsParams printMeshSettingsParams;
                 printMeshSettingsParams.mesh = m_state.m_selectedMesh;
                 printMeshSettingsParams.height = 1.0f;

@@ -1,6 +1,7 @@
 #pragma once
 #include "../Params/OperationParams.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 #include "../Utils/ContainerUtils.h"
 #include "Structures/ExtendedHalfEdge.h"
 
@@ -30,7 +31,7 @@ public:
                 singleFaceParams.mesh = selectedMesh;
                 singleFaceParams.face = selectedFace;
 
-                auto* deleteFaceCommand = CommandRegistry::instance().getCommand("DeleteFace"); 
+                auto* deleteFaceCommand = CommandRegistry::instance().getCommand(DELETE_FACE_COMMAND); 
                 if(deleteFaceCommand) deleteFaceCommand->execute(singleFaceParams);
 
 		        //Delete face/mesh from selection	

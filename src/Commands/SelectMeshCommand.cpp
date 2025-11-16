@@ -9,4 +9,4 @@ void SelectMeshCommand::execute()
 void SelectMeshCommand::undo()
 {
 }
-static AutoRegister<SelectMeshCommand> regSelectMesh("SelectMesh");
+static AutoRegister<SelectMeshCommand> regSelectMesh;

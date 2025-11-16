@@ -9,4 +9,4 @@ void DeselectMeshCommand::execute()
 void DeselectMeshCommand::undo()
 {
 }
-static AutoRegister<DeselectMeshCommand> regDeselectMesh("DeselectMesh");
+static AutoRegister<DeselectMeshCommand> regDeselectMesh;

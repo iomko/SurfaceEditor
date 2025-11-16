@@ -4,6 +4,7 @@
 #include "../Utils/GeometryUtils.h"
 #include "MoveVertexCallBack.h"
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
@@ -53,7 +54,7 @@ public:
                 vertexParams.mesh = closestMesh;
                 vertexParams.vertex = vertex;
 
-                auto* moveVertexCommand = CommandRegistry::instance().getCommand("MoveVertex");
+                auto* moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
                 if(moveVertexCommand) moveVertexCommand->execute(vertexParams);
 			}
 

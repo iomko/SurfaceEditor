@@ -15,23 +15,23 @@ public:
     }
 
     template<typename CommandT>
-    void registerCommand(const std::string& name) {
-        m_creators[name] = []() -> std::unique_ptr<CommandConcept> {
+    void registerCommand() {        
+        m_creators[CommandT::ID] = []() -> std::unique_ptr<CommandConcept> {
             return std::make_unique<CommandT>();
         };
     }
 
-    CommandConcept* getCommand(const std::string& name) {
-        auto it = m_instances.find(name);
+    CommandConcept* getCommand(int id) {
+        auto it = m_instances.find(id);
         if (it != m_instances.end()) {
             return it->second.get();
         }
 
-        auto itCreator = m_creators.find(name);
+        auto itCreator = m_creators.find(id);
         if (itCreator != m_creators.end()) {
             auto instance = itCreator->second();
             auto* rawPtr = instance.get();
-            m_instances[name] = std::move(instance);
+            m_instances[id] = std::move(instance);
             return rawPtr;
         }
 
@@ -43,13 +43,13 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, Creator> m_creators;
-    std::unordered_map<std::string, std::unique_ptr<CommandConcept>> m_instances;
+    std::unordered_map<int, Creator> m_creators;
+    std::unordered_map<int, std::unique_ptr<CommandConcept>> m_instances;
 };
 
 template<typename CommandT>
 struct AutoRegister {
-    AutoRegister(const std::string& name) {
-        CommandRegistry::instance().registerCommand<CommandT>(name);
+    AutoRegister() {
+        CommandRegistry::instance().registerCommand<CommandT>();
     }
 };

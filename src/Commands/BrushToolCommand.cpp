@@ -10,4 +10,4 @@ void BrushToolCommand::undo()
 {
 }
 
-static AutoRegister<BrushToolCommand> regBrushTool("BrushTool");
+static AutoRegister<BrushToolCommand> regBrushTool;

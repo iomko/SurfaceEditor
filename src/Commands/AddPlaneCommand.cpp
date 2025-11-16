@@ -9,4 +9,4 @@ void AddPlaneCommand::undo()
 {
 		
 }
-static AutoRegister<AddPlaneCommand> regAddCube("AddPlane");
+static AutoRegister<AddPlaneCommand> regAddPlane;

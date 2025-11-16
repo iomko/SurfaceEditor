@@ -1,5 +1,6 @@
 #pragma once
 #include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 
 class DeleteSelectedMeshesCallBack : public Callback<>, public Observer
@@ -19,7 +20,7 @@ public:
             MeshParams meshParams;
             meshParams.m_mesh = mesh;
 
-            auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DeleteMesh");
+            auto* deleteMeshCommand = CommandRegistry::instance().getCommand(DELETE_MESH_COMMAND);
             if(deleteMeshCommand) deleteMeshCommand->execute(meshParams); 
 
 			ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);

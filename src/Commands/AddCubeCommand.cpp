@@ -9,4 +9,7 @@ void AddCubeCommand::undo()
 {
 		
 }
-static AutoRegister<AddCubeCommand> regAddCube("AddCube");
+static void test() {
+	printf("Test\n");
+}
+static AutoRegister<AddCubeCommand> regAddCube;

@@ -1,7 +1,6 @@
 #pragma once
 #include "ImGuizmo.h"
 #include "../Patterns/Observer.h"
-#include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
 #include "../ViewPortsController.h"
 

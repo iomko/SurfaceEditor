@@ -9,4 +9,4 @@ void MoveVertexCommand::execute(const VertexParams& params)
 void MoveVertexCommand::undo()
 {
 }
-static AutoRegister<MoveVertexCommand> regMoveVertex("MoveVertex");
+static AutoRegister<MoveVertexCommand> regMoveVertex;
