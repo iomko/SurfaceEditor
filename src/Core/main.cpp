@@ -57,10 +57,7 @@
 
 #include "../Callbacks/DeleteSelectedMeshesCallBack.h"
 
-#include "../Tools/MeshDeselectionTool.h"
-#include "../Tools/BrushTool.h"
-#include "../Tools/FaceSelectionTool.h"
-#include "../Tools/FaceDeselectionTool.h"
+#include "../Tools/ToolIDs.h"
 
 #include "../Callables/PlaneVertexGenCallable.h"
 #include "../Callables/MeshVaoInitCallable.h"
@@ -106,7 +103,7 @@ std::string getShaderPath(const std::string& file){
     return std::string(SHADER_DIR) + "/" + file;
 }
 
-static void setupObservableCommand(const int &command_id, CallbackConcept &callback)
+static void setupObservableCommand(const int &command_id, CallbackConcept &callback, int tool_id = -1)
 {
 	auto* command = CommandRegistry::instance().getCommand(command_id); //zjednotit + osobitny .h ako ciselnik a robit cez id
 	auto* observableCommand = dynamic_cast<Observable*>(command);
@@ -115,6 +112,10 @@ static void setupObservableCommand(const int &command_id, CallbackConcept &callb
 	{
 		observableCommand->addObserver(observerCallback);
 		observerCallback->observe(observableCommand, &callback);
+		if(tool_id != -1)
+		{
+			ToolRegistry::instance().initializeTool(tool_id, command);
+		}
 	}
 }
 
@@ -224,20 +225,24 @@ int main()
 	setupObservableCommand(FETCH_SURFACE_COMMAND, fetchSurfaceCallBack);
 
 	SelectMeshCallBack selectMeshCallBack;
-	auto* selectMeshCommand = CommandRegistry::instance().getCommand(SELECT_MESH_COMMAND);
+	setupObservableCommand(SELECT_MESH_COMMAND, selectMeshCallBack, MESH_SELECTION_TOOL);
+
+	/*auto* selectMeshCommand = CommandRegistry::instance().getCommand(SELECT_MESH_COMMAND);
 	auto* observableSelectMesh = dynamic_cast<Observable*>(selectMeshCommand);
 	if(observableSelectMesh)
 	{
 		ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand);
 
-		ToolRegistry::getTool<MeshSelectionTool>();
+		//ToolRegistry::getTool<MeshSelectionTool>();
 
 		observableSelectMesh->addObserver(&selectMeshCallBack);
 		selectMeshCallBack.observe(observableSelectMesh, &selectMeshCallBack);
-	} 
+	} */
 	
 	BrushToolCallBack brushToolCallBack = BrushToolCallBack();//();
-	auto* brushToolCommand = CommandRegistry::instance().getCommand(BRUSH_TOOL_COMMAND);
+	setupObservableCommand(BRUSH_TOOL_COMMAND, brushToolCallBack, BRUSH_TOOL);
+
+	/*auto* brushToolCommand = CommandRegistry::instance().getCommand(BRUSH_TOOL_COMMAND);
 	auto* observableBrushToolCommand = dynamic_cast<Observable*>(brushToolCommand);
 	if(observableBrushToolCommand)
 	{
@@ -246,9 +251,12 @@ int main()
 
 		//ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
 		ToolRegistry::registerTool<BrushTool>(brushToolCommand);
-	}
+	}*/
+
 	DeselectMeshCallBack deselectMeshCallBack;
-	auto* deselectMeshCommand = CommandRegistry::instance().getCommand(DESELECT_MESH_COMMAND);
+	setupObservableCommand(DESELECT_MESH_COMMAND, deselectMeshCallBack, MESH_DESELECTION_TOOL);
+
+	/*auto* deselectMeshCommand = CommandRegistry::instance().getCommand(DESELECT_MESH_COMMAND);
 	auto observableDeselectMesh = dynamic_cast<Observable*>(deselectMeshCommand);
 	if(observableDeselectMesh)
 	{
@@ -256,9 +264,11 @@ int main()
 
 		observableDeselectMesh->addObserver(&deselectMeshCallBack);
 		deselectMeshCallBack.observe(observableDeselectMesh, &deselectMeshCallBack);
-	}
+	}*/
+
 	SelectFaceCallBack selectFaceCallBack;
-	auto* selectFaceCommand = CommandRegistry::instance().getCommand(SELECT_FACE_COMMAND);
+	setupObservableCommand(SELECT_FACE_COMMAND, selectFaceCallBack, FACE_SELECTION_TOOL);
+	/*auto* selectFaceCommand = CommandRegistry::instance().getCommand(SELECT_FACE_COMMAND);
 	auto* observableSelectFace = dynamic_cast<Observable*>(selectFaceCommand);
 	if(observableSelectFace)
 	{
@@ -266,7 +276,7 @@ int main()
 		selectFaceCallBack.observe(observableSelectFace, &selectFaceCallBack);	
 
 		ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
-	}
+	}*/
 
     MoveVertexCallBack moveVertexCallBack;
 	setupObservableCommand(MOVE_VERTEX_COMMAND, moveVertexCallBack);
@@ -275,7 +285,8 @@ int main()
 	setupObservableCommand(MOVE_SELECTED_FACE_COMMAND, moveSelectedFacesCallBack);
 
 	DeselectFaceCallBack deselectFaceCallBack;
-	auto* deselectFaceCommand = CommandRegistry::instance().getCommand(DESELECT_FACE_COMMAND);
+	setupObservableCommand(DESELECT_FACE_COMMAND, deselectFaceCallBack, FACE_DESELECTION_TOOL);
+	/*auto* deselectFaceCommand = CommandRegistry::instance().getCommand(DESELECT_FACE_COMMAND);
 	auto* observableDeselectFace = dynamic_cast<Observable*>(deselectFaceCommand);
 	if(observableDeselectFace)
 	{
@@ -283,7 +294,7 @@ int main()
 		deselectFaceCallBack.observe(observableDeselectFace, &deselectFaceCallBack);
 
 		ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
-	}
+	}*/
 	
 	DeleteFaceCallBack deleteFaceCallBack;
 	setupObservableCommand(DELETE_FACE_COMMAND, deleteFaceCallBack);

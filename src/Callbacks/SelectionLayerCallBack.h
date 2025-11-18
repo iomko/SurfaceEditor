@@ -1,8 +1,6 @@
 #pragma once
-#include "../Tools/FaceSelectionTool.h"
-#include "../Tools/FaceDeselectionTool.h"
-#include "../Tools/MeshSelectionTool.h"
-#include "../Tools/MeshDeselectionTool.h"
+#include "../Tools/ToolRegistry.h"
+#include "../Tools/ToolIDs.h"
 
 class SelectionLayerCallBack : public Callback<SelectionLayerParams>, public Observer
 {
@@ -16,14 +14,17 @@ public:
 		{
 			if(selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
-				FaceSelectionTool* faceSelectionTool = ToolRegistry::getTool<FaceSelectionTool>();
-				ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceSelectionTool;
-
-				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				auto* faceSelectionTool = ToolRegistry::instance().getTool(FACE_SELECTION_TOOL);
+				if(faceSelectionTool)
 				{
-					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-				}
+					ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceSelectionTool;
+
+					if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+					{
+						delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+						ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					}
+				}				
 
 			} else if(selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
@@ -36,28 +37,33 @@ public:
 
 			} else if(selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
-				MeshSelectionTool* meshSelectionTool = ToolRegistry::getTool<MeshSelectionTool>();
-				ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshSelectionTool;
-
-				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				auto* meshSelectionTool = ToolRegistry::instance().getTool(MESH_SELECTION_TOOL);
+				if(meshSelectionTool)
 				{
-					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshSelectionTool;
+
+					if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+					{
+						delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+						ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					}
 				}
 			} 
 		} else if(type == SelectionLayerParams::Type::Deselection)
 		{
 			if (selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
-				FaceDeselectionTool* faceDeselectionTool = ToolRegistry::getTool<FaceDeselectionTool>();
-				ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceDeselectionTool;
-
-				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				auto* faceDeselectionTool = ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
+				if(faceDeselectionTool)
 				{
-					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-				}
+					ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceDeselectionTool;
 
+					if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+					{
+						delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+						ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					}
+				}
 			}
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
@@ -72,13 +78,16 @@ public:
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
                 
-				MeshDeselectionTool* meshDeselectionTool = ToolRegistry::getTool<MeshDeselectionTool>();
-				ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshDeselectionTool;
-
-				if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				auto* meshDeselectionTool = ToolRegistry::instance().getTool(MESH_DESELECTION_TOOL);
+				if(meshDeselectionTool)
 				{
-					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshDeselectionTool;
+
+					if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+					{
+						delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+						ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					}
 				}
                 
 				//create object command

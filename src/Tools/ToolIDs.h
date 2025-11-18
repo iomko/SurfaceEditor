@@ -1,0 +1,8 @@
+#pragma once
+
+#define BRUSH_TOOL 0
+#define FACE_DESELECTION_TOOL 1
+#define FACE_SELECTION_TOOL 2
+#define MESH_DESELECTION_TOOL 3
+#define MESH_SELECTION_TOOL 4
+

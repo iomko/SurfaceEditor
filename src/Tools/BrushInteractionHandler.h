@@ -5,6 +5,7 @@
 #include "../Params/OperationParams.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Patterns/Command.h"
+#include "../ViewPortsController.h"
 
 class BrushInteractionHandler : public InteractionHandler<CommandConcept, BrushToolParams>
 {

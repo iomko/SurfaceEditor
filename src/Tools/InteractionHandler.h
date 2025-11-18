@@ -1,5 +1,6 @@
 #pragma once
 #include "../Params/OperationParams.h"
+#include "../Patterns/Command.h"
 
 class InteractionHandlerConcept
 {

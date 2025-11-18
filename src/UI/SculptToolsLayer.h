@@ -6,7 +6,8 @@
 #include "../Core/Layer.h"
 #include "../ViewPortsController.h"
 #include "../Tools/ToolRegistry.h"
-#include "../Tools/BrushTool.h"
+#include "../Tools/ToolIDs.h"
+
 
 
 class SculptToolsLayer : public Layer, public Observable, public Observer {
@@ -37,16 +38,20 @@ public:
 		if (ImGui::TreeNode("BrushTool")) {
 			if (ImGui::Button("Choose Brush Tool")) {
 				std::cout << "Chosen Brush Tool" << std::endl;
-				ViewPortsHolderContext::s_viewPortsController->m_currentTool = ToolRegistry::getTool<BrushTool>();
-				if(ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+				auto* brushTool = ToolRegistry::instance().getTool(BRUSH_TOOL);
+				if(brushTool)
 				{
-					delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-				}
-				BrushToolParams* brushToolParams = new BrushToolParams();
-				brushToolParams->brushStrength = m_brushStrength;
-				brushToolParams->radius = m_brushRadius;
-				ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = brushToolParams;
+					ViewPortsHolderContext::s_viewPortsController->m_currentTool = brushTool;
+					if(ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+					{
+						delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+						ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+					}
+					BrushToolParams* brushToolParams = new BrushToolParams();
+					brushToolParams->brushStrength = m_brushStrength;
+					brushToolParams->radius = m_brushRadius;
+					ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = brushToolParams;
+				}				
 			}
 
 			ImGui::SliderFloat("BrushStrength", &m_brushStrength, -50.0f, 50.0f, "%.1f");
