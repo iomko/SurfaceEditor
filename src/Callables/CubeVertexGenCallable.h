@@ -11,13 +11,6 @@
 class CubeVertexGenCallable : public Callable<CubeParams, MeshParams>
 {
 public:
-	static void setupFuncionComposer(FunctionComposer& composer) 
-	{		
-		FunctionNode* addCubeRoot = composer.initRoot<CubeVertexGenCallable>();
-		composer.addFunc<MeshVaoInitCallable>(addCubeRoot);
-		composer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
-		composer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
-	}
 	void invoke(const CubeParams& input, MeshParams& output) override
 	{
 		float cubeSize = input.m_size;
