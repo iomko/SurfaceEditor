@@ -82,6 +82,7 @@ file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 # Až potom include
 include("${PROJECT_SOURCE_DIR}/src/Commands/CMakeLists.txt")
 include("${PROJECT_SOURCE_DIR}/src/Tools/CMakeLists.txt")
+include("${PROJECT_SOURCE_DIR}/src/Callbacks/CMakeLists.txt")
 
 # Teraz vytvor executable
 add_executable(SurfaceEditor ${SRC_FILES})
