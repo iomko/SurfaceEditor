@@ -8,5 +8,5 @@
 class FetchSurfaceCallBack : public ComposedCallback<FETCH_SURFACE_CALLBACK ,OpenTopoParams>, public Observable, public Observer
 {
 public:
-	explicit FetchSurfaceCallBack(FunctionComposer* functionComposer);
+	explicit FetchSurfaceCallBack(std::unique_ptr<FunctionComposer> functionComposer);
 };

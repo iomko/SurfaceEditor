@@ -9,5 +9,5 @@
 class AddCubeCallback : public ComposedCallback<ADD_CUBE_CALLBACK, CubeParams>, public Observer
 {
 public:
-	AddCubeCallback(FunctionComposer* functionComposer);
+	AddCubeCallback(std::unique_ptr<FunctionComposer> functionComposer);
 };

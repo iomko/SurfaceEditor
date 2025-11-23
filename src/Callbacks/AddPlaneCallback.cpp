@@ -10,18 +10,18 @@ namespace {
             AddPlaneCallback::ID,
             []() -> std::unique_ptr<CallbackConcept> {
                 // create and configure a local composer, then pass it by const-ref to the callback
-                FunctionComposer* composer = new FunctionComposer();
+                auto composer = std::make_unique<FunctionComposer>();
                 FunctionNode* root = composer->initRoot<PlaneVertexGenCallable>();
                 composer->addFunc<MeshVaoInitCallable>(root);
                 composer->addFunc<SceneMeshAdderCallable>(root);
                 composer->addFunc<MeshOutlinerAdderCallable>(root);
 
-                return std::make_unique<AddPlaneCallback>(composer);
+                return std::make_unique<AddPlaneCallback>(std::move(composer));
             }
         );
         return true;
     }();
 }
-AddPlaneCallback::AddPlaneCallback(FunctionComposer* functionComposer)
-		: ComposedCallback(functionComposer)
+AddPlaneCallback::AddPlaneCallback(std::unique_ptr<FunctionComposer> functionComposer)
+		: ComposedCallback(std::move(functionComposer))
 	{}

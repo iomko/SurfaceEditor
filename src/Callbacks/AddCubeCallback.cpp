@@ -10,18 +10,18 @@ namespace {
             AddCubeCallback::ID,
             []() -> std::unique_ptr<CallbackConcept> {
                 // create and configure a local composer, then pass it by const-ref to the callback
-                FunctionComposer* composer = new FunctionComposer();
+                auto composer = std::make_unique<FunctionComposer>();
                 FunctionNode* root = composer->initRoot<CubeVertexGenCallable>();
                 composer->addFunc<MeshVaoInitCallable>(root);
                 composer->addFunc<SceneMeshAdderCallable>(root);
                 composer->addFunc<MeshOutlinerAdderCallable>(root);
 
-                return std::make_unique<AddCubeCallback>(composer);
+                return std::make_unique<AddCubeCallback>(std::move(composer));
             }
         );
         return true;
     }();
 }
-AddCubeCallback::AddCubeCallback(FunctionComposer* functionComposer)
-		: ComposedCallback(functionComposer)
+AddCubeCallback::AddCubeCallback(std::unique_ptr<FunctionComposer> functionComposer)
+		: ComposedCallback(std::move(functionComposer))
 	{}

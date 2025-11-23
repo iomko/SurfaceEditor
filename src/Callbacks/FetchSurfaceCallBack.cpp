@@ -10,17 +10,17 @@ namespace {
             FetchSurfaceCallBack::ID,
             []() -> std::unique_ptr<CallbackConcept> {
                 // create and configure a local composer, then pass it by const-ref to the callback
-                FunctionComposer* composer = new FunctionComposer();
+                auto composer = std::make_unique<FunctionComposer>();
                 FunctionNode* fetchSurfaceRoot = composer->initRoot<FetchedSurfaceVertexGenCallable>();
                 composer->addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
                 composer->addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
                 composer->addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
-                return std::make_unique<FetchSurfaceCallBack>(composer);
+                return std::make_unique<FetchSurfaceCallBack>(std::move(composer));
             }
         );
         return true;
     }();
 }
-FetchSurfaceCallBack::FetchSurfaceCallBack(FunctionComposer* functionComposer)
-		: ComposedCallback(functionComposer)
+FetchSurfaceCallBack::FetchSurfaceCallBack(std::unique_ptr<FunctionComposer> functionComposer)
+		: ComposedCallback(std::move(functionComposer))
 	{}

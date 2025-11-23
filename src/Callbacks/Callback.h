@@ -1,5 +1,6 @@
 #pragma once
 #include "../Callables/FunctionComposer.h"
+#include <memory>
 
 struct CallbackConcept {
 	virtual ~CallbackConcept() = default;
@@ -74,15 +75,11 @@ class ComposedCallback : public CallbackConcept {
 public:
 	static constexpr int ID = id; 
 protected:
-	FunctionComposer* m_composer;
+	std::unique_ptr<FunctionComposer>m_composer;
 
 public:
-	explicit ComposedCallback(FunctionComposer* functionComposer) : m_composer(functionComposer) {}
-	~ComposedCallback() 
-	{
-		delete m_composer;
-		m_composer = nullptr;
-	}
+	explicit ComposedCallback(std::unique_ptr<FunctionComposer> functionComposer) : m_composer(std::move(functionComposer)) {}
+	
 	void execute(const OpParams& iParams) final override {
 		const IParams& castedIParams = static_cast<const IParams&>(iParams);
 		m_composer->execute(castedIParams);
@@ -101,16 +98,11 @@ class ComposedCallback<id, OpParams> : public CallbackConcept {
 public:
 	static constexpr int ID = id; 
 protected:
-	FunctionComposer* m_composer;
+	std::unique_ptr<FunctionComposer> m_composer;
 
 public:
-	explicit ComposedCallback(FunctionComposer* functionComposer) : m_composer(functionComposer) {}
-	~ComposedCallback() 
-	{
-		delete m_composer;
-		m_composer = nullptr;
-	}
-
+	explicit ComposedCallback(std::unique_ptr<FunctionComposer> functionComposer) : m_composer(std::move(functionComposer)) {}
+	
 	void execute() final override {
 		m_composer->execute();
 	}
