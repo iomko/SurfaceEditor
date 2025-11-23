@@ -1,12 +1,13 @@
 #pragma once
-#include "../Callbacks/Callback.h"
+#include "Callback.h"
 #include "../Callables/FunctionComposer.h"
 #include "../Patterns/Observer.h"
+#include "../Params/OperationParams.h"
+#include "CallbackIDs.h"
 
-class AddPlaneCallback : public ComposedCallback<PlaneParams>, public Observer
+
+class AddPlaneCallback : public ComposedCallback<ADD_PLANE_CALLBACK, PlaneParams>, public Observer
 {
 public:
-	AddPlaneCallback(const FunctionComposer& functionComposer)
-		: ComposedCallback(functionComposer)
-	{}
+	AddPlaneCallback(FunctionComposer* functionComposer);
 };

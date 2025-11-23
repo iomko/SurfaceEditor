@@ -19,7 +19,7 @@ template <int id, typename IParams, typename OParams>
 class Command : public CommandConcept
 {
 public:
-	static constexpr int ID = id;
+	static constexpr int ID = id; 
 	void undo() override {}
 	void execute() override {}
 	virtual void execute(const OpParams &iParams) override {}

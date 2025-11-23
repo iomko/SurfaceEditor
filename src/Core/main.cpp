@@ -1,6 +1,4 @@
-﻿//#include "../Callbacks/Callback.h"
-#include "Callbacks/CreatePrintStructureCallBack.h"
-#include "UI/ModifiersLayer.h"
+﻿#include "UI/ModifiersLayer.h"
 #include "UI/PrintableMeshSettingsPopUpLayer.h"
 #define NOMINMAX  // Prevents Windows.h from defining min/max macros
 
@@ -18,8 +16,6 @@
 #include "../Core/Window.h"
 #include "../Renderer/Renderer.h"
 //#include "../Mesh.h"
-#include "../Callables/FunctionComposer.h"
-#include "../Callbacks/BrushToolCallBack.h"
 #include "../UI/SculptToolsLayer.h"
 #include "../Scene/Mesh.h"
 
@@ -34,28 +30,12 @@
 
 //#include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-#include "../Callbacks/AddPlaneCallback.h"
 #include "../Tools/ToolRegistry.h"
 #include "../Commands/CommandRegistry.h"
-#include "../Callbacks/AddCubeCallback.h"
 
-#include "../Callbacks/DeselectFaceCallBack.h"
-#include "../Callbacks/SelectMeshCallBack.h"
-#include "../Callbacks/SelectionLayerCallBack.h"
 #include "../UI/AdditionLayer.h"
 #include "../UI/RemovalLayer.h"
 #include "../UI/SelectionLayer.h"
-
-#include "../Callbacks/SelectFaceCallBack.h"
-#include "../Callbacks/MoveVertexCallBack.h"
-
-#include "../Callbacks/DeselectMeshCallBack.h"
-
-#include "../Callbacks/DeleteSelectedFacesCallBack.h"
-
-#include "../Callbacks/DeleteFaceCallBack.h"
-
-#include "../Callbacks/DeleteSelectedMeshesCallBack.h"
 
 #include "../Tools/ToolIDs.h"
 
@@ -65,17 +45,10 @@
 #include "../Callables/CubeVertexGenCallable.h"
 
 //ImportExportLayer
-#include "../Callbacks/ImportMeshesCallBack.h"
 #include "../UI/ImportExportLayer.h"
 
-#include "../Callbacks/ExportMeshesCallBack.h"
 
 #include "../Callables/FetchedSurfaceVertexGenCallable.h"
-#include "../Callbacks/FetchSurfaceCallBack.h"
-
-#include "../Callbacks/SolidifyMeshesCallBack.h"
-#include "../Callbacks/DeleteMeshCallBack.h"
-#include "../Callbacks/MoveSelectedFacesCallBack.h"
 
 #include "../Structures/ExtendedHalfEdge.h"
 
@@ -90,9 +63,10 @@
 #include "../UI/GizmoLayer.h"
 
 //INTERACTION_HANDLER
-#include "../Tools/InteractionHandler.h"
 #include "../Tools/Tool.h"
 #include <string>
+#include "../Callbacks/CallbackRegister.h"
+#include "../Callbacks/CallbackIDs.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -103,15 +77,21 @@ std::string getShaderPath(const std::string& file){
     return std::string(SHADER_DIR) + "/" + file;
 }
 
-static void setupObservableCommand(const int &command_id, CallbackConcept &callback, int tool_id = -1)
+static void setup(const int command_id, const int callback_id,const int tool_id = -1)
 {
+	auto* callback = CallbackRegistry::instance().getCallback(callback_id);
+	if(callback == nullptr)
+	{
+		printf("not callback with id %d\n", callback_id);
+		return;
+	}
 	auto* command = CommandRegistry::instance().getCommand(command_id); //zjednotit + osobitny .h ako ciselnik a robit cez id
 	auto* observableCommand = dynamic_cast<Observable*>(command);
-	auto* observerCallback = dynamic_cast<Observer*>(&callback);
+	auto* observerCallback = dynamic_cast<Observer*>(callback);
 	if(observableCommand && observerCallback)
 	{
 		observableCommand->addObserver(observerCallback);
-		observerCallback->observe(observableCommand, &callback);
+		observerCallback->observe(observableCommand, callback);
 		if(tool_id != -1)
 		{
 			ToolRegistry::instance().initializeTool(tool_id, command);
@@ -123,39 +103,6 @@ int main()
 {
     
     WindowLayerBus windowLayerBus;
-
-	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
-
-	//--ADD_PLANE_COMPOSER--
-
-	FunctionComposer addPlaneComposer;
-	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<PlaneVertexGenCallable>();
-	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
-	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
-    addPlaneComposer.addFunc<MeshOutlinerAdderCallable>(addPlaneRoot);
-	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
-
-	//--ADD_CUBE_COMPOSER
-
-	FunctionComposer addCubeComposer;
-	FunctionNode* addCubeRoot = addCubeComposer.initRoot<CubeVertexGenCallable>();
-	addCubeComposer.addFunc<MeshVaoInitCallable>(addCubeRoot);
-	addCubeComposer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
-    addCubeComposer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
-	AddCubeCallback addCubeCallBack(addCubeComposer);
-
-    SolidifyMeshesCallBack solidifyMeshesCallBack;
-    CreatePrintStructureCallBack createPrintStructureCallBack;
-
-
-
-	//---FETCH_SURFACE_COMPOSER---
-	FunctionComposer fetchSurfaceComposer;
-	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<FetchedSurfaceVertexGenCallable>();
-	fetchSurfaceComposer.addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
-	fetchSurfaceComposer.addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
-    fetchSurfaceComposer.addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
-	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
 
 
 	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
@@ -206,116 +153,54 @@ int main()
 
 	//importMeshesCommand
 
-	ImportMeshesCallback importMeshesCallback;
-	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
-	setupObservableCommand(IMPORT_MESHES_COMMAND, importMeshesCallback);
+	setup(IMPORT_MESHES_COMMAND, IMPORT_MESHES_CALLBACK);
+	setup(EXPORT_MESHES_COMMAND, EXPORT_MESHES_CALLBACK);
 
-	ExportMeshesCallback exportMeshesCallback;
-	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
-	setupObservableCommand(EXPORT_MESHES_COMMAND, exportMeshesCallback);
+	setup(ADD_PLANE_COMMAND, ADD_PLANE_CALLBACK);
 
-	setupObservableCommand(ADD_PLANE_COMMAND, addPlaneCallBack);
+	setup(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
 
-	setupObservableCommand(ADD_CUBE_COMMAND, addCubeCallBack);
+	setup(SOLIDIFY_MESHES_COMMAND, SOLIDIFY_MESHES_CALLBACK);
 
-	setupObservableCommand(SOLIDIFY_MESHES_COMMAND, solidifyMeshesCallBack);
+    setup(CREATE_PRINT_COMMAND, CREATE_PRINT_STRUCTURE_CALLBACK);
 
-    setupObservableCommand(CREATE_PRINT_COMMAND, createPrintStructureCallBack);
+	setup(FETCH_SURFACE_COMMAND, FETCH_SURFACE_CALLBACK);
 
-	setupObservableCommand(FETCH_SURFACE_COMMAND, fetchSurfaceCallBack);
-
-	SelectMeshCallBack selectMeshCallBack;
-	setupObservableCommand(SELECT_MESH_COMMAND, selectMeshCallBack, MESH_SELECTION_TOOL);
-
-	/*auto* selectMeshCommand = CommandRegistry::instance().getCommand(SELECT_MESH_COMMAND);
-	auto* observableSelectMesh = dynamic_cast<Observable*>(selectMeshCommand);
-	if(observableSelectMesh)
-	{
-		ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand);
-
-		//ToolRegistry::getTool<MeshSelectionTool>();
-
-		observableSelectMesh->addObserver(&selectMeshCallBack);
-		selectMeshCallBack.observe(observableSelectMesh, &selectMeshCallBack);
-	} */
+	setup(SELECT_MESH_COMMAND, SELECT_MESH_CALLBACK, MESH_SELECTION_TOOL);
 	
-	BrushToolCallBack brushToolCallBack = BrushToolCallBack();//();
-	setupObservableCommand(BRUSH_TOOL_COMMAND, brushToolCallBack, BRUSH_TOOL);
+	setup(BRUSH_TOOL_COMMAND, BRUSH_TOOL_CALLBACK, BRUSH_TOOL);
 
-	/*auto* brushToolCommand = CommandRegistry::instance().getCommand(BRUSH_TOOL_COMMAND);
-	auto* observableBrushToolCommand = dynamic_cast<Observable*>(brushToolCommand);
-	if(observableBrushToolCommand)
-	{
-		observableBrushToolCommand->addObserver(&brushToolCallBack);
-		brushToolCallBack.observe(observableBrushToolCommand, &brushToolCallBack);
+	setup(DESELECT_MESH_COMMAND, DESELECT_MESH_CALLBACK, MESH_DESELECTION_TOOL);
 
-		//ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
-		ToolRegistry::registerTool<BrushTool>(brushToolCommand);
-	}*/
+	setup(SELECT_FACE_COMMAND, SELECT_FACE_CALLBACK, FACE_SELECTION_TOOL);
+	setup(MOVE_VERTEX_COMMAND, MOVE_VERTEX_CALLBACK);
 
-	DeselectMeshCallBack deselectMeshCallBack;
-	setupObservableCommand(DESELECT_MESH_COMMAND, deselectMeshCallBack, MESH_DESELECTION_TOOL);
+	setup(MOVE_SELECTED_FACE_COMMAND, MOVE_SELECTED_FACE_CALLBACK);
 
-	/*auto* deselectMeshCommand = CommandRegistry::instance().getCommand(DESELECT_MESH_COMMAND);
-	auto observableDeselectMesh = dynamic_cast<Observable*>(deselectMeshCommand);
-	if(observableDeselectMesh)
-	{
-		ToolRegistry::registerTool<MeshDeselectionTool>(deselectMeshCommand);
-
-		observableDeselectMesh->addObserver(&deselectMeshCallBack);
-		deselectMeshCallBack.observe(observableDeselectMesh, &deselectMeshCallBack);
-	}*/
-
-	SelectFaceCallBack selectFaceCallBack;
-	setupObservableCommand(SELECT_FACE_COMMAND, selectFaceCallBack, FACE_SELECTION_TOOL);
-	/*auto* selectFaceCommand = CommandRegistry::instance().getCommand(SELECT_FACE_COMMAND);
-	auto* observableSelectFace = dynamic_cast<Observable*>(selectFaceCommand);
-	if(observableSelectFace)
-	{
-		observableSelectFace->addObserver(&selectFaceCallBack);
-		selectFaceCallBack.observe(observableSelectFace, &selectFaceCallBack);	
-
-		ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
-	}*/
-
-    MoveVertexCallBack moveVertexCallBack;
-	setupObservableCommand(MOVE_VERTEX_COMMAND, moveVertexCallBack);
-
-    MoveSelectedFacesCallBack moveSelectedFacesCallBack = MoveSelectedFacesCallBack();
-	setupObservableCommand(MOVE_SELECTED_FACE_COMMAND, moveSelectedFacesCallBack);
-
-	DeselectFaceCallBack deselectFaceCallBack;
-	setupObservableCommand(DESELECT_FACE_COMMAND, deselectFaceCallBack, FACE_DESELECTION_TOOL);
-	/*auto* deselectFaceCommand = CommandRegistry::instance().getCommand(DESELECT_FACE_COMMAND);
-	auto* observableDeselectFace = dynamic_cast<Observable*>(deselectFaceCommand);
-	if(observableDeselectFace)
-	{
-		observableDeselectFace->addObserver(&deselectFaceCallBack);
-		deselectFaceCallBack.observe(observableDeselectFace, &deselectFaceCallBack);
-
-		ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
-	}*/
+	setup(DESELECT_FACE_COMMAND, DESELECT_FACE_CALLBACK, FACE_DESELECTION_TOOL);
 	
-	DeleteFaceCallBack deleteFaceCallBack;
-	setupObservableCommand(DELETE_FACE_COMMAND, deleteFaceCallBack);
+	setup(DELETE_FACE_COMMAND, DELETE_FACE_CALLBACK);
 
-	DeleteMeshCallBack deleteMeshCallBack = DeleteMeshCallBack();
-	setupObservableCommand(DELETE_MESH_COMMAND, deleteMeshCallBack);
+	setup(DELETE_MESH_COMMAND, DELETE_MESH_CALLBACK);
 
-	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack = DeleteSelectedFacesCallBack();
-	setupObservableCommand(DELETE_SELECTED_FACES_COMMAND, deleteSelectedFacesCallBack);
+	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
 	
-	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack = DeleteSelectedMeshesCallBack();
-	setupObservableCommand(DELETE_SELECTED_MESHES_COMMAND, deleteSelectedMeshesCallBack);
+	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
 	
 	SelectionLayer selectionLayer("SelectionLayer");
 	app.getLayerStack().addLayer(&selectionLayer);
 
-	SelectionLayerCallBack selectionLayerCallBack;
-	viewPortsHolder->observe(&selectionLayer, &selectionLayerCallBack);
+	//SelectionLayerCallBack selectionLayerCallBack;
+	auto* selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
+	auto* observerSelectionLayer = dynamic_cast<Observer*>(selectionLayerCallBack);
+	if(selectionLayerCallBack && observerSelectionLayer)
+	{
+		viewPortsHolder->observe(&selectionLayer, selectionLayerCallBack);
 
-	selectionLayer.addObserver(&selectionLayerCallBack);
-	selectionLayerCallBack.observe(&selectionLayer, &selectionLayerCallBack);
+		selectionLayer.addObserver(observerSelectionLayer);
+		observerSelectionLayer->observe(&selectionLayer, selectionLayerCallBack);
+	}
+		
 
 	//SCULPT TOOL
 

@@ -8,12 +8,14 @@ struct CallbackConcept {
 	virtual void execute(const OpParams& iParams, OpParams& oParams) = 0;
 };
 
-template <typename IParams = OpParams, typename OParams = OpParams>
+template <int id, typename IParams = OpParams, typename OParams = OpParams>
 class Callback;
 
-template <typename IParams, typename OParams>
+template <int id, typename IParams, typename OParams>
 class Callback : public CallbackConcept {
 public:
+	static constexpr int ID = id; 
+
 	virtual void execute(const IParams& iParams, OParams& oParams) = 0;
 	void execute(const OpParams& iParams, OpParams& oParams) final override {
 		const IParams& castedInput = static_cast<const IParams&>(iParams);
@@ -29,9 +31,10 @@ public:
 	}
 };
 
-template <typename IParams>
-class Callback<IParams, OpParams> : public CallbackConcept {
+template <int id, typename IParams>
+class Callback<id, IParams, OpParams> : public CallbackConcept {
 public:
+	static constexpr int ID = id; 
 
 	virtual void execute(const IParams& iParams) = 0;
 	void execute(const OpParams& iParams) final override {
@@ -47,9 +50,10 @@ public:
 	}
 };
 
-template <>
-class Callback<OpParams, OpParams> : public CallbackConcept {
+template <int id>
+class Callback<id, OpParams, OpParams> : public CallbackConcept {
 public:
+	static constexpr int ID = id; 
 
 	virtual void execute() = 0;
 
@@ -62,20 +66,26 @@ public:
 };
 
 
-template <typename IParams = OpParams>
+template <int id, typename IParams = OpParams>
 class ComposedCallback;
 
-template <typename IParams>
+template <int id, typename IParams>
 class ComposedCallback : public CallbackConcept {
+public:
+	static constexpr int ID = id; 
 protected:
-	FunctionComposer m_composer;
+	FunctionComposer* m_composer;
 
 public:
-	explicit ComposedCallback(const FunctionComposer& functionComposer) : m_composer(functionComposer) {}
-
+	explicit ComposedCallback(FunctionComposer* functionComposer) : m_composer(functionComposer) {}
+	~ComposedCallback() 
+	{
+		delete m_composer;
+		m_composer = nullptr;
+	}
 	void execute(const OpParams& iParams) final override {
 		const IParams& castedIParams = static_cast<const IParams&>(iParams);
-		m_composer.execute(castedIParams);
+		m_composer->execute(castedIParams);
 	}
 
 	void execute() final override {
@@ -86,16 +96,23 @@ public:
 	}
 };
 
-template <>
-class ComposedCallback<OpParams> : public CallbackConcept {
+template <int id>
+class ComposedCallback<id, OpParams> : public CallbackConcept {
+public:
+	static constexpr int ID = id; 
 protected:
-	FunctionComposer m_composer;
+	FunctionComposer* m_composer;
 
 public:
-	explicit ComposedCallback(const FunctionComposer& functionComposer) : m_composer(functionComposer) {}
+	explicit ComposedCallback(FunctionComposer* functionComposer) : m_composer(functionComposer) {}
+	~ComposedCallback() 
+	{
+		delete m_composer;
+		m_composer = nullptr;
+	}
 
 	void execute() final override {
-		m_composer.execute();
+		m_composer->execute();
 	}
 
 	void execute(const OpParams&) final override {
