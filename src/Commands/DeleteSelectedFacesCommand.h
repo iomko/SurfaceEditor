@@ -1,6 +1,7 @@
 #pragma once
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
 class DeleteSelectedFacesCommand : public Command<DELETE_SELECTED_FACES_COMMAND>, public Observable
 {

@@ -2,6 +2,7 @@
 #include <string_view>
 #include "Patterns/Command.h"
 #include "Patterns/Observer.h"
+#include "CommandIDs.h"
 
 
 class ImportMeshesCommand : public Observable, public Command<IMPORT_MESHES_COMMAND, ImportExportMeshesParams>

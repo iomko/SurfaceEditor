@@ -1,7 +1,4 @@
-﻿#include "UI/ModifiersLayer.h"
-#include "UI/PrintableMeshSettingsPopUpLayer.h"
-#define NOMINMAX  // Prevents Windows.h from defining min/max macros
-
+﻿#define NOMINMAX  // Prevents Windows.h from defining min/max macros
 #include <limits>
 //#include <Windows.h>
 #include <iostream>
@@ -9,73 +6,59 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tiffio.h>
 #include "Input.h"
 #include "../Primitives/AABB.h"
 #include "../Core/Application.h"
 #include "../Core/Input.h"
 #include "../Core/Window.h"
-#include "../Renderer/Renderer.h"
 //#include "../Mesh.h"
-#include "../UI/SculptToolsLayer.h"
 #include "../Scene/Mesh.h"
-
+#include "../Renderer/Renderer.h"
 #include "../Renderer/Shader.h"
 #include "../Renderer/Buffers.h"
 #include "../Structures/Octree.h"
-#include <tiffio.h>
+#include "../Structures/ExtendedHalfEdge.h"
+#include "../Structures/HalfEdge.h"
+#include "../Structures/PrintableMesh.h"
 //import LayerSystem.Layer.ImGuiLayer;
 //import Patterns.Observer;
-
-#include "../Structures/HalfEdge.h"
-
 //#include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-#include "../Tools/ToolRegistry.h"
-#include "../Commands/CommandRegistry.h"
 
+#include "../UI/ModifiersLayer.h"
+#include "../UI/PrintableMeshSettingsPopUpLayer.h"
+#include "../UI/SculptToolsLayer.h"
 #include "../UI/AdditionLayer.h"
 #include "../UI/RemovalLayer.h"
 #include "../UI/SelectionLayer.h"
-
-#include "../Tools/ToolIDs.h"
-
-#include "../Callables/PlaneVertexGenCallable.h"
-#include "../Callables/MeshVaoInitCallable.h"
-#include "../Callables/SceneMeshAdderCallable.h"
-#include "../Callables/CubeVertexGenCallable.h"
-
-//ImportExportLayer
 #include "../UI/ImportExportLayer.h"
-
-
-#include "../Callables/FetchedSurfaceVertexGenCallable.h"
-
-#include "../Structures/ExtendedHalfEdge.h"
-
-#include "../Utils/GeometryUtils.h"
-
-#include "UI/OutlinerLayer.h"
-#include "Callables/MeshOutlinerAdderCallable.h"
-#include "Structures/PrintableMesh.h"
-
-#include "../Renderer/MaterialRegistry.h"
-
+#include "../UI/OutlinerLayer.h"
 #include "../UI/GizmoLayer.h"
 
+#include "../Utils/GeometryUtils.h"
+#include "../Renderer/MaterialRegistry.h"
 //INTERACTION_HANDLER
-#include "../Tools/Tool.h"
 #include <string>
 #include "../Callbacks/CallbackRegister.h"
 #include "../Callbacks/CallbackIDs.h"
+#include "../Tools/ToolRegistry.h"
+#include "../Tools/ToolIDs.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
 
-
 std::string getShaderPath(const std::string& file){
+	#ifdef SHADER_DIR
     return std::string(SHADER_DIR) + "/" + file;
+	#else
+	return "../Renderer/Shaders/" + file;
+	#endif
 }
+
 
 static void setup(const int command_id, const int callback_id,const int tool_id = -1)
 {

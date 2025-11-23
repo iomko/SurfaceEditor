@@ -1,6 +1,7 @@
 #pragma once
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
 class MoveSelectedFacesCommand : public Command<MOVE_SELECTED_FACE_COMMAND, MoveSelectedFacesParams>, public Observable
 {

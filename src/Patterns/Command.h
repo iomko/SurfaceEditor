@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Params/OperationParams.h"
-#include "../Commands/CommandIDs.h"
 
 struct CommandConcept
 {

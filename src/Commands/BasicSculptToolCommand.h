@@ -1,5 +1,6 @@
 #pragma once
 #include "../Patterns/Command.h"
+#include "CommandIDs.h"
 
 class BasicSculptToolCommand : public Command<BASIC_SCULPT_TOOL_COMMAND>
 {

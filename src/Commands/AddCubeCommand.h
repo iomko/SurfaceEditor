@@ -1,6 +1,7 @@
 #pragma once
 #include "../Patterns/Observer.h"
 #include "../Patterns/Command.h"
+#include "CommandIDs.h"
 
 class AddCubeCommand : public Command<ADD_CUBE_COMMAND, CubeParams>, public Observable
 {

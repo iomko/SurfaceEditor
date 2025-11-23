@@ -1,6 +1,7 @@
 #pragma once
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
 class MoveVertexCommand : public Command<MOVE_VERTEX_COMMAND ,VertexParams>, public Observable
 {
