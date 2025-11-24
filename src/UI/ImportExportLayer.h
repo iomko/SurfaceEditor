@@ -1,81 +1,15 @@
 #pragma once
 #include "../Core/Layer.h"
-#include "imgui.h" 
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
+#include "../Patterns/Observer.h"
 
 class ImportExportLayer : public Layer, public Observable
 {
 public:
-    ImportExportLayer(const std::string& name)
-        : Layer(name) {}
+    ImportExportLayer(const std::string& name);
 
-	void onEvent(Event& event) override
-	{
-		if (event.getType() == EventType::MouseButtonPress)
-		{
-			if (m_isMouseInsideWindow) {
-				event.isHandled = true;
-			}
-		}
-	}
+	void onEvent(Event& event) override;
 
-    void onImGuiRender() override {
-		ImGui::Begin(this->getName().c_str());
-
-		// Get window position and size
-		ImVec2 windowPos = ImGui::GetWindowPos();
-		ImVec2 windowSize = ImGui::GetWindowSize();
-		ImVec2 mousePos = ImGui::GetMousePos();
-
-		// Update the class variable to check if mouse is inside the window
-		m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
-			mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-
-        bool exportClicked = false;
-        bool importClicked = false;
-        std::string filePath;
-        
-        if (ImGui::Button("Import")) {
-            /*
-            // Call a function or perform actions for Import
-            filePath = WindowsFileDialogs::openFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-            importClicked = true;
-            */
-        }
-        if (importClicked && !filePath.empty()) {
-            /* 
-            std::cout << "filePath: " << filePath << std::endl;
-            auto* importMeshesCommand = CommandRegistry::instance().getCommand(IMPORT_MESHES_COMMAND);
-
-            ImportExportMeshesParams importExportMeshesParams;
-            importExportMeshesParams.m_filePathMeshes = filePath;
-            if(importMeshesCommand) importMeshesCommand->execute(importExportMeshesParams);
-            */
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Export")) {
-            /*
-            // Call a function or perform actions for Import
-            filePath = WindowsFileDialogs::saveFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-            exportClicked = true;
-            */
-        }
-        if (exportClicked && !filePath.empty()) {
-            /*
-            std::cout << "filePath: " << filePath << std::endl;
-            auto* exportMeshesCommand = CommandRegistry::instance().getCommand(EXPORT_MESHES_COMMAND);
-
-            ImportExportMeshesParams importExportMeshesParams;
-            importExportMeshesParams.m_filePathMeshes = filePath;
-            if(exportMeshesCommand) exportMeshesCommand->execute(importExportMeshesParams);
-            */
-        }
-
-        ImGui::End();
-    }
+    void onImGuiRender() override;
 
 private:    
     bool m_isMouseInsideWindow = false;

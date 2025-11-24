@@ -7,8 +7,9 @@
 #include "../Utils/GeometryUtils.h"
 #include "../Utils/glm_overrides.h"
 #include "../ViewPortsController.h"
-#include "../UI/OutlinerLayer.h"
 #include "../Renderer/MaterialRegistry.h"
+
+#include "../UI/OutlinerLayer.h"
 
 static AutoRegisterCallback<CreatePrintStructureCallBack> autoRegisterCreatePrintStructureCallBack;
 
