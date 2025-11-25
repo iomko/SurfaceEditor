@@ -25,18 +25,19 @@ public:
             ImGui::RadioButton("Disable", &typeModeInt, GizmoLayerParams::Type::Disable))
         {
             m_type = static_cast<GizmoLayerParams::Type>(typeModeInt);
-
-            GizmoLayerParams gizmoParams;
-            gizmoParams.m_type = m_type;
-            notifyObservers(gizmoParams);
         }
-
-        ImGui::End();
 
         if (m_type != GizmoLayerParams::Type::Disable)
         {
-            displayGizmo();
+            GizmoParams gizmoParams;
+            gizmoParams.m_type = operation();
+
+            auto command = m_commandRegistry->getCommand<HandleGizmoCommand>();
+
+            command->execute(gizmoParams);
         }
+
+        ImGui::End();
     }
 
     ImGuizmo::OPERATION operation()
@@ -50,68 +51,6 @@ public:
             case GizmoLayerParams::Scale:
             default:
                 return ImGuizmo::SCALE;
-        }
-    }
-
-    void displayGizmo()
-    {
-        static bool makeMove = false;
-
-        ImGuizmo::BeginFrame();
-        ImGuizmo::SetOrthographic(false);
-
-        int width, height, x, y;
-        glfwGetWindowPos(Application::getWindow().getWindowHandle(), &x, &y);
-        glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
-        ImGuizmo::SetRect(x, y, (float)width, (float)height);
-
-        SelectionController*  selectionController = ViewPortsHolderContext::s_selectionController;
-		const SelectionHolder& selectionHolder = selectionController->getHolder();
-		const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
-
-        if (selectedMeshes.empty())
-        {
-            return;
-        }
-        auto mesh = selectedMeshes.at(selectedMeshes.size() - 1);
-
-        ImGuizmo::Manipulate(
-            glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.viewMatrix),
-            glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.perspectiveMatrix),
-            operation(),
-            ImGuizmo::LOCAL,
-            glm::value_ptr(mesh->m_gizmoTransform)
-        );
-
-        static glm::mat4 originalMatrix;
-        if (ImGuizmo::IsUsing())
-        {
-            if (!makeMove)
-            {
-                originalMatrix = mesh->m_gizmoTransform;
-                makeMove = true;
-            }
-            return;
-        }
-
-        if (makeMove)
-        {
-            VertexParams vertexParams;
-            vertexParams.mesh = mesh;
-            vertexParams.newPosition = glm::vec3(mesh->m_gizmoTransform[3] - originalMatrix[3]);
-
-            auto command = m_commandRegistry->getCommand<MoveVertexCommand>();
-
-            auto& vertices = mesh->m_halfEdgeStructure->m_vertices;
-            
-            for (auto& vertex : vertices)
-            {
-                vertexParams.vertex = vertex;
-                command->execute(vertexParams);
-            }
-            
-            mesh->m_gizmoTransform = glm::mat4(1.0f);
-            makeMove = false;
         }
     }
 };

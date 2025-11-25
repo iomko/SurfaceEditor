@@ -1,6 +1,7 @@
 #pragma once
 #include "../Scene/Scene.h"
 #include "Structures/PrintableMesh.h"
+#include "ImGuizmo.h"
 
 struct OpParams {
 	virtual ~OpParams() = default;
@@ -41,6 +42,11 @@ struct GizmoLayerParams : public OpParams
     };
  
     Type m_type;
+};
+
+struct GizmoParams : public OpParams
+{
+	ImGuizmo::OPERATION m_type;
 };
 
 struct OpenTopoParams : public OpParams

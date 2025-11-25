@@ -26,6 +26,7 @@ public:
     	for(Mesh* selectedMesh : selectedMeshes) {
             moveMeshParams.mesh = selectedMesh;
             moveMeshCommand->execute(moveMeshParams);
+            selectedMesh->m_transform = glm::mat4(1.0f);
         }
     }
 

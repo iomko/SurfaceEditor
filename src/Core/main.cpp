@@ -41,6 +41,9 @@
 #include "../Commands/AddCubeCommand.h"
 #include "../Callbacks/AddCubeCallback.h"
 
+#include "../Commands/HandleGizmoCommand.h"
+#include "../Callbacks/HandleGizmoCallback.h"
+
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
 #include "../Callbacks/SelectionLayerCallBack.h"
@@ -331,8 +334,13 @@ int main()
 	moveSelectedFacesCommand->addObserver(&moveSelectedFacesCallBack);
 	moveSelectedFacesCallBack.observe(moveSelectedFacesCommand, &moveSelectedFacesCallBack);
 
-
 	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
+
+	HandleGizmoCallBack handleGizmoCallBack(commandRegistry);
+	commandRegistry->registerCommand<HandleGizmoCommand>();
+	HandleGizmoCommand* handleGizmoCommand = commandRegistry->getCommand<HandleGizmoCommand>();
+	handleGizmoCommand->addObserver(&handleGizmoCallBack);
+	handleGizmoCallBack.observe(handleGizmoCommand, &handleGizmoCallBack);
 
 	DeselectFaceCallBack deselectFaceCallBack;
 	commandRegistry->registerCommand<DeselectFaceCommand>();
