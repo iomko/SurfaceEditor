@@ -3,27 +3,6 @@
 #include <map>
 #include <typeindex>
 
-struct OutlinerNodeConcept {
-    OutlinerNodeConcept(int id, const std::string& name) {
-        m_id = id;
-        m_name = name;
-    }
-    virtual ~OutlinerNodeConcept() = default; 
-
-    int m_id;
-    std::string m_name;
-    std::vector<OutlinerNodeConcept*> m_childs;
-};
-
-template<typename T>
-class OutlinerNode : public OutlinerNodeConcept {
-public:
-    OutlinerNode(int id, const std::string& name, const T& data) : 
-        OutlinerNodeConcept(id, name), m_data(data) {}
-
-public:
-    T m_data;
-};
 
 class LayerState {
 };
@@ -48,10 +27,4 @@ public:
 
 private:
     inline static std::map<std::type_index, std::vector<std::function<void(LayerState&)>>> m_handlers; 
-};
-
-struct OutlinerLayerState : public LayerState {
-    std::vector<OutlinerNodeConcept*> m_nodes;
-    OutlinerNodeConcept* m_currentSelectedNode = nullptr;
-    bool m_isMouseInsideWindow;
 };

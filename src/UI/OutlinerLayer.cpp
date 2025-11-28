@@ -1,11 +1,15 @@
 #include "OutlinerLayer.h"
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
+#include "OutlinerService.h"
 
 static AutoRegisterLayerArgs<OutlinerLayer, std::reference_wrapper<WindowLayerBus>> reg(OUTLINER_LAYER);
 
 OutlinerLayer::OutlinerLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : Layer(name), m_windowLayerBus(windowLayerBus) {}
+    : Layer(name), m_windowLayerBus(windowLayerBus) 
+    {
+        Outliner::registerState(&m_state);
+    }
 
 void OutlinerLayer::onEvent(Event &event) 
 {

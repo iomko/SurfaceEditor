@@ -9,7 +9,7 @@
 #include "../ViewPortsController.h"
 #include "../Renderer/MaterialRegistry.h"
 
-#include "../UI/OutlinerLayer.h"
+#include "../UI/OutlinerService.h"
 
 static AutoRegisterCallback<CreatePrintStructureCallBack> autoRegisterCreatePrintStructureCallBack;
 
@@ -150,8 +150,15 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
     auto [it, inserted] = printableMeshesMap.emplace(inputMesh, outputPrintableMesh);
 
     // Add created printable mesh into the outliner layer
-    if (OutlinerLayer::m_state.m_currentSelectedNode != nullptr)
+    if (auto s = Outliner::getState())
     {
-        OutlinerLayer::addChildNode(OutlinerLayer::m_state.m_currentSelectedNode, 1, "PrintableMesh1", outputPrintableMesh);
+        if (s->m_currentSelectedNode != nullptr)
+        {
+            Outliner::addChildNode(s->m_currentSelectedNode, 1, "PrintableMesh1", outputPrintableMesh);
+        }
+    }
+    else
+    {
+        printf("CreatePrintStructureCallBack::execute NOSTATE\n");
     }
 }

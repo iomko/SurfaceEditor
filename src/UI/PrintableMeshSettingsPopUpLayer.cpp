@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
+#include "OutlinerModel.h"
 
 static AutoRegisterLayerArgs<PrintableMeshSettingsPopUpLayer,std::reference_wrapper<WindowLayerBus>> reg(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER);
 

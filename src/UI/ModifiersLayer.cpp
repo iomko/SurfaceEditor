@@ -4,6 +4,7 @@
 #include "../Commands/CommandIDs.h"
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
+#include "OutlinerModel.h"
 
 static AutoRegisterLayerArgs<ModifiersLayer, std::reference_wrapper<WindowLayerBus>> reg(MODIFIERS_LAYER);
 
