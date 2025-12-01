@@ -43,24 +43,27 @@ void ModifiersLayer::onImGuiRender()
 
     m_state.m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                                      mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-
-    if (ImGui::Button("Solidify"))
+    
+    auto *solidifyMeshesCommand = CommandRegistry::instance().getCommand(SOLIDIFY_MESHES_COMMAND);
+    if(solidifyMeshesCommand)
     {
-        auto *solidifyMeshesCommand = CommandRegistry::instance().getCommand(SOLIDIFY_MESHES_COMMAND);
-        if (solidifyMeshesCommand)
-            solidifyMeshesCommand->execute();
-    }
-
-    if (ImGui::Button("CreatePrint"))
-    {
-        if (m_state.m_selectedMesh != nullptr)
+        if (ImGui::Button("Solidify"))
         {
-            auto *createPrintCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
-            PrintMeshSettingsParams printMeshSettingsParams;
-            printMeshSettingsParams.mesh = m_state.m_selectedMesh;
-            printMeshSettingsParams.height = 1.0f;
-            if (createPrintCommand)
+            solidifyMeshesCommand->execute();
+        }
+    }
+    auto *createPrintCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
+    if(createPrintCommand)
+    {
+        if (ImGui::Button("CreatePrint"))
+        {
+            if (m_state.m_selectedMesh != nullptr)
+            {            
+                PrintMeshSettingsParams printMeshSettingsParams;
+                printMeshSettingsParams.mesh = m_state.m_selectedMesh;
+                printMeshSettingsParams.height = 1.0f;
                 createPrintCommand->execute(printMeshSettingsParams);
+            }
         }
     }
 

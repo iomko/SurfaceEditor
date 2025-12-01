@@ -33,14 +33,15 @@ void SculptToolsLayer::onImGuiRender()
     m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
-    if (ImGui::TreeNode("BrushTool"))
+
+    auto *brushTool = ToolRegistry::instance().getTool(BRUSH_TOOL);
+    if(brushTool)
     {
-        if (ImGui::Button("Choose Brush Tool"))
+        if (ImGui::TreeNode("BrushTool"))
         {
-            std::cout << "Chosen Brush Tool" << std::endl;
-            auto *brushTool = ToolRegistry::instance().getTool(BRUSH_TOOL);
-            if (brushTool)
+            if (ImGui::Button("Choose Brush Tool"))
             {
+                std::cout << "Chosen Brush Tool" << std::endl;
                 ViewPortsHolderContext::s_viewPortsController->m_currentTool = brushTool;
                 if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
                 {
@@ -52,13 +53,14 @@ void SculptToolsLayer::onImGuiRender()
                 brushToolParams->radius = m_brushRadius;
                 ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = brushToolParams;
             }
+
+            ImGui::SliderFloat("BrushStrength", &m_brushStrength, -50.0f, 50.0f, "%.1f");
+            ImGui::SliderFloat("BrushRadius", &m_brushRadius, 0.0f, 50.0f, "%.1f");
+
+            ImGui::TreePop();
         }
-
-        ImGui::SliderFloat("BrushStrength", &m_brushStrength, -50.0f, 50.0f, "%.1f");
-        ImGui::SliderFloat("BrushRadius", &m_brushRadius, 0.0f, 50.0f, "%.1f");
-
-        ImGui::TreePop();
     }
+    
 
     ImGui::End();
 }

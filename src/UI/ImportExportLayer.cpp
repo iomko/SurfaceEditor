@@ -37,48 +37,55 @@ void ImportExportLayer::onImGuiRender()
     bool exportClicked = false;
     bool importClicked = false;
     std::string filePath;
-
-    if (ImGui::Button("Import"))
+    
+    
+    auto* importMeshesCommand = CommandRegistry::instance().getCommand(IMPORT_MESHES_COMMAND);
+    if(importMeshesCommand)
     {
-        /*
-        // Call a function or perform actions for Import
-        filePath = WindowsFileDialogs::openFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-        importClicked = true;
-        */
+        if (ImGui::Button("Import"))
+        {
+            /*
+            // Call a function or perform actions for Import
+            filePath = WindowsFileDialogs::openFile("OBJ Files\0*.obj\0All Files\0*.*\0");
+            importClicked = true;
+            */
+        }
+        if (importClicked && !filePath.empty())
+        {
+            /*
+            std::cout << "filePath: " << filePath << std::endl;
+
+            ImportExportMeshesParams importExportMeshesParams;
+            importExportMeshesParams.m_filePathMeshes = filePath;
+            importMeshesCommand->execute(importExportMeshesParams);
+            */
+        }
+        ImGui::SameLine();
     }
-    if (importClicked && !filePath.empty())
+        
+    auto* exportMeshesCommand = CommandRegistry::instance().getCommand(EXPORT_MESHES_COMMAND);
+    if(exportMeshesCommand)
     {
-        /*
-        std::cout << "filePath: " << filePath << std::endl;
-        auto* importMeshesCommand = CommandRegistry::instance().getCommand(IMPORT_MESHES_COMMAND);
+        if (ImGui::Button("Export"))
+        {
+            /*
+            // Call a function or perform actions for Import
+            filePath = WindowsFileDialogs::saveFile("OBJ Files\0*.obj\0All Files\0*.*\0");
+            exportClicked = true;
+            */
+        }
+        if (exportClicked && !filePath.empty())
+        {
+            /*
+            std::cout << "filePath: " << filePath << std::endl;
 
-        ImportExportMeshesParams importExportMeshesParams;
-        importExportMeshesParams.m_filePathMeshes = filePath;
-        if(importMeshesCommand) importMeshesCommand->execute(importExportMeshesParams);
-        */
+            ImportExportMeshesParams importExportMeshesParams;
+            importExportMeshesParams.m_filePathMeshes = filePath;
+            exportMeshesCommand->execute(importExportMeshesParams);
+            */
+        }
     }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Export"))
-    {
-        /*
-        // Call a function or perform actions for Import
-        filePath = WindowsFileDialogs::saveFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-        exportClicked = true;
-        */
-    }
-    if (exportClicked && !filePath.empty())
-    {
-        /*
-        std::cout << "filePath: " << filePath << std::endl;
-        auto* exportMeshesCommand = CommandRegistry::instance().getCommand(EXPORT_MESHES_COMMAND);
-
-        ImportExportMeshesParams importExportMeshesParams;
-        importExportMeshesParams.m_filePathMeshes = filePath;
-        if(exportMeshesCommand) exportMeshesCommand->execute(importExportMeshesParams);
-        */
-    }
+    
 
     ImGui::End();
 }

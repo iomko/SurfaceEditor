@@ -25,6 +25,8 @@ public:
         );
     }
 
+    
+
 private:
     inline static std::map<std::type_index, std::vector<std::function<void(LayerState&)>>> m_handlers; 
 };

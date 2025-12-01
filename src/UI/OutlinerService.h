@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 #include "OutlinerModel.h"
-
-// jednoduché DI / service rozhranie, ktoré OutlinerLayer zaregistruje vo svojom ctore.
-// Ostatné moduly používajú túto hlavičku (nemenia include OutlinerLayer.h).
+//UROB AKO CALLABLE
 namespace Outliner {
     inline OutlinerLayerState* s_state = nullptr;
 

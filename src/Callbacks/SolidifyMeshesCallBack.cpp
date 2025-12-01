@@ -1,6 +1,4 @@
 #include "SolidifyMeshesCallBack.h"
-#include "CallbackRegister.h"
-#include "Callbacks/ConnectEdgesCallBack.h"
 #include "Editing/Selection/SelectionController.h"
 #include "Renderer/Renderer.h"
 #include "Scene/Scene.h"
@@ -14,6 +12,7 @@
 #include "Callables/EdgesVaoInitCallable.h"
 #include "Callables/FaceVaoInitCallable.h"
 #include <chrono>
+#include "CallbackRegister.h"
 
 static AutoRegisterCallback<SolidifyMeshesCallBack> reg;
 
@@ -111,12 +110,15 @@ void SolidifyMeshesCallBack::execute()
                 {
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    ConnectEdgesCallBack connectEdgesCallBack;
-                    EdgeConnectionsParams edgeConnectionsParams;
-                    edgeConnectionsParams.mesh = selectedMesh;
-                    edgeConnectionsParams.firstEdge = edge;
-                    edgeConnectionsParams.secondEdge = otherEdge;
-                    connectEdgesCallBack.execute(edgeConnectionsParams);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    if(connectEdgesCallBack)
+                    {
+                        EdgeConnectionsParams edgeConnectionsParams;
+                        edgeConnectionsParams.mesh = selectedMesh;
+                        edgeConnectionsParams.firstEdge = edge;
+                        edgeConnectionsParams.secondEdge = otherEdge;
+                        connectEdgesCallBack->execute(edgeConnectionsParams);
+                    }
 
                     usedEdgesMap.erase(usedEdgesMapIt);
                 }
@@ -169,12 +171,15 @@ void SolidifyMeshesCallBack::execute()
                 {
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    ConnectEdgesCallBack connectEdgesCallBack;
-                    EdgeConnectionsParams edgeConnectionsParams;
-                    edgeConnectionsParams.mesh = selectedMesh;
-                    edgeConnectionsParams.firstEdge = edge;
-                    edgeConnectionsParams.secondEdge = otherEdge;
-                    connectEdgesCallBack.execute(edgeConnectionsParams);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    if(connectEdgesCallBack)
+                    {
+                        EdgeConnectionsParams edgeConnectionsParams;
+                        edgeConnectionsParams.mesh = selectedMesh;
+                        edgeConnectionsParams.firstEdge = edge;
+                        edgeConnectionsParams.secondEdge = otherEdge;
+                        connectEdgesCallBack->execute(edgeConnectionsParams);
+                    }
 
                     usedEdgesMap.erase(usedEdgesMapIt);
                 }
@@ -212,12 +217,15 @@ void SolidifyMeshesCallBack::execute()
 
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    ConnectEdgesCallBack connectEdgesCallBack;
-                    EdgeConnectionsParams edgeConnectionsParams;
-                    edgeConnectionsParams.mesh = selectedMesh;
-                    edgeConnectionsParams.firstEdge = edge;
-                    edgeConnectionsParams.secondEdge = otherEdge;
-                    connectEdgesCallBack.execute(edgeConnectionsParams);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    if(connectEdgesCallBack)
+                    {
+                        EdgeConnectionsParams edgeConnectionsParams;
+                        edgeConnectionsParams.mesh = selectedMesh;
+                        edgeConnectionsParams.firstEdge = edge;
+                        edgeConnectionsParams.secondEdge = otherEdge;
+                        connectEdgesCallBack->execute(edgeConnectionsParams);
+                    }
 
                     usedEdgesMap.erase(usedEdgesMapIt);
                 }

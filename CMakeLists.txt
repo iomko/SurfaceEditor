@@ -77,13 +77,23 @@ FetchContent_MakeAvailable(ImGuizmo)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
+include("${PROJECT_SOURCE_DIR}/Features.cmake")
+
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
-# Až potom include
-include("${PROJECT_SOURCE_DIR}/src/Commands/CMakeLists.txt")
-include("${PROJECT_SOURCE_DIR}/src/Tools/CMakeLists.txt")
-include("${PROJECT_SOURCE_DIR}/src/Callbacks/CMakeLists.txt")
-include("${PROJECT_SOURCE_DIR}/src/UI/CMakeLists.txt")
+foreach(entry ${FEATURE_MAP})
+    string(REPLACE "," ";" entry_list "${entry}")
+    list(GET entry_list 0 featureName)
+    string(TOUPPER "${featureName}" FEATURE_UPPER)
+    if(NOT FEATURE_${FEATURE_UPPER})
+        list(LENGTH entry_list len)
+        math(EXPR count "${len} - 1")
+        foreach(i RANGE 1 ${count})
+            list(GET entry_list ${i} file)
+            list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/${file}")
+        endforeach()
+    endif()
+endforeach()
 
 # Teraz vytvor executable
 add_executable(SurfaceEditor ${SRC_FILES})

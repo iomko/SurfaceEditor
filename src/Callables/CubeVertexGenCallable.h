@@ -3,9 +3,6 @@
 #include "Callable.h"
 #include "../Callables/FunctionComposer.h"
 #include "../Params/OperationParams.h"
-#include "MeshVaoInitCallable.h"
-#include "SceneMeshAdderCallable.h"
-#include "MeshOutlinerAdderCallable.h"
 
 
 class CubeVertexGenCallable : public Callable<CubeParams, MeshParams>

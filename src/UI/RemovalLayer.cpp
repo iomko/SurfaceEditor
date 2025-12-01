@@ -33,18 +33,24 @@ void RemovalLayer::onImGuiRender()
     m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
-    if (ImGui::Button("Delete Selected Faces"))
+
+    auto *deleteSelectedFacesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_FACES_COMMAND);
+    if(deleteSelectedFacesCommand)
     {
-        auto *deleteSelectedFacesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_FACES_COMMAND);
-        if (deleteSelectedFacesCommand)
+        if (ImGui::Button("Delete Selected Faces"))
+        {
             deleteSelectedFacesCommand->execute();
+        }
     }
 
+    auto *deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_MESHES_COMMAND);
+    if(deleteSelectedMeshesCommand)
+    {
     if (ImGui::Button("Delete Selected Meshes"))
     {
-        auto *deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_MESHES_COMMAND);
-        if (deleteSelectedMeshesCommand)
-            deleteSelectedMeshesCommand->execute();
+        deleteSelectedMeshesCommand->execute();
+    }
+
     }
 
     ImGui::End();
