@@ -1,11 +1,9 @@
 #include "GizmoLayer.h"
-#include "LayerRegistry.h"
-#include "LayerIDs.h"
 #include "../ViewPortsController.h"
 
-static AutoRegisterLayer<GizmoLayer> reg(GIZMO_LAYER);
+static AutoRegisterLayerArgs<GizmoLayer, std::string> reg;
 
-GizmoLayer::GizmoLayer(const std::string &name) : Layer(name) {}
+GizmoLayer::GizmoLayer(const std::string &name) : LayerWithID(name) {}
 
 void GizmoLayer::onImGuiRender()
 {

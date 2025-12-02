@@ -1,14 +1,12 @@
 #include "ImportExportLayer.h"
-#include "LayerIDs.h"
-#include "LayerRegistry.h"
 #include "imgui.h" 
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
 
-static AutoRegisterLayer<ImportExportLayer> reg(IMPORT_EXPORT_LAYER);
+static AutoRegisterLayerArgs<ImportExportLayer, std::string> reg;
 
 ImportExportLayer::ImportExportLayer(const std::string &name)
-    : Layer(name) {}
+    : LayerWithID(name) {}
 
 void ImportExportLayer::onEvent(Event &event) 
 {

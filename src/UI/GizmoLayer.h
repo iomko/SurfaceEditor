@@ -2,8 +2,10 @@
 #include "ImGuizmo.h"
 #include "../Patterns/Observer.h"
 #include "../Core/Layer.h"
+#include "LayerRegistry.h"
+#include "LayerIDs.h"
 
-class GizmoLayer : public Layer, public Observable
+class GizmoLayer : public LayerWithID<GIZMO_LAYER>, public Observable
 {
 private:
     GizmoLayerParams::Type m_type = GizmoLayerParams::Type::Disable;

@@ -1,12 +1,10 @@
 #include "SelectionLayer.h"
-#include "LayerIDs.h"
-#include "LayerRegistry.h"
 #include "imgui.h"
 
-static AutoRegisterLayer<SelectionLayer> reg(SELECTION_LAYER);
+static AutoRegisterLayerArgs<SelectionLayer, std::string> reg;
 
 SelectionLayer::SelectionLayer(const std::string &name)
-    : Layer(name)
+    : LayerWithID(name)
 {
 }
 

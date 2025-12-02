@@ -1,15 +1,13 @@
 #include "PrintableMeshSettingsPopUpLayer.h"
-#include "LayerIDs.h"
-#include "LayerRegistry.h"
 #include "imgui.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
-#include "OutlinerModel.h"
+#include "OutlinerLayer.h"
 
-static AutoRegisterLayerArgs<PrintableMeshSettingsPopUpLayer,std::reference_wrapper<WindowLayerBus>> reg(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER);
+static AutoRegisterLayerArgs<PrintableMeshSettingsPopUpLayer,std::string,std::reference_wrapper<WindowLayerBus>> reg;
 
 PrintableMeshSettingsPopUpLayer::PrintableMeshSettingsPopUpLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : Layer(name)
+    : LayerWithID(name)
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {

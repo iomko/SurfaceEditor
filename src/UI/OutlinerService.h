@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "OutlinerModel.h"
+#include "OutlinerLayer.h"
 //UROB AKO CALLABLE
 namespace Outliner {
     inline OutlinerLayerState* s_state = nullptr;

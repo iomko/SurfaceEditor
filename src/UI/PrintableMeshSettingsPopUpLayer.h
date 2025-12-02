@@ -3,6 +3,8 @@
 #include "../Patterns/Observer.h"
 #include "../Core/Layer.h"
 #include "WindowLayerBus.h"
+#include "LayerIDs.h"
+#include "LayerRegistry.h"
 
 struct PrintableMeshSettingsPopUpLayerState : LayerState {
     float m_layerHeight = 1.0f;
@@ -13,7 +15,7 @@ struct PrintableMeshSettingsPopUpLayerState : LayerState {
 };
 
 
-class PrintableMeshSettingsPopUpLayer : public Layer, public Observable, public Observer {
+class PrintableMeshSettingsPopUpLayer : public LayerWithID<PRINTABLE_MESH_SETTINGS_POP_UP_LAYER>, public Observable, public Observer {
 public:
     PrintableMeshSettingsPopUpLayer(const std::string& name, WindowLayerBus& windowLayerBus);
 

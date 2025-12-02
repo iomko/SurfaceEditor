@@ -1,14 +1,12 @@
 #include "RemovalLayer.h"
-#include "LayerIDs.h"
-#include "LayerRegistry.h"
 #include "imgui.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
 
-static AutoRegisterLayer<RemovalLayer> reg(REMOVAL_LAYER);
+static AutoRegisterLayerArgs<RemovalLayer, std::string> reg;
 
 RemovalLayer::RemovalLayer(const std::string &name)
-    : Layer(name) {}
+    : LayerWithID(name) {}
 void RemovalLayer::onEvent(Event &event)
 {
     if (event.getType() == EventType::MouseButtonPress)

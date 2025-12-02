@@ -1,15 +1,12 @@
 #include "AdditionLayer.h"
-#include "LayerRegistry.h"
 #include "imgui.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
 
-#include "LayerIDs.h"
-
-static AutoRegisterLayer<AdditionLayer> reg(ADDITION_LAYER);
+static AutoRegisterLayerArgs<AdditionLayer, std::string> reg;
 
 AdditionLayer::AdditionLayer(const std::string& name)
-    : Layer(name) {}
+    : LayerWithID(name) {}
 
 void AdditionLayer::onEvent(Event &event)
 {

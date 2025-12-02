@@ -76,16 +76,16 @@ static void setup(const int command_id, const int callback_id, const int tool_id
 	}
 }
 
-static void setupLayer(const std::string &layer_id, Application &app, WindowLayerBus *bus = nullptr)
+static void setupLayer(const int layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
 {
 	Layer *layer;
 	if (bus == nullptr)
 	{
-		layer = LayerRegistry::instance().getLayer(layer_id);
+		layer = LayerRegistry::instance().getLayer(layer_id, name);
 	}
 	else
 	{
-		layer = LayerRegistry::instance().getLayer(layer_id, std::ref(*bus));
+		layer = LayerRegistry::instance().getLayer(layer_id, name, std::ref(*bus));
 	}
 	if (layer)
 		app.getLayerStack().addLayer(layer);
@@ -134,10 +134,10 @@ int main()
 	app.getLayerStack().addLayer(viewPortLayer);
 
 	// ImporExportLayer
-	setupLayer(IMPORT_EXPORT_LAYER, app);
+	setupLayer(IMPORT_EXPORT_LAYER, app, "ImportExportLayer");
 
 	// GizmoLayer
-	setupLayer(GIZMO_LAYER, app);
+	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
 
 	// importMeshesCommand
 
@@ -174,8 +174,7 @@ int main()
 	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
 
 	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
-
-	auto selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER);
+	Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
 	if (selectionLayer)
 	{
 		app.getLayerStack().addLayer(selectionLayer);
@@ -193,17 +192,17 @@ int main()
 		}
 	}
 
-	setupLayer(ADDITION_LAYER, app);
+	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
 
-	setupLayer(OUTLINER_LAYER, app, &windowLayerBus);
+	setupLayer(OUTLINER_LAYER, app, "OutlinerLayer", &windowLayerBus);
 
-	setupLayer(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, app, &windowLayerBus);
+	setupLayer(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, app, "PopUpLayer", &windowLayerBus);
 
-	setupLayer(MODIFIERS_LAYER, app, &windowLayerBus);
+	setupLayer(MODIFIERS_LAYER, app, "ModifiersLayer", &windowLayerBus);
 
-	setupLayer(REMOVAL_LAYER, app);
+	setupLayer(REMOVAL_LAYER, app, "RemovalLayer");
 
-	setupLayer(SCULPT_TOOLS_LAYER, app);
+	setupLayer(SCULPT_TOOLS_LAYER, app, "SculptToolsLayer");
 
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader

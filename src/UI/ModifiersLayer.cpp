@@ -2,14 +2,12 @@
 #include "imgui.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
-#include "LayerRegistry.h"
-#include "LayerIDs.h"
-#include "OutlinerModel.h"
+#include "OutlinerLayer.h"
 
-static AutoRegisterLayerArgs<ModifiersLayer, std::reference_wrapper<WindowLayerBus>> reg(MODIFIERS_LAYER);
+static AutoRegisterLayerArgs<ModifiersLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg;
 
 ModifiersLayer::ModifiersLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : Layer(name)
+    : LayerWithID(name)
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {

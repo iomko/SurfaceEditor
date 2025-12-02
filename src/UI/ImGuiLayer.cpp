@@ -5,10 +5,8 @@
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "LayerRegistry.h"
-#include "LayerIDs.h"
 
-static AutoRegisterLayer<ImGuiLayer> reg(IM_GUI_LAYER);
+static AutoRegisterLayerArgs<ImGuiLayer, std::string> reg;
 
 void ImGuiLayer::onAttach()
 {

@@ -1,15 +1,13 @@
 #include "SculptToolsLayer.h"
-#include "LayerIDs.h"
-#include "LayerRegistry.h"
 #include "imgui.h"
 #include "../ViewPortsController.h"
 #include "../Tools/ToolRegistry.h"
 #include "../Tools/ToolIDs.h"
 
-static AutoRegisterLayer<SculptToolsLayer> reg(SCULPT_TOOLS_LAYER);
+static AutoRegisterLayerArgs<SculptToolsLayer, std::string> reg;
 
 SculptToolsLayer::SculptToolsLayer(const std::string &name)
-    : Layer(name) {}
+    : LayerWithID(name) {}
 
 void SculptToolsLayer::onEvent(Event &event) 
 {
