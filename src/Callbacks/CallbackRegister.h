@@ -21,6 +21,13 @@ public:
         };
     }
 
+    template<typename CallbackT>
+    void registerTemplateCallback(int id) {        
+        m_creators[id] = []() -> std::unique_ptr<CallbackConcept> {
+            return std::make_unique<CallbackT>();
+        };
+    }
+
     void registerCallbackFactory(int id, Creator factory) {
         m_creators[id] = std::move(factory);
     }
@@ -45,6 +52,11 @@ public:
         m_instances.clear();
     }
 
+    bool availableID(int id)
+    {
+        return !m_creators.contains(id);
+    }
+
 private:
     std::unordered_map<int, Creator> m_creators;
     std::unordered_map<int, std::unique_ptr<CallbackConcept>> m_instances;
@@ -54,5 +66,13 @@ template<typename CallbackT>
 struct AutoRegisterCallback {
     AutoRegisterCallback() {
         CallbackRegistry::instance().registerCallback<CallbackT>();
+    }
+};
+
+template<typename CallbackT>
+struct AutoRegisterTemplateCallback {
+    AutoRegisterTemplateCallback(int id) {
+        printf("Registring template on id %d\n", id);
+        CallbackRegistry::instance().registerTemplateCallback<CallbackT>(id);
     }
 };

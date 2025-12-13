@@ -9,8 +9,6 @@
 #include "../ViewPortsController.h"
 #include "../Renderer/MaterialRegistry.h"
 
-#include "../UI/OutlinerService.h"
-
 static AutoRegisterCallback<CreatePrintStructureCallBack> autoRegisterCreatePrintStructureCallBack;
 
 void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParams)
@@ -149,16 +147,16 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
     SceneResources::PrintableMeshMap &printableMeshesMap = scene->m_res.printableMeshMap;
     auto [it, inserted] = printableMeshesMap.emplace(inputMesh, outputPrintableMesh);
 
-    // Add created printable mesh into the outliner layer
-    if (auto s = Outliner::getState())
+
+    auto* addChildCallback = CallbackRegistry::instance().getCallback(TemplateCallbackIDManger::instance().GetIndex(typeid(PrintableMesh), true));
+    Observable* observable = dynamic_cast<Observable*>(addChildCallback);
+    if(observable)
     {
-        if (s->m_currentSelectedNode != nullptr)
-        {
-            Outliner::addChildNode(s->m_currentSelectedNode, 1, "PrintableMesh1", outputPrintableMesh);
-        }
-    }
-    else
-    {
-        printf("CreatePrintStructureCallBack::execute NOSTATE\n");
+        AddChildOutlinerNodeCallBackParams<PrintableMesh> params;
+        params.id = 1;
+        params.name = "PrintableMesh1";
+        params.data = outputPrintableMesh;
+        
+        observable->notifyObservers(params);
     }
 }

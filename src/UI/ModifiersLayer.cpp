@@ -11,7 +11,7 @@ ModifiersLayer::ModifiersLayer(const std::string &name, WindowLayerBus &windowLa
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {
-                if(OutlinerNode<Mesh*>* node = dynamic_cast<OutlinerNode<Mesh*>*>(outlinerLayerState.m_currentSelectedNode)) {
+                if(OutlinerNode<Mesh>* node = dynamic_cast<OutlinerNode<Mesh>*>(outlinerLayerState.m_currentSelectedNode)) {
                     m_state.m_selectedMesh = node->m_data;
                 } else {
                     std::cout << "NOT DYNAMIC CAST" << std::endl;

@@ -1,12 +1,10 @@
 #include "OutlinerLayer.h"
-#include "OutlinerService.h"
 
 static AutoRegisterLayerArgs<OutlinerLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg;
 
 OutlinerLayer::OutlinerLayer(const std::string &name, WindowLayerBus &windowLayerBus)
     : LayerWithID(name), m_windowLayerBus(windowLayerBus) 
     {
-        Outliner::registerState(&m_state);
     }
 
 void OutlinerLayer::onEvent(Event &event) 
@@ -62,4 +60,9 @@ void OutlinerLayer::onImGuiRender()
     }
 
     ImGui::End();
+}
+void OutlinerLayer::editParams(OpParams& iParams)
+{
+    AddOutlinerNodeCallBackParams& params = dynamic_cast<AddOutlinerNodeCallBackParams&>(iParams);
+    params.state = &m_state;
 }

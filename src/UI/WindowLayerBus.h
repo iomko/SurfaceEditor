@@ -4,7 +4,8 @@
 #include <typeindex>
 
 
-class LayerState {
+struct LayerState {
+    virtual ~LayerState() = default;
 };
 
 class WindowLayerBus {

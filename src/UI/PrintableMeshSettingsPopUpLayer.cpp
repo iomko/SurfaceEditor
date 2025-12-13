@@ -11,10 +11,10 @@ PrintableMeshSettingsPopUpLayer::PrintableMeshSettingsPopUpLayer(const std::stri
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {
-                if(OutlinerNode<PrintableMesh*>* node = dynamic_cast<OutlinerNode<PrintableMesh*>*>(outlinerLayerState.m_currentSelectedNode)) {
+                if(OutlinerNode<PrintableMesh>* node = dynamic_cast<OutlinerNode<PrintableMesh>*>(outlinerLayerState.m_currentSelectedNode)) {
                     m_state.m_selectedPrintableMesh = node->m_data;
                     m_state.m_isOpen = true; 
-                } else if(OutlinerNode<Mesh*>* node = dynamic_cast<OutlinerNode<Mesh*>*>(outlinerLayerState.m_currentSelectedNode)){
+                } else if(OutlinerNode<Mesh>* node = dynamic_cast<OutlinerNode<Mesh>*>(outlinerLayerState.m_currentSelectedNode)){
                     m_state.m_isOpen = false;
                     m_state.m_selectedMesh = node->m_data;
                 } else {

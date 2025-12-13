@@ -20,6 +20,7 @@ set(FEATURE_MAP
     "ImportMeshes,src/Callbacks/ImportMeshesCallBack.cpp,src/Commands/ImportMeshesCommand.cpp"
     "MoveSelectedFaces,src/Callbacks/MoveSelectedFacesCallBack.cpp,src/Commands/MoveSelectedFacesCommand.cpp"
     "MoveVertex,src/Callbacks/MoveVertexCallBack.cpp,src/Commands/MoveVertexCommand.cpp"
+    "AddNodesToOutlinerLayer,src/Callbacks/AddOutlinerNodeCallBacks.cpp"
     "SelectionLayer,src/UI/SelectionLayer.cpp"
     "AdditionLayer,src/UI/AdditionLayer.cpp"
     "GizmoLayer,src/UI/GizmoLayer.cpp"

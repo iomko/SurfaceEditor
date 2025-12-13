@@ -194,7 +194,36 @@ int main()
 
 	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
 
-	setupLayer(OUTLINER_LAYER, app, "OutlinerLayer", &windowLayerBus);
+	Layer* outlinerLayer = LayerRegistry::instance().getLayer(OUTLINER_LAYER, std::string("OutlinerLayer") , std::ref(windowLayerBus));
+	
+	if (outlinerLayer)
+	{
+		app.getLayerStack().addLayer(outlinerLayer);		
+		Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
+		if(outlinerObserver)
+		{
+			int id = TemplateCallbackIDManger::instance().GetIndex(typeid(Mesh), false);
+			auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
+			printf("Getting template on id %d\n", id);
+			if(addNewOutlinerNodeCallBackMesh)
+			{
+				Observable* addNewOutlinerNodeMeshObservalbe = dynamic_cast<Observable*>(addNewOutlinerNodeCallBackMesh);
+				addNewOutlinerNodeMeshObservalbe->addObserver(outlinerObserver);
+				outlinerObserver->observe(addNewOutlinerNodeMeshObservalbe, addNewOutlinerNodeCallBackMesh);
+			}
+			id = TemplateCallbackIDManger::instance().GetIndex(typeid(PrintableMesh), true);
+			auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
+			printf("Getting template on id %d\n", id);
+			
+			if(addChildOutlinerNodeCallBackPrintableMesh)
+			{
+				Observable* addChildOutlinerNodePrintableMeshObservable = dynamic_cast<Observable*>(addChildOutlinerNodeCallBackPrintableMesh);
+				addChildOutlinerNodePrintableMeshObservable->addObserver(outlinerObserver);
+				outlinerObserver->observe(addChildOutlinerNodePrintableMeshObservable, addChildOutlinerNodeCallBackPrintableMesh);
+			}
+		}
+	}
+	//setupLayer(OUTLINER_LAYER, app, "OutlinerLayer", &windowLayerBus);
 
 	setupLayer(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, app, "PopUpLayer", &windowLayerBus);
 

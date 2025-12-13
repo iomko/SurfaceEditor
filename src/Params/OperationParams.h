@@ -156,4 +156,25 @@ struct PrintMeshSettingsParams : public OpParams {
     float height = 1.0f;
 };
 
+class LayerState;
+class OutlinerNodeConcept;
+
+struct AddOutlinerNodeCallBackParams : public OpParams 
+{
+	LayerState* state = nullptr;
+	int id = 0;
+	std::string name = "";
+};
+
+template<typename T>
+struct AddNewOutlinerNodeCallBackParams : public AddOutlinerNodeCallBackParams 
+{	
+	T* data = nullptr;
+};
+
+template<typename T>
+struct AddChildOutlinerNodeCallBackParams : public AddNewOutlinerNodeCallBackParams<T>
+{
+	OutlinerNodeConcept* parent = nullptr;
+};
 
