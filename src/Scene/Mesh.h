@@ -23,8 +23,8 @@ public:
 
     MeshBufferLayout bufferLayout;
 
-    glm::mat4 m_transform = glm::mat4(1.0f);
-    glm::mat4 m_gizmoTransform = glm::mat4(1.0f);
+	glm::mat4 m_transform = glm::mat4(1.0f);
+    glm::mat4* m_realTimeTransform = nullptr;
 
 public:
 

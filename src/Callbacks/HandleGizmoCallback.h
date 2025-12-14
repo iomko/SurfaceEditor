@@ -11,6 +11,29 @@ class HandleGizmoCallBack : public Callback<GizmoParams>, public Observer
 public:
     HandleGizmoCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
 
+    void calcMiddlePos(const std::vector<Mesh*>& selectedMeshes)
+    {
+        glm::mat4 middle(1.0f);
+
+        for (const auto& mesh : selectedMeshes)
+        {
+            mesh->m_realTimeTransform = &m_realTimeTransform;
+
+            middle[3] += glm::vec4(glm::vec3(mesh->m_transform[3]), 0.0f);
+        }
+
+        middle[3] /= selectedMeshes.size();
+        middle[3][3] = 1.0f;
+
+        m_gizmoTransform[3] = middle[3];
+
+        for (int i{}; i < 4; ++i)
+        {
+            std::cout << m_gizmoTransform[3][i] << "\n";
+        }
+        std::cout << "\n";
+    }
+
     void scaleGizmo()
     {
 
@@ -21,7 +44,7 @@ public:
 
     }
 
-    void moveGizmo(glm::mat4& gizmoTransform, glm::mat4& transform)
+    void moveGizmo()
     {
         static bool makeMove = false;
 
@@ -30,28 +53,32 @@ public:
             glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.perspectiveMatrix),
             ImGuizmo::OPERATION::TRANSLATE,
             ImGuizmo::LOCAL,
-            glm::value_ptr(gizmoTransform),
-            glm::value_ptr(transform));
+            glm::value_ptr(m_gizmoTransform),
+            glm::value_ptr(m_transform));
 
-        static glm::mat4 originalMatrix;
         if (ImGuizmo::IsUsing())
         {
             if (!makeMove)
             {
-                originalMatrix = transform;
                 makeMove = true;
             }
+            m_realTimeTransform[3].x += m_transform[3].x;
+            m_realTimeTransform[3].y += m_transform[3].y;
+            m_realTimeTransform[3].z += m_transform[3].z;
+
             return;
         }
 
         if (makeMove)
         {
             MoveSelectedMeshesParams meshParams;
-            meshParams.moveByVector = glm::vec3(transform[3] - originalMatrix[3]);
+            meshParams.moveByVector = m_realTimeTransform[3];
 
             auto command = m_commandRegistry->getCommand<MoveSelectedMeshesCommand>();
             command->execute(meshParams);
 
+            m_transform = glm::mat4(1.0f);
+            m_realTimeTransform = glm::mat4(1.0f);
             makeMove = false;
         }
     }
@@ -66,20 +93,27 @@ public:
         glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
         ImGuizmo::SetRect(x, y, (float)width, (float)height);
 
-        SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
-        const SelectionHolder &selectionHolder = selectionController->getHolder();
-        const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
+        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+        const SelectionHolder& selectionHolder = selectionController->getHolder();
+        const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
         if (selectedMeshes.empty())
         {
             return;
         }
-        auto mesh = selectedMeshes.at(selectedMeshes.size() - 1);
+        if (selectedMeshes.size() != m_lastSelectedMeshesCount)
+        {
+            std::cout << "SELECTED MESHES SIZE: " << selectedMeshes.size() << "\n";
+            std::cout << "LAST MESHES SIZE: " << m_lastSelectedMeshesCount << "\n";
+
+            m_lastSelectedMeshesCount = selectedMeshes.size();
+            calcMiddlePos(selectedMeshes);
+        }
 
         switch (iParams.m_type)
         {
             case ImGuizmo::OPERATION::TRANSLATE:
-                moveGizmo(mesh->m_gizmoTransform, mesh->m_transform);
+                moveGizmo();
                 break;
             case ImGuizmo::OPERATION::ROTATE:
                 rotateGizmo();
@@ -93,4 +127,8 @@ public:
 
 private:
     CommandRegistry* m_commandRegistry = nullptr;
+    glm::mat4 m_realTimeTransform = glm::mat4(1.0f);
+    glm::mat4 m_gizmoTransform = glm::mat4(1.0f);
+    glm::mat4 m_transform = glm::mat4(1.0f);
+    int m_lastSelectedMeshesCount = 0;
 };

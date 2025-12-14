@@ -19,7 +19,7 @@ private:
 
 public:
 
-    static void drawTriangles(BufferStorageData<BufferStorageDataType::TriangleVertex>& bufferData, Shader* shader, Mesh* mesh = nullptr) {
+    static void drawTriangles(BufferStorageData<BufferStorageDataType::TriangleVertex>& bufferData, Shader* shader) {
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.0f, 1.0f);
         
@@ -32,7 +32,7 @@ public:
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
 
-    static void drawLines(BufferStorageData<BufferStorageDataType::LineVertex>& bufferData, Shader* shader, Mesh* mesh = nullptr) {
+    static void drawLines(BufferStorageData<BufferStorageDataType::LineVertex>& bufferData, Shader* shader) {
         shader->bind();
         bufferData.vao.bind();
         glLineWidth(3.0f);

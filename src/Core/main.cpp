@@ -478,23 +478,28 @@ int main()
 
         //draw meshes
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
-
             for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-				shader->bind();
-				shader->setMat4("u_model", mesh->m_gizmoTransform);
-				shader->unbind();
+				Shader* shader = it->first->m_shader;
+				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					shader->bind();
+					shader->setMat4("u_model", *mesh->m_realTimeTransform);
+					shader->unbind();
+				}
 				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
-				Renderer::drawTriangles(triangleBufferData, shader, mesh);
+				Renderer::drawTriangles(triangleBufferData, shader);
             }
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
                 Shader* shader = it->first->m_shader;
-				shader->bind();
-				shader->setMat4("u_model", mesh->m_gizmoTransform);
-				shader->unbind();
-                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader, mesh);
+				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					shader->bind();
+					shader->setMat4("u_model", *mesh->m_realTimeTransform);
+					shader->unbind();
+				}
+				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+				Renderer::drawLines(lineBufferData, shader);
             }
         }
 

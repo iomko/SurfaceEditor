@@ -24,9 +24,10 @@ public:
         MoveMeshCommand* moveMeshCommand = m_commandRegistry->getCommand<MoveMeshCommand>();
 
     	for(Mesh* selectedMesh : selectedMeshes) {
+            selectedMesh->m_transform[3] += glm::vec4(glm::vec3(moveMeshParams.moveByVector), 0.0f);
+
             moveMeshParams.mesh = selectedMesh;
             moveMeshCommand->execute(moveMeshParams);
-            selectedMesh->m_transform = glm::mat4(1.0f);
         }
     }
 
