@@ -1,0 +1,12 @@
+@startuml PrintableMeshSettingsPopUpLayerDependencies
+
+package "CreatePrintPlugin" {
+    class CreatePrintStructureCallBack
+    class CreatePrintCommand
+}
+CreatePrintPlugin --> AddNodesToOutlinerLayerPlugin
+
+class PrintableMeshSettingsPopUpLayer
+PrintableMeshSettingsPopUpLayer --> CreatePrintPlugin
+
+@enduml

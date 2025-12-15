@@ -1,0 +1,24 @@
+@startuml SculptToolLayerDependencies
+
+package "MoveVertexPlugin"{
+    class MoveVertexCallBack
+    class MoveVertexCommand
+}
+
+package "MoveSelectedFacesPlugin"{
+    class MoveSelectedFacesCallBack
+    class MoveSelectedFacesCommand
+}
+MoveSelectedFacesPlugin --> MoveVertexPlugin
+
+package "BrushToolPlugin" {
+    class BrushToolCommand
+    class BrushToolCallBack
+    class BrushTool
+}
+BrushToolPlugin --> MoveVertexPlugin
+
+class SculptToolLayer
+SculptToolLayer --> BrushToolPlugin
+
+@enduml

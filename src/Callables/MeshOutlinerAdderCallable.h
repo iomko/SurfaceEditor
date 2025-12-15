@@ -12,7 +12,7 @@ public:
 	void invoke(const MeshParams& input) override
 	{
 		Mesh* mesh = input.m_mesh;
-		auto* addNodeCallback = CallbackRegistry::instance().getCallback(TemplateCallbackIDManger::instance().GetIndex(typeid(Mesh),false));
+		auto* addNodeCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex(typeid(Mesh),false));
 		Observable* observable = dynamic_cast<Observable*>(addNodeCallback);
 		if(observable)
 		{

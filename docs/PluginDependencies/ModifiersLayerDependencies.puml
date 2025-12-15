@@ -1,0 +1,29 @@
+@startuml ModifiersLayerDependencies
+
+package "SolidifyMeshesPlugin" {
+    class SolidifyMeshesCallBack
+    class SolidifyMeshesCommand
+    class EdgesVaoInitCallable
+    class FaceVaoInitCallable
+    class SceneFacesAdderCallable
+
+    class FacesVaoInitCallable
+
+    SolidifyMeshesCallBack --> ConnectEdgesCallBack
+    SolidifyMeshesCallBack --> EdgesVaoInitCallable
+    SolidifyMeshesCallBack --> FaceVaoInitCallable
+    SolidifyMeshesCallBack --> SceneFacesAdderCallable
+    SolidifyMeshesCallBack ..> FacesVaoInitCallable
+}
+
+package "CreatePrintPlugin" {
+    class CreatePrintStructureCallBack
+    class CreatePrintCommand
+}
+CreatePrintPlugin --> AddNodesToOutlinerLayerPlugin
+
+class ModifiersLayer
+ModifiersLayer --> CreatePrintPlugin
+ModifiersLayer --> SolidifyMeshesPlugin
+
+@enduml

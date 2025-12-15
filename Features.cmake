@@ -39,8 +39,6 @@ set(FEATURE_DEPENDENCIES
     "DeleteSelectedMeshes,DeleteMesh"
     "MoveSelectedFace,MoveVertex"
     "BrushTool,MoveVertex"
-    "SolidifyMeshes,ConnectEdges"
-    "CreatePrint,SolidifyMeshes"
 )
 
 foreach(entry ${FEATURE_MAP})

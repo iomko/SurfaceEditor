@@ -25,15 +25,15 @@
 #define ADD_PLANE_CALLBACK 18
 #define FETCH_SURFACE_CALLBACK 19
 
-class TemplateCallbackIDManger
+class TemplateOutlinerNodeAdderCallbackIDManger
 {
 public:
-    static TemplateCallbackIDManger& instance() {
-        static TemplateCallbackIDManger manager;
+    static TemplateOutlinerNodeAdderCallbackIDManger& instance() {
+        static TemplateOutlinerNodeAdderCallbackIDManger manager;
         return manager;
     }
 
-    TemplateCallbackIDManger()
+    TemplateOutlinerNodeAdderCallbackIDManger()
     {
         freeIndex = 20;
         while (!CallbackRegistry::instance().availableID(freeIndex))
