@@ -13,25 +13,18 @@ public:
 
     void calcMiddlePos(const std::vector<Mesh*>& selectedMeshes)
     {
-        glm::mat4 middle(1.0f);
+        glm::vec3 sum(0.0f);
 
-        for (const auto& mesh : selectedMeshes)
+        for (const auto &mesh : selectedMeshes)
         {
             mesh->m_realTimeTransform = &m_realTimeTransform;
-
-            middle[3] += glm::vec4(glm::vec3(mesh->m_transform[3]), 0.0f);
+            sum += glm::vec3(mesh->m_transform[3]);
         }
 
-        middle[3] /= selectedMeshes.size();
-        middle[3][3] = 1.0f;
+        glm::vec3 center = sum / float(selectedMeshes.size());
 
-        m_gizmoTransform[3] = middle[3];
-
-        for (int i{}; i < 4; ++i)
-        {
-            std::cout << m_gizmoTransform[3][i] << "\n";
-        }
-        std::cout << "\n";
+        m_gizmoTransform = glm::mat4(1.0f);
+        m_gizmoTransform[3] = glm::vec4(center, 1.0f);
     }
 
     void scaleGizmo()
@@ -41,7 +34,7 @@ public:
 
     void rotateGizmo()
     {
-
+        
     }
 
     void moveGizmo()
@@ -97,17 +90,17 @@ public:
         const SelectionHolder& selectionHolder = selectionController->getHolder();
         const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
+        if (selectedMeshes.size() != m_lastSelectedMeshesCount)
+        {
+            m_lastSelectedMeshesCount = selectedMeshes.size();
+            if (!selectedMeshes.empty())
+            {
+                calcMiddlePos(selectedMeshes);
+            }
+        }
         if (selectedMeshes.empty())
         {
             return;
-        }
-        if (selectedMeshes.size() != m_lastSelectedMeshesCount)
-        {
-            std::cout << "SELECTED MESHES SIZE: " << selectedMeshes.size() << "\n";
-            std::cout << "LAST MESHES SIZE: " << m_lastSelectedMeshesCount << "\n";
-
-            m_lastSelectedMeshesCount = selectedMeshes.size();
-            calcMiddlePos(selectedMeshes);
         }
 
         switch (iParams.m_type)

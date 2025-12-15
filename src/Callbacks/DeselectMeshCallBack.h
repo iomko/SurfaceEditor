@@ -13,8 +13,6 @@ public:
 		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
 		Mesh* mesh = meshFacePair.first;
-	
-		// mesh->m_realTimeTransform = nullptr;
 
 		ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
 	}

@@ -477,32 +477,47 @@ int main()
         glDepthFunc(GL_LESS);
 
         //draw meshes
-        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
-            for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
+			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
 				Shader* shader = it->first->m_shader;
+				
+				glm::mat4 model;
 				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
 				{
-					shader->bind();
-					shader->setMat4("u_model", *mesh->m_realTimeTransform);
-					shader->unbind();
+					model = *mesh->m_realTimeTransform;
 				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
 				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
 				Renderer::drawTriangles(triangleBufferData, shader);
             }
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
+				Shader *shader = it->first->m_shader;
+
+				glm::mat4 model;
 				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
 				{
-					shader->bind();
-					shader->setMat4("u_model", *mesh->m_realTimeTransform);
-					shader->unbind();
+					model = *mesh->m_realTimeTransform;
 				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
 				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
 				Renderer::drawLines(lineBufferData, shader);
             }
         }
-
         //draw printableMeshes
         for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
 
