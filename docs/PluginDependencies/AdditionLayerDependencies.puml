@@ -1,11 +1,10 @@
 @startuml AdditionLayerDependencies
 
-package "MeshAdderCallables"{
+package "MeshAdderCallablesPlugin"{
     class MeshVaoInitCallable
     class SceneMeshAdderCallable
-    class MeshOutlinerAdderCallable
-    MeshOutlinerAdderCallable --> AddNodesToOutlinerLayerPlugin
 }
+MeshAdderCallablesPlugin --> AddNodesToOutlinerLayerPlugin
 
 
 package "AddCubePlugin" {

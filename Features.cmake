@@ -2,11 +2,12 @@ message(STATUS ">>> Features CMake included")
 
 # Feature -> source files
 set(FEATURE_MAP
-    "AddCube,src/Commands/AddCubeCommand.cpp,src/Callbacks/AddCubeCallback.cpp"
-    "AddPlane,src/Commands/AddPlaneCommand.cpp,src/Callbacks/AddPlaneCallback.cpp"
-    "FetchSurface,src/Commands/FetchSurfaceCommand.cpp,src/Callbacks/FetchSurfaceCallBack.cpp"
+    "MeshAdderCallables,src/Callables/MeshVaoInitCallable.cpp,src/Callables/SceneMeshAdderCallable.cpp"
+    "AddCube,src/Commands/AddCubeCommand.cpp,src/Callbacks/AddCubeCallback.cpp,src/Callables/CubeVertexGenCallable.cpp"
+    "AddPlane,src/Commands/AddPlaneCommand.cpp,src/Callbacks/AddPlaneCallback.cpp,src/Callables/PlaneVertexGenCallable.cpp"
+    "FetchSurface,src/Commands/FetchSurfaceCommand.cpp,src/Callbacks/FetchSurfaceCallBack.cpp,src/Callables/FetchedSurfaceVertexGenCallable.cpp"
     "BrushTool,src/Commands/BrushToolCommand.cpp,src/Callbacks/BrushToolCallBack.cpp,src/Tools/BrushTool.cpp"
-    "SolidifyMeshes,src/Callbacks/SolidifyMeshesCallBack.cpp,src/Callbacks/ConnectEdgesCallBack.cpp,src/Commands/SolidifyMeshesCommand.cpp"
+    "SolidifyMeshes,src/Callbacks/SolidifyMeshesCallBack.cpp,src/Callbacks/ConnectEdgesCallBack.cpp,src/Commands/SolidifyMeshesCommand.cpp,src/Callables/EdgesVaoInitCallable.cpp,src/Callables/FaceVaoInitCallable.cpp,src/Callables/SceneFacesAdderCallable.cpp,src/Callables/FacesVaoInitCallable.cpp"
     "CreatePrint,src/Callbacks/CreatePrintStructureCallBack.cpp,src/Commands/CreatePrintCommand.cpp"    
     "DeleteFace,src/Callbacks/DeleteFaceCallBack.cpp,src/Commands/DeleteFaceCommand.cpp"
     "DeleteMesh,src/Callbacks/DeleteMeshCallBack.cpp,src/Commands/DeleteMeshCommand.cpp"
@@ -20,7 +21,7 @@ set(FEATURE_MAP
     "ImportMeshes,src/Callbacks/ImportMeshesCallBack.cpp,src/Commands/ImportMeshesCommand.cpp"
     "MoveSelectedFaces,src/Callbacks/MoveSelectedFacesCallBack.cpp,src/Commands/MoveSelectedFacesCommand.cpp"
     "MoveVertex,src/Callbacks/MoveVertexCallBack.cpp,src/Commands/MoveVertexCommand.cpp"
-    "AddNodesToOutlinerLayer,src/Callbacks/AddOutlinerNodeCallBacks.cpp"
+    "AddNodesToOutlinerLayer,src/Callbacks/AddOutlinerNodeCallBacks.cpp,src/Callables/MeshOutlinerAdderCallable.cpp"
     "SelectionLayer,src/UI/SelectionLayer.cpp"
     "AdditionLayer,src/UI/AdditionLayer.cpp"
     "GizmoLayer,src/UI/GizmoLayer.cpp"
@@ -39,6 +40,10 @@ set(FEATURE_DEPENDENCIES
     "DeleteSelectedMeshes,DeleteMesh"
     "MoveSelectedFace,MoveVertex"
     "BrushTool,MoveVertex"
+    "MeshAdderCallables,AddNodesToOutlinerLayer"
+    "AddCube,MeshAdderCallables"
+    "AddPlane,MeshAdderCallables"
+    "FetchSurface,MeshAdderCallables"
 )
 
 foreach(entry ${FEATURE_MAP})

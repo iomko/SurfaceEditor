@@ -1,9 +1,6 @@
 #include "FetchSurfaceCallBack.h"
 #include "CallbackRegister.h"
-#include "../Callables/FetchedSurfaceVertexGenCallable.h"
-#include "../Callables/MeshVaoInitCallable.h"
-#include "../Callables/SceneMeshAdderCallable.h"
-#include "../Callables/MeshOutlinerAdderCallable.h"
+#include "../Callables/CallableIDs.h"
 namespace {
     const bool registered = []() {
         CallbackRegistry::instance().registerCallbackFactory(
@@ -11,10 +8,10 @@ namespace {
             []() -> std::unique_ptr<CallbackConcept> {
                 // create and configure a local composer, then pass it by const-ref to the callback
                 auto composer = std::make_unique<FunctionComposer>();
-                FunctionNode* fetchSurfaceRoot = composer->initRoot<FetchedSurfaceVertexGenCallable>();
-                composer->addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
-                composer->addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
-                composer->addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
+                FunctionNode* root = composer->initRootByID(FETCHED_SURFACE_VERTEX_GEN_CALLABLE, true);
+                composer->addFuncByID(root, MESH_VAO_INIT_CALLABLE);
+                composer->addFuncByID(root, SCENE_MESH_ADDER_CALLABLE);
+                composer->addFuncByID(root, MESH_OUTLINER_ADDER_CALLABLE);
                 return std::make_unique<FetchSurfaceCallBack>(std::move(composer));
             }
         );

@@ -1,23 +1,10 @@
 #pragma once
 #include "Callable.h"
 #include "../Params/OperationParams.h"
-#include "../ViewPortsController.h"
+#include "CallableIDs.h"
 
-class SceneFacesAdderCallable : public Callable<FaceParams, void>
+class SceneFacesAdderCallable : public Callable<SCENE_FACES_ADDER_CALLABLE, FaceParams, void>
 {
 public:
-	void invoke(const FaceParams& input) override
-    {
-        Mesh* mesh = input.mesh;
-        std::vector<ExtendedFace*>& faces = *(input.faces);
-
-		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-		SceneResources::MeshFaceOctreeCoordsMap& meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
-
-        for (ExtendedFace* face : faces)
-        {
-            scene->addFaceIntoOctrees(mesh, face);
-        }
-	}
+	void invoke(const FaceParams& input) override;
 };

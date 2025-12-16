@@ -7,9 +7,10 @@ public:
 	virtual OpParams* execute(const OpParams& input) = 0;
 };
 
-template <typename IParams, typename OParams>
+template <int id, typename IParams, typename OParams>
 class Callable : public CallableConcept {
 public:
+	static constexpr int ID = id; 
 	using IType = IParams;
 	using OType = OParams;
 
@@ -23,9 +24,10 @@ public:
 	virtual void invoke(const IParams& input, OParams& output) = 0;
 };
 
-template <typename OParams>
-class Callable<void, OParams> : public CallableConcept {
+template <int id, typename OParams>
+class Callable<id, void, OParams> : public CallableConcept {
 public:
+	static constexpr int ID = id; 
 	using IType = void;
 	using OType = OParams;
 
@@ -38,9 +40,10 @@ public:
 	virtual void invoke(OParams& output) = 0;
 };
 
-template <typename IParams>
-class Callable<IParams, void> : public CallableConcept {
+template <int id, typename IParams>
+class Callable<id, IParams, void> : public CallableConcept {
 public:
+	static constexpr int ID = id; 
 	using IType = IParams;
 	using OType = void;
 
@@ -53,9 +56,10 @@ public:
 	virtual void invoke(const IParams& input) = 0;
 };
 
-template <>
-class Callable<void, void> : public CallableConcept {
+template <int id>
+class Callable<id, void, void> : public CallableConcept {
 public:
+	static constexpr int ID = id; 
 	using IType = void;
 	using OType = void;
 

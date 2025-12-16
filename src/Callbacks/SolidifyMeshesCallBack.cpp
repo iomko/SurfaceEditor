@@ -7,10 +7,8 @@
 #include "ViewPortsController.h"
 #include "Structures/Octree.h"
 #include <glm/fwd.hpp>
-#include "Callables/FacesVaoInitCallable.h"
-#include "Callables/SceneFacesAdderCallable.h"
-#include "Callables/EdgesVaoInitCallable.h"
-#include "Callables/FaceVaoInitCallable.h"
+#include "../Callables/CallableIDs.h"
+#include "../Callables/CallableRegistry.h"
 #include <chrono>
 #include "CallbackRegister.h"
 
@@ -75,11 +73,14 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *newFace = halfEdgeStructure->addFloatingFace(newFaceVertices);
             toBeAddedOctreeFaces.emplace_back(newFace);
 
-            FaceVaoInitCallable faceVaoInitCallable;
-            SingleFaceParams singleFaceParams;
-            singleFaceParams.face = newFace;
-            singleFaceParams.mesh = selectedMesh;
-            faceVaoInitCallable.invoke(singleFaceParams);
+            auto* faceVaoInitCallable = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            if(faceVaoInitCallable)
+            {
+                SingleFaceParams singleFaceParams;
+                singleFaceParams.face = newFace;
+                singleFaceParams.mesh = selectedMesh;
+                faceVaoInitCallable->invoke(singleFaceParams);                
+            }
 
             std::vector<ExtendedEdge *> edges;
             for (auto it = newFace->faceHalfEdgeEnd(); it != newFace->faceHalfEdgeEnd(); ++it)
@@ -87,11 +88,14 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges.emplace_back(edge);
             }
-            EdgesVaoInitCallable edgesVaoInitCallable;
-            EdgeParams edgeParams;
-            edgeParams.edges = &edges;
-            edgeParams.mesh = selectedMesh;
-            edgesVaoInitCallable.invoke(edgeParams);
+            auto* edgesVaoInitCallable = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            if(edgesVaoInitCallable)
+            {
+                EdgeParams edgeParams;
+                edgeParams.edges = &edges;
+                edgeParams.mesh = selectedMesh;
+                edgesVaoInitCallable->invoke(edgeParams);
+            }
 
             for (auto it = newFace->faceHalfEdgeBegin(); it != newFace->faceHalfEdgeEnd(); ++it)
             {
@@ -143,12 +147,14 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *firstOuterFace = halfEdgeStructure->addFloatingFace(firstOuterFaceVerts);
             toBeAddedOctreeFaces.emplace_back(firstOuterFace);
 
-            FaceVaoInitCallable faceVaoInitCallable1;
-
-            SingleFaceParams singleFaceParams1;
-            singleFaceParams1.face = firstOuterFace;
-            singleFaceParams1.mesh = selectedMesh;
-            faceVaoInitCallable1.invoke(singleFaceParams1);
+            auto* faceVaoInitCallable1 = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            if(faceVaoInitCallable1)
+            {
+                SingleFaceParams singleFaceParams1;
+                singleFaceParams1.face = firstOuterFace;
+                singleFaceParams1.mesh = selectedMesh;
+                faceVaoInitCallable1->invoke(singleFaceParams1);
+            }
 
             std::vector<ExtendedEdge *> edges1;
             for (auto it = firstOuterFace->faceHalfEdgeEnd(); it != firstOuterFace->faceHalfEdgeEnd(); ++it)
@@ -156,11 +162,14 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges1.emplace_back(edge);
             }
-            EdgesVaoInitCallable edgesVaoInitCallable1;
-            EdgeParams edgeParams1;
-            edgeParams1.edges = &edges1;
-            edgeParams1.mesh = selectedMesh;
-            edgesVaoInitCallable1.invoke(edgeParams1);
+            auto* edgesVaoInitCallable1 = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            if(edgesVaoInitCallable1)
+            {
+                EdgeParams edgeParams1;
+                edgeParams1.edges = &edges1;
+                edgeParams1.mesh = selectedMesh;
+                edgesVaoInitCallable1->invoke(edgeParams1);
+            }
 
             for (auto it = firstOuterFace->faceHalfEdgeBegin(); it != firstOuterFace->faceHalfEdgeEnd(); ++it)
             {
@@ -188,12 +197,14 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *secondOuterFace = halfEdgeStructure->addFloatingFace(secondOuterFaceVerts);
             toBeAddedOctreeFaces.emplace_back(secondOuterFace);
 
-            FaceVaoInitCallable faceVaoInitCallable2;
-
-            SingleFaceParams singleFaceParams2;
-            singleFaceParams2.face = secondOuterFace;
-            singleFaceParams2.mesh = selectedMesh;
-            faceVaoInitCallable2.invoke(singleFaceParams2);
+            auto* faceVaoInitCallable2 = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            if(faceVaoInitCallable2)
+            {
+                SingleFaceParams singleFaceParams2;
+                singleFaceParams2.face = secondOuterFace;
+                singleFaceParams2.mesh = selectedMesh;
+                faceVaoInitCallable2->invoke(singleFaceParams2);
+            }
 
             std::vector<ExtendedEdge *> edges2;
             for (auto it = secondOuterFace->faceHalfEdgeEnd(); it != secondOuterFace->faceHalfEdgeEnd(); ++it)
@@ -201,11 +212,14 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges2.emplace_back(edge);
             }
-            EdgesVaoInitCallable edgesVaoInitCallable2;
-            EdgeParams edgeParams2;
-            edgeParams2.edges = &edges2;
-            edgeParams2.mesh = selectedMesh;
-            edgesVaoInitCallable2.invoke(edgeParams2);
+            auto* edgesVaoInitCallable2 = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            if(edgesVaoInitCallable2)
+            {
+                EdgeParams edgeParams2;
+                edgeParams2.edges = &edges2;
+                edgeParams2.mesh = selectedMesh;
+                edgesVaoInitCallable2->invoke(edgeParams2);
+            }
 
             for (auto it = secondOuterFace->faceHalfEdgeBegin(); it != secondOuterFace->faceHalfEdgeEnd(); ++it)
             {
@@ -244,11 +258,14 @@ void SolidifyMeshesCallBack::execute()
             triangleBufferStorage.update();
         }
 
-        SceneFacesAdderCallable sceneFacesAdderCallable;
-        FaceParams faceParams;
-        faceParams.mesh = selectedMesh;
-        faceParams.faces = &toBeAddedOctreeFaces;
-        sceneFacesAdderCallable.invoke(faceParams);
+        auto* sceneFacesAdderCallable = dynamic_cast<Callable<SCENE_FACES_ADDER_CALLABLE,FaceParams,void>*>(CallableRegistry::instance().getCallable(SCENE_FACES_ADDER_CALLABLE));
+        if(sceneFacesAdderCallable)
+        {
+            FaceParams faceParams;
+            faceParams.mesh = selectedMesh;
+            faceParams.faces = &toBeAddedOctreeFaces;
+            sceneFacesAdderCallable->invoke(faceParams);
+        }
 
         selectedMesh->calculateMeshBounds();
     }
