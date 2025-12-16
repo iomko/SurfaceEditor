@@ -14,7 +14,7 @@ package "AddCubePlugin" {
 
     AddCubeCallback --> CubeVertexGenCallable      
 }
-AddCubePlugin --> MeshAdderCallables
+AddCubePlugin --> MeshAdderCallablesPlugin
 
 package "AddPlanePlugin" {
     class AddPlaneCommand
@@ -23,7 +23,7 @@ package "AddPlanePlugin" {
 
     AddPlaneCallback --> PlaneVertexGenCallable
 }
-AddPlanePlugin --> MeshAdderCallables
+AddPlanePlugin --> MeshAdderCallablesPlugin
 
 package "FetchSurfacePlugin" {
     class FetchSurfaceCommand
@@ -32,7 +32,7 @@ package "FetchSurfacePlugin" {
 
     FetchSurfaceCallback --> FetchedSurfaceVertexGenCallable
 }
-FetchSurfacePlugin --> MeshAdderCallables
+FetchSurfacePlugin --> MeshAdderCallablesPlugin
 
 class AdditionLayer
 AdditionLayer --> AddCubePlugin
