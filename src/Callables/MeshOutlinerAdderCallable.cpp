@@ -11,7 +11,7 @@ static AutoRegisterCallable<MeshOutlinerAdderCallable> reg;
 void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
 {
     Mesh *mesh = input.m_mesh;
-    auto *addNodeCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex(typeid(Mesh), false));
+    auto *addNodeCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false));
     Observable *observable = dynamic_cast<Observable *>(addNodeCallback);
     if (observable)
     {

@@ -24,10 +24,11 @@ public:
 	template<typename IParams>
 	void update(Observable* observable, const IParams& iParams)
 	{
-		if(auto params = dynamic_cast<OpParams*>(const_cast<IParams*>(&iParams)))
-		{
-        	editParams(*params); // môže meniť parametre
-    	}
+		m_observers[observable]->execute(iParams);
+	}
+
+	virtual void update(Observable* observable, const OpParams& iParams)
+	{
 		m_observers[observable]->execute(iParams);
 	}
 
@@ -35,8 +36,6 @@ public:
 	{
 		m_observers[observable] = callback;
 	}
-protected:	
-    virtual void editParams(OpParams& iParams) {}
 private:
 	std::map<Observable*, CallbackConcept*> m_observers;
 };

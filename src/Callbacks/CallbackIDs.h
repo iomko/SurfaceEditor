@@ -3,27 +3,31 @@
 #include <typeindex>
 #include <map>
 
-#define BRUSH_TOOL_CALLBACK 0
-#define CONNECT_EDGES_CALLBACK 1
-#define CREATE_PRINT_STRUCTURE_CALLBACK 2
-#define DELETE_FACE_CALLBACK 3
-#define DELETE_MESH_CALLBACK 4
-#define DELETE_SELECTED_FACES_CALLBACK 5
-#define DELETE_SELECTED_MESHES_CALLBACK 6
-#define DESELECT_FACE_CALLBACK 7
-#define DESELECT_MESH_CALLBACK 8
-#define EXPORT_MESHES_CALLBACK 9
-#define IMPORT_MESHES_CALLBACK 10
-#define MOVE_SELECTED_FACE_CALLBACK 11
-#define MOVE_VERTEX_CALLBACK 12
-#define SELECT_FACE_CALLBACK 13
-#define SELECTION_LAYER_CALLBACK 14
-#define SELECT_MESH_CALLBACK 15
-#define SOLIDIFY_MESHES_CALLBACK 16
+enum CallbackIDS {
+    BRUSH_TOOL_CALLBACK = 0,
+    CONNECT_EDGES_CALLBACK,
+    CREATE_PRINT_STRUCTURE_CALLBACK,
+    DELETE_FACE_CALLBACK,
+    DELETE_MESH_CALLBACK,
+    DELETE_SELECTED_FACES_CALLBACK,
+    DELETE_SELECTED_MESHES_CALLBACK,
+    DESELECT_FACE_CALLBACK,
+    DESELECT_MESH_CALLBACK,
+    EXPORT_MESHES_CALLBACK,
+    IMPORT_MESHES_CALLBACK,
+    MOVE_SELECTED_FACE_CALLBACK,
+    MOVE_VERTEX_CALLBACK,
+    SELECT_FACE_CALLBACK,
+    SELECTION_LAYER_CALLBACK,
+    SELECT_MESH_CALLBACK,
+    SOLIDIFY_MESHES_CALLBACK,
+    ADD_CUBE_CALLBACK,
+    ADD_PLANE_CALLBACK,
+    FETCH_SURFACE_CALLBACK,
 
-#define ADD_CUBE_CALLBACK 17
-#define ADD_PLANE_CALLBACK 18
-#define FETCH_SURFACE_CALLBACK 19
+    CALLBACK_IDS_COUNT   // ← počet prvkov
+};
+
 
 class TemplateOutlinerNodeAdderCallbackIDManger
 {
@@ -35,15 +39,17 @@ public:
 
     TemplateOutlinerNodeAdderCallbackIDManger()
     {
-        freeIndex = 20;
+        freeIndex = CALLBACK_IDS_COUNT;
         while (!CallbackRegistry::instance().availableID(freeIndex))
         {
             freeIndex++;
         }
                 
     }
-    int RegisterIndex(std::type_index type_id, bool child)
+    template<typename CallbackT>
+    int RegisterIndex(bool child)
     {
+        std::type_index type_id = std::type_index(typeid(CallbackT));
         int index = freeIndex;
         bool registered = false;
         if(child)
@@ -74,8 +80,10 @@ public:
         }
         return index;
     }
-    int GetIndex(std::type_index type_id, bool child)
+    template<typename CallbackT>
+    int GetIndex(bool child)
     {
+        std::type_index type_id = std::type_index(typeid(CallbackT));
         if(child)
         {
             return addChildOutlinerNodeCallbacks[type_id];

@@ -47,7 +47,7 @@ public:
 
     void onImGuiRender() override;
     
-    void editParams(OpParams& iParams) override;
+    void update(Observable* observable, const OpParams& iParams) override;
 
 public:
     WindowLayerBus &m_windowLayerBus;

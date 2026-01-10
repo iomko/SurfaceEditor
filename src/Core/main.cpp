@@ -202,7 +202,7 @@ int main()
 		Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
 		if(outlinerObserver)
 		{
-			int id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex(typeid(Mesh), false);
+			int id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
 			auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
 			printf("Getting template on id %d\n", id);
 			if(addNewOutlinerNodeCallBackMesh)
@@ -211,7 +211,7 @@ int main()
 				addNewOutlinerNodeMeshObservalbe->addObserver(outlinerObserver);
 				outlinerObserver->observe(addNewOutlinerNodeMeshObservalbe, addNewOutlinerNodeCallBackMesh);
 			}
-			id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex(typeid(PrintableMesh), true);
+			id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true);
 			auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
 			printf("Getting template on id %d\n", id);
 			

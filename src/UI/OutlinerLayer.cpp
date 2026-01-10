@@ -61,8 +61,11 @@ void OutlinerLayer::onImGuiRender()
 
     ImGui::End();
 }
-void OutlinerLayer::editParams(OpParams& iParams)
+void OutlinerLayer::update(Observable* observable, const OpParams& iParams)
 {
-    AddOutlinerNodeCallBackParams& params = dynamic_cast<AddOutlinerNodeCallBackParams&>(iParams);
+    printf("EXECUTING UPDARE\n");
+    AddOutlinerNodeCallBackParams& params = dynamic_cast<AddOutlinerNodeCallBackParams&>(const_cast<OpParams&>(iParams));
     params.state = &m_state;
+
+    Observer::update(observable, params);
 }

@@ -8,10 +8,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#FIND
-find_package(X11 REQUIRED)
+# Platform-specific dependencies
+if(UNIX)
+    find_package(X11 REQUIRED)
+endif()
 
-find_package(glfw3 3.3 REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
@@ -56,7 +58,7 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
 )
-
+target_link_libraries(ImGui PUBLIC glfw)
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -100,7 +102,11 @@ endforeach()
 # Teraz vytvor executable
 add_executable(SurfaceEditor ${SRC_FILES})
 
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11)
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP)
+
+if(UNIX)
+    target_link_libraries(SurfaceEditor PRIVATE X11::X11)
+endif()
 
 target_include_directories(SurfaceEditor PRIVATE
     "${PROJECT_SOURCE_DIR}/src"

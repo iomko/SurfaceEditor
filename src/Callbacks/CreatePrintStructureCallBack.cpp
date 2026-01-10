@@ -148,7 +148,7 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
     auto [it, inserted] = printableMeshesMap.emplace(inputMesh, outputPrintableMesh);
 
 
-    auto* addChildCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex(typeid(PrintableMesh), true));
+    auto* addChildCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>( true));
     Observable* observable = dynamic_cast<Observable*>(addChildCallback);
     if(observable)
     {
