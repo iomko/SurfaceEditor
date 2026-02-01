@@ -40,12 +40,19 @@ struct GizmoLayerParams : public OpParams
 		Scale,
         Disable
     };
- 
+
     Type m_type;
 };
 
 struct GizmoParams : public OpParams
 {
+	enum SelectionMode
+	{
+		Mesh,
+		Face
+	};
+
+	SelectionMode m_selectionMode;
 	ImGuizmo::OPERATION m_type;
 };
 

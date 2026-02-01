@@ -476,6 +476,8 @@ int main()
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
+		// const SelectionHolder& selectionHolder = selectionController->getHolder();
+
         //draw meshes
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
 			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {

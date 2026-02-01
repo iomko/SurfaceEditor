@@ -9,6 +9,7 @@ class GizmoLayer : public Layer, public Observable
 {
 private:
     GizmoLayerParams::Type m_type = GizmoLayerParams::Type::Disable;
+    GizmoParams::SelectionMode m_selectionMode = GizmoParams::SelectionMode::Mesh;
     CommandRegistry* m_commandRegistry;
 
 public:
@@ -27,10 +28,19 @@ public:
             m_type = static_cast<GizmoLayerParams::Type>(typeModeInt);
         }
 
+        int selectionMode = static_cast<int>(m_selectionMode);
+        ImGui::Text("Selection mode:");
+        if (ImGui::RadioButton("Mesh", &selectionMode, GizmoParams::SelectionMode::Mesh) ||
+            ImGui::RadioButton("Face", &selectionMode, GizmoParams::SelectionMode::Face))
+        {
+            m_selectionMode = static_cast<GizmoParams::SelectionMode>(selectionMode);
+        }
+
         if (m_type != GizmoLayerParams::Type::Disable)
         {
             GizmoParams gizmoParams;
             gizmoParams.m_type = operation();
+            gizmoParams.m_selectionMode = m_selectionMode;
 
             auto command = m_commandRegistry->getCommand<HandleGizmoCommand>();
 

@@ -1,30 +1,150 @@
 #pragma once
+#include <functional>
 #include "ImGuizmo.h"
 #include "../Params/OperationParams.h"
 #include "../ViewPortsController.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/HandleGizmoCommand.h"
 #include "../Commands/MoveSelectedMeshesCommand.h"
+#include "../Commands/MoveSelectedFacesCommand.h"
 
 class HandleGizmoCallBack : public Callback<GizmoParams>, public Observer
 {
 public:
     HandleGizmoCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
 
-    void calcMiddlePos(const std::vector<Mesh*>& selectedMeshes)
+    // void calcMiddlePos(const std::vector<Mesh*>& selectedMeshes)
+    // {
+    //     glm::vec3 sum(0.0f);
+
+    //     for (const auto& mesh : selectedMeshes)
+    //     {
+    //         mesh->m_realTimeTransform = &m_realTimeTransform;
+    //         sum += glm::vec3(mesh->m_transform[3]);
+    //     }
+
+    //     glm::vec3 center = sum / float(selectedMeshes.size());
+
+    //     m_gizmoTransform = glm::mat4(1.0f);
+    //     m_gizmoTransform[3] = glm::vec4(center, 1.0f);
+    // }
+
+    // void calcMiddlePos(const std::vector<ExtendedFace*>& selectedFaces)
+    // {
+    //     glm::vec3 sum(0.0f);
+
+    //     for (const auto& face : selectedFaces)
+    //     {
+    //         face->m_realTimeTransform = &m_realTimeTransform;
+    //         sum += calcFaceMiddlePos(face);
+    //     }
+
+    //     glm::vec3 center = sum / float(selectedFaces.size());
+
+    //     m_gizmoTransform = glm::mat4(1.0f);
+    //     m_gizmoTransform[3] = glm::vec4(center, 1.0f);
+    // }
+
+    glm::vec3 calcFaceMiddlePos(ExtendedFace* face)
+    {
+        glm::vec3 sum(0.0f);
+        int count = 0;
+
+        for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it)
+        {
+            sum += (*it).m_position;
+            ++count;
+        }
+
+        return sum / float(count);
+    }
+
+    template<typename T>
+    void calcMiddlePos(const std::vector<T>& selectedItems, std::function<glm::vec3(T)> positionCallback)
     {
         glm::vec3 sum(0.0f);
 
-        for (const auto &mesh : selectedMeshes)
+        for (const auto& item : selectedItems)
         {
-            mesh->m_realTimeTransform = &m_realTimeTransform;
-            sum += glm::vec3(mesh->m_transform[3]);
+            item->m_realTimeTransform = &m_realTimeTransform;
+            sum += positionCallback(item);
         }
 
-        glm::vec3 center = sum / float(selectedMeshes.size());
+        glm::vec3 center = sum / float(selectedItems.size());
 
         m_gizmoTransform = glm::mat4(1.0f);
         m_gizmoTransform[3] = glm::vec4(center, 1.0f);
+    }
+
+    void chooseSelectionMode(const GizmoParams& iParams, bool& end)
+    {
+        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+        const SelectionHolder& selectionHolder = selectionController->getHolder();
+        const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+
+        if (iParams.m_selectionMode == GizmoParams::SelectionMode::Mesh)
+        {
+            if (selectedMeshes.size() != m_lastSelectedMeshesCount)
+            {
+                m_lastSelectedMeshesCount = selectedMeshes.size();
+                if (!selectedMeshes.empty())
+                {
+                    calcMiddlePos<Mesh*>(selectedMeshes, [](Mesh* mesh) {
+                        return glm::vec3(mesh->m_transform[3]);
+                    });
+                }
+            }
+            if (selectedMeshes.empty())
+            {
+                end = true;
+            }
+        }
+        else
+        {
+            std::vector<ExtendedFace*> selectedFaces;
+            for (auto& selectedMesh : selectedMeshes)
+            {
+                const std::vector<ExtendedFace*>& faces = selectionHolder.faces.find(selectedMesh)->second;
+                for (int i{}; i < faces.size(); ++i)
+                {
+                    selectedFaces.push_back(faces[i]);
+                }
+            }
+            if (selectedFaces.size() != m_lastSelectedFacesCount)
+            {
+                m_lastSelectedFacesCount = selectedFaces.size();
+                if (!selectedFaces.empty())
+                {
+                    calcMiddlePos<ExtendedFace*>(selectedFaces, [this](ExtendedFace* face) {
+                        return calcFaceMiddlePos(face);
+                    });
+                }
+            }
+            if (selectedMeshes.empty() || selectedFaces.empty())
+            {
+                end = true;
+            }
+        }
+    }
+
+    void move(const GizmoParams::SelectionMode& selectionMode)
+    {
+        if (selectionMode == GizmoParams::SelectionMode::Mesh)
+        {
+            MoveSelectedMeshesParams meshParams;
+            meshParams.moveByVector = m_realTimeTransform[3];
+
+            auto command = m_commandRegistry->getCommand<MoveSelectedMeshesCommand>();
+            command->execute(meshParams);
+        }
+        else
+        {
+            MoveSelectedFacesParams faceParams;
+            faceParams.moveByVector = m_realTimeTransform[3];
+
+            auto command = m_commandRegistry->getCommand<MoveSelectedFacesCommand>();
+            command->execute(faceParams);
+        }
     }
 
     void scaleGizmo()
@@ -37,7 +157,7 @@ public:
         
     }
 
-    void moveGizmo()
+    void moveGizmo(const GizmoParams::SelectionMode& selectionMode)
     {
         static bool makeMove = false;
 
@@ -64,11 +184,7 @@ public:
 
         if (makeMove)
         {
-            MoveSelectedMeshesParams meshParams;
-            meshParams.moveByVector = m_realTimeTransform[3];
-
-            auto command = m_commandRegistry->getCommand<MoveSelectedMeshesCommand>();
-            command->execute(meshParams);
+            move(selectionMode);
 
             m_transform = glm::mat4(1.0f);
             m_realTimeTransform = glm::mat4(1.0f);
@@ -86,19 +202,10 @@ public:
         glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
         ImGuizmo::SetRect(x, y, (float)width, (float)height);
 
-        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-        const SelectionHolder& selectionHolder = selectionController->getHolder();
-        const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+        bool end = false;
+        chooseSelectionMode(iParams, end);
 
-        if (selectedMeshes.size() != m_lastSelectedMeshesCount)
-        {
-            m_lastSelectedMeshesCount = selectedMeshes.size();
-            if (!selectedMeshes.empty())
-            {
-                calcMiddlePos(selectedMeshes);
-            }
-        }
-        if (selectedMeshes.empty())
+        if (end)
         {
             return;
         }
@@ -106,7 +213,7 @@ public:
         switch (iParams.m_type)
         {
             case ImGuizmo::OPERATION::TRANSLATE:
-                moveGizmo();
+                moveGizmo(iParams.m_selectionMode);
                 break;
             case ImGuizmo::OPERATION::ROTATE:
                 rotateGizmo();
@@ -120,8 +227,11 @@ public:
 
 private:
     CommandRegistry* m_commandRegistry = nullptr;
+
     glm::mat4 m_realTimeTransform = glm::mat4(1.0f);
     glm::mat4 m_gizmoTransform = glm::mat4(1.0f);
     glm::mat4 m_transform = glm::mat4(1.0f);
+    
     int m_lastSelectedMeshesCount = 0;
+    int m_lastSelectedFacesCount = 0;
 };

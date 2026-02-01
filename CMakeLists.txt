@@ -36,7 +36,7 @@ FetchContent_MakeAvailable(TrianglePP)
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git  
-    GIT_TAG docking                                      
+    GIT_TAG v1.92.5-docking                                     
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
