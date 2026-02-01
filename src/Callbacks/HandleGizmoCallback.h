@@ -13,38 +13,6 @@ class HandleGizmoCallBack : public Callback<GizmoParams>, public Observer
 public:
     HandleGizmoCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
 
-    // void calcMiddlePos(const std::vector<Mesh*>& selectedMeshes)
-    // {
-    //     glm::vec3 sum(0.0f);
-
-    //     for (const auto& mesh : selectedMeshes)
-    //     {
-    //         mesh->m_realTimeTransform = &m_realTimeTransform;
-    //         sum += glm::vec3(mesh->m_transform[3]);
-    //     }
-
-    //     glm::vec3 center = sum / float(selectedMeshes.size());
-
-    //     m_gizmoTransform = glm::mat4(1.0f);
-    //     m_gizmoTransform[3] = glm::vec4(center, 1.0f);
-    // }
-
-    // void calcMiddlePos(const std::vector<ExtendedFace*>& selectedFaces)
-    // {
-    //     glm::vec3 sum(0.0f);
-
-    //     for (const auto& face : selectedFaces)
-    //     {
-    //         face->m_realTimeTransform = &m_realTimeTransform;
-    //         sum += calcFaceMiddlePos(face);
-    //     }
-
-    //     glm::vec3 center = sum / float(selectedFaces.size());
-
-    //     m_gizmoTransform = glm::mat4(1.0f);
-    //     m_gizmoTransform[3] = glm::vec4(center, 1.0f);
-    // }
-
     glm::vec3 calcFaceMiddlePos(ExtendedFace* face)
     {
         glm::vec3 sum(0.0f);
@@ -127,9 +95,19 @@ public:
         }
     }
 
-    void move(const GizmoParams::SelectionMode& selectionMode)
+    void scale()
     {
-        if (selectionMode == GizmoParams::SelectionMode::Mesh)
+
+    }
+
+    void rotate()
+    {
+
+    }
+
+    void move()
+    {
+        if (m_selectionMode == GizmoParams::SelectionMode::Mesh)
         {
             MoveSelectedMeshesParams meshParams;
             meshParams.moveByVector = m_realTimeTransform[3];
@@ -147,24 +125,14 @@ public:
         }
     }
 
-    void scaleGizmo()
-    {
-
-    }
-
-    void rotateGizmo()
-    {
-        
-    }
-
-    void moveGizmo(const GizmoParams::SelectionMode& selectionMode)
+    void handleGizmo(ImGuizmo::OPERATION operation, std::function<void()> executeRealTime, std::function<void()> executeOperation)
     {
         static bool makeMove = false;
 
         ImGuizmo::Manipulate(
             glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.viewMatrix),
             glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.perspectiveMatrix),
-            ImGuizmo::OPERATION::TRANSLATE,
+            operation,
             ImGuizmo::LOCAL,
             glm::value_ptr(m_gizmoTransform),
             glm::value_ptr(m_transform));
@@ -175,16 +143,14 @@ public:
             {
                 makeMove = true;
             }
-            m_realTimeTransform[3].x += m_transform[3].x;
-            m_realTimeTransform[3].y += m_transform[3].y;
-            m_realTimeTransform[3].z += m_transform[3].z;
+            executeRealTime();
 
             return;
         }
 
         if (makeMove)
         {
-            move(selectionMode);
+            executeOperation();
 
             m_transform = glm::mat4(1.0f);
             m_realTimeTransform = glm::mat4(1.0f);
@@ -210,17 +176,39 @@ public:
             return;
         }
 
+        m_selectionMode = iParams.m_selectionMode;
+
         switch (iParams.m_type)
         {
             case ImGuizmo::OPERATION::TRANSLATE:
-                moveGizmo(iParams.m_selectionMode);
+                handleGizmo(
+                    iParams.m_type,
+                    [this]() {
+                        m_realTimeTransform[3].x += m_transform[3].x;
+                        m_realTimeTransform[3].y += m_transform[3].y;
+                        m_realTimeTransform[3].z += m_transform[3].z;
+                    },
+                    [this]() { move(); }
+                );
                 break;
             case ImGuizmo::OPERATION::ROTATE:
-                rotateGizmo();
+                handleGizmo(
+                    iParams.m_type,
+                    [this]() {
+                        m_realTimeTransform *= m_transform;
+                    },
+                    [this]() { rotate(); }
+                );
                 break;
             case ImGuizmo::OPERATION::SCALE:
             default:
-                scaleGizmo();
+                handleGizmo(
+                    iParams.m_type,
+                    [this]() {
+                        m_realTimeTransform *= m_transform;
+                    },
+                    [this]() { scale(); }
+                );
                 break;
         }
     }
@@ -234,4 +222,6 @@ private:
     
     int m_lastSelectedMeshesCount = 0;
     int m_lastSelectedFacesCount = 0;
+
+    GizmoParams::SelectionMode m_selectionMode;
 };
