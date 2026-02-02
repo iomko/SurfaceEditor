@@ -95,22 +95,12 @@ public:
         }
     }
 
-    void scale()
-    {
-
-    }
-
-    void rotate()
-    {
-
-    }
-
-    void move()
+    void update()
     {
         if (m_selectionMode == GizmoParams::SelectionMode::Mesh)
         {
             MoveSelectedMeshesParams meshParams;
-            meshParams.moveByVector = m_realTimeTransform[3];
+            meshParams.transformMatrix = m_realTimeTransform;
 
             auto command = m_commandRegistry->getCommand<MoveSelectedMeshesCommand>();
             command->execute(meshParams);
@@ -125,7 +115,7 @@ public:
         }
     }
 
-    void handleGizmo(ImGuizmo::OPERATION operation, std::function<void()> executeRealTime, std::function<void()> executeOperation)
+    void handleGizmo(ImGuizmo::OPERATION operation, std::function<void()> executeRealTime)
     {
         static bool makeMove = false;
 
@@ -150,7 +140,7 @@ public:
 
         if (makeMove)
         {
-            executeOperation();
+            update();
 
             m_transform = glm::mat4(1.0f);
             m_realTimeTransform = glm::mat4(1.0f);
@@ -187,8 +177,7 @@ public:
                         m_realTimeTransform[3].x += m_transform[3].x;
                         m_realTimeTransform[3].y += m_transform[3].y;
                         m_realTimeTransform[3].z += m_transform[3].z;
-                    },
-                    [this]() { move(); }
+                    }
                 );
                 break;
             case ImGuizmo::OPERATION::ROTATE:
@@ -196,8 +185,7 @@ public:
                     iParams.m_type,
                     [this]() {
                         m_realTimeTransform *= m_transform;
-                    },
-                    [this]() { rotate(); }
+                    }
                 );
                 break;
             case ImGuizmo::OPERATION::SCALE:
@@ -206,8 +194,7 @@ public:
                     iParams.m_type,
                     [this]() {
                         m_realTimeTransform *= m_transform;
-                    },
-                    [this]() { scale(); }
+                    }
                 );
                 break;
         }

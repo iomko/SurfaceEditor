@@ -42,6 +42,7 @@ public:
             VertexParams vertexParams;
             vertexParams.mesh = selectedMesh;
             vertexParams.newPosition = moveByVector;
+            vertexParams.moveBy = VertexParams::MoveBy::VECTOR;
 
             for(ExtendedVertex* vertex : verticesToMove) {
                 

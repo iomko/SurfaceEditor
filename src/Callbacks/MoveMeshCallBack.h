@@ -16,7 +16,8 @@ public:
 
         VertexParams vertexParams;
         vertexParams.mesh = iParams.mesh;
-        vertexParams.newPosition = iParams.moveByVector;
+        vertexParams.transformMatrix = iParams.transformMatrix;
+        vertexParams.moveBy = VertexParams::MoveBy::TRANSFORM_MATRIX;
 
         MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
         //chceme ist cez vsetky vertices a posunut ich o moveByVector

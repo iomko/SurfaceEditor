@@ -16,7 +16,7 @@ public:
 	void execute(const MoveSelectedMeshesParams& iParams) override
 	{
         MoveMeshParams moveMeshParams;
-        moveMeshParams.moveByVector = iParams.moveByVector;
+        moveMeshParams.transformMatrix = iParams.transformMatrix;
 
         SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
@@ -24,7 +24,8 @@ public:
         MoveMeshCommand* moveMeshCommand = m_commandRegistry->getCommand<MoveMeshCommand>();
 
     	for(Mesh* selectedMesh : selectedMeshes) {
-            selectedMesh->m_transform[3] += glm::vec4(glm::vec3(moveMeshParams.moveByVector), 0.0f);
+            // selectedMesh->m_transform[3] += glm::vec4(glm::vec3(moveMeshParams.moveByVector), 0.0f);
+            selectedMesh->m_transform += moveMeshParams.transformMatrix;
 
             moveMeshParams.mesh = selectedMesh;
             moveMeshCommand->execute(moveMeshParams);
