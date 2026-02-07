@@ -476,15 +476,16 @@ int main()
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
-		// const SelectionHolder& selectionHolder = selectionController->getHolder();
+		const SelectionHolder& selectionHolder = selectionController->getHolder();
 
         //draw meshes
         for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
 			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
 				Shader* shader = it->first->m_shader;
-				
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
 				glm::mat4 model;
-				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
 				{
 					model = *mesh->m_realTimeTransform;
 				}
@@ -502,9 +503,10 @@ int main()
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
 				Shader *shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
 
 				glm::mat4 model;
-				if (mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
 				{
 					model = *mesh->m_realTimeTransform;
 				}

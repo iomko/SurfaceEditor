@@ -52,7 +52,25 @@ public:
 
         if (iParams.m_selectionMode == GizmoParams::SelectionMode::Mesh)
         {
-            if (selectedMeshes.size() != m_lastSelectedMeshesCount)
+            bool modeSwitched = false;
+
+            for (auto& mesh : selectedMeshes)
+            {
+                auto& faces = selectionHolder.faces.find(mesh)->second;
+
+                if (!faces.empty())
+                {
+                    modeSwitched = true;
+                    m_lastSelectedFacesCount = 0;
+
+                    for (auto& face : faces)
+                    {
+                        ViewPortsHolderContext::s_selectionController->unregisterFace(mesh, face);
+                    }
+                }
+            }
+
+            if (selectedMeshes.size() != m_lastSelectedMeshesCount || modeSwitched)
             {
                 m_lastSelectedMeshesCount = selectedMeshes.size();
                 if (!selectedMeshes.empty())
@@ -173,11 +191,15 @@ public:
             case ImGuizmo::OPERATION::TRANSLATE:
                 handleGizmo(
                     iParams.m_type,
-                    [this]() {
-                        m_realTimeTransform[3].x += m_transform[3].x;
-                        m_realTimeTransform[3].y += m_transform[3].y;
-                        m_realTimeTransform[3].z += m_transform[3].z;
-                    }
+                    m_selectionMode == GizmoParams::SelectionMode::Mesh ?
+                    std::function<void()>([this]{
+                        m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+                    }) :
+                    std::function<void()>([this]{
+                        m_realTimeTransform = glm::mat4(1.0f);
+                        m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+                        update();
+                    })
                 );
                 break;
             case ImGuizmo::OPERATION::ROTATE:
