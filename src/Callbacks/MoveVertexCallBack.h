@@ -36,8 +36,8 @@ public:
                     {
                         if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
                         {
-                            auto& p = lineBufferVertices.at(edgeIndexInVao).position;
-                            p = glm::vec3(transformMatrix * glm::vec4(p, 1.0f));
+                            auto& position = lineBufferVertices.at(edgeIndexInVao).position;
+                            position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
                         }
                         else
                         {
@@ -50,8 +50,8 @@ public:
                     {
                         if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
                         {
-                            auto& p = lineBufferVertices.at(edgeIndexInVao + 1).position;
-                            p = glm::vec3(transformMatrix * glm::vec4(p, 1.0f));
+                            auto& position = lineBufferVertices.at(edgeIndexInVao + 1).position;
+                            position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
                         }
                         else
                         {
@@ -84,8 +84,8 @@ public:
                         {
                             if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
                             {
-                                auto& p = triangleBufferVertices.at(i).position;
-                                p = glm::vec3(transformMatrix * glm::vec4(p, 1.0f));
+                                auto& position = triangleBufferVertices.at(i).position;
+                                position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
                             }
                             else
                             {

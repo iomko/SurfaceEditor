@@ -215,9 +215,12 @@ public:
                 handleGizmo(
                     iParams.m_type,
                     [this]() {
-                        m_realTimeTransform *= m_transform;
-                    }
-                );
+                        glm::vec3 pivot = glm::vec3(m_gizmoTransform[3]);
+                        glm::mat4 pivotMat = glm::translate(glm::mat4(1.0f), pivot);
+                        glm::mat4 negPivotMat = glm::translate(glm::mat4(1.0f), -pivot);
+
+                        m_realTimeTransform = pivotMat * m_transform * negPivotMat * m_realTimeTransform;
+                    });
                 break;
         }
     }
