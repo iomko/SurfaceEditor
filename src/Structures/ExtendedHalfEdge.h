@@ -50,6 +50,9 @@ public:
     //material
     Material* material = nullptr;
     std::vector<FaceTriangleIndex> faceTriangleIndices;
+
+    //skewed
+    bool m_isSkewed = false;
 };
 
 class ExtendedEdge : public HalfEdgeDS::Edge<ExtendedHalfEdgeTraits> {

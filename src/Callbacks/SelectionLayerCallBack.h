@@ -3,6 +3,9 @@
 #include "../Tools/FaceDeselectionTool.h"
 #include "../Tools/MeshSelectionTool.h"
 #include "../Tools/MeshDeselectionTool.h"
+#include "../CsvFeatureExporter.h"
+#include "../ViewPortsController.h"
+#include "../Ml/Models/TriangleSkewMlModel.h"
 
 class SelectionLayerCallBack : public Callback<SelectionLayerParams>, public Observer
 {
@@ -62,12 +65,21 @@ public:
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Edge)
 			{
 				//ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
-				//create edge command
+
 			}
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Vertex)
 			{
 				//ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
-				//create vertex command	
+                
+                /*
+                CsvFeatureExporter csvFeatureExporter;
+                Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+
+                for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
+                    csvFeatureExporter.appendToCsv(mesh); 
+                } 
+                */
+                
 			}
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{

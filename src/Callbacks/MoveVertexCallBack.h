@@ -43,7 +43,7 @@ public:
                     }
                 }
 
-                lineBufferStorage.update();
+                //lineBufferStorage.update();
             }
 
             
@@ -76,11 +76,13 @@ public:
             }
 
             vertex->m_position += moveByVector;
-
+            
+            /*
             for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
                 TriangleBufferStorage& triangleBufferStorage = it->second;
                 triangleBufferStorage.update();
             }
+            */
 
         }
     }

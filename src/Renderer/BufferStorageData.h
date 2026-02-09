@@ -10,6 +10,7 @@ struct BufferStorageDataType
         glm::vec3 position;
         glm::vec3 normal;
         float isHighlited = 0.0f;
+        float isSkewed = 0.0f;
     };
 
 	struct AABBVertex {
