@@ -24,6 +24,7 @@ enum CallbackIDS {
     ADD_CUBE_CALLBACK,
     ADD_PLANE_CALLBACK,
     FETCH_SURFACE_CALLBACK,
+    HANDLE_GIZMO_CALLBACK,
 
     CALLBACK_IDS_COUNT   // ← počet prvkov
 };
