@@ -6,6 +6,8 @@
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/MoveVertexCommand.h"
 #include "../Commands/CommandRegistry.h"
+#include <iostream>
+#include "../cxxtimer.hpp"
 
 class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
@@ -14,6 +16,10 @@ public:
 
 	void execute(const BrushToolParams& iParams, OctreeNodeDataParams& oParams) override
 	{
+        cxxtimer::Timer timer;
+
+        timer.start();
+
 		const float epsilon = 0.001f;
 
         //Get closest mesh and it's face that was hit by the ray from the camera
@@ -59,7 +65,16 @@ public:
                 moveVertexCommand->execute(vertexParams);
 			}
 
+            std::cout << "Moved vertices by Brush: " << verticesToChange.size() << std::endl;
+
+
+
 		}
+
+        timer.stop();
+
+        auto elapsedTime = timer.count<cxxtimer::ms>();
+        std::cout << "ElapsedTime: " << elapsedTime << std::endl;
     
 	}
 

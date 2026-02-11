@@ -51,6 +51,7 @@
 #include "../UI/AdditionLayer.h"
 #include "../UI/RemovalLayer.h"
 #include "../UI/SelectionLayer.h"
+#include "../UI/DebugLayer.h"
 
 #include "../Callbacks/SelectFaceCallBack.h"
 #include "../Callbacks/MoveVertexCallBack.h"
@@ -136,7 +137,7 @@ std::string getShaderPath(const std::string& file){
 
 int main()
 {
-    
+
     WindowLayerBus windowLayerBus;
 
 	CommandRegistry* commandRegistry = new CommandRegistry();
@@ -414,6 +415,10 @@ int main()
 	//SculptToolsLayer
 	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
 	app.getLayerStack().addLayer(&sculptToolsLayer);
+
+	//DebugLayer
+	DebugLayer debugLayer("DebugLayer");
+	app.getLayerStack().addLayer(&debugLayer);
 
 	glm::mat4 model = glm::mat4(1.0f);
 

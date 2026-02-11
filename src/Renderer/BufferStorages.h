@@ -47,6 +47,7 @@ public:
         data.vao.addVertexBufferLayout(0, 3, GL_FLOAT, GL_FALSE, sizeof(BufferStorageDataType::TriangleVertex), (void*)offsetof(BufferStorageDataType::TriangleVertex, position));
         data.vao.addVertexBufferLayout(1, 3, GL_FLOAT, GL_FALSE, sizeof(BufferStorageDataType::TriangleVertex), (void*)offsetof(BufferStorageDataType::TriangleVertex, normal));
         data.vao.addVertexBufferLayout(2, 1, GL_FLOAT, GL_FALSE, sizeof(BufferStorageDataType::TriangleVertex), (void*)offsetof(BufferStorageDataType::TriangleVertex, isHighlited));
+        data.vao.addVertexBufferLayout(3, 1, GL_FLOAT, GL_FALSE, sizeof(BufferStorageDataType::TriangleVertex), (void*)offsetof(BufferStorageDataType::TriangleVertex, isSkewed));
         data.vao.unbind();
         data.vbo.unbind();
     }
