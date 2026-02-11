@@ -30,6 +30,7 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
 
         for (ExtendedFace *face : selectedFaces)
         {
+            face->m_transform[3] += glm::vec4(glm::vec3(iParams.moveByVector), 0.0f);
 
             for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it)
             {
@@ -39,13 +40,14 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
             }
         }
 
+        VertexParams vertexParams;
+        vertexParams.mesh = selectedMesh;
+        vertexParams.newPosition = moveByVector;
+        vertexParams.moveBy = VertexParams::MoveBy::VECTOR;
+
         for (ExtendedVertex *vertex : verticesToMove)
         {
-
-            VertexParams vertexParams;
-            vertexParams.mesh = selectedMesh;
             vertexParams.vertex = vertex;
-            vertexParams.newPosition = vertex->m_position + moveByVector;
 
             auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
             if (moveVertexCommand)

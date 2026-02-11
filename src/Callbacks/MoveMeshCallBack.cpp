@@ -1,5 +1,5 @@
 #include "MoveMeshCallBack.h"
-#include "CallableRegistry.h"
+#include "CallbackRegister.h"
 
 #include "../ViewPortsController.h"
 #include "../Utils/InterpolationUtils.h"
@@ -8,7 +8,9 @@
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
 
-void MoveMeshCallBack::execute(const MoveMeshParams &iParams) override
+static AutoRegisterCallback<MoveMeshCallBack> registerCallback;
+
+void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
 {
 
     VertexParams vertexParams;
