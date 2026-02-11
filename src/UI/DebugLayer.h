@@ -2,6 +2,7 @@
 #include <string>
 #include "imgui.h" 
 #include "../Patterns/Observer.h"
+#include "../Core/Layer.h"
 #include "LayerIDs.h"
 
 class DebugLayer : public LayerWithID<DEBUG_LAYER>, public Observable, public Observer {

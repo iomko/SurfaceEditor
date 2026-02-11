@@ -1,11 +1,8 @@
 #pragma once
-#include "../Tools/FaceSelectionTool.h"
-#include "../Tools/FaceDeselectionTool.h"
-#include "../Tools/MeshSelectionTool.h"
-#include "../Tools/MeshDeselectionTool.h"
-#include "../CsvFeatureExporter.h"
-#include "../ViewPortsController.h"
-#include "../Ml/Models/TriangleSkewMlModel.h"
+#include "../Params/OperationParams.h"
+#include "CallbackIDs.h"
+#include "../Patterns/Observer.h"
+#include "Callback.h"
 
 class SelectionLayerCallBack : public Callback<SELECTION_LAYER_CALLBACK, SelectionLayerParams>, public Observer
 {

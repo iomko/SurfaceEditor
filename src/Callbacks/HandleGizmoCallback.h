@@ -3,6 +3,8 @@
 #include "ImGuizmo.h"
 #include "../Params/OperationParams.h"
 #include "CallbackIDs.h"
+#include "../Patterns/Observer.h"
+#include "Callback.h"
 
 class HandleGizmoCallBack : public Callback<HANDLE_GIZMO_CALLBACK ,GizmoParams>, public Observer
 {

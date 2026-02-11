@@ -6,5 +6,5 @@ void MoveSelectedMeshesCommand::execute(const MoveSelectedMeshesParams &iParams)
 {
     notifyObservers(iParams);
 }
-void MoveSelectedMeshesCommand::undo() override
+void MoveSelectedMeshesCommand::undo()
 {}

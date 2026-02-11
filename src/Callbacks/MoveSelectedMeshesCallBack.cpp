@@ -18,7 +18,7 @@ void MoveSelectedMeshesCallBack::execute(const MoveSelectedMeshesParams &iParams
     SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
     const SelectionHolder &selectionHolder = selectionController->getHolder();
     const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
-    auto *moveMeshCommand = CommandRegistry::getCommand(MOVE_MESH_COMMAND);
+    auto *moveMeshCommand = CommandRegistry::instance().getCommand(MOVE_MESH_COMMAND);
 
     if(moveMeshCommand)
     {

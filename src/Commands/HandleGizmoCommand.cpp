@@ -5,7 +5,7 @@ void HandleGizmoCommand::execute(const GizmoParams &iParams)
 {
     notifyObservers(iParams);
 }
-void HandleGizmoCommand::undo() override
+void HandleGizmoCommand::undo()
 {
 }
 static AutoRegister<HandleGizmoCommand> regHandleGizmoCommand;

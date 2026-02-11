@@ -1,7 +1,7 @@
 #pragma once
 #include "../Params/OperationParams.h"
 #include "../Patterns/Command.h"
-#include "../Patterns/Observable.h"
+#include "../Patterns/Observer.h"
 #include "CommandIDs.h"
 
 class HandleGizmoCommand : public Command<HANDLE_GIZMO_COMMAND, GizmoParams>, public Observable

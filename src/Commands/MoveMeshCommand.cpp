@@ -8,6 +8,6 @@ void MoveMeshCommand::execute(const MoveMeshParams &params)
     notifyObservers(params);
 }
 
-void MoveMeshCommand::undo() override
+void MoveMeshCommand::undo()
 {
 }

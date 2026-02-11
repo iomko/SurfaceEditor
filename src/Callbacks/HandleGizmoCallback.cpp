@@ -96,7 +96,7 @@ void HandleGizmoCallBack::update()
         MoveSelectedMeshesParams meshParams;
         meshParams.transformMatrix = m_realTimeTransform;
 
-        auto* command = CommandRegistry::getCommand(MOVE_SELECTED_MESHES_COMMAND);
+        auto* command = CommandRegistry::instance().getCommand(MOVE_SELECTED_MESHES_COMMAND);
 
         if(command)
             command->execute(meshParams);
@@ -106,7 +106,7 @@ void HandleGizmoCallBack::update()
         MoveSelectedFacesParams faceParams;
         faceParams.moveByVector = m_realTimeTransform[3];
 
-        auto* command = CommandRegistry::getCommand(MOVE_SELECTED_FACES_COMMAND);
+        auto* command = CommandRegistry::instance().getCommand(MOVE_SELECTED_FACES_COMMAND);
         if(command)
             command->execute(faceParams);
     }
@@ -145,7 +145,7 @@ void HandleGizmoCallBack::handleGizmo(ImGuizmo::OPERATION operation, std::functi
     }
 }
 
-void HandleGizmoCallBack::execute(const GizmoParams &iParams) override
+void HandleGizmoCallBack::execute(const GizmoParams &iParams)
 {
     ImGuizmo::BeginFrame();
     ImGuizmo::SetOrthographic(false);

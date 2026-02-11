@@ -5,11 +5,12 @@
 #include "../ViewPortsController.h"
 #include "../Core/Layer.h"
 #include <vector>
+#include <cassert>
 
-static AutoRegisterLayer<DebugLayer, std::string> regDebugLayer;
+static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer;
 
 DebugLayer::DebugLayer(const std::string &name)
-    : Layer(name)
+    : LayerWithID(name)
 {
 }
 

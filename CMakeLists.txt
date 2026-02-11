@@ -11,10 +11,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(ExternalProject)
 
-set(LIBTORCH_URL
-  "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.0%2Bcpu.zip"
-  CACHE STRING "URL to libtorch zip"
-)
+if(UNIX)
+    set(LIBTORCH_URL
+    "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.0%2Bcpu.zip"
+    CACHE STRING "URL to libtorch zip"
+    )
+else()
+    set(LIBTORCH_URL
+    "https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-2.4.0%2Bcpu.zip"
+    CACHE STRING "URL to libtorch zip"
+    )
+endif()
 
 set(LIBTORCH_PREFIX "${CMAKE_BINARY_DIR}/_deps/libtorch_ep")
 set(LIBTORCH_SRC    "${LIBTORCH_PREFIX}/src")
@@ -139,14 +146,24 @@ add_executable(SurfaceEditor ${SRC_FILES})
 add_dependencies(SurfaceEditor libtorch_ep)
 
 #find libtorch .so
-set_property(TARGET SurfaceEditor PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
-set_property(TARGET SurfaceEditor PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
+if(UNIX)
+  set_property(TARGET SurfaceEditor PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
+  set_property(TARGET SurfaceEditor PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
+endif()
+
 
 add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
-set_property(TARGET Torch::Torch PROPERTY
-  INTERFACE_LINK_LIBRARIES
-  "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
-)
+if(WIN32)
+  set_property(TARGET Torch::Torch PROPERTY
+    INTERFACE_LINK_LIBRARIES
+    "${LIBTORCH_LIBDIR}/torch.lib;${LIBTORCH_LIBDIR}/torch_cpu.lib;${LIBTORCH_LIBDIR}/c10.lib"
+  )
+else()
+  set_property(TARGET Torch::Torch PROPERTY
+    INTERFACE_LINK_LIBRARIES
+    "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
+  )
+endif()
 
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"

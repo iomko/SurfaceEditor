@@ -18,7 +18,7 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
     vertexParams.transformMatrix = iParams.transformMatrix;
     vertexParams.moveBy = VertexParams::MoveBy::TRANSFORM_MATRIX;
 
-    auto *moveVertexCommand = CommandRegistry::getCommand(MOVE_VERTEX_COMMAND);
+    auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
     // chceme ist cez vsetky vertices a posunut ich o moveByVector
 
     if(moveVertexCommand)

@@ -3,6 +3,8 @@
 #include "../Tools/ToolRegistry.h"
 #include "../Tools/ToolIDs.h"
 #include "../ViewPortsController.h"
+#include "../CsvFeatureExporter.h"
+#include "../Ml/Models/TriangleSkewMlModel.h"
 
 static AutoRegisterCallback<SelectionLayerCallBack> autoRegisterSelectionLayerCallBack;
 
@@ -15,7 +17,7 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams &params)
 		{
 			if(selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
-				auto* faceSelectionTool = ToolRegistry::getTool(FACE_SELECTION_TOOL);
+				auto* faceSelectionTool = ToolRegistry::instance().getTool(FACE_SELECTION_TOOL);
                 if(faceSelectionTool == nullptr)
                 {
                     return;
@@ -39,7 +41,7 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams &params)
 
 			} else if(selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
-				auto* meshSelectionTool = ToolRegistry::getTool(MESH_SELECTION_TOOL);
+				auto* meshSelectionTool = ToolRegistry::instance().getTool(MESH_SELECTION_TOOL);
                 if(meshSelectionTool == nullptr)
                 {
                     return;
@@ -56,7 +58,7 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams &params)
 		{
 			if (selectionMode == SelectionLayerParams::SelectionMode::Face)
 			{
-				auto* faceDeselectionTool = ToolRegistry::getTool(FACE_DESELECTION_TOOL);
+				auto* faceDeselectionTool = ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
                 if(faceDeselectionTool == nullptr)
                 {
                     return;
@@ -92,7 +94,7 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams &params)
 			else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
 			{
                 
-				auto* meshDeselectionTool = ToolRegistry::getTool(MESH_DESELECTION_TOOL);
+				auto* meshDeselectionTool = ToolRegistry::instance().getTool(MESH_DESELECTION_TOOL);
                 if(meshDeselectionTool == nullptr)
                 {
                     return;

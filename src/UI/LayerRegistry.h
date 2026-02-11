@@ -8,6 +8,7 @@
 #include <utility>
 #include <type_traits>
 #include "../Core/Layer.h"
+#include <stdexcept>
 
 class LayerRegistry
 {
