@@ -2,17 +2,12 @@
 #include "../Params/OperationParams.h"
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class MoveMeshCommand : public Command<MoveMeshParams>, public Observable
+class MoveMeshCommand : public Command<MOVE_MESH_COMMAND, MoveMeshParams>, public Observable
 {
 public:
-	virtual void execute(const MoveMeshParams& params) override
-	{
-		notifyObservers(params);
-	}
+	virtual void execute(const MoveMeshParams& params) override;
 
-	void undo() override
-	{
-		
-	}
+	void undo() override;
 };
