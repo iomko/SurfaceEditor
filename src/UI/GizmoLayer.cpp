@@ -1,5 +1,7 @@
 #include "GizmoLayer.h"
 #include "../ViewPortsController.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
 
 static AutoRegisterLayerArgs<GizmoLayer, std::string> reg;
 
@@ -16,18 +18,28 @@ void GizmoLayer::onImGuiRender()
         ImGui::RadioButton("Disable", &typeModeInt, GizmoLayerParams::Type::Disable))
     {
         m_type = static_cast<GizmoLayerParams::Type>(typeModeInt);
-
-        GizmoLayerParams gizmoParams;
-        gizmoParams.m_type = m_type;
-        notifyObservers(gizmoParams);
     }
 
-    ImGui::End();
+    int selectionMode = static_cast<int>(m_selectionMode);
+    ImGui::Text("Selection mode:");
+    if (ImGui::RadioButton("Mesh", &selectionMode, GizmoParams::SelectionMode::Mesh) ||
+        ImGui::RadioButton("Face", &selectionMode, GizmoParams::SelectionMode::Face))
+    {
+        m_selectionMode = static_cast<GizmoParams::SelectionMode>(selectionMode);
+    }
 
     if (m_type != GizmoLayerParams::Type::Disable)
     {
-        displayGizmo();
+        GizmoParams gizmoParams;
+        gizmoParams.m_type = operation();
+        gizmoParams.m_selectionMode = m_selectionMode;
+
+        auto *command = CallableRegistry::getCommand(HANDLE_GIZMO_COMMAND);
+        if (command)
+            command->execute(gizmoParams);
     }
+
+    ImGui::End();
 }
 
 ImGuizmo::OPERATION GizmoLayer::operation()
@@ -42,31 +54,4 @@ ImGuizmo::OPERATION GizmoLayer::operation()
     default:
         return ImGuizmo::SCALE;
     }
-}
-
-void GizmoLayer::displayGizmo()
-{
-    ImGuizmo::BeginFrame();
-    ImGuizmo::SetOrthographic(false);
-
-    int width, height;
-    glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
-    ImGuizmo::SetRect(0, 0, (float)width, (float)height);
-
-    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
-    const SelectionHolder &selectionHolder = selectionController->getHolder();
-    const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
-
-    if (selectedMeshes.empty())
-    {
-        return;
-    }
-    auto mesh = selectedMeshes.at(selectedMeshes.size() - 1);
-
-    ImGuizmo::Manipulate(
-        glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.viewMatrix),
-        glm::value_ptr(ViewPortsHolderContext::s_camera->m_matrices.perspectiveMatrix),
-        operation(),
-        ImGuizmo::LOCAL,
-        glm::value_ptr(mesh->m_transform));
 }

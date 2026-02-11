@@ -25,16 +25,6 @@
 // import Patterns.Observer;
 // #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-//TEMP
-#include "../Commands/HandleGizmoCommand.h"
-#include "../Callbacks/HandleGizmoCallback.h"
-#include "../UI/DebugLayer.h"
-#include "../Callbacks/MoveMeshCallBack.h"
-#include "../Commands/MoveMeshCommand.h"
-
-#include "../Callbacks/MoveSelectedMeshesCallBack.h"
-#include "../Commands/MoveSelectedMeshesCommand.h"
-//ENDTEMP
 #include "../Callbacks/AddPlaneCallback.h"
 #include "../Commands/AddPlaneCommand.h"
 #include "../Tools/ToolRegistry.h"
@@ -215,7 +205,9 @@ int main()
 	// GizmoLayer
 	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
 
-	// importMeshesCommand
+	setup(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
+	setup(MOVE_SELECTED_MESHES_COMMAND, MOVE_SELECTED_MESHES_CALLBACK);
+	setup(HANDLE_GIZMO_COMMAND, HANDLE_GIZMO_CALLBACK);
 
 	setup(IMPORT_MESHES_COMMAND, IMPORT_MESHES_CALLBACK);
 	setup(EXPORT_MESHES_COMMAND, EXPORT_MESHES_CALLBACK);
@@ -309,27 +301,7 @@ int main()
 
 	setupLayer(SCULPT_TOOLS_LAYER, app, "SculptToolsLayer");
 
-	MoveMeshCallBack moveMeshCallBack(commandRegistry);
-	commandRegistry->registerCommand<MoveMeshCommand>();
-	MoveMeshCommand* moveMeshCommand = commandRegistry->getCommand<MoveMeshCommand>();
-	moveMeshCommand->addObserver(&moveMeshCallBack);
-	moveMeshCallBack.observe(moveMeshCommand, &moveMeshCallBack);
-
-    MoveSelectedMeshesCallBack moveSelectedMeshesCallBack(commandRegistry);
-	commandRegistry->registerCommand<MoveSelectedMeshesCommand>();
-	MoveSelectedMeshesCommand* moveSelectedMeshesCommand = commandRegistry->getCommand<MoveSelectedMeshesCommand>();
-	moveSelectedMeshesCommand->addObserver(&moveSelectedMeshesCallBack);
-	moveSelectedMeshesCallBack.observe(moveSelectedMeshesCommand, &moveSelectedMeshesCallBack);
-
-	HandleGizmoCallBack handleGizmoCallBack(commandRegistry);
-	commandRegistry->registerCommand<HandleGizmoCommand>();
-	HandleGizmoCommand* handleGizmoCommand = commandRegistry->getCommand<HandleGizmoCommand>();
-	handleGizmoCommand->addObserver(&handleGizmoCallBack);
-	handleGizmoCallBack.observe(handleGizmoCommand, &handleGizmoCallBack);
-
-	//DebugLayer
-	DebugLayer debugLayer("DebugLayer");
-	app.getLayerStack().addLayer(&debugLayer);
+	setupLayer(DEBUG_LAYER, app, "DebugLayer");
 
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader
