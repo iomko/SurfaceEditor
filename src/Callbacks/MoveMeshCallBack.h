@@ -16,13 +16,15 @@ public:
 
         VertexParams vertexParams;
         vertexParams.mesh = iParams.mesh;
+        vertexParams.transformMatrix = iParams.transformMatrix;
+        vertexParams.moveBy = VertexParams::MoveBy::TRANSFORM_MATRIX;
+
         MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
         //chceme ist cez vsetky vertices a posunut ich o moveByVector
 
         const std::vector<ExtendedVertex*>& vertices = iParams.mesh->getHalfEdgeStructure()->m_vertices;
 
         for(ExtendedVertex* vertex : vertices) {
-            vertexParams.newPosition = vertex->m_position + iParams.moveByVector;
             vertexParams.vertex = vertex;
             moveVertexCommand->execute(vertexParams); 
         }

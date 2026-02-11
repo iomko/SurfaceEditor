@@ -15,6 +15,7 @@ public:
         ExtendedVertex* vertex = iParams.vertex;
         Mesh* mesh = iParams.mesh;
         glm::vec3 moveByVector = iParams.newPosition;
+        glm::mat4 transformMatrix = iParams.transformMatrix;
 
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
@@ -33,12 +34,29 @@ public:
 
                     if (glm::all(glm::epsilonEqual(edge->m_firstVertex->m_position, vertex->m_position, epsilon)))
                     {
-                        lineBufferVertices.at(edgeIndexInVao).position += moveByVector;
+                        if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
+                        {
+                            auto& position = lineBufferVertices.at(edgeIndexInVao).position;
+                            position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
+                        }
+                        else
+                        {
+                            lineBufferVertices.at(edgeIndexInVao).position += moveByVector;
+
+                        }
                         //lineBufferVertices.at(edgeIndexInVao).position += (normal * scalingFactor);
                     }
                     else if (glm::all(glm::epsilonEqual(edge->m_secondVertex->m_position, vertex->m_position, epsilon)))
                     {
-                        lineBufferVertices.at(edgeIndexInVao + 1).position += moveByVector;
+                        if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
+                        {
+                            auto& position = lineBufferVertices.at(edgeIndexInVao + 1).position;
+                            position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
+                        }
+                        else
+                        {
+                            lineBufferVertices.at(edgeIndexInVao + 1).position += moveByVector;
+                        }
                         //lineBufferVertices.at(edgeIndexInVao + 1).position += (normal * scalingFactor);
                     }
                 }
@@ -64,7 +82,15 @@ public:
                     {
                         if (glm::all(glm::epsilonEqual(triangleBufferVertices.at(i).position, vertex->m_position, epsilon)))
                         {
-                            triangleBufferVertices.at(i).position += moveByVector;
+                            if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
+                            {
+                                auto& position = triangleBufferVertices.at(i).position;
+                                position = glm::vec3(transformMatrix * glm::vec4(position, 1.0f));
+                            }
+                            else
+                            {
+                                triangleBufferVertices.at(i).position += moveByVector;
+                            }
                             break;
                         }
                     }
@@ -75,14 +101,19 @@ public:
 
             }
 
-            vertex->m_position += moveByVector;
+            if (iParams.moveBy == VertexParams::MoveBy::TRANSFORM_MATRIX)
+            {
+                vertex->m_position = glm::vec3(transformMatrix * glm::vec4(vertex->m_position, 1.0f));
+            }
+            else
+            {
+                vertex->m_position += moveByVector;
+            }
             
-            /*
             for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
                 TriangleBufferStorage& triangleBufferStorage = it->second;
                 triangleBufferStorage.update();
             }
-            */
 
         }
     }

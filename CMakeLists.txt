@@ -70,7 +70,7 @@ FetchContent_MakeAvailable(TrianglePP)
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git  
-    GIT_TAG v1.92.5-docking                                  
+    GIT_TAG v1.92.5-docking                                     
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
@@ -132,12 +132,6 @@ target_include_directories(Torch::Torch INTERFACE
 )
 
 target_include_directories(SurfaceEditor PRIVATE
-  "${CMAKE_SOURCE_DIR}/src"
-  ${ImGuizmo_SOURCE_DIR}
-)
-
-target_link_libraries(SurfaceEditor PRIVATE
-  glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo
-  CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP X11::X11
-  Torch::Torch
+    "${PROJECT_SOURCE_DIR}/src"
+    ${ImGuizmo_SOURCE_DIR}
 )

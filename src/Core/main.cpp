@@ -41,6 +41,9 @@
 #include "../Commands/AddCubeCommand.h"
 #include "../Callbacks/AddCubeCallback.h"
 
+#include "../Commands/HandleGizmoCommand.h"
+#include "../Callbacks/HandleGizmoCallback.h"
+
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
 #include "../Callbacks/SelectionLayerCallBack.h"
@@ -216,7 +219,7 @@ int main()
 	app.getLayerStack().addLayer(importExportLayer);
 
     //GizmoLayer
-    GizmoLayer gizmoLayer("GizmoLayer");
+    GizmoLayer gizmoLayer("GizmoLayer", commandRegistry);
     app.getLayerStack().addLayer(&gizmoLayer);
 
 	//importMeshesCommand
@@ -332,8 +335,13 @@ int main()
 	moveSelectedFacesCommand->addObserver(&moveSelectedFacesCallBack);
 	moveSelectedFacesCallBack.observe(moveSelectedFacesCommand, &moveSelectedFacesCallBack);
 
-
 	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
+
+	HandleGizmoCallBack handleGizmoCallBack(commandRegistry);
+	commandRegistry->registerCommand<HandleGizmoCommand>();
+	HandleGizmoCommand* handleGizmoCommand = commandRegistry->getCommand<HandleGizmoCommand>();
+	handleGizmoCommand->addObserver(&handleGizmoCallBack);
+	handleGizmoCallBack.observe(handleGizmoCommand, &handleGizmoCallBack);
 
 	DeselectFaceCallBack deselectFaceCallBack;
 	commandRegistry->registerCommand<DeselectFaceCommand>();
@@ -473,22 +481,52 @@ int main()
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
-        //draw meshes
-        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
+		const SelectionHolder& selectionHolder = selectionController->getHolder();
 
-            for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
-				Renderer::drawTriangles(triangleBufferData, shader, mesh);
+        //draw meshes
+        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
+			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+				Shader* shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
+				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
+				Renderer::drawTriangles(triangleBufferData, shader);
             }
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader, mesh);
+				Shader *shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
+				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+				Renderer::drawLines(lineBufferData, shader);
             }
         }
-
         //draw printableMeshes
         for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
 

@@ -25,13 +25,13 @@ public:
 
 		for(Mesh* selectedMesh : selectedMeshes)
 		{
-			const std::vector<ExtendedFace*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
-
+            const std::vector<ExtendedFace*>& selectedFaces = selectionHolder.faces.find(selectedMesh)->second;
             //musime ziskat vsetky unique vertices
             std::unordered_set<ExtendedVertex*> verticesToMove;
 
             for(ExtendedFace* face : selectedFaces) {
-               
+                face->m_transform[3] += glm::vec4(glm::vec3(iParams.moveByVector), 0.0f);
+
                 for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it) {
                     
                     ExtendedVertex* vertex = &(*it);
@@ -39,12 +39,14 @@ public:
                 }
             }
 
+            VertexParams vertexParams;
+            vertexParams.mesh = selectedMesh;
+            vertexParams.newPosition = moveByVector;
+            vertexParams.moveBy = VertexParams::MoveBy::VECTOR;
+
             for(ExtendedVertex* vertex : verticesToMove) {
                 
-                VertexParams vertexParams;
-                vertexParams.mesh = selectedMesh;
                 vertexParams.vertex = vertex;
-                vertexParams.newPosition = vertex->m_position + moveByVector;
 
                 MoveVertexCommand* moveVertexCommand = m_commandRegistry->getCommand<MoveVertexCommand>();
                 moveVertexCommand->execute(vertexParams);
