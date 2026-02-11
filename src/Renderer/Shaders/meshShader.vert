@@ -2,6 +2,7 @@
 layout (location = 0) in vec3 l_Pos;
 layout (location = 1) in vec3 l_Normal;
 layout (location = 2) in float l_IsHighlighted;
+layout (location = 3) in float l_IsSkewed;
 
 out vec3 v_color;
 
@@ -18,4 +19,10 @@ void main()
         v_color = vec3(255.0 / 255.0, 198.0 / 255.0, 111.0 / 255.0);
     else
         v_color = vec3(0.5, 0.5, 0.5);
+
+    if (l_IsSkewed == 1.0f) {
+        v_color = vec3(1.0, 0.0, 0.0);
+    } else if (l_IsSkewed == 0.5f) {
+        v_color = vec3(0.0, 1.0, 0.0);
+    }
 }

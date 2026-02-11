@@ -50,6 +50,12 @@ public:
     //material
     Material* material = nullptr;
     std::vector<FaceTriangleIndex> faceTriangleIndices;
+
+    //gizmo
+    glm::mat4 m_transform = glm::mat4(1.0f);
+    glm::mat4* m_realTimeTransform = nullptr;
+    //skewed
+    bool m_isSkewed = false;
 };
 
 class ExtendedEdge : public HalfEdgeDS::Edge<ExtendedHalfEdgeTraits> {

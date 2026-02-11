@@ -1,6 +1,7 @@
 #pragma once
 #include "../Scene/Scene.h"
 #include "Structures/PrintableMesh.h"
+#include "ImGuizmo.h"
 
 struct OpParams {
 	virtual ~OpParams() = default;
@@ -42,8 +43,20 @@ struct GizmoLayerParams : public OpParams
 		Scale,
         Disable
     };
- 
+
     Type m_type;
+};
+
+struct GizmoParams : public OpParams
+{
+	enum SelectionMode
+	{
+		Mesh,
+		Face
+	};
+
+	SelectionMode m_selectionMode;
+	ImGuizmo::OPERATION m_type;
 };
 
 struct OpenTopoParams : public OpParams
@@ -88,6 +101,12 @@ struct OctreeNodeDataParams : public OpParams
 	glm::vec3 hitPoint;
 };
 
+struct MoveMeshParams : public OpParams
+{
+    Mesh* mesh = nullptr;
+	glm::mat4 transformMatrix;
+};
+
 struct MeshParams : public OpParams
 {
 	Mesh* m_mesh = nullptr;
@@ -110,6 +129,10 @@ struct MoveFaceParams : public OpParams {
     glm::vec3 moveByVector;
 };
 
+struct MoveSelectedMeshesParams : public OpParams {
+	glm::mat4 transformMatrix;
+};
+
 struct MoveSelectedFacesParams : public OpParams {
     glm::vec3 moveByVector;
 };
@@ -122,9 +145,17 @@ struct EdgeParams : public OpParams
 
 struct VertexParams : public OpParams
 {
+	enum MoveBy
+	{
+		VECTOR,
+		TRANSFORM_MATRIX
+	};
+
     Mesh* mesh = nullptr;
     ExtendedVertex* vertex = nullptr;
-    glm::vec3 newPosition;
+	glm::vec3 newPosition;
+	glm::mat4 transformMatrix;
+	MoveBy moveBy;
 };
 
 struct BrushToolParams : public OpParams

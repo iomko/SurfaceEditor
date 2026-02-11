@@ -25,6 +25,82 @@
 // import Patterns.Observer;
 // #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
+//TEMP
+#include "../Commands/HandleGizmoCommand.h"
+#include "../Callbacks/HandleGizmoCallback.h"
+#include "../UI/DebugLayer.h"
+#include "../Callbacks/MoveMeshCallBack.h"
+#include "../Commands/MoveMeshCommand.h"
+
+#include "../Callbacks/MoveSelectedMeshesCallBack.h"
+#include "../Commands/MoveSelectedMeshesCommand.h"
+//ENDTEMP
+#include "../Callbacks/AddPlaneCallback.h"
+#include "../Commands/AddPlaneCommand.h"
+#include "../Tools/ToolRegistry.h"
+//#include "../Commands/CommandRegistry.h"
+#include "../Commands/AddCubeCommand.h"
+#include "../Callbacks/AddCubeCallback.h"
+
+#include "../Callbacks/DeselectFaceCallBack.h"
+#include "../Callbacks/SelectMeshCallBack.h"
+#include "../Callbacks/SelectionLayerCallBack.h"
+#include "../Commands/SelectMeshCommand.h"
+#include "../UI/AdditionLayer.h"
+#include "../UI/RemovalLayer.h"
+#include "../UI/SelectionLayer.h"
+
+#include "../Callbacks/SelectFaceCallBack.h"
+#include "../Callbacks/MoveVertexCallBack.h"
+#include "../Commands/MoveVertexCommand.h"
+
+#include "../Callbacks/DeselectMeshCallBack.h"
+#include "../Commands/DeselectMeshCommand.h"
+
+#include "../Commands/DeselectFaceCommand.h"
+#include "../Commands/SelectFaceCommand.h"
+
+#include "../Callbacks/DeleteSelectedFacesCallBack.h"
+#include "../Commands/DeleteSelectedFacesCommand.h"
+
+#include "../Callbacks/DeleteFaceCallBack.h"
+#include "../Commands/DeleteFaceCommand.h"
+
+#include "../Callbacks/DeleteSelectedMeshesCallBack.h"
+#include "../Commands/DeleteSelectedMeshesCommand.h"
+
+#include "../Commands/BasicSculptToolCommand.h"
+
+#include "../Commands/BrushToolCommand.h"
+#include "../Tools/MeshDeselectionTool.h"
+#include "../Tools/BrushTool.h"
+#include "../Tools/FaceSelectionTool.h"
+#include "../Tools/FaceDeselectionTool.h"
+
+#include "../Callables/PlaneVertexGenCallable.h"
+#include "../Callables/MeshVaoInitCallable.h"
+#include "../Callables/SceneMeshAdderCallable.h"
+#include "../Callables/CubeVertexGenCallable.h"
+
+//ImportExportLayer
+#include "../Callbacks/ImportMeshesCallBack.h"
+#include "../Commands/ImportMeshesCommand.h"
+#include "../UI/ImportExportLayer.h"
+
+#include "../Callbacks/ExportMeshesCallBack.h"
+#include "../Commands/ExportMeshesCommand.h"
+
+#include "../Callables/FetchedSurfaceVertexGenCallable.h"
+#include "../Callbacks/FetchSurfaceCallBack.h"
+
+#include "../Callbacks/SolidifyMeshesCallBack.h"
+#include "../Commands/SolidifyMeshesCommand.h"
+#include "../Commands/DeleteMeshCommand.h"
+#include "../Callbacks/DeleteMeshCallBack.h"
+#include "../Callbacks/MoveSelectedFacesCallBack.h"
+#include "../Commands/MoveSelectedFacesCommand.h"
+
+#include "../Structures/ExtendedHalfEdge.h"
 
 #include "../Utils/GeometryUtils.h"
 #include "../Renderer/MaterialRegistry.h"
@@ -233,6 +309,28 @@ int main()
 
 	setupLayer(SCULPT_TOOLS_LAYER, app, "SculptToolsLayer");
 
+	MoveMeshCallBack moveMeshCallBack(commandRegistry);
+	commandRegistry->registerCommand<MoveMeshCommand>();
+	MoveMeshCommand* moveMeshCommand = commandRegistry->getCommand<MoveMeshCommand>();
+	moveMeshCommand->addObserver(&moveMeshCallBack);
+	moveMeshCallBack.observe(moveMeshCommand, &moveMeshCallBack);
+
+    MoveSelectedMeshesCallBack moveSelectedMeshesCallBack(commandRegistry);
+	commandRegistry->registerCommand<MoveSelectedMeshesCommand>();
+	MoveSelectedMeshesCommand* moveSelectedMeshesCommand = commandRegistry->getCommand<MoveSelectedMeshesCommand>();
+	moveSelectedMeshesCommand->addObserver(&moveSelectedMeshesCallBack);
+	moveSelectedMeshesCallBack.observe(moveSelectedMeshesCommand, &moveSelectedMeshesCallBack);
+
+	HandleGizmoCallBack handleGizmoCallBack(commandRegistry);
+	commandRegistry->registerCommand<HandleGizmoCommand>();
+	HandleGizmoCommand* handleGizmoCommand = commandRegistry->getCommand<HandleGizmoCommand>();
+	handleGizmoCommand->addObserver(&handleGizmoCallBack);
+	handleGizmoCallBack.observe(handleGizmoCommand, &handleGizmoCallBack);
+
+	//DebugLayer
+	DebugLayer debugLayer("DebugLayer");
+	app.getLayerStack().addLayer(&debugLayer);
+
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader
 	meshShader.bind();
@@ -285,33 +383,59 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// chcem zapisovat do depth bufferu
-		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_TRUE);
-		glDepthFunc(GL_LESS);
+        //chcem zapisovat do depth bufferu
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
 
-		// draw meshes
-		for (auto &[mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
-		{
+		const SelectionHolder& selectionHolder = selectionController->getHolder();
 
-			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it)
-			{
+        //draw meshes
+        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
+			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+				Shader* shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
+				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
+				Renderer::drawTriangles(triangleBufferData, shader);
+            }
+            
+            for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
 				Shader *shader = it->first->m_shader;
-				BufferStorageData<BufferStorageDataType::TriangleVertex> &triangleBufferData = it->second.data;
-				Renderer::drawTriangles(triangleBufferData, shader, mesh);
-			}
+				auto& faces = selectionHolder.faces.find(mesh)->second;
 
-			for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it)
-			{
-				Shader *shader = it->first->m_shader;
-				BufferStorageData<BufferStorageDataType::LineVertex> &lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader, mesh);
-			}
-		}
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
 
-		// draw printableMeshes
-		for (auto &[_, printableMesh] : scene.m_res.printableMeshMap)
-		{
+				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+				Renderer::drawLines(lineBufferData, shader);
+            }
+        }
+        //draw printableMeshes
+        for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
 
 			for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it)
 			{
