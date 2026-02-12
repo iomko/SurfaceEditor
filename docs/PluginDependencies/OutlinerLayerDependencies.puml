@@ -1,0 +1,11 @@
+@startuml OutlinerLayerDependencies
+
+package AddNodesToOutlinerLayerPlugin {
+    class AddNewOutlinerNodeCallBack
+    class AddChildOutlinerNodeCallBack
+}
+
+class OutlinerLayer
+OutlinerLayer --> AddNodesToOutlinerLayerPlugin
+
+@enduml

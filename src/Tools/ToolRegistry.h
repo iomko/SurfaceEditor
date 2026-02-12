@@ -1,34 +1,54 @@
 #pragma once
 #include <unordered_map>
 #include "Tool.h"
-#include <string>
-#include <typeinfo>
-#include <typeindex>
+#include <memory>
+#include <unordered_map>
+#include <functional>
 
 class ToolRegistry
 {
 public:
-	template<typename ToolT, typename... Args>
-	static void registerTool(Args&&... args) {
-        m_tools[typeid(ToolT)] = new ToolT(std::forward<Args>(args)...);
-	}
+    using Creator = std::function<std::unique_ptr<ITool>(CommandConcept*)>;
+
+	static ToolRegistry& instance() {
+        static ToolRegistry registry;
+        return registry;
+    }
 
 	template<typename ToolT>
-	static ToolT* getTool() {
-		auto it = m_tools.find(std::type_index(typeid(ToolT)));
-		if (it != m_tools.end()) {
-			return static_cast<ToolT*>(it->second);
-		}
-		return nullptr;
-	}
+    void registerToolType() {
+        m_creators[ToolT::ID] = [](CommandConcept* cmd) {
+            return std::make_unique<ToolT>(cmd);
+        };
+    }
 
-	static void deleteRegistry()
-	{
-		for (auto& pair : m_tools) {
-			delete pair.second;
-		}
-	}
+    void initializeTool(int id, CommandConcept* cmd) {
+        auto it = m_creators.find(id);
+        if (it != m_creators.end()) {
+            m_instances[id] = it->second(cmd);
+        }
+    }
+
+    ITool* getTool(int id) {
+        auto it = m_instances.find(id);
+        if (it != m_instances.end()) {
+            return it->second.get();
+        }
+        return nullptr;
+    }
+
+    void clear() {
+        m_instances.clear();
+    }
 
 private:
-	static inline std::unordered_map<std::type_index, ITool*> m_tools;
+    std::unordered_map<int, Creator> m_creators;
+    std::unordered_map<int, std::unique_ptr<ITool>> m_instances;
+};
+
+template<typename ToolT>
+struct AutoRegisterTool {
+    AutoRegisterTool() {
+        ToolRegistry::instance().registerToolType<ToolT>();
+    }
 };

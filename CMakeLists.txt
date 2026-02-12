@@ -11,10 +11,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(ExternalProject)
 
-set(LIBTORCH_URL
-  "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.0%2Bcpu.zip"
-  CACHE STRING "URL to libtorch zip"
-)
+if(UNIX)
+    set(LIBTORCH_URL
+    "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.0%2Bcpu.zip"
+    CACHE STRING "URL to libtorch zip"
+    )
+else()
+    set(LIBTORCH_URL
+    "https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-2.4.0%2Bcpu.zip"
+    CACHE STRING "URL to libtorch zip"
+    )
+endif()
 
 set(LIBTORCH_PREFIX "${CMAKE_BINARY_DIR}/_deps/libtorch_ep")
 set(LIBTORCH_SRC    "${LIBTORCH_PREFIX}/src")
@@ -42,10 +49,12 @@ ExternalProject_Add(libtorch_ep
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
-#FIND
-find_package(X11 REQUIRED)
+# Platform-specific dependencies
+if(UNIX)
+    find_package(X11 REQUIRED)
+endif()
 
-find_package(glfw3 3.3 REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
@@ -90,7 +99,7 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
 )
-
+target_link_libraries(ImGui PUBLIC glfw)
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -111,25 +120,59 @@ FetchContent_MakeAvailable(ImGuizmo)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
+include("${PROJECT_SOURCE_DIR}/Features.cmake")
 
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+
+
+
+foreach(entry ${FEATURE_MAP})
+    string(REPLACE "," ";" entry_list "${entry}")
+    list(GET entry_list 0 featureName)
+    string(TOUPPER "${featureName}" FEATURE_UPPER)
+    if(NOT FEATURE_${FEATURE_UPPER})
+        list(LENGTH entry_list len)
+        math(EXPR count "${len} - 1")
+        foreach(i RANGE 1 ${count})
+            list(GET entry_list ${i} file)
+            list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/${file}")
+        endforeach()
+    endif()
+endforeach()
+
+# Teraz vytvor executable
 add_executable(SurfaceEditor ${SRC_FILES})
 
 add_dependencies(SurfaceEditor libtorch_ep)
 
 #find libtorch .so
-set_property(TARGET SurfaceEditor PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
-set_property(TARGET SurfaceEditor PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
+if(UNIX)
+  set_property(TARGET SurfaceEditor PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
+  set_property(TARGET SurfaceEditor PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
+endif()
+
 
 add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
-set_property(TARGET Torch::Torch PROPERTY
-  INTERFACE_LINK_LIBRARIES
-  "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
-)
+if(WIN32)
+  set_property(TARGET Torch::Torch PROPERTY
+    INTERFACE_LINK_LIBRARIES
+    "${LIBTORCH_LIBDIR}/torch.lib;${LIBTORCH_LIBDIR}/torch_cpu.lib;${LIBTORCH_LIBDIR}/c10.lib"
+  )
+else()
+  set_property(TARGET Torch::Torch PROPERTY
+    INTERFACE_LINK_LIBRARIES
+    "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
+  )
+endif()
 
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
+target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP Torch::Torch)
+
+if(UNIX)
+    target_link_libraries(SurfaceEditor PRIVATE X11::X11)
+endif()
 
 target_include_directories(SurfaceEditor PRIVATE
     "${PROJECT_SOURCE_DIR}/src"

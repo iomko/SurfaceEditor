@@ -25,11 +25,8 @@ public:
 		return Ray(camera.getState().position, camera.getState().frontVector);
 	}
 
-	static Ray fromMousePos(Camera& camera, Window& window)
+	static Ray fromPos(Camera& camera, Window& window , double mouseX, double mouseY)
 	{
-		double mouseX, mouseY;
-		glfwGetCursorPos(window.getWindowHandle(), &mouseX, &mouseY);
-
 		auto normalizedXCoord = (2.0 * mouseX) / window.getScreenWidth() - 1.0;
 		auto normalizedYCoord = 1.0 - (2.0 * mouseY) / window.getScreenHeight();
 
@@ -50,6 +47,14 @@ public:
 
 
 		return Ray(rayStart, normalizedRayPosition);
+	}
+
+	static Ray fromMousePos(Camera& camera, Window& window)
+	{
+		double mouseX, mouseY;
+		glfwGetCursorPos(window.getWindowHandle(), &mouseX, &mouseY);
+
+		return fromPos(camera, window, mouseX, mouseY);
 	}
 
 

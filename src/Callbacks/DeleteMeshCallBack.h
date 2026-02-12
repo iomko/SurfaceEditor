@@ -1,31 +1,15 @@
 #pragma once
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/DeleteFaceCommand.h"
-#include "../Structures/ExtendedHalfEdge.h"
+#include "Callback.h"
+#include "../Patterns/Observer.h"
+#include "../Params/OperationParams.h"
+#include "CallbackIDs.h"
 
-
-class DeleteMeshCallBack : public Callback<MeshParams>, public Observer
+class DeleteMeshCallBack : public Callback<DELETE_MESH_CALLBACK, MeshParams>, public Observer
 {
 public:
-    DeleteMeshCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
+    DeleteMeshCallBack();
 
-	void execute(const MeshParams& iParams) override
-	{
-        Mesh* selectedMesh = iParams.m_mesh;
-        std::vector<ExtendedFace*> facesToDelete = selectedMesh->getHalfEdgeStructure()->m_faces;
-
-        for(ExtendedFace* face : facesToDelete) {
-        
-            SingleFaceParams singleFaceParams;
-            singleFaceParams.mesh = selectedMesh;
-            singleFaceParams.face = face;
-
-            DeleteFaceCommand* deleteFaceCommand = m_commandRegistry->getCommand<DeleteFaceCommand>();
-            deleteFaceCommand->execute(singleFaceParams); 
-        
-        }
-	}
+	void execute(const MeshParams& iParams) override;
 
 private:
-    CommandRegistry* m_commandRegistry = nullptr;
 };

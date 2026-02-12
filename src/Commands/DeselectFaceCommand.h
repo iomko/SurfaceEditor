@@ -1,11 +1,11 @@
 #pragma once
+#include "../Patterns/Command.h"
+#include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class DeselectFaceCommand : public Observable, public Command<> {
+class DeselectFaceCommand : public Observable, public Command<DESELECT_FACE_COMMAND> {
 public:
-	virtual void execute() override {
-		notifyObservers();
-	}
+	virtual void execute() override;
 
-	void undo() override {
-	}
+	void undo() override;
 };

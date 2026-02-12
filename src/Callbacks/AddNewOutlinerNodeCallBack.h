@@ -1,0 +1,25 @@
+#pragma once
+#include "../Callbacks/Callback.h"
+#include "../Patterns/Observer.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Params/OperationParams.h"
+#include "CallbackIDs.h"
+
+#include "../UI/OutlinerLayer.h"
+template<typename T>
+class AddNewOutlinerNodeCallBack : public Callback<-1, AddNewOutlinerNodeCallBackParams<T>>, public Observable
+{
+public:
+	void execute(const AddNewOutlinerNodeCallBackParams<T>& iParams) override
+    {
+        OutlinerLayerState* layerState = dynamic_cast<OutlinerLayerState*>(iParams.state);
+        int id = iParams.id;
+        std::string name = iParams.name;
+        T* data = iParams.data;
+        if(layerState == nullptr || data == nullptr)
+            return;
+
+        auto* node = new OutlinerNode<T>(id, name, data);
+        layerState->m_nodes.emplace_back(node);
+    }
+};

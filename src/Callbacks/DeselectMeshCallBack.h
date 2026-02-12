@@ -1,19 +1,10 @@
 #pragma once
+#include "Callback.h"
+#include "../Patterns/Observer.h"
+#include "CallbackIDs.h"
 
-class DeselectMeshCallBack : public Callback<>, public Observer
+class DeselectMeshCallBack : public Callback<DESELECT_MESH_CALLBACK>, public Observer
 {
 public:
-	void execute() override
-	{
-		Camera* camera = ViewPortsHolderContext::s_camera;
-		Window* window = ViewPortsHolderContext::s_window;
-		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
-
-		SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
-
-		Mesh* mesh = meshFacePair.first;
-
-		ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
-	}
+	void execute() override;
 };

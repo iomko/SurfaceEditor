@@ -1,0 +1,42 @@
+@startuml AdditionLayerDependencies
+
+package "MeshAdderCallablesPlugin"{
+    class MeshVaoInitCallable
+    class SceneMeshAdderCallable
+}
+MeshAdderCallablesPlugin --> AddNodesToOutlinerLayerPlugin
+
+
+package "AddCubePlugin" {
+    class AddCubeCommand
+    class AddCubeCallback
+    class CubeVertexGenCallable
+
+    AddCubeCallback --> CubeVertexGenCallable      
+}
+AddCubePlugin --> MeshAdderCallablesPlugin
+
+package "AddPlanePlugin" {
+    class AddPlaneCommand
+    class AddPlaneCallback
+    class PlaneVertexGenCallable
+
+    AddPlaneCallback --> PlaneVertexGenCallable
+}
+AddPlanePlugin --> MeshAdderCallablesPlugin
+
+package "FetchSurfacePlugin" {
+    class FetchSurfaceCommand
+    class FetchSurfaceCallback
+    class FetchedSurfaceVertexGenCallable
+
+    FetchSurfaceCallback --> FetchedSurfaceVertexGenCallable
+}
+FetchSurfacePlugin --> MeshAdderCallablesPlugin
+
+class AdditionLayer
+AdditionLayer --> AddCubePlugin
+AdditionLayer --> AddPlanePlugin
+AdditionLayer --> FetchSurfacePlugin
+
+@enduml

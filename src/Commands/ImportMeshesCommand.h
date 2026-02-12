@@ -1,15 +1,12 @@
 #pragma once
 #include <string_view>
-#include "Params/OperationParams.h"
 #include "Patterns/Command.h"
 #include "Patterns/Observer.h"
+#include "CommandIDs.h"
 
 
-class ImportMeshesCommand : public Observable, public Command<ImportExportMeshesParams>
+class ImportMeshesCommand : public Observable, public Command<IMPORT_MESHES_COMMAND, ImportExportMeshesParams>
 {
 public:
-	virtual void execute(const ImportExportMeshesParams& params) override
-	{
-		notifyObservers(params);
-	}
+	virtual void execute(const ImportExportMeshesParams& params) override;
 };

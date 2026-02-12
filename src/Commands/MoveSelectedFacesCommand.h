@@ -1,16 +1,12 @@
 #pragma once
-#include "../Params/OperationParams.h"
+#include "../Patterns/Command.h"
+#include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class MoveSelectedFacesCommand : public Command<MoveSelectedFacesParams>, public Observable
+class MoveSelectedFacesCommand : public Command<MOVE_SELECTED_FACES_COMMAND, MoveSelectedFacesParams>, public Observable
 {
 public:
-	virtual void execute(const MoveSelectedFacesParams& iParams) override
-	{
-		notifyObservers(iParams);
-	}
+	virtual void execute(const MoveSelectedFacesParams& iParams) override;
 
-	void undo() override
-	{
-
-	}
+	void undo() override;
 };

@@ -5,7 +5,6 @@
 #include "Command.h"
 #include "../Callbacks/Callback.h"
 
-
 class Observable;
 
 class Observer {
@@ -27,6 +26,12 @@ public:
 	{
 		m_observers[observable]->execute(iParams);
 	}
+
+	virtual void update(Observable* observable, const OpParams& iParams)
+	{
+		m_observers[observable]->execute(iParams);
+	}
+
 	void observe(Observable* observable, CallbackConcept* callback)
 	{
 		m_observers[observable] = callback;
@@ -63,7 +68,7 @@ public:
 		}
 	}
 
-	void notifyObservers(const OpParams& iParams, OpParams& oParams)
+	virtual void notifyObservers(const OpParams& iParams, OpParams& oParams)
 	{
 		for (const auto& observer : m_observers)
 		{

@@ -2,102 +2,16 @@
 #include <string>
 #include "imgui.h" 
 #include "../Patterns/Observer.h"
-#include "../Commands/CommandRegistry.h"
 #include "../Core/Layer.h"
-#include "../Commands/DeleteSelectedFacesCommand.h"
-#include "../Commands/DeleteSelectedMeshesCommand.h"
-#include "../Ml/Models/TriangleSkewMlModel.h"
-#include "../ViewPortsController.h"
-#include <vector>
+#include "LayerIDs.h"
 
-
-class DebugLayer : public Layer, public Observable, public Observer {
+class DebugLayer : public LayerWithID<DEBUG_LAYER>, public Observable, public Observer {
 public:
-	DebugLayer(const std::string& name)
-		: Layer(name) 
-        {
-            
-        }
+	DebugLayer(const std::string& name);
 
-	void onEvent(Event& event) override
-	{
-		if (event.getType() == EventType::MouseButtonPress)
-		{
-			if (m_isMouseInsideWindow) {
-				event.isHandled = true;
-			}
-		}
-	}
+	void onEvent(Event& event) override;
 
-	void onImGuiRender() override {
-		ImGui::Begin(this->getName().c_str());
-
-		// Get window position and size
-		ImVec2 windowPos = ImGui::GetWindowPos();
-		ImVec2 windowSize = ImGui::GetWindowSize();
-		ImVec2 mousePos = ImGui::GetMousePos();
-
-		// Update the class variable to track if the mouse is inside the window
-		m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
-			mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-
-
-        if(ImGui::Button("Recalculate")) {
-
-            Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-            for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-                
-                for(ExtendedFace* face : mesh->m_halfEdgeStructure->m_faces) {
-                   
-                    face->m_isSkewed = false;
-
-                    //musime updatnut potom aj renderer data
-                    std::vector<FaceTriangleIndex>& triangleIndices = face->faceTriangleIndices;
-
-                    FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
-                    FaceTriangle& faceTriangle = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
-
-                    if(auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
-
-                        TriangleBufferStorage& triangleBufferStorage = opt->get();
-                        std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
-
-                        int faceIndexInVao = faceTriangle.indexInVAO;
-                        for (int i = faceIndexInVao; i < faceIndexInVao + 3; ++i)
-                        {
-                            triangleBufferVertices.at(i).isSkewed = 0.0f;
-                        }
-                    }
-
-                }
-
-                for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-                    TriangleBufferStorage& triangleBufferStorage = it->second;
-                    triangleBufferStorage.update();
-                }
-
-            } 
-
-
-
-            if(m_skewCheckboxState) {
-                TriangleSkewModel triangleSkewModel;
-                triangleSkewModel.loadModel();
-
-                Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-                for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-                    triangleSkewModel.run(*mesh);
-                } 
-            }
-
-        }
-
-        if(ImGui::Checkbox("TriangleSkew", &m_skewCheckboxState)) {
-        }
-
-		ImGui::End();
-	}
+	void onImGuiRender() override;
 
 private:
     bool m_skewCheckboxState = false;

@@ -4,12 +4,13 @@
 #include "InteractionHandler.h"
 #include "../Params/OperationParams.h"
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/BrushToolCommand.h"
+#include "../Patterns/Command.h"
+#include "../ViewPortsController.h"
 
-class BrushInteractionHandler : public InteractionHandler<BrushToolCommand, BrushToolParams>
+class BrushInteractionHandler : public InteractionHandler<CommandConcept, BrushToolParams>
 {
 public:
-	BrushInteractionHandler(BrushToolCommand* command)
+	BrushInteractionHandler(CommandConcept* command)
 		: InteractionHandler(command) {}
 
 	void onBegin(const BrushToolParams& iParams) override

@@ -1,0 +1,28 @@
+@startuml RemovalLayerDependencies
+
+package "DeleteFacePlugin"{
+    class DeleteFaceCallBack
+    class DeleteFaceCommand
+}
+package "DeleteMeshPlugin"{
+    class DeleteMeshCallBack
+    class DeleteMeshCommand
+ }
+
+package "DeleteSelectedFacesPlugin" {
+    class DeleteSelectedFacesCallBack
+    class DeleteSelectedFacesCommand
+}
+DeleteSelectedFacesPlugin --> DeleteFacePlugin
+
+package "DeleteSelectedMeshesPlugin" {
+    class DeleteSelectedMeshesCallBack
+    class DeleteSelectedMeshesCommand
+}
+DeleteSelectedMeshesPlugin --> DeleteMeshPlugin
+
+class RemovalLayer
+RemovalLayer --> DeleteSelectedFacesPlugin
+RemovalLayer --> DeleteSelectedMeshesPlugin
+
+@enduml
