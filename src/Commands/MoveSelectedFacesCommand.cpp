@@ -3,6 +3,7 @@
 
 void MoveSelectedFacesCommand::execute(const MoveSelectedFacesParams& iParams)
 {
+    printf("COMMAND\n");
     notifyObservers(iParams);
 }
 

@@ -13,6 +13,7 @@ MoveSelectedFacesCallBack::MoveSelectedFacesCallBack() {}
 
 void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams) 
 {
+    printf("EXEC\n");
     glm::vec3 moveByVector = iParams.moveByVector;
 
     // Get selected meshes
@@ -44,14 +45,21 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
         vertexParams.mesh = selectedMesh;
         vertexParams.newPosition = moveByVector;
         vertexParams.moveBy = VertexParams::MoveBy::VECTOR;
-
+        printf("test:\t");
         for (ExtendedVertex *vertex : verticesToMove)
         {
             vertexParams.vertex = vertex;
 
             auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
             if (moveVertexCommand)
+            {
+                printf("DEBUG\n");
                 moveVertexCommand->execute(vertexParams);
+            }
+            else
+            {
+                printf("NO COMMAND\n");
+            }
         }
         selectedMesh->calculateMeshBounds();
     }

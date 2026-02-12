@@ -3,7 +3,7 @@
 #include "../Patterns/Observer.h"
 #include "CommandIDs.h"
 
-class MoveSelectedFacesCommand : public Command<MOVE_SELECTED_FACE_COMMAND, MoveSelectedFacesParams>, public Observable
+class MoveSelectedFacesCommand : public Command<MOVE_SELECTED_FACES_COMMAND, MoveSelectedFacesParams>, public Observable
 {
 public:
 	virtual void execute(const MoveSelectedFacesParams& iParams) override;

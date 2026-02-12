@@ -59,7 +59,7 @@ void MoveVertexCallBack::execute(const VertexParams &iParams)
                     }
                 }
 
-                //lineBufferStorage.update();
+                lineBufferStorage.update();
             }
 
             

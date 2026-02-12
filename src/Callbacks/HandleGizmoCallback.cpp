@@ -108,7 +108,15 @@ void HandleGizmoCallBack::update()
 
         auto* command = CommandRegistry::instance().getCommand(MOVE_SELECTED_FACES_COMMAND);
         if(command)
+        {
+            printf("WORKS\n");
             command->execute(faceParams);
+
+        }
+        else
+        {
+            printf("FUCK YOU\n");
+        }
     }
 }
 

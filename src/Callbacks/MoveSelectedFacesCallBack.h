@@ -4,7 +4,7 @@
 #include "../Patterns/Observer.h"
 #include "CallbackIDs.h"
 
-class MoveSelectedFacesCallBack : public Callback<MOVE_SELECTED_FACE_CALLBACK, MoveSelectedFacesParams>, public Observer
+class MoveSelectedFacesCallBack : public Callback<MOVE_SELECTED_FACES_CALLBACK, MoveSelectedFacesParams>, public Observer
 {
 public:
     MoveSelectedFacesCallBack();
