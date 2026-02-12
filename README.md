@@ -1,6 +1,11 @@
 # SurfaceEditor
  Application that allows us to manipulate with planar or non-planar surfaces.
 
+# Scientific paper
+The full paper describing this project is available here:
+
+[Read the paper (PDF)](paper/my_scientific_paper.pdf)
+
 ## Supported Platforms
 Currently, this project is **supported and tested only on Linux** systems.
 Support for other operating systems (such as macOS or Windows) may be added in the future.
