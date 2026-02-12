@@ -4,7 +4,7 @@
 # Scientific paper
 The full paper describing this project is available here:
 
-[Read the paper (PDF)](paper/my_scientific_paper.pdf)
+[Read the paper (PDF)](paper/Scientific_Paper_SurfaceEditor.pdf)
 
 ## Supported Platforms
 Currently, this project is **supported and tested only on Linux** systems.
