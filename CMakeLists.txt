@@ -120,6 +120,13 @@ FetchContent_MakeAvailable(ImGuizmo)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
 include("${PROJECT_SOURCE_DIR}/Features.cmake")
 
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
@@ -177,4 +184,5 @@ endif()
 target_include_directories(SurfaceEditor PRIVATE
     "${PROJECT_SOURCE_DIR}/src"
     ${ImGuizmo_SOURCE_DIR}
+    ${stb_SOURCE_DIR}
 )

@@ -303,6 +303,8 @@ int main()
 
 	setupLayer(DEBUG_LAYER, app, "DebugLayer");
 
+	setupLayer(OBJECT_MANIPULATION_LAYER, app, "ObjectManipulationLayer");
+
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader
 	meshShader.bind();

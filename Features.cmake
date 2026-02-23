@@ -32,7 +32,8 @@ set(FEATURE_MAP
     "ImGuiLayer,src/UI/ImGuiLayer.cpp"
     "ImportExportLayer,src/UI/ImportExportLayer.cpp"
     "ModifiersLayer,src/UI/ModifiersLayer.cpp"
-    "OutlinerLayer,src/UI/OutlinerLayer.cpp"
+    "OutlinerLayer,src/UI/OutlinerLayer.cpp",
+    "ObjectManipulationLayer,src/UI/ObjectManipulationLayer.cpp",
     "PrintableMeshSettingsPopUpLayer,src/UI/PrintableMeshSettingsPopUpLayer.cpp"
     "RemovalLayer,src/UI/RemovalLayer.cpp"
     "SculptToolLayer,src/UI/SculptToolsLayer.cpp"
