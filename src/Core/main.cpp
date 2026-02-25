@@ -25,70 +25,10 @@
 // import Patterns.Observer;
 // #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-#include "../Callbacks/AddPlaneCallback.h"
-#include "../Commands/AddPlaneCommand.h"
 #include "../Tools/ToolRegistry.h"
 //#include "../Commands/CommandRegistry.h"
-#include "../Commands/AddCubeCommand.h"
-#include "../Callbacks/AddCubeCallback.h"
 
-#include "../Callbacks/DeselectFaceCallBack.h"
-#include "../Callbacks/SelectMeshCallBack.h"
-#include "../Callbacks/SelectionLayerCallBack.h"
-#include "../Commands/SelectMeshCommand.h"
-#include "../UI/AdditionLayer.h"
-#include "../UI/RemovalLayer.h"
-#include "../UI/SelectionLayer.h"
 
-#include "../Callbacks/SelectFaceCallBack.h"
-#include "../Callbacks/MoveVertexCallBack.h"
-#include "../Commands/MoveVertexCommand.h"
-
-#include "../Callbacks/DeselectMeshCallBack.h"
-#include "../Commands/DeselectMeshCommand.h"
-
-#include "../Commands/DeselectFaceCommand.h"
-#include "../Commands/SelectFaceCommand.h"
-
-#include "../Callbacks/DeleteSelectedFacesCallBack.h"
-#include "../Commands/DeleteSelectedFacesCommand.h"
-
-#include "../Callbacks/DeleteFaceCallBack.h"
-#include "../Commands/DeleteFaceCommand.h"
-
-#include "../Callbacks/DeleteSelectedMeshesCallBack.h"
-#include "../Commands/DeleteSelectedMeshesCommand.h"
-
-#include "../Commands/BasicSculptToolCommand.h"
-
-#include "../Commands/BrushToolCommand.h"
-#include "../Tools/MeshDeselectionTool.h"
-#include "../Tools/BrushTool.h"
-#include "../Tools/FaceSelectionTool.h"
-#include "../Tools/FaceDeselectionTool.h"
-
-#include "../Callables/PlaneVertexGenCallable.h"
-#include "../Callables/MeshVaoInitCallable.h"
-#include "../Callables/SceneMeshAdderCallable.h"
-#include "../Callables/CubeVertexGenCallable.h"
-
-//ImportExportLayer
-#include "../Callbacks/ImportMeshesCallBack.h"
-#include "../Commands/ImportMeshesCommand.h"
-#include "../UI/ImportExportLayer.h"
-
-#include "../Callbacks/ExportMeshesCallBack.h"
-#include "../Commands/ExportMeshesCommand.h"
-
-#include "../Callables/FetchedSurfaceVertexGenCallable.h"
-#include "../Callbacks/FetchSurfaceCallBack.h"
-
-#include "../Callbacks/SolidifyMeshesCallBack.h"
-#include "../Commands/SolidifyMeshesCommand.h"
-#include "../Commands/DeleteMeshCommand.h"
-#include "../Callbacks/DeleteMeshCallBack.h"
-#include "../Callbacks/MoveSelectedFacesCallBack.h"
-#include "../Commands/MoveSelectedFacesCommand.h"
 
 #include "../Structures/ExtendedHalfEdge.h"
 
@@ -106,6 +46,8 @@
 #include "../UI/LayerIDs.h"
 
 #include "../UI/WindowLayerBus.h"
+
+#include "PluginLoader.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -205,6 +147,8 @@ int main()
 	// GizmoLayer
 	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
 
+	PluginLoader::LoadPlugins("../Plugins");
+
 	setup(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
 	setup(MOVE_SELECTED_MESHES_COMMAND, MOVE_SELECTED_MESHES_CALLBACK);
 	setup(HANDLE_GIZMO_COMMAND, HANDLE_GIZMO_CALLBACK);
@@ -214,7 +158,7 @@ int main()
 
 	setup(ADD_PLANE_COMMAND, ADD_PLANE_CALLBACK);
 
-	setup(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
+	//setup(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
 
 	setup(SOLIDIFY_MESHES_COMMAND, SOLIDIFY_MESHES_CALLBACK);
 

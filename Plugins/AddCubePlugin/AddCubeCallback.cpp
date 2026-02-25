@@ -1,7 +1,7 @@
 #include "AddCubeCallback.h"
-#include "CallbackRegister.h"
+#include "../../src/Callbacks/CallbackRegister.h"
 
-#include "../Callables/CallableIDs.h"
+#include "../../src/Callables/CallableIDs.h"
 
 namespace {
     const bool registered = []() {

@@ -1,5 +1,5 @@
 #include "AddCubeCommand.h"
-#include "CommandRegistry.h"
+#include "../../src/Commands/CommandRegistry.h"
 void AddCubeCommand::execute(const CubeParams& params)
 {
 	notifyObservers(params);

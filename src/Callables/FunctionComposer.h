@@ -2,6 +2,8 @@
 #include <queue>
 #include "Callable.h"
 #include "CallableRegistry.h"
+#include <stdexcept>
+#include <iostream>
 
 template <typename T, typename = void>
 struct has_input_params : std::false_type {};

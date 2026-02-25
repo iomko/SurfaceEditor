@@ -1,6 +1,7 @@
 #pragma once
 #include "../Callables/FunctionComposer.h"
 #include <memory>
+#include <stdexcept>
 
 struct CallbackConcept {
 	virtual ~CallbackConcept() = default;

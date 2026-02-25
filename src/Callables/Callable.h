@@ -1,5 +1,6 @@
 #pragma once
 #include "../Patterns/Command.h"
+#include <stdexcept>
 
 class CallableConcept {
 public:

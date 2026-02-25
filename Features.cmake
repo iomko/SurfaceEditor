@@ -3,7 +3,7 @@ message(STATUS ">>> Features CMake included")
 # Feature -> source files
 set(FEATURE_MAP
     "MeshAdderCallables,src/Callables/MeshVaoInitCallable.cpp,src/Callables/SceneMeshAdderCallable.cpp"
-    "AddCube,src/Commands/AddCubeCommand.cpp,src/Callbacks/AddCubeCallback.cpp,src/Callables/CubeVertexGenCallable.cpp"
+    #"AddCube,src/Commands/AddCubeCommand.cpp,src/Callbacks/AddCubeCallback.cpp,src/Callables/CubeVertexGenCallable.cpp"
     "AddPlane,src/Commands/AddPlaneCommand.cpp,src/Callbacks/AddPlaneCallback.cpp,src/Callables/PlaneVertexGenCallable.cpp"
     "FetchSurface,src/Commands/FetchSurfaceCommand.cpp,src/Callbacks/FetchSurfaceCallBack.cpp,src/Callables/FetchedSurfaceVertexGenCallable.cpp"
     "BrushTool,src/Commands/BrushToolCommand.cpp,src/Callbacks/BrushToolCallBack.cpp,src/Tools/BrushTool.cpp"
