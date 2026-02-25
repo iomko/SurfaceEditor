@@ -20,24 +20,27 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
 
 void ObjectManipulationLayer::loadPanelImages()
 {
+    VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
+
     ImVec2 buttonSize{m_iconSize, m_iconSize};
 
     m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, buttonSize, [](ImageButton* button) {
         //TODO
-    }));
+    }, []() {}));
     m_buttons.emplace_back(std::make_unique<ImageButton>(translate, buttonSize, [](ImageButton* button) {
         //TODO
-    }));
+    }, []() {}));
     m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, buttonSize, [](ImageButton* button) {
         //TODO
-    }));
+    }, []() {}));
     m_buttons.emplace_back(std::make_unique<ImageButton>(scale, buttonSize, [](ImageButton* button) {
         //TODO
-    }));
+    }, []() {}));
     m_buttons.emplace_back(std::make_unique<ImageButton>(plus, buttonSize, [](ImageButton* button) {
-        //TODO
-
+        VisibilityHandler::show(OBJECTS);
         button->isSelected() = false;
+    }, []() {
+        VisibilityHandler::hide(OBJECTS);
     }));
 
     m_imagesLoaded = true;
@@ -116,6 +119,7 @@ void ObjectManipulationLayer::onImGuiRender()
                 for (auto& unselectedButton : m_buttons)
                 {
                     unselectedButton->isSelected() = false;
+                    unselectedButton->end();
                 }
 
                 button->isSelected() = true;

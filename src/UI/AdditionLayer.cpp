@@ -21,6 +21,11 @@ void AdditionLayer::onEvent(Event &event)
 
 void AdditionLayer::onImGuiRender()
 {
+    if (!VisibilityHandler::isVisible(ADDITION_LAYER))
+    {
+        return;
+    }
+
     ImGui::Begin(this->getName().c_str());
 
     ImVec2 windowPos = ImGui::GetWindowPos();

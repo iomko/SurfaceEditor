@@ -7,6 +7,8 @@
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
 #include "Components/ImageButton.h"
+#include "VisibilityHandler.h"
+
 
 class ObjectManipulationLayer : public LayerWithID<OBJECT_MANIPULATION_LAYER>, public Observable
 {

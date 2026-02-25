@@ -4,6 +4,8 @@
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
+#include "VisibilityHandler.h"
+
 class AdditionLayer : public LayerWithID<ADDITION_LAYER>, public Observable, public Observer {
 public:
     AdditionLayer(const std::string& name);
@@ -13,7 +15,6 @@ public:
 	void onImGuiRender() override;
 
 private:
-
 	float m_lowerLeftLon = 0.0f;
 	float m_lowerLeftLat = 0.0f;
 	float m_upperRightLon = 0.0f;

@@ -9,6 +9,11 @@
 #include <type_traits>
 #include "../Core/Layer.h"
 #include <stdexcept>
+#include "VisibilityHandler.h"
+
+
+#include <iostream>
+
 
 class LayerRegistry
 {
@@ -95,6 +100,7 @@ struct AutoRegisterLayer
 {
     AutoRegisterLayer()
     {
+        VisibilityHandler::hide(LayerT::ID);
         LayerRegistry::instance().registerLayer<LayerT>();
     }
 };

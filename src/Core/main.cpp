@@ -305,6 +305,8 @@ int main()
 
 	setupLayer(OBJECT_MANIPULATION_LAYER, app, "ObjectManipulationLayer");
 
+	setupLayer(OBJECTS, app, "ObjectsLayer");
+
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader
 	meshShader.bind();

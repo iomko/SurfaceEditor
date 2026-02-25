@@ -7,7 +7,10 @@
 class ImageButton
 {
 public:
-    ImageButton(const std::string iconFilePath, const ImVec2 size, std::function<void(ImageButton*)> callback);
+    ImageButton(
+        const std::string iconFilePath, const ImVec2 size,
+        std::function<void(ImageButton*)> callback, std::function<void()> endCallback
+    );
 
     ~ImageButton() = default;
 
@@ -19,6 +22,8 @@ public:
 
     inline void execute() { m_callback(this); }
 
+    inline void end() { m_endCallback(); };
+
 private:
     void loadIcon();
 
@@ -28,4 +33,5 @@ private:
     const std::string m_iconFilePath;
     ImTextureID m_textureID;
     std::function<void(ImageButton*)> m_callback;
+    std::function<void()> m_endCallback;
 };
