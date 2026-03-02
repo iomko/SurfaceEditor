@@ -1,36 +1,31 @@
 #include "ObjectsLayer.h"
-#include "../ViewPortsController.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
 #include "LayerRegistry.h"
 
 static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg;
 
-ObjectsLayer::ObjectsLayer(const std::string& name) : LayerWithID(name), m_windowSize{} {}
-
-const ImGuiWindowFlags& ObjectsLayer::setWindowPosition()
+ObjectsLayer::ObjectsLayer(const std::string& name)
+    : LayerWithID(name), m_windowSize{}
 {
-    static constexpr const ImGuiWindowFlags flags =
-        ImGuiWindowFlags_NoTitleBar
-        | ImGuiWindowFlags_NoResize
-        | ImGuiWindowFlags_NoMove
-        | ImGuiWindowFlags_NoScrollbar
-        | ImGuiWindowFlags_NoCollapse;
+    auto& layerRegistry = LayerRegistry::instance();
+    auto layer = layerRegistry.getLayer(OBJECT_MANIPULATION_LAYER, "ObjectManipulationLayer");
+    auto objectManipulationLayer = static_cast<ObjectManipulationLayer*>(layer);
 
+    m_windowPos = objectManipulationLayer->rightBottomCorner();
+}
+
+void ObjectsLayer::setWindowSizeAndPosition()
+{
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    float width  = viewport->WorkSize.x * 0.1f;
-    float height = viewport->WorkSize.y * 0.15f;
+    float width  = viewport->WorkSize.x * 0.05f;
+    float height = viewport->WorkSize.y * 0.075f;
 
     m_windowSize = { width, height };
 
-    float posX = viewport->WorkPos.x + (viewport->WorkSize.x - width) * 0.5f;
-    float posY = viewport->WorkPos.y + (viewport->WorkSize.y - height) * 0.5f;
-
     ImGui::SetNextWindowSize(m_windowSize, ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-
-    return flags;
+    ImGui::SetNextWindowPos(*m_windowPos, ImGuiCond_Always);
 }
 
 void ObjectsLayer::onImGuiRender()
@@ -40,12 +35,13 @@ void ObjectsLayer::onImGuiRender()
         return;
     }
     
-    const ImGuiWindowFlags& flags = setWindowPosition();
+    setWindowSizeAndPosition();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 18.0f);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.15f, 0.15f, 0.17f, 0.90f));
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    ImGui::Begin(this->getName().c_str(), nullptr, flags);
+    static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
+    WindowStyle::setup(this->getName().c_str(), flags);
+
 
     float buttonWidth  = m_windowSize.x * 0.75f;
     float buttonHeight = m_windowSize.y * 0.25f;
@@ -85,8 +81,6 @@ void ObjectsLayer::onImGuiRender()
     ImGui::PopStyleColor(styleColorApplied);
     ImGui::PopStyleVar(styleVarApplied);
 
-    ImGui::End();
 
-    ImGui::PopStyleVar();
-    ImGui::PopStyleColor();
+    WindowStyle::end();
 }

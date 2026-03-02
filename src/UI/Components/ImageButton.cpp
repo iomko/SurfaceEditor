@@ -1,11 +1,11 @@
 #include "ImageButton.h"
 
 ImageButton::ImageButton(
-    const std::string iconFilePath, const ImVec2 size,
-    std::function<void(ImageButton*)> callback, std::function<void()> endCallback
-) :
-    m_isSelected{}, m_iconFilePath{iconFilePath},
-    m_size{size}, m_callback{callback}, m_endCallback{endCallback}
+    const std::string name,
+    const std::string iconFilePath,
+    std::function<void(Button*)> callback,
+    std::function<void()> endCallback
+) : RadioButton(name, callback, endCallback), m_iconFilePath{iconFilePath}
 {
     loadIcon();
 }

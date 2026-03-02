@@ -6,39 +6,51 @@
 
 namespace
 {
-    static constexpr const char* cursor = "../images/gui/cursor.png";
-    static constexpr const char* translate = "../images/gui/translate.png";
-    static constexpr const char* rotate = "../images/gui/rotate.png";
-    static constexpr const char* scale = "../images/gui/scale.png";
-    static constexpr const char* plus = "../images/gui/plus.png";
+    //Names
+    static constexpr const char* cursor = "cursor";
+    static constexpr const char* translate = "translate";
+    static constexpr const char* rotate = "rotate";
+    static constexpr const char* scale = "scale";
+    static constexpr const char* plus = "plus";
+
+    //Paths
+    static constexpr const char* cursorPath = "../images/gui/cursor.png";
+    static constexpr const char* translatePath = "../images/gui/translate.png";
+    static constexpr const char* rotatePath = "../images/gui/rotate.png";
+    static constexpr const char* scalePath = "../images/gui/scale.png";
+    static constexpr const char* plusPath = "../images/gui/plus.png";
 }
 
 static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg;
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
-    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{} {}
+    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
+{
+    VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
+}
 
 void ObjectManipulationLayer::loadPanelImages()
 {
     VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
 
-    ImVec2 buttonSize{m_iconSize, m_iconSize};
+    m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button* button) {
+        //TODO
+    }, []() {}));
 
-    m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, buttonSize, [](ImageButton* button) {
+    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {
         //TODO
     }, []() {}));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, buttonSize, [](ImageButton* button) {
+
+    m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button* button) {
         //TODO
     }, []() {}));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, buttonSize, [](ImageButton* button) {
+
+    m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button* button) {
         //TODO
     }, []() {}));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(scale, buttonSize, [](ImageButton* button) {
-        //TODO
-    }, []() {}));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(plus, buttonSize, [](ImageButton* button) {
+
+    m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath, [](Button* button) {
         VisibilityHandler::show(OBJECTS);
-        button->isSelected() = false;
     }, []() {
         VisibilityHandler::hide(OBJECTS);
     }));
@@ -46,15 +58,8 @@ void ObjectManipulationLayer::loadPanelImages()
     m_imagesLoaded = true;
 }
 
-const ImGuiWindowFlags& ObjectManipulationLayer::setWindowPosition()
+void ObjectManipulationLayer::setWindowSizeAndPosition()
 {
-    static constexpr const ImGuiWindowFlags flags =
-        ImGuiWindowFlags_NoTitleBar
-        | ImGuiWindowFlags_NoResize
-        | ImGuiWindowFlags_NoMove
-        | ImGuiWindowFlags_NoScrollbar
-        | ImGuiWindowFlags_NoCollapse;
-
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
     float viewportWidth  = viewport->WorkSize.x;
@@ -73,19 +78,23 @@ const ImGuiWindowFlags& ObjectManipulationLayer::setWindowPosition()
     float posX = viewport->WorkPos.x + leftInset;
     float posY = viewport->WorkPos.y + (viewportHeight - windowHeight) * 0.5f;
 
+    m_rightBottomCorner = { posX + windowWidth - (m_iconSize / 2), posY + windowHeight - (m_iconSize / 2) };
+
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-
-    return flags;
 }
 
 void ObjectManipulationLayer::onImGuiRender()
 {
-    const ImGuiWindowFlags& flags = setWindowPosition();
+    if (!VisibilityHandler::isVisible(OBJECT_MANIPULATION_LAYER))
+    {
+        return;
+    }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.15f, 0.15f, 0.17f, 0.85f));
-    ImGui::Begin(this->getName().c_str(), nullptr, flags);
+    setWindowSizeAndPosition();
+    
+    static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
+    WindowStyle::setup(this->getName().c_str(), flags);
 
     if (!m_imagesLoaded)
     {
@@ -94,19 +103,10 @@ void ObjectManipulationLayer::onImGuiRender()
 
     for (auto& button : m_buttons)
     {
-        if (button->isSelected())
-        {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.65f, 0.10f, 0.55f));
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-        }
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.55f, 0.0f, 0.35f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.55f, 0.0f, 0.55f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
+        int apppliedColorStyles{}, appliedVarStyles{};
 
-        const int appliedStylesCount = 3;
+        ButtonStyle::setRadioButtonBackground(button.get(), apppliedColorStyles);
+        ButtonStyle::controlPanelStyle(apppliedColorStyles, appliedVarStyles);
 
         if (ImGui::ImageButton(button->name().c_str(), button->textureID(), ImVec2(m_iconSize, m_iconSize)))
         {
@@ -127,11 +127,8 @@ void ObjectManipulationLayer::onImGuiRender()
             }
         }
 
-        ImGui::PopStyleColor(appliedStylesCount);
-        ImGui::PopStyleVar();
+        ButtonStyle::closeStyling(apppliedColorStyles, appliedVarStyles);
     }
 
-    ImGui::End();
-    ImGui::PopStyleColor();
-    ImGui::PopStyleVar();
+    WindowStyle::end();
 }
