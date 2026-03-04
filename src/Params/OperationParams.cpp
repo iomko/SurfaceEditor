@@ -1,3 +1,4 @@
+/*
 #include "OperationParams.h"
 #include "../Scene/Scene.h"
 #include "Structures/PrintableMesh.h"
@@ -207,3 +208,4 @@ struct AddChildOutlinerNodeCallBackParams : public AddNewOutlinerNodeCallBackPar
 	OutlinerNodeConcept* parent = nullptr;
 };
 
+*/

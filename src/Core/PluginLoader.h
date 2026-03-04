@@ -10,6 +10,7 @@ class PluginLoader
 public:
     static void LoadPlugin(const std::string &path)
     {
+        printf("Path: %s \n", path.c_str());
         void *handle = dlopen(path.c_str(), RTLD_NOW);
 
         if (!handle)
@@ -29,7 +30,8 @@ public:
 
     static void LoadPlugins(const std::string &directory)
     {
-        for (auto &file : std::filesystem::directory_iterator(directory))
+        printf("Directory: %s \n", directory.c_str());
+        for (auto &file : std::filesystem::recursive_directory_iterator(directory))
         {
             if (file.path().extension() == ".so")
             {

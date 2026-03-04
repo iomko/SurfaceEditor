@@ -1,0 +1,24 @@
+#include "AddPlaneCallback.h"
+#include "../../src/Callbacks/CallbackRegister.h"
+#include "../../src/Callables/CallableIDs.h"
+namespace {
+    const bool registered = []() {
+        CallbackRegistry::instance().registerCallbackFactory(
+            AddPlaneCallback::ID,
+            []() -> std::unique_ptr<CallbackConcept> {
+                // create and configure a local composer, then pass it by const-ref to the callback
+                auto composer = std::make_unique<FunctionComposer>();
+                FunctionNode* root = composer->initRootByID(PLANE_VERTEX_GEN_CALLABLE, true);
+                composer->addFuncByID(root, MESH_VAO_INIT_CALLABLE);
+                composer->addFuncByID(root, SCENE_MESH_ADDER_CALLABLE);
+                composer->addFuncByID(root, MESH_OUTLINER_ADDER_CALLABLE);
+
+                return std::make_unique<AddPlaneCallback>(std::move(composer));
+            }
+        );
+        return true;
+    }();
+}
+AddPlaneCallback::AddPlaneCallback(std::unique_ptr<FunctionComposer> functionComposer)
+		: ComposedCallback(std::move(functionComposer))
+	{}

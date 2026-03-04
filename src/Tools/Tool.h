@@ -1,6 +1,5 @@
 #pragma once
 #include "InteractionHandler.h"
-#include "ToolIDs.h"
 
 class ITool
 {

@@ -1,3 +1,5 @@
+
+/*
 #include "Material.h"
 #include <string>
 #include <glm/vec4.hpp>
@@ -33,3 +35,4 @@ public:
         return m_name;
     }
 };
+*/
