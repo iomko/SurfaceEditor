@@ -1,6 +1,13 @@
 #pragma once
+#include <algorithm>
 #include <imgui.h>
 #include "RadioButton.h"
+
+struct ButtonLayout
+{
+    float width;
+    float height;
+};
 
 class ButtonStyle
 {
@@ -15,7 +22,11 @@ public:
 
     static void sidePanelStyle();
 
-    static void popUpWindowStyle();
+    static void simplePopUpWindowStyle(float buttonHeight, int& appliedColorStyles, int& appliedVarStyles);
+
+    static void applyResponsiveFontScale(float buttonHeight, float baseFontSize = 16.0f);
+
+    static ButtonLayout calculateVerticalButtonLayout(int buttonCount);
 
     static void closeStyling(int appliedColorStyles, int appliedVarStyles);
 };

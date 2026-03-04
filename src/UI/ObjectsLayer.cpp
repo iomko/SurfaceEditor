@@ -19,68 +19,61 @@ void ObjectsLayer::setWindowSizeAndPosition()
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    float width  = viewport->WorkSize.x * 0.05f;
-    float height = viewport->WorkSize.y * 0.075f;
+    float viewportWidth = viewport->WorkSize.x;
+    float viewportHeight = viewport->WorkSize.y;
+
+    float width  = viewportWidth * 0.05f;
+    float height = viewportHeight * 0.09f;
 
     m_windowSize = { width, height };
 
     ImGui::SetNextWindowSize(m_windowSize, ImGuiCond_Always);
     ImGui::SetNextWindowPos(*m_windowPos, ImGuiCond_Always);
+
+    WindowStyle::checkResolutionRange(viewportHeight, viewportWidth, OBJECTS);
 }
 
 void ObjectsLayer::onImGuiRender()
 {
+    setWindowSizeAndPosition();
+
     if (!VisibilityHandler::isVisible(OBJECTS))
     {
         return;
     }
-    
-    setWindowSizeAndPosition();
 
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    int windowStyleColorApplied{}, windowStyleVarApplied{};
+    int styleColorApplied{}, styleVarApplied{};
+    int buttonCount{3};
 
     static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
-    WindowStyle::setup(this->getName().c_str(), flags);
+    WindowStyle::setup(this->getName().c_str(), flags, windowStyleColorApplied, windowStyleVarApplied);
 
+    auto layout = ButtonStyle::calculateVerticalButtonLayout(buttonCount);
+    ButtonStyle::applyResponsiveFontScale(layout.height);
+    ButtonStyle::simplePopUpWindowStyle(layout.height, styleColorApplied, styleVarApplied);
 
-    float buttonWidth  = m_windowSize.x * 0.75f;
-    float buttonHeight = m_windowSize.y * 0.25f;
-    float centerOffset = (m_windowSize.x - buttonWidth) * 0.5f;
-    ImGui::SetCursorPosX(centerOffset);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 10));
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.20f, 0.23f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.00f, 0.55f, 0.00f, 0.85f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.00f, 0.45f, 0.00f, 1.0f));
-
-    const int styleColorApplied = 3;
-    const int styleVarApplied = 2;
-
-    if (ImGui::Button("Plane", ImVec2(buttonWidth, buttonHeight)))
+    if (ImGui::Button("Plane", ImVec2(layout.width, layout.height)))
     {
-        //TODO
+        AdditionLayer::setAdditionType(AdditionType::PLANE);
+        VisibilityHandler::show(ADDITION_LAYER);
+        VisibilityHandler::hide(OBJECTS);
+    }
+    if (ImGui::Button("Cube", ImVec2(layout.width, layout.height)))
+    {
+        AdditionLayer::setAdditionType(AdditionType::CUBE);
+        VisibilityHandler::show(ADDITION_LAYER);
+        VisibilityHandler::hide(OBJECTS);
+    }
+    if (ImGui::Button("Surface", ImVec2(layout.width, layout.height)))
+    {
+        AdditionLayer::setAdditionType(AdditionType::SURFACE);
+        VisibilityHandler::show(ADDITION_LAYER);
+        VisibilityHandler::hide(OBJECTS);
     }
 
-    ImGui::Spacing();
-    ImGui::SetCursorPosX(centerOffset);
+    ButtonStyle::closeStyling(styleColorApplied, styleVarApplied);
 
-    if (ImGui::Button("Cube", ImVec2(buttonWidth, buttonHeight)))
-    {
-        //TODO
-    }
-
-    ImGui::Spacing();
-    ImGui::SetCursorPosX(centerOffset);
-
-    if (ImGui::Button("Mesh", ImVec2(buttonWidth, buttonHeight)))
-    {
-        //TODO
-    }
-
-    ImGui::PopStyleColor(styleColorApplied);
-    ImGui::PopStyleVar(styleVarApplied);
-
-
-    WindowStyle::end();
+    WindowStyle::end(windowStyleColorApplied, windowStyleVarApplied);
 }

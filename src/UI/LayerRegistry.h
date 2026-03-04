@@ -11,10 +11,6 @@
 #include <stdexcept>
 #include "VisibilityHandler.h"
 
-
-#include <iostream>
-
-
 class LayerRegistry
 {
 public:
@@ -31,7 +27,11 @@ public:
     {
         m_creators[LayerT::ID] = [](const std::any &) -> std::unique_ptr<Layer>
         {
-            return std::make_unique<LayerT>();
+            auto layer = std::make_unique<LayerT>();
+
+            VisibilityHandler::init(LayerT::ID);
+
+            return layer;
         };
     }
 
@@ -49,13 +49,17 @@ public:
             using TupleT = std::tuple<std::decay_t<CtorArgs>...>;
             const TupleT &tup = std::any_cast<const TupleT &>(a);
                 
-            return std::apply(
+            auto layer =  std::apply(
                 [&](auto &&...args)
                 {
                     return std::make_unique<LayerT>(
                         std::forward<decltype(args)>(args)...);
                 },
                 tup);
+                
+            VisibilityHandler::init(static_cast<LayerIDS>(LayerT::ID));
+
+            return layer;
         };
     }
 
@@ -100,7 +104,6 @@ struct AutoRegisterLayer
 {
     AutoRegisterLayer()
     {
-        VisibilityHandler::hide(LayerT::ID);
         LayerRegistry::instance().registerLayer<LayerT>();
     }
 };

@@ -6,6 +6,7 @@
 #include "LayerIDs.h"
 #include "VisibilityHandler.h"
 #include "ObjectManipulationLayer.h"
+#include "AdditionLayer.h"
 #include "Components/IWindow.h"
 #include "Components/WindowStyle.h"
 #include "Components/ButtonStyle.h"

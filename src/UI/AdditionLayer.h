@@ -5,14 +5,35 @@
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
 #include "VisibilityHandler.h"
+#include "Components/IWindow.h"
+#include "Components/WindowStyle.h"
 
-class AdditionLayer : public LayerWithID<ADDITION_LAYER>, public Observable, public Observer {
+enum class AdditionType
+{
+	NONE 	= -1,
+	PLANE 	= 0,
+	CUBE	= 1,
+	SURFACE	= 2
+};
+
+class AdditionLayer : public LayerWithID<ADDITION_LAYER>, public Observable, public Observer, public IWindow {
 public:
     AdditionLayer(const std::string& name);
+
+	inline static void setAdditionType(AdditionType additionType) { s_additionType = additionType; }
+
+    void setWindowSizeAndPosition() override;
 
     void onEvent(Event& event) override;
 
 	void onImGuiRender() override;
+
+private:
+	void addPlane();
+
+	void addCube();
+
+	void addSurface();
 
 private:
 	float m_lowerLeftLon = 0.0f;
@@ -26,4 +47,6 @@ private:
     int m_subdivision = 1;
     float m_size = 1.0f;
 	glm::ivec3 m_position = {0, 0, 0};
+
+	inline static AdditionType s_additionType = AdditionType::NONE;
 };

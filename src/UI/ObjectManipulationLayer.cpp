@@ -24,10 +24,7 @@ namespace
 static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg;
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
-    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
-{
-    VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
-}
+    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{} {}
 
 void ObjectManipulationLayer::loadPanelImages()
 {
@@ -50,9 +47,17 @@ void ObjectManipulationLayer::loadPanelImages()
     }, []() {}));
 
     m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath, [](Button* button) {
+        auto imageButton = dynamic_cast<ImageButton*>(button);
+        
+        if (imageButton)
+        {
+            imageButton->isSelected() = false;
+        }
+        
         VisibilityHandler::show(OBJECTS);
     }, []() {
         VisibilityHandler::hide(OBJECTS);
+        VisibilityHandler::hide(ADDITION_LAYER);
     }));
 
     m_imagesLoaded = true;
@@ -82,24 +87,28 @@ void ObjectManipulationLayer::setWindowSizeAndPosition()
 
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+
+    WindowStyle::checkResolutionRange(viewportHeight, viewportWidth, OBJECT_MANIPULATION_LAYER);
 }
 
 void ObjectManipulationLayer::onImGuiRender()
 {
-    if (!VisibilityHandler::isVisible(OBJECT_MANIPULATION_LAYER))
-    {
-        return;
-    }
-
-    setWindowSizeAndPosition();
-    
-    static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
-    WindowStyle::setup(this->getName().c_str(), flags);
-
     if (!m_imagesLoaded)
     {
         loadPanelImages();
     }
+
+    setWindowSizeAndPosition();
+
+    if (!VisibilityHandler::isVisible(OBJECT_MANIPULATION_LAYER))
+    {
+        return;
+    }
+    
+    int windowColorStylesApplied{}, windowVarStylesApplied{};
+
+    static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
+    WindowStyle::setup(this->getName().c_str(), flags, windowColorStylesApplied, windowVarStylesApplied);
 
     for (auto& button : m_buttons)
     {
@@ -130,5 +139,5 @@ void ObjectManipulationLayer::onImGuiRender()
         ButtonStyle::closeStyling(apppliedColorStyles, appliedVarStyles);
     }
 
-    WindowStyle::end();
+    WindowStyle::end(windowColorStylesApplied, windowVarStylesApplied);
 }

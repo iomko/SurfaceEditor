@@ -9,12 +9,19 @@ public:
 
     ~VisibilityHandler() = delete;
 
-    inline static void show(LayerIDS layer) { m_layerVisibility[layer] = true; }
+    static void init(LayerIDS layer);
 
-    inline static void hide(LayerIDS layer) { m_layerVisibility[layer] = false; }
+    static bool isVisible(LayerIDS layer);
 
-    inline static bool isVisible(LayerIDS layer) { return m_layerVisibility[layer]; }
+    inline static void show(LayerIDS layer) { s_layerVisibility[layer] = true; }
+
+    inline static void hide(LayerIDS layer) { s_layerVisibility[layer] = false; }
+
+    inline static void setOutOfRange(LayerIDS layer) { s_layerInRange[layer] = false; }
+
+    inline static void setInRange(LayerIDS layer) { s_layerInRange[layer] = true; }
 
 protected:
-    inline static std::map<LayerIDS, bool> m_layerVisibility{};
+    inline static std::map<LayerIDS, bool> s_layerVisibility{};
+    inline static std::map<LayerIDS, bool> s_layerInRange{};
 };

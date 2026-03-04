@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <imgui.h>
+#include "../VisibilityHandler.h"
 
 class WindowStyle
 {
@@ -26,7 +27,16 @@ public:
             | ImGuiWindowFlags_NoCollapse;
     }
 
-    static void setup(const char* name, const ImGuiWindowFlags flags);
+    static void setDefaultTitleBar(int& appliedColorStyles);
 
-    static void end();
+    static void checkResolutionRange(float height, float width, LayerIDS layer);
+
+    static void setup(
+        const char* name,
+        const ImGuiWindowFlags flags,
+        int& appliedColorStyles,
+        int& appliedVarStyles
+    );
+
+    static void end(int appliedColorStyles, int appliedVarStyles);
 };
