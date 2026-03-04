@@ -11,7 +11,8 @@ namespace {
                 FunctionNode* root = composer->initRootByID(PLANE_VERTEX_GEN_CALLABLE, true);
                 composer->addFuncByID(root, MESH_VAO_INIT_CALLABLE);
                 composer->addFuncByID(root, SCENE_MESH_ADDER_CALLABLE);
-                composer->addFuncByID(root, MESH_OUTLINER_ADDER_CALLABLE);
+                if(CallableRegistry::instance().getCallable(MESH_OUTLINER_ADDER_CALLABLE) != nullptr)
+                    composer->addFuncByID(root, MESH_OUTLINER_ADDER_CALLABLE);
 
                 return std::make_unique<AddPlaneCallback>(std::move(composer));
             }

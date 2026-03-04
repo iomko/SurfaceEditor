@@ -33,10 +33,10 @@ public:
 class ViewPortsHolderContext
 {
 public:
-	static inline ViewPortsController* s_viewPortsController = nullptr;
-	static inline SelectionController* s_selectionController = nullptr;
-	static inline Camera* s_camera = nullptr;
-	static inline Window* s_window = nullptr;
+	static ViewPortsController* s_viewPortsController;
+	static SelectionController* s_selectionController;
+	static Camera* s_camera;
+	static Window* s_window;
 };
 
 class ViewPortLayer : public Layer, public Observable

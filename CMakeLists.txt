@@ -179,8 +179,8 @@ endif()
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
-target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuizmo)
-target_link_libraries(SurfaceEditorCore PRIVATE glfw OpenGL::GL glm::glm CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP Torch::Torch)
+target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuizmo glfw)
+target_link_libraries(SurfaceEditorCore PRIVATE OpenGL::GL glm::glm CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP Torch::Torch)
 
 if(UNIX)
     target_link_libraries(SurfaceEditorCore PRIVATE X11::X11)
@@ -210,4 +210,6 @@ set_target_properties(ImGuizmo PROPERTIES
   INTERFACE_LINK_LIBRARIES "ImGui;ImGuizmo"  # Linkovanie knižníc ImGui a ImGuizmo
 )
 
+
 export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo TrianglePP FILE SurfaceEditorCoreConfig.cmake)
+

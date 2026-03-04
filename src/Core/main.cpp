@@ -125,10 +125,18 @@ int main()
 	std::filesystem::path cwd = std::filesystem::current_path();
     std::cout << "Aktuálny pracovný adresár: " << cwd << std::endl;
 
-	PluginLoader::LoadPlugin("../../Plugins/MeshAdderCallablesPlugin/build/libMeshAdderCallablesPlugin.so");
-	PluginLoader::LoadPlugin("../../Plugins/AddNodesToOutlinerLayerPlugin/build/libAddNodesToOutlinerLayerPlugin.so");
+	std::unordered_set<std::string> loadedPluginPaths;
 
-	PluginLoader::LoadPlugins("../../Plugins");
+	PluginLoader::LoadPlugin("../../Plugins/MeshAdderCallablesPlugin/build/libMeshAdderCallablesPlugin.so");
+	loadedPluginPaths.insert("../../Plugins/MeshAdderCallablesPlugin/build/libMeshAdderCallablesPlugin.so");
+
+	PluginLoader::LoadPlugin("../../Plugins/OutlinerLayerPlugin/build/libOutlinerLayerPlugin.so");
+	loadedPluginPaths.insert("../../Plugins/OutlinerLayerPlugin/build/libOutlinerLayerPlugin.so");
+
+	PluginLoader::LoadPlugin("../../Plugins/AddNodesToOutlinerLayerPlugin/build/libAddNodesToOutlinerLayerPlugin.so");
+	loadedPluginPaths.insert("../../Plugins/AddNodesToOutlinerLayerPlugin/build/libAddNodesToOutlinerLayerPlugin.so");
+
+	PluginLoader::LoadPlugins("../../Plugins" , &loadedPluginPaths);
 
 	setupLayer(DEBUG_LAYER, app, "DebugLayer");
 
