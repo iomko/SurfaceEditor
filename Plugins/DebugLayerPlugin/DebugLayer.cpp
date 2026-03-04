@@ -1,9 +1,9 @@
 #include "DebugLayer.h"
-#include "LayerRegistry.h"
+#include "../../src/UI/LayerRegistry.h"
 
-#include "../Ml/Models/TriangleSkewMlModel.h"
-#include "../ViewPortsController.h"
-#include "../Core/Layer.h"
+#include "../../src/Ml/Models/TriangleSkewMlModel.h"
+#include "../../src/ViewPortsController.h"
+#include "../../src/Core/Layer.h"
 #include <vector>
 #include <cassert>
 

@@ -138,8 +138,6 @@ int main()
 
 	PluginLoader::LoadPlugins("../../Plugins" , &loadedPluginPaths);
 
-	setupLayer(DEBUG_LAYER, app, "DebugLayer");
-
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader
 	meshShader.bind();

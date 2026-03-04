@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include "imgui.h" 
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "LayerIDs.h"
+#include "../../src/Patterns/Observer.h"
+#include "../../src/Core/Layer.h"
+#include "../../src/UI/LayerIDs.h"
 
 class DebugLayer : public LayerWithID<DEBUG_LAYER>, public Observable, public Observer {
 public:
