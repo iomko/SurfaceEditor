@@ -171,6 +171,12 @@ struct EdgeConnectionsParams : public OpParams
     ExtendedEdge* secondEdge;
 };
 
+struct SplitEdgeParams : public OpParams
+{
+	Mesh* mesh;
+	ExtendedEdge* edge;
+};
+
 struct BrushInteractionParams : public OpParams
 {
 	BrushToolParams brushToolParams;

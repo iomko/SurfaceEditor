@@ -14,6 +14,12 @@ public:
 	void onImGuiRender() override;
 
 private:
+	void updateEdgesVaoData(Mesh* mesh);
+
+	void updateFacesVaoData(Mesh* mesh);
+
+	void unhighlightAllFaces(Mesh* mesh);
+
     bool m_skewCheckboxState = false;
 	bool m_isMouseInsideWindow;
 };

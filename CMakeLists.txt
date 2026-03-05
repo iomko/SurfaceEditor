@@ -141,7 +141,11 @@ foreach(entry ${FEATURE_MAP})
 endforeach()
 
 # Teraz vytvor executable
-add_executable(SurfaceEditor ${SRC_FILES})
+add_executable(SurfaceEditor ${SRC_FILES}
+        src/Callbacks/SplitEdgeCallback.h
+        src/Callbacks/SplitEdgeCallback.cpp
+        src/Commands/SplitEdgeCommand.h
+        src/Commands/SplitEdgeCommand.cpp)
 
 add_dependencies(SurfaceEditor libtorch_ep)
 

@@ -32,6 +32,9 @@
 #include "../Commands/AddCubeCommand.h"
 #include "../Callbacks/AddCubeCallback.h"
 
+#include "../Commands/SplitEdgeCommand.h"
+#include "../Callbacks/SplitEdgeCallback.h"
+
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
 #include "../Callbacks/SelectionLayerCallBack.h"
@@ -204,6 +207,8 @@ int main()
 
 	// GizmoLayer
 	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
+
+	setup(SPLIT_EDGE_COMMAND, SPLIT_EDGE_CALLBACK);
 
 	setup(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
 	setup(MOVE_SELECTED_MESHES_COMMAND, MOVE_SELECTED_MESHES_CALLBACK);
