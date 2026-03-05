@@ -6,6 +6,7 @@
 #include <torch/script.h>
 #include "../../Scene/Mesh.h"
 #include "MlModel.h"
+#include "../../FeaturesExtractor.h"
 
 class TriangleSkewModel : public MlModel<Mesh> {
 public:

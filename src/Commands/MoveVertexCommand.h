@@ -1,18 +1,12 @@
 #pragma once
-#include "../Params/OperationParams.h"
 #include "../Patterns/Command.h"
 #include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class MoveVertexCommand : public Command<VertexParams>, public Observable
+class MoveVertexCommand : public Command<MOVE_VERTEX_COMMAND ,VertexParams>, public Observable
 {
 public:
-	virtual void execute(const VertexParams& params) override
-	{
-		notifyObservers(params);
-	}
+	virtual void execute(const VertexParams& params) override;
 
-	void undo() override
-	{
-		
-	}
+	void undo() override;
 };

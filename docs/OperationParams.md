@@ -22,4 +22,6 @@ Here is the list of all OpParams structs used in the project:
 `EdgeConnectionsParams`  
 `BrushInteractionParams`  
 `PrintableMeshParams`  
-`PrintMeshSettingsParams`  
+`PrintMeshSettingsParams`
+`GizmoParams`
+`GizmoLayerParams`

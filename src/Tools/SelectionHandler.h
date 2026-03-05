@@ -1,14 +1,13 @@
 #pragma once
 #include "InteractionHandler.h"
 #include "../Commands/CommandRegistry.h"
-#include "../Commands/SelectFaceCommand.h"
 
-template<typename SelectCommandT>
-class SelectionHandler : public InteractionHandler<SelectCommandT>
+template<typename CommandConcept>
+class SelectionHandler : public InteractionHandler<CommandConcept>
 {
 public:
-	SelectionHandler(SelectCommandT* command)
-		: InteractionHandler<SelectCommandT>(command) {}
+	SelectionHandler(CommandConcept* command)
+		: InteractionHandler<CommandConcept>(command) {}
 
 	void onBegin() override
 	{

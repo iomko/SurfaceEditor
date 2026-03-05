@@ -1,38 +1,29 @@
-﻿#include "Callbacks/CreatePrintStructureCallBack.h"
-#include "Commands/CreatePrintCommand.h"
-#include "UI/ModifiersLayer.h"
-#include "UI/PrintableMeshSettingsPopUpLayer.h"
-#define NOMINMAX  // Prevents Windows.h from defining min/max macros
-
+﻿#define NOMINMAX // Prevents Windows.h from defining min/max macros
 #include <limits>
-//#include <Windows.h>
+// #include <Windows.h>
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tiffio.h>
 #include "Input.h"
 #include "../Primitives/AABB.h"
 #include "../Core/Application.h"
 #include "../Core/Input.h"
 #include "../Core/Window.h"
-#include "../Renderer/Renderer.h"
-//#include "../Mesh.h"
-#include "../Callables/FunctionComposer.h"
-#include "../Callbacks/BrushToolCallBack.h"
-#include "../UI/SculptToolsLayer.h"
+// #include "../Mesh.h"
 #include "../Scene/Mesh.h"
-
+#include "../Renderer/Renderer.h"
 #include "../Renderer/Shader.h"
 #include "../Renderer/Buffers.h"
 #include "../Structures/Octree.h"
-#include <tiffio.h>
-//import LayerSystem.Layer.ImGuiLayer;
-//import Patterns.Observer;
-
+#include "../Structures/ExtendedHalfEdge.h"
 #include "../Structures/HalfEdge.h"
-
-//#include "../Patterns/Observer.h"
+#include "../Structures/PrintableMesh.h"
+// import LayerSystem.Layer.ImGuiLayer;
+// import Patterns.Observer;
+// #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
 #include "../Callbacks/AddPlaneCallback.h"
 #include "../Commands/AddPlaneCommand.h"
@@ -48,17 +39,10 @@
 #include "../UI/AdditionLayer.h"
 #include "../UI/RemovalLayer.h"
 #include "../UI/SelectionLayer.h"
-#include "../UI/DebugLayer.h"
 
 #include "../Callbacks/SelectFaceCallBack.h"
 #include "../Callbacks/MoveVertexCallBack.h"
 #include "../Commands/MoveVertexCommand.h"
-
-#include "../Callbacks/MoveMeshCallBack.h"
-#include "../Commands/MoveMeshCommand.h"
-
-#include "../Callbacks/MoveSelectedMeshesCallBack.h"
-#include "../Commands/MoveSelectedMeshesCommand.h"
 
 #include "../Callbacks/DeselectMeshCallBack.h"
 #include "../Commands/DeselectMeshCommand.h"
@@ -109,98 +93,102 @@
 #include "../Structures/ExtendedHalfEdge.h"
 
 #include "../Utils/GeometryUtils.h"
-
-#include "UI/OutlinerLayer.h"
-#include "Callables/MeshOutlinerAdderCallable.h"
-#include "Structures/PrintableMesh.h"
-
 #include "../Renderer/MaterialRegistry.h"
+// INTERACTION_HANDLER
+#include <string>
+#include "../Callbacks/CallbackRegister.h"
+#include "../Callbacks/CallbackIDs.h"
+#include "../Tools/ToolRegistry.h"
+#include "../Tools/ToolIDs.h"
+#include "../Commands/CommandRegistry.h"
+#include "../Commands/CommandIDs.h"
+#include "../UI/LayerRegistry.h"
+#include "../UI/LayerIDs.h"
 
-#include "../UI/GizmoLayer.h"
-
-//INTERACTION_HANDLER
-#include "../Tools/InteractionHandler.h"
-#include "../Tools/Tool.h"
+#include "../UI/WindowLayerBus.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
 
-
-std::string getShaderPath(const std::string& file){
-    return std::string(SHADER_DIR) + "/" + file;
+std::string getShaderPath(const std::string &file)
+{
+#ifdef SHADER_DIR
+	return std::string(SHADER_DIR) + "/" + file;
+#else
+	return "../Renderer/Shaders/" + file;
+#endif
 }
 
+static void setup(const int command_id, const int callback_id, const int tool_id = -1)
+{
+	auto *callback = CallbackRegistry::instance().getCallback(callback_id);
+	if (callback == nullptr)
+	{
+		printf("not callback with id %d\n", callback_id);
+		return;
+	}
+	auto *command = CommandRegistry::instance().getCommand(command_id); // zjednotit + osobitny .h ako ciselnik a robit cez id
+	auto *observableCommand = dynamic_cast<Observable *>(command);
+	auto *observerCallback = dynamic_cast<Observer *>(callback);
+	if (observableCommand && observerCallback)
+	{
+		observableCommand->addObserver(observerCallback);
+		observerCallback->observe(observableCommand, callback);
+		if (tool_id != -1)
+		{
+			ToolRegistry::instance().initializeTool(tool_id, command);
+		}
+	}
+}
+
+static void setupLayer(const int layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
+{
+	Layer *layer;
+	if (bus == nullptr)
+	{
+		layer = LayerRegistry::instance().getLayer(layer_id, name);
+	}
+	else
+	{
+		layer = LayerRegistry::instance().getLayer(layer_id, name, std::ref(*bus));
+	}
+	if (layer)
+		app.getLayerStack().addLayer(layer);
+}
 
 int main()
 {
 
-    WindowLayerBus windowLayerBus;
+	WindowLayerBus windowLayerBus;
 
-	CommandRegistry* commandRegistry = new CommandRegistry();
-
-	//--INITIALIZATIONS_OF_FUNCTION_COMPOSERS--
-
-	//--ADD_PLANE_COMPOSER--
-
-	FunctionComposer addPlaneComposer;
-	FunctionNode* addPlaneRoot = addPlaneComposer.initRoot<PlaneVertexGenCallable>();
-	addPlaneComposer.addFunc<MeshVaoInitCallable>(addPlaneRoot);
-	addPlaneComposer.addFunc<SceneMeshAdderCallable>(addPlaneRoot);
-    addPlaneComposer.addFunc<MeshOutlinerAdderCallable>(addPlaneRoot);
-	AddPlaneCallback addPlaneCallBack(addPlaneComposer);
-
-	//--ADD_CUBE_COMPOSER
-
-	FunctionComposer addCubeComposer;
-	FunctionNode* addCubeRoot = addCubeComposer.initRoot<CubeVertexGenCallable>();
-	addCubeComposer.addFunc<MeshVaoInitCallable>(addCubeRoot);
-	addCubeComposer.addFunc<SceneMeshAdderCallable>(addCubeRoot);
-    addCubeComposer.addFunc<MeshOutlinerAdderCallable>(addCubeRoot);
-	AddCubeCallback addCubeCallBack(addCubeComposer);
-
-    SolidifyMeshesCallBack solidifyMeshesCallBack;
-    CreatePrintStructureCallBack createPrintStructureCallBack;
-
-
-
-	//---FETCH_SURFACE_COMPOSER---
-	FunctionComposer fetchSurfaceComposer;
-	FunctionNode* fetchSurfaceRoot = fetchSurfaceComposer.initRoot<FetchedSurfaceVertexGenCallable>();
-	fetchSurfaceComposer.addFunc<MeshVaoInitCallable>(fetchSurfaceRoot);
-	fetchSurfaceComposer.addFunc<SceneMeshAdderCallable>(fetchSurfaceRoot);
-    fetchSurfaceComposer.addFunc<MeshOutlinerAdderCallable>(fetchSurfaceRoot);
-	FetchSurfaceCallBack fetchSurfaceCallBack(fetchSurfaceComposer);
-
-
-	Application& app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
-	Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+	Application &app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
+	Camera *camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //Shader linesShader("src/Renderer/Shaders/linesShader.vert", "src/Renderer/Shaders/linesShader.frag");
-    Shader linesShader(getShaderPath("linesShader.vert"), getShaderPath("linesShader.frag"));
-	//Shader meshShader = Shader("src/Renderer/Shaders/meshShader.vert", "src/Renderer/Shaders/meshShader.frag");
-    Shader meshShader(getShaderPath("meshShader.vert"), getShaderPath("meshShader.frag"));
+	// Shader linesShader("src/Renderer/Shaders/linesShader.vert", "src/Renderer/Shaders/linesShader.frag");
+	Shader linesShader(getShaderPath("linesShader.vert"), getShaderPath("linesShader.frag"));
+	// Shader meshShader = Shader("src/Renderer/Shaders/meshShader.vert", "src/Renderer/Shaders/meshShader.frag");
+	Shader meshShader(getShaderPath("meshShader.vert"), getShaderPath("meshShader.frag"));
 
 	Scene scene(25.0f, 25.0f, 25.0f);
 
-	//viewPortLayer
-	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
+	// viewPortLayer
+	ViewPortLayer *viewPortLayer = new ViewPortLayer("viewPortLayer");
 	viewPortLayer->m_camera = camera;
 
 	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
 
-	ViewPortsController* viewPortsHolder = new ViewPortsController();
+	ViewPortsController *viewPortsHolder = new ViewPortsController();
 	viewPortsHolder->addLayer(viewPortLayer);
 	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
-	SelectionController* selectionController = new SelectionController();
+	SelectionController *selectionController = new SelectionController();
 
 	viewPortsHolder->m_scene = &scene;
 	ViewPortsHolderContext::s_viewPortsController = viewPortsHolder;
@@ -208,226 +196,126 @@ int main()
 	ViewPortsHolderContext::s_camera = camera;
 	ViewPortsHolderContext::s_window = app.window;
 
-	//ViewPortLayer
+	// ViewPortLayer
 	app.getLayerStack().addLayer(viewPortLayer);
 
-	//ImporExportLayer
-	ImportExportLayer* importExportLayer = new ImportExportLayer("importExportLayer", *commandRegistry);
-	app.getLayerStack().addLayer(importExportLayer);
+	// ImporExportLayer
+	setupLayer(IMPORT_EXPORT_LAYER, app, "ImportExportLayer");
 
-    //GizmoLayer
-    GizmoLayer gizmoLayer("GizmoLayer");
-    app.getLayerStack().addLayer(&gizmoLayer);
+	// GizmoLayer
+	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
 
-	//importMeshesCommand
+	setup(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
+	setup(MOVE_SELECTED_MESHES_COMMAND, MOVE_SELECTED_MESHES_CALLBACK);
+	setup(HANDLE_GIZMO_COMMAND, HANDLE_GIZMO_CALLBACK);
 
-	commandRegistry->registerCommand<ImportMeshesCommand>();
-	ImportMeshesCommand* importMeshesCommand = commandRegistry->getCommand<ImportMeshesCommand>();
+	setup(IMPORT_MESHES_COMMAND, IMPORT_MESHES_CALLBACK);
+	setup(EXPORT_MESHES_COMMAND, EXPORT_MESHES_CALLBACK);
 
-	ImportMeshesCallback importMeshesCallback;
-	//viewPortHolder->observe(importMeshesCommand, &importMeshesCallBack);
+	setup(ADD_PLANE_COMMAND, ADD_PLANE_CALLBACK);
 
-	importMeshesCommand->addObserver(&importMeshesCallback);
+	setup(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
 
-	//importMeshesCommand->addObserver(&importMeshesCallBack);
-	importMeshesCallback.observe(importMeshesCommand, &importMeshesCallback);
-	//importMeshesCallBack.observe(importMeshesCommand, &importMeshesCallBack);
+	setup(SOLIDIFY_MESHES_COMMAND, SOLIDIFY_MESHES_CALLBACK);
 
-	commandRegistry->registerCommand<ExportMeshesCommand>();
-	ExportMeshesCommand* exportMeshesCommand = commandRegistry->getCommand<ExportMeshesCommand>();
+	setup(CREATE_PRINT_COMMAND, CREATE_PRINT_STRUCTURE_CALLBACK);
 
-	ExportMeshesCallback exportMeshesCallback;
-	//viewPortHolder->observe(exportMeshesCommand, &exportMeshesCallBack);
+	setup(FETCH_SURFACE_COMMAND, FETCH_SURFACE_CALLBACK);
 
-	exportMeshesCommand->addObserver(&exportMeshesCallback);
-	exportMeshesCallback.observe(exportMeshesCommand, &exportMeshesCallback);
+	setup(SELECT_MESH_COMMAND, SELECT_MESH_CALLBACK, MESH_SELECTION_TOOL);
 
-	commandRegistry->registerCommand<AddPlaneCommand>();
-	AddPlaneCommand* addPlaneCommand = commandRegistry->getCommand<AddPlaneCommand>();
+	setup(BRUSH_TOOL_COMMAND, BRUSH_TOOL_CALLBACK, BRUSH_TOOL);
 
-	addPlaneCommand->addObserver(&addPlaneCallBack);
-	addPlaneCallBack.observe(addPlaneCommand, &addPlaneCallBack);
+	setup(DESELECT_MESH_COMMAND, DESELECT_MESH_CALLBACK, MESH_DESELECTION_TOOL);
 
-	commandRegistry->registerCommand<AddCubeCommand>();
-	AddCubeCommand* addCubeCommand = commandRegistry->getCommand<AddCubeCommand>();
+	setup(SELECT_FACE_COMMAND, SELECT_FACE_CALLBACK, FACE_SELECTION_TOOL);
+	setup(MOVE_VERTEX_COMMAND, MOVE_VERTEX_CALLBACK);
 
-	addCubeCommand->addObserver(&addCubeCallBack);
-	addCubeCallBack.observe(addCubeCommand, &addCubeCallBack);
+	setup(MOVE_SELECTED_FACES_COMMAND, MOVE_SELECTED_FACES_CALLBACK);
 
-    commandRegistry->registerCommand<SolidifyMeshesCommand>();
-    SolidifyMeshesCommand* solidifyMeshesCommand = commandRegistry->getCommand<SolidifyMeshesCommand>();
+	setup(DESELECT_FACE_COMMAND, DESELECT_FACE_CALLBACK, FACE_DESELECTION_TOOL);
 
-    solidifyMeshesCommand->addObserver(&solidifyMeshesCallBack);
-    solidifyMeshesCallBack.observe(solidifyMeshesCommand, &solidifyMeshesCallBack);
+	setup(DELETE_FACE_COMMAND, DELETE_FACE_CALLBACK);
 
-    commandRegistry->registerCommand<CreatePrintCommand>();
-    CreatePrintCommand* createPrintCommand = commandRegistry->getCommand<CreatePrintCommand>();
-    createPrintCommand->addObserver(&createPrintStructureCallBack);
-    createPrintStructureCallBack.observe(createPrintCommand, &createPrintStructureCallBack);
+	setup(DELETE_MESH_COMMAND, DELETE_MESH_CALLBACK);
 
-	commandRegistry->registerCommand<FetchSurfaceCommand>();
-	FetchSurfaceCommand* fetchSurfaceCommand = commandRegistry->getCommand<FetchSurfaceCommand>();
+	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
 
-	fetchSurfaceCommand->addObserver(&fetchSurfaceCallBack);
-	fetchSurfaceCallBack.observe(fetchSurfaceCommand, &fetchSurfaceCallBack);
+	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
+	Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
+	if (selectionLayer)
+	{
+		app.getLayerStack().addLayer(selectionLayer);
 
-	SelectMeshCallBack selectMeshCallBack;
-	commandRegistry->registerCommand<SelectMeshCommand>();
-	SelectMeshCommand* selectMeshCommand = commandRegistry->getCommand<SelectMeshCommand>();
+		// SelectionLayerCallBack selectionLayerCallBack;
+		auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
+		auto *observerSelectionLayer = dynamic_cast<Observer *>(selectionLayerCallBack);
+		auto *observableSelectionLayer = dynamic_cast<Observable *>(selectionLayer);
+		if (selectionLayerCallBack && observerSelectionLayer && observableSelectionLayer)
+		{
+			viewPortsHolder->observe(observableSelectionLayer, selectionLayerCallBack);
 
-	ToolRegistry::registerTool<MeshSelectionTool>(selectMeshCommand);
+			observableSelectionLayer->addObserver(observerSelectionLayer);
+			observerSelectionLayer->observe(observableSelectionLayer, selectionLayerCallBack);
+		}
+	}
 
-	ToolRegistry::getTool<MeshSelectionTool>();
+	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
 
-	selectMeshCommand->addObserver(&selectMeshCallBack);
-	selectMeshCallBack.observe(selectMeshCommand, &selectMeshCallBack);
+	Layer* outlinerLayer = LayerRegistry::instance().getLayer(OUTLINER_LAYER, std::string("OutlinerLayer") , std::ref(windowLayerBus));
+	
+	if (outlinerLayer)
+	{
+		app.getLayerStack().addLayer(outlinerLayer);		
+		Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
+		if(outlinerObserver)
+		{
+			int id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
+			auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
+			printf("Getting template on id %d\n", id);
+			if(addNewOutlinerNodeCallBackMesh)
+			{
+				Observable* addNewOutlinerNodeMeshObservalbe = dynamic_cast<Observable*>(addNewOutlinerNodeCallBackMesh);
+				addNewOutlinerNodeMeshObservalbe->addObserver(outlinerObserver);
+				outlinerObserver->observe(addNewOutlinerNodeMeshObservalbe, addNewOutlinerNodeCallBackMesh);
+			}
+			id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true);
+			auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
+			printf("Getting template on id %d\n", id);
+			
+			if(addChildOutlinerNodeCallBackPrintableMesh)
+			{
+				Observable* addChildOutlinerNodePrintableMeshObservable = dynamic_cast<Observable*>(addChildOutlinerNodeCallBackPrintableMesh);
+				addChildOutlinerNodePrintableMeshObservable->addObserver(outlinerObserver);
+				outlinerObserver->observe(addChildOutlinerNodePrintableMeshObservable, addChildOutlinerNodeCallBackPrintableMesh);
+			}
+		}
+	}
+	//setupLayer(OUTLINER_LAYER, app, "OutlinerLayer", &windowLayerBus);
 
-	BrushToolCallBack brushToolCallBack(commandRegistry);
-	commandRegistry->registerCommand<BrushToolCommand>();
-	BrushToolCommand* brushToolCommand = commandRegistry->getCommand<BrushToolCommand>();
+	setupLayer(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, app, "PopUpLayer", &windowLayerBus);
 
-	brushToolCommand->addObserver(&brushToolCallBack);
-	brushToolCallBack.observe(brushToolCommand, &brushToolCallBack);
+	setupLayer(MODIFIERS_LAYER, app, "ModifiersLayer", &windowLayerBus);
 
-	//ToolRegistry::registerTool<BrushTool>(brushToolCommand, new BrushInteractionHandler());
-	ToolRegistry::registerTool<BrushTool>(brushToolCommand);
+	setupLayer(REMOVAL_LAYER, app, "RemovalLayer");
 
-	DeselectMeshCallBack deselectMeshCallBack;
-	commandRegistry->registerCommand<DeselectMeshCommand>();
-	DeselectMeshCommand* deselectMeshCommand = commandRegistry->getCommand<DeselectMeshCommand>();
+	setupLayer(SCULPT_TOOLS_LAYER, app, "SculptToolsLayer");
 
-    ToolRegistry::registerTool<MeshDeselectionTool>(deselectMeshCommand);
-
-	deselectMeshCommand->addObserver(&deselectMeshCallBack);
-	deselectMeshCallBack.observe(deselectMeshCommand, &deselectMeshCallBack);
-
-	SelectFaceCallBack selectFaceCallBack;
-	commandRegistry->registerCommand<SelectFaceCommand>();
-	SelectFaceCommand* selectFaceCommand = commandRegistry->getCommand<SelectFaceCommand>();
-	selectFaceCommand->addObserver(&selectFaceCallBack);
-	selectFaceCallBack.observe(selectFaceCommand, &selectFaceCallBack);
-
-
-    MoveVertexCallBack moveVertexCallBack;
-	commandRegistry->registerCommand<MoveVertexCommand>();
-	MoveVertexCommand* moveVertexCommand = commandRegistry->getCommand<MoveVertexCommand>();
-	moveVertexCommand->addObserver(&moveVertexCallBack);
-	moveVertexCallBack.observe(moveVertexCommand, &moveVertexCallBack);
-
-    MoveMeshCallBack moveMeshCallBack(commandRegistry);
-	commandRegistry->registerCommand<MoveMeshCommand>();
-	MoveMeshCommand* moveMeshCommand = commandRegistry->getCommand<MoveMeshCommand>();
-	moveMeshCommand->addObserver(&moveMeshCallBack);
-	moveMeshCallBack.observe(moveMeshCommand, &moveMeshCallBack);
-
-    MoveSelectedMeshesCallBack moveSelectedMeshesCallBack(commandRegistry);
-	commandRegistry->registerCommand<MoveSelectedMeshesCommand>();
-	MoveSelectedMeshesCommand* moveSelectedMeshesCommand = commandRegistry->getCommand<MoveSelectedMeshesCommand>();
-	moveSelectedMeshesCommand->addObserver(&moveSelectedMeshesCallBack);
-	moveSelectedMeshesCallBack.observe(moveSelectedMeshesCommand, &moveSelectedMeshesCallBack);
-
-    MoveSelectedFacesCallBack moveSelectedFacesCallBack(commandRegistry);
-	commandRegistry->registerCommand<MoveSelectedFacesCommand>();
-	MoveSelectedFacesCommand* moveSelectedFacesCommand = commandRegistry->getCommand<MoveSelectedFacesCommand>();
-	moveSelectedFacesCommand->addObserver(&moveSelectedFacesCallBack);
-	moveSelectedFacesCallBack.observe(moveSelectedFacesCommand, &moveSelectedFacesCallBack);
-
-
-	ToolRegistry::registerTool<FaceSelectionTool>(selectFaceCommand);
-
-	DeselectFaceCallBack deselectFaceCallBack;
-	commandRegistry->registerCommand<DeselectFaceCommand>();
-	DeselectFaceCommand* deselectFaceCommand = commandRegistry->getCommand<DeselectFaceCommand>();
-	deselectFaceCommand->addObserver(&deselectFaceCallBack);
-	deselectFaceCallBack.observe(deselectFaceCommand, &deselectFaceCallBack);
-
-	ToolRegistry::registerTool<FaceDeselectionTool>(deselectFaceCommand);
-
-
-	DeleteFaceCallBack deleteFaceCallBack;
-	commandRegistry->registerCommand<DeleteFaceCommand>();
-	DeleteFaceCommand* deleteFaceCommand = commandRegistry->getCommand<DeleteFaceCommand>();
-	deleteFaceCommand->addObserver(&deleteFaceCallBack);
-	deleteFaceCallBack.observe(deleteFaceCommand, &deleteFaceCallBack);
-
-
-	DeleteMeshCallBack deleteMeshCallBack(commandRegistry);
-	commandRegistry->registerCommand<DeleteMeshCommand>();
-	DeleteMeshCommand* deleteMeshCommand = commandRegistry->getCommand<DeleteMeshCommand>();
-	deleteMeshCommand->addObserver(&deleteMeshCallBack);
-	deleteMeshCallBack.observe(deleteMeshCommand, &deleteMeshCallBack);
-
-
-	DeleteSelectedFacesCallBack deleteSelectedFacesCallBack(commandRegistry);
-	commandRegistry->registerCommand<DeleteSelectedFacesCommand>();
-	DeleteSelectedFacesCommand* deleteSelectedFacesCommand = commandRegistry->getCommand<DeleteSelectedFacesCommand>();
-	deleteSelectedFacesCommand->addObserver(&deleteSelectedFacesCallBack);
-	deleteSelectedFacesCallBack.observe(deleteSelectedFacesCommand, &deleteSelectedFacesCallBack);
-
-	DeleteSelectedMeshesCallBack deleteSelectedMeshesCallBack(commandRegistry);
-	commandRegistry->registerCommand<DeleteSelectedMeshesCommand>();
-	DeleteSelectedMeshesCommand* deleteSelectedMeshesCommand = commandRegistry->getCommand<DeleteSelectedMeshesCommand>();
-	deleteSelectedMeshesCommand->addObserver(&deleteSelectedMeshesCallBack);
-	deleteSelectedMeshesCallBack.observe(deleteSelectedMeshesCommand, &deleteSelectedMeshesCallBack);
-
-	SelectionLayer selectionLayer("SelectionLayer");
-	app.getLayerStack().addLayer(&selectionLayer);
-
-	SelectionLayerCallBack selectionLayerCallBack;
-	viewPortsHolder->observe(&selectionLayer, &selectionLayerCallBack);
-
-	selectionLayer.addObserver(&selectionLayerCallBack);
-	selectionLayerCallBack.observe(&selectionLayer, &selectionLayerCallBack);
-
-	//SCULPT TOOL
-	BasicSculptToolCommand basicSculptToolCommand;
-
-
-	//AdditionLayer
-	AdditionLayer additionLayer("AdditionLayer", *commandRegistry);
-	app.getLayerStack().addLayer(&additionLayer);
-
-    //OutlinerLayer
-    OutlinerLayer outlinerLayer("OutlinerLayer", windowLayerBus);
-    app.getLayerStack().addLayer(&outlinerLayer);
-
-    //popUpLayer
-    PrintableMeshSettingsPopUpLayer popUpLayer("PopUpLayer", *commandRegistry, windowLayerBus);
-    app.getLayerStack().addLayer(&popUpLayer);
-
-
-	//ModifiersLayer
-	ModifiersLayer modifiersLayer("ModifiersLayer", *commandRegistry, windowLayerBus);
-	app.getLayerStack().addLayer(&modifiersLayer);
-
-	//RemovalLayer
-	RemovalLayer removalLayer("RemovalLayer", *commandRegistry);
-	app.getLayerStack().addLayer(&removalLayer);
-
-	//SculptToolsLayer
-	SculptToolsLayer sculptToolsLayer("SculptToolsLayer");
-	app.getLayerStack().addLayer(&sculptToolsLayer);
-
-	//DebugLayer
-	DebugLayer debugLayer("DebugLayer");
-	app.getLayerStack().addLayer(&debugLayer);
+	setupLayer(DEBUG_LAYER, app, "DebugLayer");
 
 	glm::mat4 model = glm::mat4(1.0f);
-
-
-	//mesh shader
+	// mesh shader
 	meshShader.bind();
 	meshShader.setMat4("u_model", model);
 	meshShader.unbind();
 
-	//lines shader
+	// lines shader
 	linesShader.bind();
 	linesShader.setMat4("u_model", model);
 	linesShader.unbind();
 
-    
-    MaterialRegistry::registerMaterial("defaultMeshMaterial", &meshShader);
-    MaterialRegistry::registerMaterial("defaultLineMaterial", &linesShader);
+	MaterialRegistry::registerMaterial("defaultMeshMaterial", &meshShader);
+	MaterialRegistry::registerMaterial("defaultLineMaterial", &linesShader);
 
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
@@ -442,17 +330,16 @@ int main()
 
 		glm::mat4 view = camera->getState().lookAtMatrix;
 		linesShader.setMat4("u_view", view);
-		
-		//linesShader.setMat4("u_model", model);
+
+		// linesShader.setMat4("u_model", model);
 
 		linesShader.unbind();
 
-
-		//mesh shader
+		// mesh shader
 		meshShader.bind();
 		meshShader.setMat4("u_projection", projection);
 		meshShader.setMat4("u_view", view);
-		//meshShader.setMat4("u_model", model);
+		// meshShader.setMat4("u_model", model);
 		meshShader.unbind();
 
 		camera->m_matrices.perspectiveMatrix = projection;
@@ -473,31 +360,62 @@ int main()
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
-        //draw meshes
-        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {
+		const SelectionHolder& selectionHolder = selectionController->getHolder();
 
-            for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
-				Renderer::drawTriangles(triangleBufferData, shader, mesh);
+        //draw meshes
+        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
+			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+				Shader* shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
+				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
+				Renderer::drawTriangles(triangleBufferData, shader);
             }
             
             for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader, mesh);
+				Shader *shader = it->first->m_shader;
+				auto& faces = selectionHolder.faces.find(mesh)->second;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+				shader->bind();
+				shader->setMat4("u_model", model);
+				shader->unbind();
+
+				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
+				Renderer::drawLines(lineBufferData, shader);
             }
         }
-
         //draw printableMeshes
         for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
 
-            for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it) {
-                Shader* shader = it->first->m_shader;
-                BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-                Renderer::drawLines(lineBufferData, shader);
-            }
-        }
+			for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it)
+			{
+				Shader *shader = it->first->m_shader;
+				BufferStorageData<BufferStorageDataType::LineVertex> &lineBufferData = it->second.data;
+				Renderer::drawLines(lineBufferData, shader);
+			}
+		}
 
 		app.run();
 		app.getWindow().update();

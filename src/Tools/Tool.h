@@ -1,5 +1,6 @@
 #pragma once
 #include "InteractionHandler.h"
+#include "ToolIDs.h"
 
 class ITool
 {
@@ -18,10 +19,11 @@ private:
 	InteractionHandlerConcept* m_interactionHandler = nullptr;
 };
 
-template<typename CommandT, typename InteractionHandlerT>
+template<int id, typename CommandConcept, typename InteractionHandlerT>
 class Tool : public ITool
 {
 public:
-	Tool(CommandT* command)
+	static constexpr int ID = id;
+	Tool(CommandConcept* command)
 		: ITool(new InteractionHandlerT(command)) {}
 };

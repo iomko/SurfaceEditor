@@ -1,0 +1,14 @@
+@startuml main
+
+!include GizmoLayerDependencies.puml
+!include ImGuiLayerDependencies.puml
+!include ImportExportLayerDependencies.puml
+!include ModifiersLayerDependencies.puml
+!include OutlinerLayerDependencies.puml
+!include AdditionLayerDependencies.puml
+!include PrintableMeshSettingsPopUpLayerDependencies.puml
+!include RemovalLayerDependencies.puml
+!include SculptToolLayerLayerDependencies.puml
+!include SelectionLayerDependenicies.puml
+
+@enduml

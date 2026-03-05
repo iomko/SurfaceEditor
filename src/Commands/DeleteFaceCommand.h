@@ -1,16 +1,12 @@
 #pragma once
-#include "../Params/OperationParams.h"
+#include "../Patterns/Command.h"
+#include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class DeleteFaceCommand : public Command<SingleFaceParams>, public Observable
+class DeleteFaceCommand : public Command<DELETE_FACE_COMMAND, SingleFaceParams>, public Observable
 {
 public:
-	virtual void execute(const SingleFaceParams& params) override
-	{
-		notifyObservers(params);
-	}
+	virtual void execute(const SingleFaceParams& params) override;
 
-	void undo() override
-	{
-
-	}
+	void undo() override;
 };

@@ -1,26 +1,10 @@
 #pragma once
 #include "Callable.h"
 #include "../Params/OperationParams.h"
-#include "../ViewPortsController.h"
+#include "CallableIDs.h"
 
-class SceneMeshAdderCallable : public Callable<MeshParams, void>
+class SceneMeshAdderCallable : public Callable<SCENE_MESH_ADDER_CALLABLE, MeshParams, void>
 {
 public:
-	void invoke(const MeshParams& input) override
-	{
-		Mesh* mesh = input.m_mesh;
-
-		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-		SceneResources::MeshFaceOctreeCoordsMap& meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
-
-		bool sceneContainsMesh = meshFaceOctreeCoordsMap.find(mesh) != scene->m_res.meshFaceOctreeCoordsMap.end();
-		if (!sceneContainsMesh)
-		{
-			for (ExtendedFace* face : mesh->getHalfEdgeStructure()->m_faces)
-			{
-				scene->addFaceIntoOctrees(mesh, face);
-			}
-		}
-	}
+	void invoke(const MeshParams& input) override;
 };

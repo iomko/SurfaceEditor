@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include "../Renderer/Renderer.h"
 
+
+
 std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, SceneResources& res)
 {
 	Ray ray = Ray::fromMousePos(*camera, *window);

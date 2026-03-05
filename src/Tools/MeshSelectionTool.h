@@ -1,12 +1,10 @@
 #pragma once
-#include "../Commands/SelectMeshCommand.h"
-#include "../Tools/SelectionHandler.h"
+#include "../Patterns/Command.h"
+#include "SelectionHandler.h"
+#include "Tool.h"
 
-class MeshSelectionTool : public Tool<SelectMeshCommand, SelectionHandler<SelectMeshCommand>>
+class MeshSelectionTool : public Tool<MESH_SELECTION_TOOL, CommandConcept, SelectionHandler<CommandConcept>>
 {
 public:
-	MeshSelectionTool(SelectMeshCommand* command)
-		: Tool(command)
-	{
-	}
+	MeshSelectionTool(CommandConcept* command);
 };

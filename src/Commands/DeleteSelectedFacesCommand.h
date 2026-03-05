@@ -1,15 +1,12 @@
 #pragma once
+#include "../Patterns/Command.h"
+#include "../Patterns/Observer.h"
+#include "CommandIDs.h"
 
-class DeleteSelectedFacesCommand : public Command<>, public Observable
+class DeleteSelectedFacesCommand : public Command<DELETE_SELECTED_FACES_COMMAND>, public Observable
 {
 public:
-	virtual void execute() override
-	{
-		notifyObservers();
-	}
+	virtual void execute() override;
 
-	void undo() override
-	{
-
-	}
+	void undo() override;
 };

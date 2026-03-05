@@ -1,33 +1,14 @@
 #pragma once
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/DeleteMeshCommand.h"
+#include "Callback.h"
+#include "CallbackIDs.h"
+#include "../Patterns/Observer.h"
 
-
-class DeleteSelectedMeshesCallBack : public Callback<>, public Observer
+class DeleteSelectedMeshesCallBack : public Callback<DELETE_SELECTED_MESHES_CALLBACK>, public Observer
 {
 public:
-    DeleteSelectedMeshesCallBack(CommandRegistry* commandRegistry) : m_commandRegistry(commandRegistry) {}
+    DeleteSelectedMeshesCallBack();
 
-	void execute() override
-	{
-		const SelectionHolder& selectionsHolder = ViewPortsHolderContext::s_selectionController->getHolder();
-		const std::vector<Mesh*>& selectedMeshes = selectionsHolder.meshes;
-
-		while(!selectedMeshes.empty())
-		{
-			Mesh* mesh = selectedMeshes.back();
-
-            MeshParams meshParams;
-            meshParams.m_mesh = mesh;
-
-            DeleteMeshCommand* deleteMeshCommand = m_commandRegistry->getCommand<DeleteMeshCommand>();
-            deleteMeshCommand->execute(meshParams); 
-
-			ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
-		}
-	}
+	void execute() override;
 
 private:
-    
-    CommandRegistry* m_commandRegistry = nullptr;
 };

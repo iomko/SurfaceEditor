@@ -1,11 +1,11 @@
 #pragma once
-#include "../Commands/BrushToolCommand.h"
+#include "Tool.h"
+#include "../Patterns/Command.h"
 #include "BrushInteractionHandler.h"
 
-class BrushTool : public Tool<BrushToolCommand, BrushInteractionHandler>
+class BrushTool : public Tool<BRUSH_TOOL, CommandConcept, BrushInteractionHandler>
 {
 public:
-	BrushTool(BrushToolCommand* command)
-		: Tool(command) {}
+	BrushTool(CommandConcept* command);
 
 };

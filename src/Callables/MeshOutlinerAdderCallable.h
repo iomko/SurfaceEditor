@@ -1,15 +1,10 @@
 #pragma once
 #include "Callable.h"
 #include "../Params/OperationParams.h"
-#include "../ViewPortsController.h"
-#include "UI/OutlinerLayer.h"
+#include "CallableIDs.h"
 
-class MeshOutlinerAdderCallable : public Callable<MeshParams, void>
+class MeshOutlinerAdderCallable : public Callable<MESH_OUTLINER_ADDER_CALLABLE, MeshParams, void>
 {
 public:
-	void invoke(const MeshParams& input) override
-	{
-		Mesh* mesh = input.m_mesh;
-        OutlinerLayer::addNode(0, "Mesh", mesh);
-	}
+	void invoke(const MeshParams& input) override;
 };

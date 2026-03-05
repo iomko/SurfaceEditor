@@ -1,0 +1,17 @@
+@startuml ImportExportLayerDependencies
+
+package "ImportMeshesPlugin" {
+    class ImportMeshesCommand
+    class ImportMeshesCallBack
+}
+
+package "ExportMeshesPlugin" {
+    class ExportMeshesCommand
+    class ExportMeshesCallBack
+}
+
+class ImportExportLayer
+ImportExportLayer --> ImportMeshesPlugin
+ImportExportLayer --> ExportMeshesPlugin
+
+@enduml

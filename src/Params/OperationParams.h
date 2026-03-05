@@ -1,6 +1,7 @@
 #pragma once
 #include "../Scene/Scene.h"
 #include "Structures/PrintableMesh.h"
+#include "ImGuizmo.h"
 
 struct OpParams {
 	virtual ~OpParams() = default;
@@ -29,7 +30,10 @@ struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
 };
-
+struct BoxSelectionParams : public OpParams
+{
+	glm::vec2 start_mouse_pos;
+};
 struct GizmoLayerParams : public OpParams
 {
     enum Type
@@ -39,8 +43,20 @@ struct GizmoLayerParams : public OpParams
 		Scale,
         Disable
     };
- 
+
     Type m_type;
+};
+
+struct GizmoParams : public OpParams
+{
+	enum SelectionMode
+	{
+		Mesh,
+		Face
+	};
+
+	SelectionMode m_selectionMode;
+	ImGuizmo::OPERATION m_type;
 };
 
 struct OpenTopoParams : public OpParams
@@ -88,7 +104,7 @@ struct OctreeNodeDataParams : public OpParams
 struct MoveMeshParams : public OpParams
 {
     Mesh* mesh = nullptr;
-    glm::vec3 moveByVector;
+	glm::mat4 transformMatrix;
 };
 
 struct MeshParams : public OpParams
@@ -114,7 +130,7 @@ struct MoveFaceParams : public OpParams {
 };
 
 struct MoveSelectedMeshesParams : public OpParams {
-    glm::vec3 moveByVector;
+	glm::mat4 transformMatrix;
 };
 
 struct MoveSelectedFacesParams : public OpParams {
@@ -129,9 +145,17 @@ struct EdgeParams : public OpParams
 
 struct VertexParams : public OpParams
 {
+	enum MoveBy
+	{
+		VECTOR,
+		TRANSFORM_MATRIX
+	};
+
     Mesh* mesh = nullptr;
     ExtendedVertex* vertex = nullptr;
-    glm::vec3 newPosition;
+	glm::vec3 newPosition;
+	glm::mat4 transformMatrix;
+	MoveBy moveBy;
 };
 
 struct BrushToolParams : public OpParams
@@ -163,4 +187,25 @@ struct PrintMeshSettingsParams : public OpParams {
     float height = 1.0f;
 };
 
+class LayerState;
+class OutlinerNodeConcept;
+
+struct AddOutlinerNodeCallBackParams : public OpParams 
+{
+	LayerState* state = nullptr;
+	int id = 0;
+	std::string name = "";
+};
+
+template<typename T>
+struct AddNewOutlinerNodeCallBackParams : public AddOutlinerNodeCallBackParams 
+{	
+	T* data = nullptr;
+};
+
+template<typename T>
+struct AddChildOutlinerNodeCallBackParams : public AddNewOutlinerNodeCallBackParams<T>
+{
+	OutlinerNodeConcept* parent = nullptr;
+};
 
