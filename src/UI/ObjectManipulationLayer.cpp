@@ -88,7 +88,7 @@ void ObjectManipulationLayer::setWindowSizeAndPosition()
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
 
-    WindowStyle::checkResolutionRange(viewportHeight, viewportWidth, OBJECT_MANIPULATION_LAYER);
+    WindowStyle::checkResolutionRange(OBJECT_MANIPULATION_LAYER, viewportHeight, viewportWidth);
 }
 
 void ObjectManipulationLayer::onImGuiRender()

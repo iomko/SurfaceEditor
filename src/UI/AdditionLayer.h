@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <variant>
 #include "../Patterns/Observer.h"
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
@@ -7,6 +8,12 @@
 #include "VisibilityHandler.h"
 #include "Components/IWindow.h"
 #include "Components/WindowStyle.h"
+#include "Components/FontStyle.h"
+#include "Components/CheckBoxStyle.h"
+#include "Components/SliderStyle.h"
+#include "Components/ButtonStyle.h"
+
+using CommandParams = std::variant<PlaneParams, CubeParams, OpenTopoParams>;
 
 enum class AdditionType
 {
@@ -29,6 +36,8 @@ public:
 	void onImGuiRender() override;
 
 private:
+	void defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback);
+
 	void addPlane();
 
 	void addCube();
@@ -46,7 +55,12 @@ private:
     bool m_isMouseInsideWindow;
     int m_subdivision = 1;
     float m_size = 1.0f;
-	glm::ivec3 m_position = {0, 0, 0};
+	char m_sizeInputBox[50];
+	bool m_automaticSubdivision{};
+	int m_xPos{1};
+	int m_yPos{1};
+	int m_zPos{1};
+	// glm::ivec3 m_position = {0, 0, 0};
 
 	inline static AdditionType s_additionType = AdditionType::NONE;
 };

@@ -3,6 +3,7 @@
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
 #include "LayerIDs.h"
+#include "Components/FontStyle.h"
 
 class ImGuiLayer : public LayerWithID<IM_GUI_LAYER>
 {

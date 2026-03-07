@@ -21,103 +21,168 @@ void AdditionLayer::onEvent(Event &event)
 
 void AdditionLayer::addPlane()
 {
-    //CHATOVICA - TODO
+    auto* addPlaneCommand = CommandRegistry::instance().getCommand(ADD_PLANE_COMMAND);
 
-
-    auto *addPlaneCommand = CommandRegistry::instance().getCommand(ADD_PLANE_COMMAND);
-    if (!addPlaneCommand)
-        return;
-
-    ImVec2 windowSize = ImGui::GetWindowSize();
-
-    // --- Push smaller font scale ---
-    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // default font, can replace later with a smaller font
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 2));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 4));
-
-    // --- Push orange theme for buttons and sliders ---
-    ImVec4 orangeColor = ImVec4(1.0f, 0.6f, 0.2f, 1.0f);
-    ImGui::PushStyleColor(ImGuiCol_SliderGrab, orangeColor);
-    ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(1.0f, 0.7f, 0.3f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_Button, orangeColor);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.7f, 0.3f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.5f, 0.1f, 1.0f));
-
-    // --- Calculate content height with smaller widgets ---
-    float sliderHeight = 20;
-    float inputHeight = 20;
-    float buttonHeight = 20;
-    float spacing = 5;
-
-    float contentHeight = 
-        sliderHeight + spacing + // Subdivision slider
-        sliderHeight + spacing + // Size slider
-        inputHeight + spacing +  // InputText
-        buttonHeight + spacing*2; // Button + extra spacing
-
-    float startY = (windowSize.y - contentHeight) * 0.5f;
-    ImGui::SetCursorPosY(startY);
-
-    float widgetWidth = 150; // smaller than before
-    float buttonWidth = 100;
-
-    // --- Subdivision ---
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::Text("Subdivision");
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::PushItemWidth(widgetWidth);
-    ImGui::SliderInt("##SubdivisionSlider", &m_subdivision, 1, 300, "%d");
-    ImGui::PopItemWidth();
-
-    ImGui::Spacing();
-
-    // --- Size ---
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::Text("Size");
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::PushItemWidth(widgetWidth);
-    ImGui::SliderFloat("##SizeSlider", &m_size, 1.0f, 1000.0f, "%.0f");
-    ImGui::PopItemWidth();
-
-    ImGui::Spacing();
-
-    // --- InputText ---
-    static char buffer[9] = "";
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::Text("Enter Size");
-    ImGui::SetCursorPosX((windowSize.x - widgetWidth) * 0.5f);
-    ImGui::PushItemWidth(widgetWidth);
-    ImGui::InputText("##EnterSizeInput", buffer, IM_ARRAYSIZE(buffer));
-    ImGui::PopItemWidth();
-
-    ImGui::Spacing();
-
-    // --- Button ---
-    ImGui::SetCursorPosX((windowSize.x - buttonWidth) * 0.5f);
-    if (ImGui::Button("AddToScene", ImVec2(buttonWidth, buttonHeight)))
+    if (addPlaneCommand)
     {
-        PlaneParams addPlaneCommandParams;
-        addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
-        addPlaneCommandParams.m_size = m_size;
-        addPlaneCommand->execute(addPlaneCommandParams);
-
-        VisibilityHandler::hide(ADDITION_LAYER);
+        defaultSettingsWindow(addPlaneCommand, [this]() -> PlaneParams {
+            PlaneParams addPlaneCommandParams;
+            addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
+            addPlaneCommandParams.m_size = m_size;
+            
+            return addPlaneCommandParams;
+        });
     }
-
-    // --- Pop styles and font ---
-    ImGui::PopStyleColor(5); // orange colors
-    ImGui::PopStyleVar(2);   // padding & spacing
-    ImGui::PopFont();
 }
 
 void AdditionLayer::addCube()
 {
-    //TODO
+    auto* addCubeCommand = CommandRegistry::instance().getCommand(ADD_CUBE_COMMAND);
+
+    if (addCubeCommand)
+    {
+        defaultSettingsWindow(addCubeCommand, [this]() -> CubeParams {
+            CubeParams addCubeParams;
+            addCubeParams.m_size = m_size;
+            addCubeParams.m_subdivisionLevel = m_subdivision;
+            addCubeParams.m_position = glm::vec3(m_xPos, m_yPos, m_zPos);
+            
+            return addCubeParams;
+        });
+    }
 }
 
 void AdditionLayer::addSurface()
 {
     //TODO
+}
+
+void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback)
+{
+    float windowWidth   = ImGui::GetWindowWidth();
+    float windowHeight  = ImGui::GetWindowHeight();
+    float panelWidth    = windowWidth * 0.8f;
+    float panelHeight   = windowHeight * 0.81f;
+    float inputWidth    = panelWidth * 0.3f;
+    float sliderWidth   = panelWidth;
+    float buttonHeight  = panelHeight * 0.15f;
+    float buttonWidth   = panelWidth * 0.4f;
+
+    auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
+
+    int sliderColorsApplied{};
+    int checkboxColorsApplied{}, checkboxVarsApplied{};
+    int buttonColorsApplied{}, buttonVarsApplied{};
+
+    ImGui::SetCursorPosX((windowWidth - panelWidth) * 0.5f);
+    ImGui::SetCursorPosY((windowHeight - panelHeight) * 0.7f);
+    ImGui::BeginGroup();
+
+    // Subdivision//
+    FontStyle::headliner();
+    ImGui::Text("Subdivision");
+    FontStyle::end();
+
+    ImGui::SetNextItemWidth(sliderWidth);
+    ImGui::Text("Automatic:");
+
+    ImGui::SameLine();
+    CheckBoxStyle::basic(checkboxColorsApplied, checkboxVarsApplied, 1.0f);
+    ImGui::Checkbox("##Automatic", &m_automaticSubdivision);
+    CheckBoxStyle::end(checkboxColorsApplied, checkboxVarsApplied);
+
+    if (!m_automaticSubdivision)
+    {
+        SliderStyle::basic(sliderColorsApplied, sliderWidth);
+        ImGui::SliderInt("##Subdivision", &m_subdivision, 1, 300);
+        SliderStyle::end(sliderColorsApplied);
+    }
+    else
+    {
+        m_subdivision = 1;
+        ImGui::Dummy(ImVec2(0.0f, ImGui::GetFrameHeight()));
+    }
+    //----------//
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // Size//
+    FontStyle::headliner();
+    ImGui::Text("Size");
+    FontStyle::end();
+
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+    ImGui::InputFloat("##SizeInput", &m_size, 0.0f, 0.0f, "%.5f");
+    ImGui::PopStyleColor();
+
+    SliderStyle::basic(sliderColorsApplied, sliderWidth);
+    ImGui::SliderFloat("##Size", &m_size, 1.0f, 1000.0f, "%.0f");
+    SliderStyle::end(sliderColorsApplied);
+
+    if (m_size < 1.0f)
+    {
+        m_size = 1.0f;
+    }
+    //---//
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // Position//
+    FontStyle::headliner();
+    ImGui::Text("Position");
+    FontStyle::end();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + panelWidth * 0.01f);
+    ImGui::Text("X");
+    ImGui::SameLine(panelWidth * 0.34f);
+    ImGui::Text("Y");
+    ImGui::SameLine(panelWidth * 0.67f);
+    ImGui::Text("Z");
+
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+    ImGui::InputInt("##X", &m_xPos, 0.0f, 0.0f);
+    ImGui::PopStyleColor();
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+    ImGui::InputInt("##Y", &m_yPos, 0.0f, 0.0f);
+    ImGui::PopStyleColor();
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+    ImGui::InputInt("##Z", &m_zPos, 0.0f, 0.0f);
+    ImGui::PopStyleColor();
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    //-------//
+
+    ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+    ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
+    if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, 0)))
+    {
+        CommandParams params = paramsCallback();
+
+        std::visit(
+            [&](auto&& p) {
+                command->execute(p);
+            },
+            params
+        );
+
+        VisibilityHandler::hide(ADDITION_LAYER);
+    }
+    ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
+
+    ImGui::EndGroup();
 }
 
 void AdditionLayer::setWindowSizeAndPosition()
@@ -128,31 +193,37 @@ void AdditionLayer::setWindowSizeAndPosition()
     float viewportHeight = viewport->WorkSize.y;
 
     float width  = viewportWidth * 0.2f;
-    float height = viewportHeight * 0.2f;
+    float height = viewportHeight * 0.37f;
 
-    float posX = viewport->WorkPos.x + (viewportWidth - width) * 0.45f;
-    float posY = viewport->WorkPos.y + (viewportHeight - height) * 0.55f;
+    float posX = viewport->WorkPos.x + (viewportWidth - width) * 0.5f;
+    float posY = viewport->WorkPos.y + (viewportHeight - height) * 0.5f;
 
     ImGui::SetNextWindowSize({width, height}, ImGuiCond_Always);
     ImGui::SetNextWindowPos({posX, posY}, ImGuiCond_Always);
 
-    WindowStyle::checkResolutionRange(viewportHeight, viewportWidth, ADDITION_LAYER);
+    float minHeight = 0.8f;
+    float minWidth = 0.4f;
+    WindowStyle::checkResolutionRange(ADDITION_LAYER, viewportHeight, viewportWidth, minHeight, minWidth);
 }
 
 void AdditionLayer::onImGuiRender()
 {
+    setWindowSizeAndPosition();
+
     if (!VisibilityHandler::isVisible(ADDITION_LAYER))
     {
         return;
     }
 
-    setWindowSizeAndPosition();
-
     int windowAppliedColorStyles{}, windowAppliedVarStyles{};
 
     static const ImGuiWindowFlags flags = WindowStyle::windowWithTitleBar();
+    
+    FontStyle::headliner();
     WindowStyle::setDefaultTitleBar(windowAppliedColorStyles);    
     WindowStyle::setup("Enter object parameters", flags, windowAppliedColorStyles, windowAppliedVarStyles);
+    FontStyle::end();
+    FontStyle::regular();
 
     //////TOTO SKONTROLOVAT NA CO TO VLASTNE PYTA//////
     ImVec2 windowPos = ImGui::GetWindowPos();
@@ -180,6 +251,7 @@ void AdditionLayer::onImGuiRender()
     }
 
     WindowStyle::end(windowAppliedColorStyles, windowAppliedVarStyles);
+    FontStyle::end();
 }
 
 // void AdditionLayer::onImGuiRender()

@@ -30,7 +30,7 @@ void ObjectsLayer::setWindowSizeAndPosition()
     ImGui::SetNextWindowSize(m_windowSize, ImGuiCond_Always);
     ImGui::SetNextWindowPos(*m_windowPos, ImGuiCond_Always);
 
-    WindowStyle::checkResolutionRange(viewportHeight, viewportWidth, OBJECTS);
+    WindowStyle::checkResolutionRange(OBJECTS, viewportHeight, viewportWidth);
 }
 
 void ObjectsLayer::onImGuiRender()

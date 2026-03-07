@@ -18,6 +18,8 @@ void ImGuiLayer::onAttach()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
+	FontStyle::init(io);
+
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsLight();

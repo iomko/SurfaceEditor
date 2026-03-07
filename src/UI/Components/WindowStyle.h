@@ -29,7 +29,7 @@ public:
 
     static void setDefaultTitleBar(int& appliedColorStyles);
 
-    static void checkResolutionRange(float height, float width, LayerIDS layer);
+    static void checkResolutionRange(LayerIDS layer, float height, float width, float minHeight = 0.6f, float minWidth = 0.6f);
 
     static void setup(
         const char* name,
