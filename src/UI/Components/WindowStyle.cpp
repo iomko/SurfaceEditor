@@ -30,6 +30,18 @@ void WindowStyle::checkResolutionRange(LayerIDS layer, float height, float width
     }
 }
 
+void WindowStyle::drawHorizontalSeparator(float length)
+{
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+
+    ImGui::GetWindowDrawList()->AddLine(
+        pos,
+        ImVec2(pos.x + length, pos.y),
+        ImGui::GetColorU32(ImGuiCol_Separator),
+        1.0f
+    );
+}
+
 void WindowStyle::setup(
     const char* name,
     const ImGuiWindowFlags flags,

@@ -31,6 +31,8 @@ public:
 
     static void checkResolutionRange(LayerIDS layer, float height, float width, float minHeight = 0.6f, float minWidth = 0.6f);
 
+    static void drawHorizontalSeparator(float length);
+
     static void setup(
         const char* name,
         const ImGuiWindowFlags flags,

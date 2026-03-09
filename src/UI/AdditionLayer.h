@@ -57,9 +57,9 @@ private:
     float m_size = 1.0f;
 	char m_sizeInputBox[50];
 	bool m_automaticSubdivision{};
-	int m_xPos{1};
-	int m_yPos{1};
-	int m_zPos{1};
+	float m_xPos{1};
+	float m_yPos{1};
+	float m_zPos{1};
 	// glm::ivec3 m_position = {0, 0, 0};
 
 	inline static AdditionType s_additionType = AdditionType::NONE;

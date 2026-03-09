@@ -59,14 +59,14 @@ void AdditionLayer::addSurface()
 
 void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback)
 {
-    float windowWidth   = ImGui::GetWindowWidth();
-    float windowHeight  = ImGui::GetWindowHeight();
-    float panelWidth    = windowWidth * 0.8f;
-    float panelHeight   = windowHeight * 0.81f;
-    float inputWidth    = panelWidth * 0.3f;
-    float sliderWidth   = panelWidth;
-    float buttonHeight  = panelHeight * 0.15f;
-    float buttonWidth   = panelWidth * 0.4f;
+    float windowWidth       = ImGui::GetWindowWidth();
+    float windowHeight      = ImGui::GetWindowHeight();
+    float panelWidth        = windowWidth * 0.7f;
+    float panelHeight       = windowHeight * 0.81f;
+    float inputWidth        = panelWidth * 0.31f;
+    float sliderWidth       = panelWidth * 0.65;
+    float buttonHeight      = panelHeight * 0.15f;
+    float buttonWidth       = panelWidth * 0.4f;
 
     auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
 
@@ -79,6 +79,8 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
     ImGui::BeginGroup();
 
     // Subdivision//
+    int lastSubdivision = m_subdivision;
+
     FontStyle::headliner();
     ImGui::Text("Subdivision");
     FontStyle::end();
@@ -93,6 +95,12 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
 
     if (!m_automaticSubdivision)
     {
+        ImGui::SetNextItemWidth(inputWidth);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+        ImGui::InputInt("##SubdivisionInput", &m_subdivision, 0.0f, 0.0f);
+        ImGui::PopStyleColor();
+
+        ImGui::SameLine();
         SliderStyle::basic(sliderColorsApplied, sliderWidth);
         ImGui::SliderInt("##Subdivision", &m_subdivision, 1, 300);
         SliderStyle::end(sliderColorsApplied);
@@ -102,34 +110,42 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
         m_subdivision = 1;
         ImGui::Dummy(ImVec2(0.0f, ImGui::GetFrameHeight()));
     }
+
+    if (m_subdivision < 1.0f || m_subdivision > 300)
+    {
+        m_subdivision = lastSubdivision;
+    }
     //----------//
 
     ImGui::Spacing();
-    ImGui::Separator();
+    WindowStyle::drawHorizontalSeparator(panelWidth);
     ImGui::Spacing();
 
-    // Size//
+    //Size//
+    int lastSize = m_size;
+
     FontStyle::headliner();
     ImGui::Text("Size");
     FontStyle::end();
 
     ImGui::SetNextItemWidth(inputWidth);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputFloat("##SizeInput", &m_size, 0.0f, 0.0f, "%.5f");
+    ImGui::InputFloat("##SizeInput", &m_size, 0.0f, 0.0f, "%.3f");
     ImGui::PopStyleColor();
 
+    ImGui::SameLine();
     SliderStyle::basic(sliderColorsApplied, sliderWidth);
     ImGui::SliderFloat("##Size", &m_size, 1.0f, 1000.0f, "%.0f");
     SliderStyle::end(sliderColorsApplied);
 
-    if (m_size < 1.0f)
+    if (m_size < 1.0f || m_size > 1000.0f)
     {
-        m_size = 1.0f;
+        m_size = lastSize;
     }
     //---//
 
     ImGui::Spacing();
-    ImGui::Separator();
+    WindowStyle::drawHorizontalSeparator(panelWidth);
     ImGui::Spacing();
 
     // Position//
@@ -145,29 +161,30 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
 
     ImGui::SetNextItemWidth(inputWidth);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputInt("##X", &m_xPos, 0.0f, 0.0f);
+    ImGui::InputFloat("##X", &m_xPos, 0.0f, 0.0, "%.3f");
     ImGui::PopStyleColor();
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(inputWidth);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputInt("##Y", &m_yPos, 0.0f, 0.0f);
+    ImGui::InputFloat("##Y", &m_yPos, 0.0f, 0.0f, "%.3f");
     ImGui::PopStyleColor();
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(inputWidth);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputInt("##Z", &m_zPos, 0.0f, 0.0f);
+    ImGui::InputFloat("##Z", &m_zPos, 0.0f, 0.0f, "%.3f");
     ImGui::PopStyleColor();
 
     ImGui::Spacing();
-    ImGui::Separator();
+    WindowStyle::drawHorizontalSeparator(panelWidth);
     ImGui::Spacing();
     //-------//
 
     ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
     ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
-    if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, 0)))
+    const char* buttonName = windowWidth > 300.0f ? "Add To Scene" : "Add";
+    if (ImGui::Button(buttonName, ImVec2(buttonWidth, 0)))
     {
         CommandParams params = paramsCallback();
 
@@ -189,11 +206,12 @@ void AdditionLayer::setWindowSizeAndPosition()
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    float viewportWidth = viewport->WorkSize.x;
+    float viewportWidth  = viewport->WorkSize.x;
     float viewportHeight = viewport->WorkSize.y;
 
+    static constexpr const float fullWidth = 1920.0f;
     float width  = viewportWidth * 0.2f;
-    float height = viewportHeight * 0.37f;
+    float height = fullWidth * 0.16f;
 
     float posX = viewport->WorkPos.x + (viewportWidth - width) * 0.5f;
     float posY = viewport->WorkPos.y + (viewportHeight - height) * 0.5f;
