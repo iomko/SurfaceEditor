@@ -10,5 +10,6 @@
 !include RemovalLayerDependencies.puml
 !include SculptToolLayerLayerDependencies.puml
 !include SelectionLayerDependenicies.puml
+!include DebugLayerDependenicies.puml
 
 @enduml

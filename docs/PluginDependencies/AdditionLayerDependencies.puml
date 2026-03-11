@@ -34,9 +34,11 @@ package "FetchSurfacePlugin" {
 }
 FetchSurfacePlugin --> MeshAdderCallablesPlugin
 
-class AdditionLayer
-AdditionLayer --> AddCubePlugin
-AdditionLayer --> AddPlanePlugin
-AdditionLayer --> FetchSurfacePlugin
+package "AdditionalLayerPlugin"{
+    class AdditionLayer
+}
+AdditionLayerPlugin --> AddCubePlugin
+AdditionLayerPlugin --> AddPlanePlugin
+AdditionLayerPlugin --> FetchSurfacePlugin
 
 @enduml

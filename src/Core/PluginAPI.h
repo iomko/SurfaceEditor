@@ -11,6 +11,7 @@ public:
     virtual void OnLoad() = 0;
     virtual void OnUnload() = 0;
     virtual std::string GetName() const = 0;
+    virtual int GetPriority() const { return 0; }
 };
 
 using CreatePluginFn = IPlugin* (*)();

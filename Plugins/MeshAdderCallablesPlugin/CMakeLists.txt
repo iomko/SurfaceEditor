@@ -6,8 +6,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
-find_package(SurfaceEditorCore REQUIRED PATHS "${CMAKE_SOURCE_DIR}/../../build" NO_DEFAULT_PATH)
-
+if(NOT TARGET SurfaceEditorCore)
+    find_package(SurfaceEditorCore REQUIRED
+        PATHS "${CMAKE_SOURCE_DIR}/../../build"
+        NO_DEFAULT_PATH
+    )
+endif()
 add_library(MeshAdderCallablesPlugin SHARED
     MeshAdderCallablesPluginEntry.cpp
     MeshVaoInitCallable.cpp

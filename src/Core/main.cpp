@@ -125,18 +125,9 @@ int main()
 	std::filesystem::path cwd = std::filesystem::current_path();
     std::cout << "Aktuálny pracovný adresár: " << cwd << std::endl;
 
-	std::unordered_set<std::string> loadedPluginPaths;
+	//spravit aby sa to natiahlo uz pocas buildenia nieco ako ine veci ze tie so su nakopirovane do hlavneho build adresara
 
-	PluginLoader::LoadPlugin("../../Plugins/MeshAdderCallablesPlugin/build/libMeshAdderCallablesPlugin.so");
-	loadedPluginPaths.insert("../../Plugins/MeshAdderCallablesPlugin/build/libMeshAdderCallablesPlugin.so");
-
-	PluginLoader::LoadPlugin("../../Plugins/OutlinerLayerPlugin/build/libOutlinerLayerPlugin.so");
-	loadedPluginPaths.insert("../../Plugins/OutlinerLayerPlugin/build/libOutlinerLayerPlugin.so");
-
-	PluginLoader::LoadPlugin("../../Plugins/AddNodesToOutlinerLayerPlugin/build/libAddNodesToOutlinerLayerPlugin.so");
-	loadedPluginPaths.insert("../../Plugins/AddNodesToOutlinerLayerPlugin/build/libAddNodesToOutlinerLayerPlugin.so");
-
-	PluginLoader::LoadPlugins("../../Plugins" , &loadedPluginPaths);
+	PluginLoader::LoadPlugins("plugins");
 
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader

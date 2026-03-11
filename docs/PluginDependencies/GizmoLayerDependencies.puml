@@ -1,3 +1,25 @@
 @startuml GizmoLayerDependencies
-class GizmoLayer
+
+package "MoveMeshPlugin"{
+    class MoveMeshCallBack
+    class MoveMeshCommand
+}
+
+package "MoveSelectedMeshesPlugin"{
+    class MoveSelectedMeshesCallBack
+    class MoveSelectedMeshesCommand
+}
+MoveSelectedMeshesPlugin --> MoveMeshPlugin
+
+package HandleGizmoPlugin {
+    class HandleGizmoCommand
+    class HandleGizmoCallback
+}
+HandleGizmoPlugin --> MoveSelectedMeshesPlugin
+HandleGizmoPlugin --> MoveSelectedFacesPlugin
+
+package GizmoLayerPlugin {
+    class GizmoLayer
+}
+
 @enduml

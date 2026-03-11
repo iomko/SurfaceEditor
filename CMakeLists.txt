@@ -193,5 +193,30 @@ target_compile_definitions(SurfaceEditorCore PUBLIC
     ML_DATA_DIR="${CMAKE_SOURCE_DIR}/src/Ml/ModelsData"
 )
 
-export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
 
+function(add_surface_editor_plugin PLUGIN_NAME)
+
+    add_subdirectory(Plugins/${PLUGIN_NAME})
+
+    set_target_properties(${PLUGIN_NAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+    )
+
+endfunction()
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/Plugins)
+file(GLOB PLUGINS Plugins/*)
+
+foreach(plugin ${PLUGINS})
+    message(STATUS "Looking for plugin in: ${plugin}")
+    get_filename_component(plugin_name ${plugin} NAME)
+
+    option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+
+    if(BUILD_PLUGIN_${plugin_name})
+        add_surface_editor_plugin(${plugin_name})
+    endif()
+endforeach()
+
+export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
