@@ -13,7 +13,7 @@
 #include "Components/SliderStyle.h"
 #include "Components/ButtonStyle.h"
 
-using CommandParams = std::variant<PlaneParams, CubeParams, OpenTopoParams>;
+using CommandParams = std::variant<PlaneParams, CubeParams>;
 
 enum class AdditionType
 {
@@ -55,12 +55,12 @@ private:
     bool m_isMouseInsideWindow;
     int m_subdivision = 1;
     float m_size = 1.0f;
-	char m_sizeInputBox[50];
 	bool m_automaticSubdivision{};
-	float m_xPos{1};
-	float m_yPos{1};
-	float m_zPos{1};
-	// glm::ivec3 m_position = {0, 0, 0};
+	float m_xPos{1.0f};
+	float m_yPos{1.0f};
+	float m_zPos{1.0f};
+
+	static constexpr const auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
 
 	inline static AdditionType s_additionType = AdditionType::NONE;
 };

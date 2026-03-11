@@ -29,6 +29,7 @@ void AdditionLayer::addPlane()
             PlaneParams addPlaneCommandParams;
             addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
             addPlaneCommandParams.m_size = m_size;
+            addPlaneCommandParams.m_position = glm::vec3(m_xPos, m_zPos, m_yPos);
             
             return addPlaneCommandParams;
         });
@@ -45,7 +46,7 @@ void AdditionLayer::addCube()
             CubeParams addCubeParams;
             addCubeParams.m_size = m_size;
             addCubeParams.m_subdivisionLevel = m_subdivision;
-            addCubeParams.m_position = glm::vec3(m_xPos, m_yPos, m_zPos);
+            addCubeParams.m_position = glm::vec3(m_xPos, m_zPos, m_yPos);
             
             return addCubeParams;
         });
@@ -54,7 +55,93 @@ void AdditionLayer::addCube()
 
 void AdditionLayer::addSurface()
 {
-    //TODO
+    auto* fetchCommand = CommandRegistry::instance().getCommand(FETCH_SURFACE_COMMAND);
+
+    if (!fetchCommand)
+    {
+        return;
+    }
+
+    float windowWidth   = ImGui::GetWindowWidth();
+    float windowHeight  = ImGui::GetWindowHeight();
+    float panelWidth    = windowWidth * 0.85f;
+    float inputBoxWidth = panelWidth * 0.4f;
+    float panelHeight   = windowHeight * 0.7f;
+    float buttonWidth   = panelWidth * 0.4f;
+    float buttonHeight  = panelHeight * 0.2f;
+    float spacing       = ImGui::GetStyle().ItemSpacing.x;
+    float pairWidth     = inputBoxWidth * 2 + spacing;
+    float paddingX      = (panelWidth - pairWidth) * 0.4f;
+
+    int buttonColorsApplied{}, buttonVarsApplied{};
+
+    ImGui::SetCursorPosX((windowWidth - panelWidth) * 0.5f);
+    ImGui::SetCursorPosY((windowHeight - panelHeight) * 0.7f);
+    ImGui::BeginGroup();
+
+    FontStyle::headliner();
+    ImGui::Text("Lower-left corner");
+    ImGui::SameLine(panelWidth * 0.5f);
+    ImGui::Text("Upper-right corner");
+    FontStyle::end();
+
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
+    ImGui::Text("Lon LL");
+    ImGui::SameLine(0, panelWidth * 0.3f);
+    ImGui::Text("Lon UR");
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::InputFloat("##Lon LL", &m_lowerLeftLon);
+    ImGui::SameLine(0, spacing);
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::InputFloat("##Lon UR", &m_upperRightLon);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
+    ImGui::Text("Lat LL");
+    ImGui::SameLine(0, panelWidth * 0.3f);
+    ImGui::Text("Lat UR");
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::InputFloat("##Lat LL", &m_lowerLeftLat);
+    ImGui::SameLine(0, spacing);
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::InputFloat("##Lat UR", &m_upperRightLat);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (panelWidth * 0.4f));
+    ImGui::Text("API key");
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (panelWidth * 0.28f));
+    ImGui::SetNextItemWidth(inputBoxWidth);
+    ImGui::InputText("##API Key", m_apiKeyBuffer, IM_ARRAYSIZE(m_apiKeyBuffer));
+    ImGui::PopStyleColor();
+
+    ImGui::Spacing();
+    WindowStyle::drawHorizontalSeparator(panelWidth);
+    ImGui::Spacing();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (panelHeight * 0.05f));
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (panelWidth * 0.2f));
+    ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
+    if (ImGui::Button("Fetch and Add to Scene"))
+    {
+        OpenTopoParams params;
+        params.m_lowerLeftLon = m_lowerLeftLon;
+        params.m_lowerLeftLat = m_lowerLeftLat;
+        params.m_upperRightLon = m_upperRightLon;
+        params.m_upperRightLat = m_upperRightLat;
+        params.m_apiKey = std::string(m_apiKeyBuffer);
+
+        fetchCommand->execute(params);
+
+        VisibilityHandler::hide(ADDITION_LAYER);
+    }
+    ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
+
+    ImGui::EndGroup();
 }
 
 void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback)
@@ -181,6 +268,7 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
     ImGui::Spacing();
     //-------//
 
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (panelHeight * 0.05f));
     ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
     ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
     const char* buttonName = windowWidth > 300.0f ? "Add To Scene" : "Add";
@@ -233,24 +321,23 @@ void AdditionLayer::onImGuiRender()
         return;
     }
 
+    bool isWindowTransparent{ true };
     int windowAppliedColorStyles{}, windowAppliedVarStyles{};
 
     static const ImGuiWindowFlags flags = WindowStyle::windowWithTitleBar();
     
     FontStyle::headliner();
     WindowStyle::setDefaultTitleBar(windowAppliedColorStyles);    
-    WindowStyle::setup("Enter object parameters", flags, windowAppliedColorStyles, windowAppliedVarStyles);
+    WindowStyle::setup("Enter object parameters", flags, windowAppliedColorStyles, windowAppliedVarStyles, isWindowTransparent);
     FontStyle::end();
     FontStyle::regular();
 
-    //////TOTO SKONTROLOVAT NA CO TO VLASTNE PYTA//////
     ImVec2 windowPos = ImGui::GetWindowPos();
     ImVec2 windowSize = ImGui::GetWindowSize();
     ImVec2 mousePos = ImGui::GetMousePos();
 
     m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-    //////////////////////////////////////////////////////
 
     switch (s_additionType)
     {

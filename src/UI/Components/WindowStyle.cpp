@@ -46,11 +46,19 @@ void WindowStyle::setup(
     const char* name,
     const ImGuiWindowFlags flags,
     int& appliedColorStyles,
-    int& appliedVarStyles
+    int& appliedVarStyles,
+    bool transparent
 )
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.15f, 0.15f, 0.17f, 0.85f));
+    if (!transparent)
+    {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.15f, 0.15f, 0.17f, 0.85f));
+    }
+    else
+    {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.15f, 0.15f, 0.17f, 0.70f));
+    }
     ImGui::Begin(name, nullptr, flags);
 
     ++appliedColorStyles;

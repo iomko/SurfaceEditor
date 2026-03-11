@@ -8,6 +8,7 @@ void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output
 {
     float planeSize = input.m_size;
     int planeSubidivisionLevel = input.m_subdivisionLevel;
+    glm::vec3 position = input.m_position;
 
     std::vector<std::vector<int>> planeIndices;
     std::vector<glm::vec3> planeVertices;
@@ -19,6 +20,7 @@ void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output
         for (int x = 0; x <= planeSubidivisionLevel; ++x)
         {
             glm::vec3 vertex{(-(planeSize / 2)) + (x * squareSize), 0.0f, (-(planeSize / 2)) + (z * squareSize)};
+            vertex += position;
 
             planeVertices.push_back(vertex);
 

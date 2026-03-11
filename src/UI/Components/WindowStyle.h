@@ -37,7 +37,8 @@ public:
         const char* name,
         const ImGuiWindowFlags flags,
         int& appliedColorStyles,
-        int& appliedVarStyles
+        int& appliedVarStyles,
+        bool transparent = false
     );
 
     static void end(int appliedColorStyles, int appliedVarStyles);

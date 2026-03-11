@@ -73,6 +73,7 @@ struct PlaneParams : public OpParams
 {
 	float m_size;
 	int m_subdivisionLevel;
+	glm::vec3 m_position;
 };
 
 struct CubeParams : public OpParams
