@@ -64,6 +64,7 @@ public:
         model = torch::jit::load(std::string(ML_DATA_DIR) + "/triangle_skew_model.pt");
         model.eval();
 
+        //mali by sme mat mozno aj na vyber, ze ci chceme normalizovat data alebo nie
         normMean = loadTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_mean.txt");
         normStd  = loadTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_std.txt");
     }

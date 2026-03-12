@@ -11,6 +11,7 @@
 #include "Renderer/MaterialRegistry.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
+#include "Ml/Models/NeuralNetworkModel.h"
 
 static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer;
 
@@ -54,12 +55,48 @@ void DebugLayer::onImGuiRender()
             }
 
             if(m_skewCheckboxState) {
-                TriangleSkewModel triangleSkewModel;
-                triangleSkewModel.loadModel();
+                //TriangleSkewModel triangleSkewModel;
+                //triangleSkewModel.loadModel();
+                FaceSkewnessModel faceSkewnessModel;
 
                 Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
                 for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-                    triangleSkewModel.run(*mesh);
+
+                    std::vector<float> probs = faceSkewnessModel.predict(mesh);
+
+                    for (size_t i = 0; i < probs.size(); i++)
+                    {
+                        if (probs[i] > 0.995f)
+                        {
+                            ExtendedFace* face = mesh->m_halfEdgeStructure->m_faces[i];
+                            mesh->m_halfEdgeStructure->m_faces[i]->m_isSkewed = true;
+
+                            std::vector<FaceTriangleIndex>& triangleIndices = face->faceTriangleIndices;
+
+                            FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
+                            FaceTriangle& faceTriangle = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
+
+                            if(auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+
+                                TriangleBufferStorage& triangleBufferStorage = opt->get();
+                                std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
+
+
+                                int faceIndexInVao = faceTriangle.indexInVAO;
+                                for (int i = faceIndexInVao; i < faceIndexInVao + 3; ++i)
+                                {
+                                    triangleBufferVertices.at(i).isSkewed = 1.0f;
+                                }
+                            }
+
+                        }
+                    }
+
+                    for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                        TriangleBufferStorage& triangleBufferStorage = it->second;
+                        triangleBufferStorage.update();
+                    }
+
                     updateFacesVaoData(mesh);
                 }
             }
