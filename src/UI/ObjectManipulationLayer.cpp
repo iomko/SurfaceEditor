@@ -31,8 +31,10 @@ void ObjectManipulationLayer::loadPanelImages()
     VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
 
     m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button* button) {
-        //TODO
-    }, []() {}));
+        VisibilityHandler::show(SELECTION_LAYER);
+    }, []() {
+        VisibilityHandler::hide(SELECTION_LAYER);
+    }));
 
     m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {
         //TODO

@@ -4,8 +4,9 @@
 static AutoRegisterLayerArgs<SelectionLayer, std::string> reg;
 
 SelectionLayer::SelectionLayer(const std::string &name)
-    : LayerWithID(name)
+    : LayerWithID(name), m_eventHandled{}
 {
+    m_selectionRectangle.create();
 }
 
 SelectionLayerParams::SelectionMode SelectionLayer::getSelectionMode() const
@@ -13,43 +14,57 @@ SelectionLayerParams::SelectionMode SelectionLayer::getSelectionMode() const
     return m_selectionMode;
 }
 
-SelectionLayerParams::Type SelectionLayer::getType() const
-{
-    return m_type;
-}
-
 void SelectionLayer::onImGuiRender()
 {
-    ImGui::Begin(this->getName().c_str());
-    if (ImGui::TreeNode("Selection Mode"))
+    if (!VisibilityHandler::isVisible(SELECTION_LAYER))
     {
-        int selectionModeInt = static_cast<int>(m_selectionMode);
-        if (ImGui::RadioButton("Face Mode", &selectionModeInt, SelectionLayerParams::SelectionMode::Face) ||
-            ImGui::RadioButton("Edge Mode", &selectionModeInt, SelectionLayerParams::SelectionMode::Edge) ||
-            ImGui::RadioButton("Vertex Mode", &selectionModeInt, SelectionLayerParams::SelectionMode::Vertex) ||
-            ImGui::RadioButton("Object Mode", &selectionModeInt, SelectionLayerParams::SelectionMode::Object))
+        return;
+    }
+
+    const bool buttonDown = Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT);
+
+    if (!buttonDown && m_eventHandled)
+    {
+        return;
+    }
+    else if (!buttonDown && !m_eventHandled)
+    {
+        m_selectionRectangle.clear();
+        m_selectionRectangle.setActive(false);
+        m_eventHandled = true;
+    
+        // SelectionLayerParams toolBarParams;
+        // toolBarParams.m_selectionMode = m_selectionMode;
+        // notifyObservers(toolBarParams);
+    }
+    else if (buttonDown)
+    {
+        auto mousePos = glm::vec2(Input::getMouseX(), Input::getMouseY());
+
+        if (!m_selectionRectangle.active())
         {
-            m_selectionMode = static_cast<SelectionLayerParams::SelectionMode>(selectionModeInt);
-
-            SelectionLayerParams toolBarParams;
-            toolBarParams.m_selectionMode = m_selectionMode;
-            toolBarParams.m_type = m_type;
-            notifyObservers(toolBarParams);
+            m_rectanglePos.startPos = mousePos;
+            m_rectanglePos.endPos   = mousePos;
+            m_selectionRectangle.setActive(true);
+            m_eventHandled = false;
         }
-        ImGui::TreePop();
+        else
+        {
+            m_rectanglePos.endPos = mousePos;
+        }
     }
 
-    int typeInt = static_cast<int>(m_type);
-    if (ImGui::RadioButton("Selection", &typeInt, SelectionLayerParams::Type::Selection) ||
-        ImGui::RadioButton("Deselection", &typeInt, SelectionLayerParams::Type::Deselection))
-    {
-        m_type = static_cast<SelectionLayerParams::Type>(typeInt);
+    const int windowWidth  = ViewPortsHolderContext::s_window->getScreenWidth();
+    const int windowHeight = ViewPortsHolderContext::s_window->getScreenHeight();
 
-        SelectionLayerParams toolBarParams;
-        toolBarParams.m_selectionMode = m_selectionMode;
-        toolBarParams.m_type = m_type;
-        notifyObservers(toolBarParams);
-    }
+    m_selectionRectangle.update(windowWidth, windowHeight, m_rectanglePos);
 
-    ImGui::End();
+    glDisable(GL_DEPTH_TEST);
+
+    auto& shader = m_selectionRectangle.shader();
+    shader.setVec4("u_color", glm::vec4(0.2f, 0.6f, 1.0f, 1.0f));
+    Renderer::drawLineLoop(m_selectionRectangle.buffer().data, &shader);
+    shader.unbind();
+
+    glEnable(GL_DEPTH_TEST);
 }

@@ -17,13 +17,7 @@ public:
 		Object
 	};
 
-	enum Type {
-		Selection,
-		Deselection
-	};
-
 	SelectionMode m_selectionMode;
-	Type m_type;
 };
 
 struct ImportExportMeshesParams : public OpParams

@@ -8,16 +8,16 @@ static AutoRegisterLayerArgs<AdditionLayer, std::string> reg;
 AdditionLayer::AdditionLayer(const std::string& name)
     : LayerWithID(name) {}
 
-void AdditionLayer::onEvent(Event &event)
-{
-    if (event.getType() == EventType::MouseButtonPress)
-    {
-        if (m_isMouseInsideWindow)
-        {
-            event.isHandled = true;
-        }
-    }
-}
+// void AdditionLayer::onEvent(Event &event)
+// {
+//     if (event.getType() == EventType::MouseButtonPress)
+//     {
+//         if (m_isMouseInsideWindow)
+//         {
+//             event.isHandled = true;
+//         }
+//     }
+// }
 
 void AdditionLayer::addPlane()
 {

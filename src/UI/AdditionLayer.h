@@ -31,7 +31,7 @@ public:
 
     void setWindowSizeAndPosition() override;
 
-    void onEvent(Event& event) override;
+    // void onEvent(Event& event) override;
 
 	void onImGuiRender() override;
 
