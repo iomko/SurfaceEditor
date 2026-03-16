@@ -82,10 +82,10 @@ void AdditionLayer::addSurface()
     FontStyle::headliner();
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + panelWidth * 0.07f);
     const char* leftCornerText = windowWidth > 300.0f ? "Lower-left corner" : "LL corner";
-    ImGui::Text(leftCornerText);
+    ImGui::TextUnformatted(leftCornerText);
     ImGui::SameLine(panelWidth * 0.5f);
     const char* rightCornerText = windowWidth > 300.0f ? "Upper-right corner" : "UR corner";
-    ImGui::Text(rightCornerText);
+    ImGui::TextUnformatted(rightCornerText);
     FontStyle::end();
 
     ImGui::SetNextItemWidth(inputBoxWidth);

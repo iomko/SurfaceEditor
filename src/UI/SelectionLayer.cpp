@@ -33,9 +33,10 @@ void SelectionLayer::onImGuiRender()
         m_selectionRectangle.setActive(false);
         m_eventHandled = true;
     
-        // SelectionLayerParams toolBarParams;
-        // toolBarParams.m_selectionMode = m_selectionMode;
-        // notifyObservers(toolBarParams);
+        SelectionLayerParams toolBarParams;
+        toolBarParams.m_selectionMode = m_selectionMode;
+        toolBarParams.m_rectanglePos  = m_rectanglePos;
+        notifyObservers(toolBarParams);
     }
     else if (buttonDown)
     {
@@ -60,10 +61,20 @@ void SelectionLayer::onImGuiRender()
     m_selectionRectangle.update(windowWidth, windowHeight, m_rectanglePos);
 
     glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     auto& shader = m_selectionRectangle.shader();
-    shader.setVec4("u_color", glm::vec4(0.2f, 0.6f, 1.0f, 1.0f));
-    Renderer::drawLineLoop(m_selectionRectangle.buffer().data, &shader);
+    shader.bind();
+
+    // fill rectangle
+    shader.setVec4("u_color", glm::vec4(1.0f, 0.6f, 0.0f, 0.25f));
+    Renderer::drawTriangles(m_selectionRectangle.triangleBuffer().data, &shader);
+
+    // draw border
+    shader.setVec4("u_color", glm::vec4(1.0f, 0.45f, 0.0f, 1.0f));
+    Renderer::drawLineLoop(m_selectionRectangle.linBuffer().data, &shader);
+
     shader.unbind();
 
     glEnable(GL_DEPTH_TEST);

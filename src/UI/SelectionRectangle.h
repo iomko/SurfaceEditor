@@ -22,7 +22,9 @@ public:
 
     void clear();
 
-    inline LineBufferStorage& buffer() { return m_buffer; }
+    inline LineBufferStorage& linBuffer() { return m_linBuffer; }
+
+    inline TriangleBufferStorage& triangleBuffer() { return m_triangleBuffer; }
 
     inline Shader& shader() { return m_shader; }
 
@@ -36,7 +38,8 @@ private:
     float toNDC_Y(float y, int height);
 
 private:
-    LineBufferStorage m_buffer;
-    Shader            m_shader;
-    bool              m_active;
+    LineBufferStorage     m_linBuffer;
+    TriangleBufferStorage m_triangleBuffer;
+    Shader                m_shader;
+    bool                  m_active;
 };

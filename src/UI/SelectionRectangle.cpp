@@ -12,7 +12,8 @@ SelectionRectangle::SelectionRectangle()
 
 void SelectionRectangle::create()
 {
-    m_buffer.create();
+    m_linBuffer.create();
+    m_triangleBuffer.create();
 }
 
 float SelectionRectangle::toNDC_X(float x, int width)
@@ -32,16 +33,25 @@ void SelectionRectangle::update(int width, int height, const RectanglePos& recta
     float x2 = toNDC_X(rectanglePos.endPos.x, width);
     float y2 = toNDC_Y(rectanglePos.endPos.y, height);
 
-    m_buffer.data.vertices.clear();
-    m_buffer.data.vertices.push_back({{x1, y1, 0.0f}, 0.0f});
-    m_buffer.data.vertices.push_back({{x2, y1, 0.0f}, 0.0f});
-    m_buffer.data.vertices.push_back({{x2, y2, 0.0f}, 0.0f});
-    m_buffer.data.vertices.push_back({{x1, y2, 0.0f}, 0.0f});
+    clear();
 
-    m_buffer.update();
+    m_linBuffer.data.vertices.push_back({{x1, y1, 0.0f}, 0.0f});
+    m_linBuffer.data.vertices.push_back({{x2, y1, 0.0f}, 0.0f});
+    m_linBuffer.data.vertices.push_back({{x2, y2, 0.0f}, 0.0f});
+    m_linBuffer.data.vertices.push_back({{x1, y2, 0.0f}, 0.0f});
+    m_linBuffer.update();
+
+    m_triangleBuffer.data.vertices.push_back({{x1, y1, 0.0f}});
+    m_triangleBuffer.data.vertices.push_back({{x2, y1, 0.0f}});
+    m_triangleBuffer.data.vertices.push_back({{x2, y2, 0.0f}});
+    m_triangleBuffer.data.vertices.push_back({{x1, y1, 0.0f}});
+    m_triangleBuffer.data.vertices.push_back({{x2, y2, 0.0f}});
+    m_triangleBuffer.data.vertices.push_back({{x1, y2, 0.0f}});
+    m_triangleBuffer.update();
 }
 
 void SelectionRectangle::clear()
 {
-    m_buffer.data.vertices.clear();
+    m_linBuffer.data.vertices.clear();
+    m_triangleBuffer.data.vertices.clear();
 }

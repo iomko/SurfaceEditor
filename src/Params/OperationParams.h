@@ -1,5 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
+#include "../UI/SelectionRectangle.h"
 #include "Structures/PrintableMesh.h"
 #include "ImGuizmo.h"
 
@@ -18,6 +19,7 @@ public:
 	};
 
 	SelectionMode m_selectionMode;
+	RectanglePos  m_rectanglePos;
 };
 
 struct ImportExportMeshesParams : public OpParams
