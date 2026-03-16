@@ -159,7 +159,7 @@ void HandleGizmoCallBack::execute(const GizmoParams &iParams)
     glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
     ImGuizmo::SetRect(x, y, (float)width, (float)height);
 
-    bool end = false;
+    bool end{};
     chooseSelectionMode(iParams, end);
 
     if (end)
@@ -174,19 +174,21 @@ void HandleGizmoCallBack::execute(const GizmoParams &iParams)
     case ImGuizmo::OPERATION::TRANSLATE:
         handleGizmo(
             iParams.m_type,
-            m_selectionMode == GizmoParams::SelectionMode::Mesh ? std::function<void()>([this]
-                                                                                        { m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f); })
-                                                                : std::function<void()>([this]
-                                                                                        {
-                        m_realTimeTransform = glm::mat4(1.0f);
-                        m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
-                        update(); }));
+            m_selectionMode == GizmoParams::SelectionMode::Mesh
+            ? std::function<void()>([this] {
+                m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+            })
+            : std::function<void()>([this] {
+                m_realTimeTransform = glm::mat4(1.0f);
+                m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+                update();
+            })
+        );
         break;
     case ImGuizmo::OPERATION::ROTATE:
         handleGizmo(
             iParams.m_type,
-            [this]()
-            {
+            [this]() {
                 m_realTimeTransform *= m_transform;
             });
         break;

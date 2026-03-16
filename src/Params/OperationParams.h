@@ -161,6 +161,12 @@ struct BrushToolParams : public OpParams
 	float brushStrength;
 };
 
+struct SelectionToolParams : public OpParams
+{
+	MeshFaceHitPair m_meshFaceHitPair;
+	bool			m_isClick;
+};
+
 struct EdgeConnectionsParams : public OpParams 
 {
     Mesh* mesh;

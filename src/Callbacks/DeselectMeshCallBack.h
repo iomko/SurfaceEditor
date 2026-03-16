@@ -3,8 +3,8 @@
 #include "../Patterns/Observer.h"
 #include "CallbackIDs.h"
 
-class DeselectMeshCallBack : public Callback<DESELECT_MESH_CALLBACK>, public Observer
+class DeselectMeshCallBack : public Callback<DESELECT_MESH_CALLBACK, SelectionToolParams>, public Observer
 {
 public:
-	void execute() override;
+	void execute(const SelectionToolParams& iParams) override;
 };

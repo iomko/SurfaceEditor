@@ -24,6 +24,8 @@ struct SceneResources
 	CoordsOctreeMap coordsOctreeMap;
 };
 
+using MeshFaceHitPair = std::pair<SceneResources::MeshFacePair, glm::vec3>;
+
 class SceneUtilities
 {
 public:

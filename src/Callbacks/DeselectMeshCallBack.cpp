@@ -3,16 +3,22 @@
 #include "../ViewPortsController.h"
 
 static AutoRegisterCallback<DeselectMeshCallBack> autoRegisterDeselectMeshCallBack;
-void DeselectMeshCallBack::execute()
+void DeselectMeshCallBack::execute(const SelectionToolParams& iParams)
 {
-    Camera* camera = ViewPortsHolderContext::s_camera;
-    Window* window = ViewPortsHolderContext::s_window;
-    Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-    std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+    if (iParams.m_isClick)
+    {
+        ViewPortsHolderContext::s_selectionController->clear();
+    }
+    else
+    {
+        //TODO
+    }
 
-    SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
+    // const auto& meshFaceHitPair = iParams.m_meshFaceHitPair;
 
-    Mesh* mesh = meshFacePair.first;
+    // SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
-    ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
+    // Mesh* mesh = meshFacePair.first;
+
+    // ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
 }

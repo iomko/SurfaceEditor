@@ -2,6 +2,7 @@
 #include "../ViewPortsController.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
+#include "../Tools/ToolRegistry.h"
 #include "LayerRegistry.h"
 
 namespace
@@ -30,24 +31,36 @@ void ObjectManipulationLayer::loadPanelImages()
 {
     VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
 
+    // Selection
     m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button* button) {
         VisibilityHandler::show(SELECTION_LAYER);
     }, []() {
+        if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+        {
+            delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+            ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+        }
+        ViewPortsHolderContext::s_viewPortsController->m_currentTool = nullptr;
+
         VisibilityHandler::hide(SELECTION_LAYER);
     }));
 
+    // Move gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {
         //TODO
     }, []() {}));
 
+    // Rotate gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button* button) {
         //TODO
     }, []() {}));
 
+    // Scale gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button* button) {
         //TODO
     }, []() {}));
 
+    // Add object
     m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath, [](Button* button) {
         auto imageButton = dynamic_cast<ImageButton*>(button);
         
@@ -57,7 +70,7 @@ void ObjectManipulationLayer::loadPanelImages()
         }
         
         VisibilityHandler::show(OBJECTS);
-    }, []() {
+    }, [this]() {
         VisibilityHandler::hide(OBJECTS);
         VisibilityHandler::hide(ADDITION_LAYER);
     }));

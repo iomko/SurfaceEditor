@@ -16,106 +16,52 @@ bool SelectionLayerCallBack::isClick(const RectanglePos& rectanglePos)
 
 void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 {
-    SelectionLayerParams::SelectionMode selectionMode = params.m_selectionMode;
-	const RectanglePos& rectanglePos 				  = params.m_rectanglePos;
+	Camera* camera = ViewPortsHolderContext::s_camera;
+    Window* window = ViewPortsHolderContext::s_window;
+    Scene* scene   = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
-	std::cout << isClick(rectanglePos) << "\n";
+	SelectionToolParams* toolParams = new SelectionToolParams();
+	toolParams->m_meshFaceHitPair 	= SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+	toolParams->m_isClick			= isClick(params.m_rectanglePos);
 
-	// if (type == SelectionLayerParams::Type::Selection)
-	// {
-	// 	if (selectionMode == SelectionLayerParams::SelectionMode::Face)
-	// 	{
-	// 		auto *faceSelectionTool = ToolRegistry::instance().getTool(FACE_SELECTION_TOOL);
-	// 		if (faceSelectionTool == nullptr)
-	// 		{
-	// 			return;
-	// 		}
-	// 		ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceSelectionTool;
+	auto mesh = toolParams->m_meshFaceHitPair.first.first;
+	auto face = toolParams->m_meshFaceHitPair.first.second;
 
-	// 		if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
-	// 		{
-	// 			delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-	// 			ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-	// 		}
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Edge)
-	// 	{
-	// 		// ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
-	// 		// create edge command
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Vertex)
-	// 	{
-	// 		// create vertex command
-	// 		// ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
-	// 	{
-	// 		auto *meshSelectionTool = ToolRegistry::instance().getTool(MESH_SELECTION_TOOL);
-	// 		if (meshSelectionTool == nullptr)
-	// 		{
-	// 			return;
-	// 		}
-	// 		ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshSelectionTool;
+	bool select = mesh || face; // || edge || vertex - TODO
 
-	// 		if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
-	// 		{
-	// 			delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-	// 			ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-	// 		}
-	// 	}
-	// }
-	// else if (type == SelectionLayerParams::Type::Deselection)
-	// {
-	// 	if (selectionMode == SelectionLayerParams::SelectionMode::Face)
-	// 	{
-	// 		auto *faceDeselectionTool = ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
-	// 		if (faceDeselectionTool == nullptr)
-	// 		{
-	// 			return;
-	// 		}
-	// 		ViewPortsHolderContext::s_viewPortsController->m_currentTool = faceDeselectionTool;
+	ITool* tool = nullptr;
 
-	// 		if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
-	// 		{
-	// 			delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-	// 			ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-	// 		}
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Edge)
-	// 	{
-	// 		// ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Vertex)
-	// 	{
-	// 		// ViewPortsHolderContext::s_viewPortsController->m_currentCommand = nullptr;
+	switch (params.m_selectionMode)
+	{
+		case SelectionLayerParams::SelectionMode::Object:
+			tool = select ? ToolRegistry::instance().getTool(MESH_SELECTION_TOOL)
+						  : ToolRegistry::instance().getTool(MESH_DESELECTION_TOOL);
+			break;
+		case SelectionLayerParams::SelectionMode::Face:
+			// selectionTool = select ? ToolRegistry::instance().getTool(FACE_SELECTION_TOOL)
+			// 					   : ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
+			break;
+		case SelectionLayerParams::SelectionMode::Edge:
+			//TODO
+			break;
+		case SelectionLayerParams::SelectionMode::Vertex:
+			//TODO
+			break;
+		default:
+			break;
+	}
 
-	// 		/*
-	// 		CsvFeatureExporter csvFeatureExporter;
-	// 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+	if (tool == nullptr)
+	{
+		return;
+	}
+	tool->getInteractionHandler()->onUpdate(*toolParams);
 
-	// 		for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-	// 			csvFeatureExporter.appendToCsv(mesh);
-	// 		}
-	// 		*/
-	// 	}
-	// 	else if (selectionMode == SelectionLayerParams::SelectionMode::Object)
-	// 	{
+	ViewPortsHolderContext::s_viewPortsController->m_currentTool = tool;
 
-	// 		auto *meshDeselectionTool = ToolRegistry::instance().getTool(MESH_DESELECTION_TOOL);
-	// 		if (meshDeselectionTool == nullptr)
-	// 		{
-	// 			return;
-	// 		}
-	// 		ViewPortsHolderContext::s_viewPortsController->m_currentTool = meshDeselectionTool;
-
-	// 		if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
-	// 		{
-	// 			delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
-	// 			ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
-	// 		}
-
-	// 		// create object command
-	// 		// ViewPortsHolderContext::s_viewPortsController->m_currentCommand = CommandRegistry::getCommand<DeselectMeshCommand>();
-	// 	}
-	// }
+	if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+	{
+		delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+	}
+	ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = toolParams;
 }

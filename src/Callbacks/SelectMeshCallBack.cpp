@@ -4,16 +4,20 @@
 
 static AutoRegisterCallback<SelectMeshCallBack> reg;
 
-void SelectMeshCallBack::execute()
+void SelectMeshCallBack::execute(const SelectionToolParams& iParams)
 {
-    Camera *camera = ViewPortsHolderContext::s_camera;
-    Window *window = ViewPortsHolderContext::s_window;
-    Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-    std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+    if (iParams.m_isClick)
+    {
+        const auto& meshFaceHitPair = iParams.m_meshFaceHitPair;
 
-    SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
+        SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
-    Mesh *mesh = meshFacePair.first;
+        Mesh* mesh = meshFacePair.first;
 
-    ViewPortsHolderContext::s_selectionController->registerMesh(mesh);
+        ViewPortsHolderContext::s_selectionController->registerMesh(mesh);
+    }
+    else
+    {
+        //TODO
+    }
 }

@@ -32,6 +32,29 @@ public:
 		m_meshManager.unregisterMesh(mesh);
 	}
 
+	void clear()
+	{
+		for (auto& [mesh, faces] : m_holder.faces)
+		{
+			mesh->m_selected = false;
+			
+			for (auto& face : faces)
+			{
+				face->m_selected = false;
+			}
+		}
+
+		for (auto& mesh : m_holder.meshes)
+		{
+			mesh->m_selected =false;
+		}
+
+		//TOTO TREBA LEPSIE NAPISAT
+
+		m_holder.faces.clear();
+		m_holder.meshes.clear();
+	}
+
 private:
 	SelectionHolder m_holder;
 	FaceSelectionManager m_faceManager;

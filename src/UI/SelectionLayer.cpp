@@ -34,7 +34,7 @@ void SelectionLayer::onImGuiRender()
         m_eventHandled = true;
     
         SelectionLayerParams toolBarParams;
-        toolBarParams.m_selectionMode = m_selectionMode;
+        toolBarParams.m_selectionMode = SelectionLayerParams::SelectionMode::Object; //m_selectionMode;
         toolBarParams.m_rectanglePos  = m_rectanglePos;
         notifyObservers(toolBarParams);
     }

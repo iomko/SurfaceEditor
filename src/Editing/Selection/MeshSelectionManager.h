@@ -11,6 +11,8 @@ public:
 	{
 		if (mesh != nullptr && !mesh->m_selected)
 		{
+			std::cout << "REGISTERED\n";
+
 			m_holder.meshes.emplace_back(mesh);
 			mesh->m_selected = true;
 			mesh->m_selectionIndex = m_holder.meshes.size() - 1;
