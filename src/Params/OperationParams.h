@@ -163,8 +163,8 @@ struct BrushToolParams : public OpParams
 
 struct SelectionToolParams : public OpParams
 {
-	MeshFaceHitPair m_meshFaceHitPair;
-	bool			m_isClick;
+	std::vector<Mesh*> m_selectedMeshes;
+	std::vector<ExtendedFace*> m_selectedFaces;
 };
 
 struct EdgeConnectionsParams : public OpParams 

@@ -13,4 +13,8 @@ public:
 
 private:
 	bool isClick(const RectanglePos& rectanglePos);
+
+	bool isSelectedByClick(const SelectionLayerParams& params, SelectionToolParams* toolParams);
+
+	bool isSelectedByRectangle(const RectanglePos& rectanglePos, const SelectionLayerParams& params, SelectionToolParams* toolParams);
 };

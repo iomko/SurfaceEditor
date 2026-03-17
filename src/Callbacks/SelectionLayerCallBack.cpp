@@ -14,21 +14,52 @@ bool SelectionLayerCallBack::isClick(const RectanglePos& rectanglePos)
 		   glm::abs(rectanglePos.endPos.y - rectanglePos.endPos.y) < 1.0f;
 }
 
-void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
+bool SelectionLayerCallBack::isSelectedByClick(const SelectionLayerParams& params, SelectionToolParams* toolParams)
 {
 	Camera* camera = ViewPortsHolderContext::s_camera;
     Window* window = ViewPortsHolderContext::s_window;
     Scene* scene   = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
+	const auto meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+	auto& meshFacePair = meshFaceHitPair.first;
+	auto mesh = meshFacePair.first;
+	auto face = meshFacePair.second;
+
+	//TODO isEdgeSelected
+	//TODO isVertexSelected
+	if (params.m_selectionMode == SelectionLayerParams::SelectionMode::Object && mesh != nullptr)
+	{
+		toolParams->m_selectedMeshes.push_back(meshFaceHitPair.first.first);
+		return true;
+	}
+	else if (params.m_selectionMode == SelectionLayerParams::SelectionMode::Face && face != nullptr)
+	{
+		toolParams->m_selectedFaces.push_back(meshFaceHitPair.first.second);
+		return true;
+	}
+
+	return false;
+}
+
+bool SelectionLayerCallBack::isSelectedByRectangle(const RectanglePos& rectanglePos, const SelectionLayerParams& params, SelectionToolParams* toolParams)
+{
+	return false;
+}
+
+void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
+{
 	SelectionToolParams* toolParams = new SelectionToolParams();
-	toolParams->m_meshFaceHitPair 	= SceneUtilities::retClosestHitData(camera, window, scene->m_res);
-	toolParams->m_isClick			= isClick(params.m_rectanglePos);
-
-	auto mesh = toolParams->m_meshFaceHitPair.first.first;
-	auto face = toolParams->m_meshFaceHitPair.first.second;
-
-	bool select = mesh || face; // || edge || vertex - TODO
-
+	bool select{};
+	
+	if (isClick(params.m_rectanglePos))
+	{
+		select = isSelectedByClick(params, toolParams);
+	}
+	else
+	{
+		select = isSelectedByRectangle(params.m_rectanglePos, params, toolParams);
+	}
+	
 	ITool* tool = nullptr;
 
 	switch (params.m_selectionMode)
@@ -40,6 +71,7 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 		case SelectionLayerParams::SelectionMode::Face:
 			// selectionTool = select ? ToolRegistry::instance().getTool(FACE_SELECTION_TOOL)
 			// 					   : ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
+			//TODO
 			break;
 		case SelectionLayerParams::SelectionMode::Edge:
 			//TODO

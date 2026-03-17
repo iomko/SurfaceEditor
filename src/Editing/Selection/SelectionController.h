@@ -34,23 +34,30 @@ public:
 
 	void clear()
 	{
-		for (auto& [mesh, faces] : m_holder.faces)
+		if (!m_holder.faces.empty())
 		{
-			mesh->m_selected = false;
-			
-			for (auto& face : faces)
+			for (auto& [mesh, faces] : m_holder.faces)
 			{
-				face->m_selected = false;
+				mesh->m_selected = false;
+				mesh->m_selectionIndex = -1;
+
+				for (auto& face : faces)
+				{
+					face->m_selected = false;
+					face->m_selectionIndex = -1;
+				}
 			}
 		}
 
-		for (auto& mesh : m_holder.meshes)
+		if (!m_holder.meshes.empty())
 		{
-			mesh->m_selected =false;
+			for (auto& mesh : m_holder.meshes)
+			{
+				mesh->m_selected = false;
+				mesh->m_selectionIndex = -1;
+			}
 		}
-
-		//TOTO TREBA LEPSIE NAPISAT
-
+		
 		m_holder.faces.clear();
 		m_holder.meshes.clear();
 	}
