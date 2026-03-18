@@ -1,7 +1,7 @@
 #include "ImportMeshesCallBack.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Callbacks/CallbackRegister.h"
-#include "../../src/IO/OBJImporter.h"
+#include "OBJImporter.h"
 
 static AutoRegisterCallback<ImportMeshesCallback> autoRegister;
 

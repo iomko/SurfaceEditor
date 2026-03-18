@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "BaseImporter.h"
+#include "../../src/IO/BaseImporter.h"
 class OBJImporter : public BaseImporter
 {
 public:

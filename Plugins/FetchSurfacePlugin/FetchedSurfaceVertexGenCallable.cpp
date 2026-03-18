@@ -1,7 +1,7 @@
 #include "../../src/Callables/CallableRegistry.h"
 #include "FetchedSurfaceVertexGenCallable.h"
 #include <vector>
-#include "../../src/IO/TiffGrayscaleMapLoader.h"
+#include "TiffGrayscaleMapLoader.h"
 #include "../../src/IO/CurlFileFetcher.h"
 #include "../../src/Utils/ThirdApiUtils.h"
 #include <filesystem>

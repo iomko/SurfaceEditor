@@ -1,5 +1,5 @@
 #pragma once
-#include "BaseExporter.h"
+#include "../../src/IO/BaseExporter.h"
 #include <filesystem>
 
 class OBJExporter : public BaseExporter
