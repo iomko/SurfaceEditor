@@ -61,13 +61,13 @@ public:
         std::sort(plugins.begin(), plugins.end(),
                   [](const LoadedPlugin &a, const LoadedPlugin &b)
                   {
-                      return a.plugin->GetPriority() > b.plugin->GetPriority();
+                      return a.plugin->GetBuildOrderPriority() > b.plugin->GetBuildOrderPriority();
                   });
 
         for (auto &p : plugins)
         {
             std::cout << "Loading plugin: " << p.plugin->GetName()
-                      << " priority=" << p.plugin->GetPriority() << "\n";
+                      << " build order priority = " << p.plugin->GetBuildOrderPriority() << "\n";//premenovat loadOrder
 
             p.plugin->OnLoad();
         }

@@ -49,7 +49,7 @@ public:
         printf("Unregistering is not implemented yet\n");
     }
     std::string GetName() const override { return "ddNodesToOutlinerLayerPlugin"; }
-    int GetPriority() const override { return 1; }
+    int GetBuildOrderPriority() const override { return 1; }
 };
 
 extern "C"
