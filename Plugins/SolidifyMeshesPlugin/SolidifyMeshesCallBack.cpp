@@ -7,12 +7,11 @@
 #include "../../src/ViewPortsController.h"
 #include "../../src/Structures/Octree.h"
 #include <glm/fwd.hpp>
-#include "../../src/Callables/CallableIDs.h"
 #include "../../src/Callables/CallableRegistry.h"
 #include <chrono>
 #include "../../src/Callbacks/CallbackRegister.h"
 
-static AutoRegisterCallback<SolidifyMeshesCallBack> reg;
+static AutoRegisterCallback<SolidifyMeshesCallBack> reg("SOLIDIFY_MESHES_CALLBACK");
 
 void SolidifyMeshesCallBack::execute()
 {
@@ -73,7 +72,7 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *newFace = halfEdgeStructure->addFloatingFace(newFaceVertices);
             toBeAddedOctreeFaces.emplace_back(newFace);
 
-            auto* faceVaoInitCallable = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            auto* faceVaoInitCallable = dynamic_cast<Callable<SingleFaceParams, void>*>(CallableRegistry::instance().getCallable("FACE_VAO_INIT_CALLABLE"));
             if(faceVaoInitCallable)
             {
                 SingleFaceParams singleFaceParams;
@@ -88,7 +87,7 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges.emplace_back(edge);
             }
-            auto* edgesVaoInitCallable = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            auto* edgesVaoInitCallable = dynamic_cast<Callable<EdgeParams, void>*>(CallableRegistry::instance().getCallable("EDGES_VAO_INIT_CALLABLE"));
             if(edgesVaoInitCallable)
             {
                 EdgeParams edgeParams;
@@ -114,7 +113,7 @@ void SolidifyMeshesCallBack::execute()
                 {
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback("CONNECT_EDGES_CALLBACK");
                     if(connectEdgesCallBack)
                     {
                         EdgeConnectionsParams edgeConnectionsParams;
@@ -147,7 +146,7 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *firstOuterFace = halfEdgeStructure->addFloatingFace(firstOuterFaceVerts);
             toBeAddedOctreeFaces.emplace_back(firstOuterFace);
 
-            auto* faceVaoInitCallable1 = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            auto* faceVaoInitCallable1 = dynamic_cast<Callable<SingleFaceParams, void>*>(CallableRegistry::instance().getCallable("FACE_VAO_INIT_CALLABLE"));
             if(faceVaoInitCallable1)
             {
                 SingleFaceParams singleFaceParams1;
@@ -162,7 +161,7 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges1.emplace_back(edge);
             }
-            auto* edgesVaoInitCallable1 = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            auto* edgesVaoInitCallable1 = dynamic_cast<Callable<EdgeParams, void>*>(CallableRegistry::instance().getCallable("EDGES_VAO_INIT_CALLABLE"));
             if(edgesVaoInitCallable1)
             {
                 EdgeParams edgeParams1;
@@ -180,7 +179,7 @@ void SolidifyMeshesCallBack::execute()
                 {
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback("CONNECT_EDGES_CALLBACK");
                     if(connectEdgesCallBack)
                     {
                         EdgeConnectionsParams edgeConnectionsParams;
@@ -197,7 +196,7 @@ void SolidifyMeshesCallBack::execute()
             ExtendedFace *secondOuterFace = halfEdgeStructure->addFloatingFace(secondOuterFaceVerts);
             toBeAddedOctreeFaces.emplace_back(secondOuterFace);
 
-            auto* faceVaoInitCallable2 = dynamic_cast<Callable<FACE_VAO_INIT_CALLABLE, SingleFaceParams, void>*>(CallableRegistry::instance().getCallable(FACE_VAO_INIT_CALLABLE));
+            auto* faceVaoInitCallable2 = dynamic_cast<Callable<SingleFaceParams, void>*>(CallableRegistry::instance().getCallable("FACE_VAO_INIT_CALLABLE"));
             if(faceVaoInitCallable2)
             {
                 SingleFaceParams singleFaceParams2;
@@ -212,7 +211,7 @@ void SolidifyMeshesCallBack::execute()
                 ExtendedEdge *edge = (*it).m_edge;
                 edges2.emplace_back(edge);
             }
-            auto* edgesVaoInitCallable2 = dynamic_cast<Callable<EDGES_VAO_INIT_CALLABLE, EdgeParams, void>*>(CallableRegistry::instance().getCallable(EDGES_VAO_INIT_CALLABLE));
+            auto* edgesVaoInitCallable2 = dynamic_cast<Callable<EdgeParams, void>*>(CallableRegistry::instance().getCallable("EDGES_VAO_INIT_CALLABLE"));
             if(edgesVaoInitCallable2)
             {
                 EdgeParams edgeParams2;
@@ -231,7 +230,7 @@ void SolidifyMeshesCallBack::execute()
 
                     ExtendedEdge *otherEdge = usedEdgesMapIt->second;
 
-                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback(CONNECT_EDGES_CALLBACK);
+                    auto* connectEdgesCallBack = CallbackRegistry::instance().getCallback("CONNECT_EDGES_CALLBACK");
                     if(connectEdgesCallBack)
                     {
                         EdgeConnectionsParams edgeConnectionsParams;
@@ -258,7 +257,7 @@ void SolidifyMeshesCallBack::execute()
             triangleBufferStorage.update();
         }
 
-        auto* sceneFacesAdderCallable = dynamic_cast<Callable<SCENE_FACES_ADDER_CALLABLE,FaceParams,void>*>(CallableRegistry::instance().getCallable(SCENE_FACES_ADDER_CALLABLE));
+        auto* sceneFacesAdderCallable = dynamic_cast<Callable<FaceParams,void>*>(CallableRegistry::instance().getCallable("SCENE_FACES_ADDER_CALLABLE"));
         if(sceneFacesAdderCallable)
         {
             FaceParams faceParams;

@@ -2,7 +2,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "OBJExporter.h"
 
-static AutoRegisterCallback<ExportMeshesCallback> registerExportMeshesCallback;
+static AutoRegisterCallback<ExportMeshesCallback> registerExportMeshesCallback("EXPORT_MESHES_CALLBACK");
 void ExportMeshesCallback::execute(const ImportExportMeshesParams &params)
 {
     OBJExporter objExporter;

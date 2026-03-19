@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class PrintableMeshSettingsPopUpLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class PrintableMeshSettingsPopUpLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, "PopUpLayer", true);
+        setupLayerPlugin("PRINTABLE_MESH_SETTINGS_POP_UP_LAYER", "PopUpLayer", true);
     }
     void OnUnload() override 
     {

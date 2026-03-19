@@ -3,7 +3,7 @@
 
 #include "../../src/Callables/CallableRegistry.h"
 
-static AutoRegisterCallable<CubeVertexGenCallable> reg;
+static AutoRegisterCallable<CubeVertexGenCallable> reg("CUBE_VERTEX_GEN_CALLABLE");
 
 void CubeVertexGenCallable::invoke(const CubeParams &input, MeshParams &output)
 {

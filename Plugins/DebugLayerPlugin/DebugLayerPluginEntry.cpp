@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class DebugLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class DebugLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(DEBUG_LAYER, "DebugLayer", false);
+        setupLayerPlugin("DEBUG_LAYER", "DebugLayer", false);
     }
     void OnUnload() override 
     {

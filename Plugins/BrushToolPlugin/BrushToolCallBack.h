@@ -3,9 +3,8 @@
 #include "../../src/Callbacks/Callback.h"
 #include "../../src/Patterns/Observer.h"
 
-#include "../../src/Callbacks/CallbackIDs.h"
 
-class BrushToolCallBack : public Callback<BRUSH_TOOL_CALLBACK, BrushToolParams, OctreeNodeDataParams>, public Observer
+class BrushToolCallBack : public Callback<BrushToolParams, OctreeNodeDataParams>, public Observer
 {
 public:
     BrushToolCallBack();

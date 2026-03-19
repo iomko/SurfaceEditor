@@ -7,7 +7,7 @@
 #include "../../src/UI/LayerRegistry.h"
 #include "Application.h"
 
-void setupLayerPlugin(const int layer_id, const std::string name, bool useWindowLateyBus)
+void setupLayerPlugin(std::string layer_id, const std::string name, bool useWindowLateyBus)
 {
 	WindowLayerBus &bus = WindowLayerBus::instance();
 	Application &app = Application::getInstance();
@@ -24,7 +24,7 @@ void setupLayerPlugin(const int layer_id, const std::string name, bool useWindow
 		app.getLayerStack().addLayer(layer);
 }
 
-void setupPlugin(const int command_id, const int callback_id, const int tool_id)
+void setupPlugin(std::string command_id, std::string callback_id, std::string tool_id)
 {
 	auto *callback = CallbackRegistry::instance().getCallback(callback_id);
 	if (callback == nullptr)
@@ -39,7 +39,7 @@ void setupPlugin(const int command_id, const int callback_id, const int tool_id)
 	{
 		observableCommand->addObserver(observerCallback);
 		observerCallback->observe(observableCommand, callback);
-		if (tool_id != -1)
+		if (tool_id != "")
 		{
 			ToolRegistry::instance().initializeTool(tool_id, command);
 		}

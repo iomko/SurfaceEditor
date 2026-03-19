@@ -3,7 +3,6 @@
 
 #include "../../src/Tools/InteractionHandler.h"
 #include "../../src/Params/OperationParams.h"
-#include "../../src/Commands/CommandRegistry.h"
 #include "../../src/Patterns/Command.h"
 #include "../../src/ViewPortsController.h"
 

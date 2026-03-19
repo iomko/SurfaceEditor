@@ -1,11 +1,11 @@
 #include "FaceVaoInitCallable.h"
-#include "CallableRegistry.h"
+#include "../../src/Callables/CallableRegistry.h"
 
-#include "../Utils/GeometryUtils.h"
-#include "../Renderer/Renderer.h"
-#include "../Renderer/MaterialRegistry.h"
+#include "../../src/Utils/GeometryUtils.h"
+#include "../../src/Renderer/Renderer.h"
+#include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallable<FaceVaoInitCallable> reg;
+static AutoRegisterCallable<FaceVaoInitCallable> reg("FACE_VAO_INIT_CALLABLE");
 
 void FaceVaoInitCallable::invoke(const SingleFaceParams& input)
 	{

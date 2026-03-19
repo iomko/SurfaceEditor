@@ -9,4 +9,4 @@ void DeleteFaceCommand::execute(const SingleFaceParams &params)
 void DeleteFaceCommand::undo()
 {
 }
-static AutoRegister<DeleteFaceCommand> regDeleteFace;
+static AutoRegister<DeleteFaceCommand> regDeleteFace("DELETE_FACE_COMMAND");

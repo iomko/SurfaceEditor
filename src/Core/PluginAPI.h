@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 
-void setupLayerPlugin(const int layer_id, const std::string name, bool useWindowLateyBus);
-void setupPlugin(const int command_id, const int callback_id, const int tool_id = -1);
+void setupLayerPlugin(std::string layer_id, const std::string name, bool useWindowLateyBus);
+void setupPlugin(std::string command_id, std::string callback_id, std::string tool_id = "");
 
 class IPlugin
 {

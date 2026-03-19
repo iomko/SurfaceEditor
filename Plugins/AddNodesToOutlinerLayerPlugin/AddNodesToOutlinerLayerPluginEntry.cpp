@@ -1,11 +1,8 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Callbacks/CallbackRegister.h"
-#include "../../src/Commands/CommandRegistry.h"
 #include "../../src/Core/Layer.h"
 
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 #include "../../src/Patterns/Observer.h"
 
@@ -15,14 +12,14 @@ class AddNodesToOutlinerLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        Layer* outlinerLayer = LayerRegistry::instance().getLayer(OUTLINER_LAYER, std::string("OutlinerLayer"));
+        Layer* outlinerLayer = LayerRegistry::instance().getLayer("OUTLINER_LAYER", std::string("OutlinerLayer"));
 	
         if (outlinerLayer)
         {		
             Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
             if(outlinerObserver)
             {
-                int id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
+                std::string id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
                 auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
                 printf("Getting template on id %d\n", id);
                 if(addNewOutlinerNodeCallBackMesh)

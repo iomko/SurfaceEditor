@@ -6,7 +6,7 @@
 
 #include "../../src/Callbacks/CallbackIDs.h"
 
-class CreatePrintStructureCallBack : public Callback<CREATE_PRINT_STRUCTURE_CALLBACK, PrintMeshSettingsParams>, public Observer {
+class CreatePrintStructureCallBack : public Callback<PrintMeshSettingsParams>, public Observer {
 
 public:
 	void execute(const PrintMeshSettingsParams& iParams) override;

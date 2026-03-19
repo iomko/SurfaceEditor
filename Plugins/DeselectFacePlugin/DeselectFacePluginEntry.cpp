@@ -1,14 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Tools/ToolIDs.h"
 
 class DeselectFacePlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(DESELECT_FACE_COMMAND, DESELECT_FACE_CALLBACK, FACE_DESELECTION_TOOL);
+	    setupPlugin("DESELECT_FACE_COMMAND", "DESELECT_FACE_CALLBACK", "FACE_DESELECTION_TOOL");
     }
     void OnUnload() override 
     {

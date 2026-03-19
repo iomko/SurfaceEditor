@@ -5,4 +5,4 @@ void ExportMeshesCommand::execute(const ImportExportMeshesParams &params)
 {
     notifyObservers(params);
 }
-static AutoRegister<ExportMeshesCommand> regExportMeshes;
+static AutoRegister<ExportMeshesCommand> regExportMeshes("EXPORT_MESHES_COMMAND");

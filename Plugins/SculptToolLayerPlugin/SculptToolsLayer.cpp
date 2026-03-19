@@ -2,12 +2,11 @@
 #include "imgui.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Tools/ToolRegistry.h"
-#include "../../src/Tools/ToolIDs.h"
 
-static AutoRegisterLayerArgs<SculptToolsLayer, std::string> reg;
+static AutoRegisterLayerArgs<SculptToolsLayer, std::string> reg("SCULPT_TOOLS_LAYER");
 
 SculptToolsLayer::SculptToolsLayer(const std::string &name)
-    : LayerWithID(name) {}
+    : Layer(name) {}
 
 void SculptToolsLayer::onEvent(Event &event) 
 {
@@ -32,7 +31,7 @@ void SculptToolsLayer::onImGuiRender()
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
 
-    auto *brushTool = ToolRegistry::instance().getTool(BRUSH_TOOL);
+    auto *brushTool = ToolRegistry::instance().getTool("BRUSH_TOOL");
     if(brushTool)
     {
         if (ImGui::TreeNode("BrushTool"))

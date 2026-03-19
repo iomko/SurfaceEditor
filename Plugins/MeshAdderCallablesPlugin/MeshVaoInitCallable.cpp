@@ -6,7 +6,7 @@
 #include "../../src/Renderer/BufferStorages.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallable<MeshVaoInitCallable> reg;
+static AutoRegisterCallable<MeshVaoInitCallable> reg("MESH_VAO_INIT_CALLABLE");
 
 void MeshVaoInitCallable::invoke(const MeshParams &input)
 {

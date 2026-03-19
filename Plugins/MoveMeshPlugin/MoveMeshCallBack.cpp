@@ -6,9 +6,8 @@
 #include "../../src/Utils/GeometryUtils.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterCallback<MoveMeshCallBack> registerCallback;
+static AutoRegisterCallback<MoveMeshCallBack> registerCallback("MOVE_MESH_CALLBACK");
 
 void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
 {
@@ -18,7 +17,7 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
     vertexParams.transformMatrix = iParams.transformMatrix;
     vertexParams.moveBy = VertexParams::MoveBy::TRANSFORM_MATRIX;
 
-    auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
+    auto *moveVertexCommand = CommandRegistry::instance().getCommand("MOVE_VERTEX_COMMAND");
     // chceme ist cez vsetky vertices a posunut ich o moveByVector
 
     if(moveVertexCommand)

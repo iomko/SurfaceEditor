@@ -2,7 +2,7 @@
 #include "CallableRegistry.h"
 #include "../ViewPortsController.h"
 
-static AutoRegisterCallable<SceneFacesAdderCallable> reg;
+static AutoRegisterCallable<SceneFacesAdderCallable> reg("SCENE_FACES_ADDER_CALLABLE");
 
 void SceneFacesAdderCallable::invoke(const FaceParams &input)
 {

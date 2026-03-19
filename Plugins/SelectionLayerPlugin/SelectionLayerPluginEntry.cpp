@@ -1,8 +1,6 @@
 #include "../../src/Core/PluginAPI.h"
 
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/Core/Application.h"
 #include "../../src/ViewPortsController.h"
@@ -15,14 +13,14 @@ public:
         ViewPortsController * viewPortsHolder = ViewPortsHolderContext::s_viewPortsController;
 	    if(viewPortsHolder == nullptr)
             throw std::runtime_error("SELECTION LAYER DIDNT LOAD ViewPortsController");
-        Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
+        Layer* selectionLayer = LayerRegistry::instance().getLayer("SELECTION_LAYER", std::string("SelectionLayer"));
         if (selectionLayer)
         {
             Application& app = Application::getInstance();
             app.getLayerStack().addLayer(selectionLayer);
 
             // SelectionLayerCallBack selectionLayerCallBack;
-            auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
+            auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback("SELECTION_LAYER_CALLBACK");
             auto *observerSelectionLayer = dynamic_cast<Observer *>(selectionLayerCallBack);
             auto *observableSelectionLayer = dynamic_cast<Observable *>(selectionLayer);
             if (selectionLayerCallBack && observerSelectionLayer && observableSelectionLayer)

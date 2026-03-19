@@ -2,10 +2,9 @@
 #include <string>
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 
-class RemovalLayer : public LayerWithID<REMOVAL_LAYER>, public Observable, public Observer {
+class RemovalLayer : public Layer, public Observable, public Observer {
 public:
 	RemovalLayer(const std::string& name);
 	void onEvent(Event& event) override;

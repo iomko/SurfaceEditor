@@ -9,4 +9,4 @@ void MoveFaceCommand::execute(const SingleFaceParams &params)
 void MoveFaceCommand::undo()
 {
 }
-static AutoRegister<MoveFaceCommand> regMoveFace;
+static AutoRegister<MoveFaceCommand> regMoveFace("MOVE_FACE_COMMAND");

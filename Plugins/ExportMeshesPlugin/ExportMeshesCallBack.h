@@ -3,9 +3,8 @@
 #include "../../src/Params/OperationParams.h"
 #include "../../src/Patterns/Observer.h"
 
-#include "../../src/Callbacks/CallbackIDs.h"
 
-class ExportMeshesCallback : public Callback<EXPORT_MESHES_CALLBACK, ImportExportMeshesParams>, public Observer
+class ExportMeshesCallback : public Callback<ImportExportMeshesParams>, public Observer
 {
 public:
 	void execute(const ImportExportMeshesParams& params) override;

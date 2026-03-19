@@ -1,12 +1,12 @@
 #include "../../src/Callables/CallableRegistry.h"
 #include "FetchedSurfaceVertexGenCallable.h"
 #include <vector>
-#include "TiffGrayscaleMapLoader.h"
+#include "../../src/IO/TiffGrayscaleMapLoader.h"
 #include "../../src/IO/CurlFileFetcher.h"
 #include "../../src/Utils/ThirdApiUtils.h"
 #include <filesystem>
 
-static AutoRegisterCallable<FetchedSurfaceVertexGenCallable> reg;
+static AutoRegisterCallable<FetchedSurfaceVertexGenCallable> reg("FETCHED_SURFACE_VERTEX_GEN_CALLABLE");
 
 void FetchedSurfaceVertexGenCallable::invoke(const OpenTopoParams &input, MeshParams &output) 
 {

@@ -9,7 +9,7 @@
 #include "../../src/ViewPortsController.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallback<CreatePrintStructureCallBack> autoRegisterCreatePrintStructureCallBack;
+static AutoRegisterCallback<CreatePrintStructureCallBack> autoRegisterCreatePrintStructureCallBack("CREATE_PRINT_STRUCTURE_CALLBACK");
 
 void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParams)
 {

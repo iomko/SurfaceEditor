@@ -1,14 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Tools/ToolIDs.h"
 
 class BrushToolPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(BRUSH_TOOL_COMMAND, BRUSH_TOOL_CALLBACK, BRUSH_TOOL);
+	    setupPlugin("BRUSH_TOOL_COMMAND", "BRUSH_TOOL_CALLBACK", "BRUSH_TOOL");
     }
     void OnUnload() override 
     {

@@ -1,12 +1,11 @@
 #include "RemovalLayer.h"
 #include "imgui.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<RemovalLayer, std::string> reg;
+static AutoRegisterLayerArgs<RemovalLayer, std::string> reg("REMOVAL_LAYER");
 
 RemovalLayer::RemovalLayer(const std::string &name)
-    : LayerWithID(name) {}
+    : Layer(name) {}
 void RemovalLayer::onEvent(Event &event)
 {
     if (event.getType() == EventType::MouseButtonPress)
@@ -32,7 +31,7 @@ void RemovalLayer::onImGuiRender()
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
 
-    auto *deleteSelectedFacesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_FACES_COMMAND);
+    auto *deleteSelectedFacesCommand = CommandRegistry::instance().getCommand("DELETE_SELECTED_FACES_COMMAND");
     if(deleteSelectedFacesCommand)
     {
         if (ImGui::Button("Delete Selected Faces"))
@@ -41,7 +40,7 @@ void RemovalLayer::onImGuiRender()
         }
     }
 
-    auto *deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand(DELETE_SELECTED_MESHES_COMMAND);
+    auto *deleteSelectedMeshesCommand = CommandRegistry::instance().getCommand("DELETE_SELECTED_MESHES_COMMAND");
     if(deleteSelectedMeshesCommand)
     {
     if (ImGui::Button("Delete Selected Meshes"))

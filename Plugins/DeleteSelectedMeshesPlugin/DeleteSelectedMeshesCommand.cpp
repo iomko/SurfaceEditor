@@ -9,4 +9,4 @@ void DeleteSelectedMeshesCommand::execute()
 void DeleteSelectedMeshesCommand::undo()
 {
 }
-static AutoRegister<DeleteSelectedMeshesCommand> regDeleteSelectedMeshes;
+static AutoRegister<DeleteSelectedMeshesCommand> regDeleteSelectedMeshes("DELETE_SELECTED_MESHES_COMMAND");

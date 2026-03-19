@@ -25,8 +25,6 @@
 // import Patterns.Observer;
 // #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-#include "../Tools/ToolRegistry.h"
-//#include "../Commands/CommandRegistry.h"
 
 
 
@@ -39,14 +37,9 @@
 #include "../Callbacks/CallbackRegister.h"
 #include "../Callbacks/CallbackIDs.h"
 #include "../Tools/ToolRegistry.h"
-#include "../Tools/ToolIDs.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
 #include "../UI/LayerRegistry.h"
-#include "../UI/LayerIDs.h"
 
 #include "../Callables/CallableRegistry.h"
-#include "../Callables/CallableIDs.h"
 
 #include "../UI/WindowLayerBus.h"
 
@@ -65,7 +58,7 @@ std::string getShaderPath(const std::string &file)
 #endif
 }
 
-static void setupLayer(const int layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
+static void setupLayer(std::string layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
 {
 	Layer *layer;
 	if (bus == nullptr)

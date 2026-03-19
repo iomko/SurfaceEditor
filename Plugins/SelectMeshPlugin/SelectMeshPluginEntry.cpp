@@ -1,14 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Tools/ToolIDs.h"
 
 class SelectMeshPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(SELECT_MESH_COMMAND, SELECT_MESH_CALLBACK, MESH_SELECTION_TOOL);
+	    setupPlugin("SELECT_MESH_COMMAND", "SELECT_MESH_CALLBACK", "MESH_SELECTION_TOOL");
     }
     void OnUnload() override 
     {

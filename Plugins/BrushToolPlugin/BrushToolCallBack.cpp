@@ -5,10 +5,9 @@
 #include "../../src/Utils/GeometryUtils.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
 // Automatically register the BrushToolCallBack in the CallbackRegistry
-static AutoRegisterCallback<BrushToolCallBack> autoRegisterBrushToolCallBack;
+static AutoRegisterCallback<BrushToolCallBack> autoRegisterBrushToolCallBack("BRUSH_TOOL_CALLBACK");
 
 BrushToolCallBack::BrushToolCallBack() {}
 void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataParams &oParams)
@@ -54,7 +53,7 @@ void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataPa
             vertexParams.mesh = closestMesh;
             vertexParams.vertex = vertex;
 
-            auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
+            auto *moveVertexCommand = CommandRegistry::instance().getCommand("MOVE_VERTEX_COMMAND");
             if (moveVertexCommand)
                 moveVertexCommand->execute(vertexParams);
         }

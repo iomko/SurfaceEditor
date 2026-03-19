@@ -1,9 +1,8 @@
 #pragma once
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Params/OperationParams.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/Callbacks/Callback.h"
-class ImportMeshesCallback : public Callback<IMPORT_MESHES_CALLBACK, ImportExportMeshesParams>, public Observer
+class ImportMeshesCallback : public Callback<ImportExportMeshesParams>, public Observer
 {
 public:
 	virtual void execute(const ImportExportMeshesParams& params) override;

@@ -39,7 +39,7 @@ public:
 		return newFunctionNode;
 	}
 
-	FunctionNode* initRootByID(int callableID, bool hasInputParams) {
+	FunctionNode* initRootByID(std::string callableID, bool hasInputParams) {
 		m_rootNode = new FunctionNode();
 		m_rootNode->m_function = CallableRegistry::instance().getCallable(callableID);
 
@@ -47,7 +47,7 @@ public:
 		return m_rootNode;
 	}
 
-	FunctionNode* addFuncByID(FunctionNode* parent, int callableID)
+	FunctionNode* addFuncByID(FunctionNode* parent, std::string callableID)
     {
         auto* node = new FunctionNode();
         node->m_function =

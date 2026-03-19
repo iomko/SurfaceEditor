@@ -2,7 +2,7 @@
 #include "../../src/Callables/CallableRegistry.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallable<PlaneVertexGenCallable> reg;
+static AutoRegisterCallable<PlaneVertexGenCallable> reg("PLANE_VERTEX_GEN_CALLABLE");
 
 void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output) 
 {

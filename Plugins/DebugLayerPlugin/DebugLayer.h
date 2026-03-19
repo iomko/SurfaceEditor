@@ -3,9 +3,9 @@
 #include "imgui.h" 
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
-#include "../../src/UI/LayerIDs.h"
 
-class DebugLayer : public LayerWithID<DEBUG_LAYER>, public Observable, public Observer {
+extern char DEBUG_LAYER[];
+class DebugLayer : public Layer, public Observable, public Observer {
 public:
 	DebugLayer(const std::string& name);
 

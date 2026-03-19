@@ -1,12 +1,11 @@
 #include "PrintableMeshSettingsPopUpLayer.h"
 #include "imgui.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<PrintableMeshSettingsPopUpLayer,std::string,std::reference_wrapper<WindowLayerBus>> reg;
+static AutoRegisterLayerArgs<PrintableMeshSettingsPopUpLayer,std::string,std::reference_wrapper<WindowLayerBus>> reg("PRINTABLE_MESH_SETTINGS_POP_UP_LAYER");
 
 PrintableMeshSettingsPopUpLayer::PrintableMeshSettingsPopUpLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : LayerWithID(name)
+    : Layer(name)
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {
@@ -54,7 +53,7 @@ void PrintableMeshSettingsPopUpLayer::onImGuiRender()
         {
             // This triggers when the user presses Enter OR when the field loses focus.
             m_state.m_selectedPrintableMesh->removeAllLevelLayers();
-            auto *printCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
+            auto *printCommand = CommandRegistry::instance().getCommand("CREATE_PRINT_COMMAND");
             PrintMeshSettingsParams printMeshSettingsParams;
             printMeshSettingsParams.height = m_state.m_layerHeight;
             printMeshSettingsParams.mesh = m_state.m_selectedMesh;

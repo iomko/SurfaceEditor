@@ -1,12 +1,11 @@
 #include "DeleteSelectedFacesCallBack.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Utils/ContainerUtils.h"
 #include "../../src/Structures/ExtendedHalfEdge.h"
 #include "../../src/ViewPortsController.h"
 
-static AutoRegisterCallback<DeleteSelectedFacesCallBack> registerDeleteSelectedFacesCallBack;
+static AutoRegisterCallback<DeleteSelectedFacesCallBack> registerDeleteSelectedFacesCallBack("DELETE_SELECTED_FACES_CALLBACK");
 DeleteSelectedFacesCallBack::DeleteSelectedFacesCallBack() {} 
 void DeleteSelectedFacesCallBack::execute()
 {
@@ -29,7 +28,7 @@ void DeleteSelectedFacesCallBack::execute()
             singleFaceParams.mesh = selectedMesh;
             singleFaceParams.face = selectedFace;
 
-            auto *deleteFaceCommand = CommandRegistry::instance().getCommand(DELETE_FACE_COMMAND);
+            auto *deleteFaceCommand = CommandRegistry::instance().getCommand("DELETE_FACE_COMMAND");
             if (deleteFaceCommand)
                 deleteFaceCommand->execute(singleFaceParams);
 

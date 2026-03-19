@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class ImportExportLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class ImportExportLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(IMPORT_EXPORT_LAYER, "ImportExportLayer", false);
+        setupLayerPlugin("IMPORT_EXPORT_LAYER", "ImportExportLayer", false);
     }
     void OnUnload() override 
     {

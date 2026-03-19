@@ -1,12 +1,11 @@
 #include "AdditionLayer.h"
 #include "imgui.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<AdditionLayer, std::string> reg;
+static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
 AdditionLayer::AdditionLayer(const std::string& name)
-    : LayerWithID(name) {}
+    : Layer(name) {}
 
 void AdditionLayer::onEvent(Event &event)
 {
@@ -35,7 +34,7 @@ void AdditionLayer::onImGuiRender()
         if (ImGui::TreeNode("Mesh"))
         {
 
-            auto *addPlaneCommand = CommandRegistry::instance().getCommand(ADD_PLANE_COMMAND);
+            auto *addPlaneCommand = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
             if(addPlaneCommand)
             {
                 if (ImGui::TreeNode("TriangulatedPlane"))
@@ -54,7 +53,7 @@ void AdditionLayer::onImGuiRender()
                     ImGui::TreePop();
                 }
             }
-            auto *addCubeCommand = CommandRegistry::instance().getCommand(ADD_CUBE_COMMAND);
+            auto *addCubeCommand = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");
             if (addCubeCommand)
             {
                 if (ImGui::TreeNode("Cube"))
@@ -78,7 +77,7 @@ void AdditionLayer::onImGuiRender()
 
             ImGui::TreePop();
         }
-        auto *fetchCommand = CommandRegistry::instance().getCommand(FETCH_SURFACE_COMMAND);
+        auto *fetchCommand = CommandRegistry::instance().getCommand("FETCH_SURFACE_COMMAND");
         if(fetchCommand)
         {
             if (ImGui::TreeNode("Fetch Surface Data (OpenTopography)"))

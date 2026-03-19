@@ -1,6 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 
 class AddPlanePlugin : public IPlugin
@@ -8,7 +6,7 @@ class AddPlanePlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupPlugin(ADD_PLANE_COMMAND, ADD_PLANE_CALLBACK);
+        setupPlugin("ADD_PLANE_COMMAND", "ADD_PLANE_CALLBACK");
     }
     void OnUnload() override 
     {

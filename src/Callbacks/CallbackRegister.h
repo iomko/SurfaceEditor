@@ -15,23 +15,16 @@ public:
     }
 
     template<typename CallbackT>
-    void registerCallback() {        
-        m_creators[CallbackT::ID] = []() -> std::unique_ptr<CallbackConcept> {
-            return std::make_unique<CallbackT>();
-        };
-    }
-
-    template<typename CallbackT>
-    void registerTemplateCallback(int id) {        
+    void registerCallback(std::string id) {        
         m_creators[id] = []() -> std::unique_ptr<CallbackConcept> {
             return std::make_unique<CallbackT>();
         };
     }
 
-    void registerCallbackFactory(int id, Creator factory) {
+    void registerCallbackFactory(std::string id, Creator factory) {
         m_creators[id] = std::move(factory);
     }
-    CallbackConcept* getCallback(int id) {
+    CallbackConcept* getCallback(std::string id) {
         auto it = m_instances.find(id);
         if (it != m_instances.end()) {
             return it->second.get();
@@ -52,27 +45,19 @@ public:
         m_instances.clear();
     }
 
-    bool availableID(int id)
+    bool availableID(std::string id)
     {
         return !m_creators.contains(id);
     }
 
 private:
-    std::unordered_map<int, Creator> m_creators;
-    std::unordered_map<int, std::unique_ptr<CallbackConcept>> m_instances;
+    std::unordered_map<std::string, Creator> m_creators;
+    std::unordered_map<std::string, std::unique_ptr<CallbackConcept>> m_instances;
 };
 
 template<typename CallbackT>
 struct AutoRegisterCallback {
-    AutoRegisterCallback() {
-        CallbackRegistry::instance().registerCallback<CallbackT>();
-    }
-};
-
-template<typename CallbackT>
-struct AutoRegisterTemplateCallback {
-    AutoRegisterTemplateCallback(int id) {
-        printf("Registring template on id %d\n", id);
-        CallbackRegistry::instance().registerTemplateCallback<CallbackT>(id);
+    AutoRegisterCallback(std::string id) {
+        CallbackRegistry::instance().registerCallback<CallbackT>(id);
     }
 };

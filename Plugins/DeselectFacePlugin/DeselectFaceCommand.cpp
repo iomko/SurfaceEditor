@@ -9,4 +9,4 @@ void DeselectFaceCommand::execute()
 void DeselectFaceCommand::undo()
 {
 }
-static AutoRegister<DeselectFaceCommand> regDeselectFace;
+static AutoRegister<DeselectFaceCommand> regDeselectFace("DESELECT_FACE_COMMAND");

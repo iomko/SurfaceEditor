@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class FetchSurfacePlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(FETCH_SURFACE_COMMAND, FETCH_SURFACE_CALLBACK);
+        setupPlugin("FETCH_SURFACE_COMMAND", "FETCH_SURFACE_CALLBACK");
     }
     void OnUnload() override 
     {

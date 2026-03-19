@@ -5,7 +5,7 @@
 #include "../../src/Utils/GeometryUtils.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallback<MoveVertexCallBack> moveVertexCallBackReg;
+static AutoRegisterCallback<MoveVertexCallBack> moveVertexCallBackReg("MOVE_VERTEX_CALLBACK");
 void MoveVertexCallBack::execute(const VertexParams &iParams)
 {
     const float epsilon = 0.001f;

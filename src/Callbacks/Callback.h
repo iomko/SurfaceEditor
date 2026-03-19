@@ -10,13 +10,12 @@ struct CallbackConcept {
 	virtual void execute(const OpParams& iParams, OpParams& oParams) = 0;
 };
 
-template <int id, typename IParams = OpParams, typename OParams = OpParams>
+template <typename IParams = OpParams, typename OParams = OpParams>
 class Callback;
 
-template <int id, typename IParams, typename OParams>
+template <typename IParams, typename OParams>
 class Callback : public CallbackConcept {
 public:
-	static constexpr int ID = id; 
 
 	virtual void execute(const IParams& iParams, OParams& oParams) = 0;
 	void execute(const OpParams& iParams, OpParams& oParams) final override {
@@ -33,10 +32,9 @@ public:
 	}
 };
 
-template <int id, typename IParams>
-class Callback<id, IParams, OpParams> : public CallbackConcept {
+template <typename IParams>
+class Callback<IParams, OpParams> : public CallbackConcept {
 public:
-	static constexpr int ID = id; 
 
 	virtual void execute(const IParams& iParams) = 0;
 	void execute(const OpParams& iParams) final override {
@@ -52,10 +50,9 @@ public:
 	}
 };
 
-template <int id>
-class Callback<id, OpParams, OpParams> : public CallbackConcept {
+template <>
+class Callback<OpParams, OpParams> : public CallbackConcept {
 public:
-	static constexpr int ID = id; 
 
 	virtual void execute() = 0;
 
@@ -68,13 +65,12 @@ public:
 };
 
 
-template <int id, typename IParams = OpParams>
+template <typename IParams = OpParams>
 class ComposedCallback;
 
-template <int id, typename IParams>
+template <typename IParams>
 class ComposedCallback : public CallbackConcept {
 public:
-	static constexpr int ID = id; 
 protected:
 	std::unique_ptr<FunctionComposer>m_composer;
 
@@ -94,10 +90,9 @@ public:
 	}
 };
 
-template <int id>
-class ComposedCallback<id, OpParams> : public CallbackConcept {
+template <>
+class ComposedCallback<OpParams> : public CallbackConcept {
 public:
-	static constexpr int ID = id; 
 protected:
 	std::unique_ptr<FunctionComposer> m_composer;
 

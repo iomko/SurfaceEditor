@@ -3,4 +3,4 @@
 
 MeshSelectionTool::MeshSelectionTool(CommandConcept* command)
     : Tool(command) {}
-static AutoRegisterTool<MeshSelectionTool> regMeshSelectionTool;
+static AutoRegisterTool<MeshSelectionTool> regMeshSelectionTool("MESH_SELECTION_TOOL");

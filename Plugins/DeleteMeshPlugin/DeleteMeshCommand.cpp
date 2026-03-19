@@ -9,4 +9,4 @@ void DeleteMeshCommand::execute(const MeshParams &params)
 void DeleteMeshCommand::undo()
 {}
 
-static AutoRegister<DeleteMeshCommand> regDeleteMesh;
+static AutoRegister<DeleteMeshCommand> regDeleteMesh("DELETE_MESH_COMMAND");

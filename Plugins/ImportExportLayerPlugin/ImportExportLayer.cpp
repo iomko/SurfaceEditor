@@ -1,12 +1,11 @@
 #include "ImportExportLayer.h"
 #include "imgui.h" 
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<ImportExportLayer, std::string> reg;
+static AutoRegisterLayerArgs<ImportExportLayer, std::string> reg("IMPORT_EXPORT_LAYER");
 
 ImportExportLayer::ImportExportLayer(const std::string &name)
-    : LayerWithID(name) {}
+    : Layer(name) {}
 
 void ImportExportLayer::onEvent(Event &event) 
 {
@@ -37,7 +36,7 @@ void ImportExportLayer::onImGuiRender()
     std::string filePath;
     
     
-    auto* importMeshesCommand = CommandRegistry::instance().getCommand(IMPORT_MESHES_COMMAND);
+    auto* importMeshesCommand = CommandRegistry::instance().getCommand("IMPORT_MESHES_COMMAND");
     if(importMeshesCommand)
     {
         if (ImGui::Button("Import"))
@@ -61,7 +60,7 @@ void ImportExportLayer::onImGuiRender()
         ImGui::SameLine();
     }
         
-    auto* exportMeshesCommand = CommandRegistry::instance().getCommand(EXPORT_MESHES_COMMAND);
+    auto* exportMeshesCommand = CommandRegistry::instance().getCommand("EXPORT_MESHES_COMMAND");
     if(exportMeshesCommand)
     {
         if (ImGui::Button("Export"))

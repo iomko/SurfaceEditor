@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Callbacks/CallbackIDs.h"
 
 class SolidifyMeshesPlugin : public IPlugin
@@ -7,7 +6,7 @@ class SolidifyMeshesPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-	    setupPlugin(SOLIDIFY_MESHES_COMMAND, SOLIDIFY_MESHES_CALLBACK);
+	    setupPlugin("SOLIDIFY_MESHES_COMMAND", "SOLIDIFY_MESHES_CALLBACK");
     }
     void OnUnload() override 
     {

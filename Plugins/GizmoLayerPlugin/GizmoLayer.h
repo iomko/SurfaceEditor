@@ -3,9 +3,8 @@
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
 #include "../../src/UI/LayerRegistry.h"
-#include "../../src/UI/LayerIDs.h"
 
-class GizmoLayer : public LayerWithID<GIZMO_LAYER>, public Observable
+class GizmoLayer : public Layer, public Observable
 {
 private:
     GizmoLayerParams::Type m_type = GizmoLayerParams::Type::Disable;

@@ -5,7 +5,7 @@
 #include "../../src/ViewPortsController.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallback<DeleteFaceCallBack> registerDeleteFaceCallBack;
+static AutoRegisterCallback<DeleteFaceCallBack> registerDeleteFaceCallBack("DELETE_FACE_CALLBACK");
 
 void DeleteFaceCallBack::execute(const SingleFaceParams &iParams)
 {

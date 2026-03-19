@@ -1,6 +1,5 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 
 class AddCubePlugin : public IPlugin
@@ -8,7 +7,7 @@ class AddCubePlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupPlugin(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
+        setupPlugin("ADD_CUBE_COMMAND", "ADD_CUBE_CALLBACK");
     }
     void OnUnload() override 
     {

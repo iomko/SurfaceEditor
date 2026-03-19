@@ -2,10 +2,9 @@
 #include <string>
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 
-class SelectionLayer : public LayerWithID<SELECTION_LAYER>, public Observable {
+class SelectionLayer : public Layer, public Observable {
 public:
     SelectionLayer(const std::string& name);
 

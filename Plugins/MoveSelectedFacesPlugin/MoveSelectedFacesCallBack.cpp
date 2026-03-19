@@ -5,9 +5,8 @@
 #include "../../src/Utils/GeometryUtils.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterCallback<MoveSelectedFacesCallBack> moveSelectedFacesCallBackRegister;
+static AutoRegisterCallback<MoveSelectedFacesCallBack> moveSelectedFacesCallBackRegister("MOVE_SELECTED_FACES_CALLBACK");
 
 MoveSelectedFacesCallBack::MoveSelectedFacesCallBack() {}
 
@@ -48,7 +47,7 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
         {
             vertexParams.vertex = vertex;
 
-            auto *moveVertexCommand = CommandRegistry::instance().getCommand(MOVE_VERTEX_COMMAND);
+            auto *moveVertexCommand = CommandRegistry::instance().getCommand("MOVE_VERTEX_COMMAND");
             if (moveVertexCommand)
             {
                 moveVertexCommand->execute(vertexParams);

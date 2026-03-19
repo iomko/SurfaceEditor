@@ -8,4 +8,4 @@ void HandleGizmoCommand::execute(const GizmoParams &iParams)
 void HandleGizmoCommand::undo()
 {
 }
-static AutoRegister<HandleGizmoCommand> regHandleGizmoCommand;
+static AutoRegister<HandleGizmoCommand> regHandleGizmoCommand("HANDLE_GIZMO_COMMAND");

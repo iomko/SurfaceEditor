@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class ModifiersLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class ModifiersLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(MODIFIERS_LAYER, "ModifiersLayer", true);
+        setupLayerPlugin("MODIFIERS_LAYER", "ModifiersLayer", true);
     }
     void OnUnload() override 
     {

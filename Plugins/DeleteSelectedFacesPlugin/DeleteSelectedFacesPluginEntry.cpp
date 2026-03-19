@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Callbacks/CallbackIDs.h"
 
 class DeleteSelectedFacesPlugin : public IPlugin
@@ -7,7 +6,7 @@ class DeleteSelectedFacesPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-	    setupPlugin(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
+	    setupPlugin("DELETE_SELECTED_FACES_COMMAND", "DELETE_SELECTED_FACES_CALLBACK");
     }
     void OnUnload() override 
     {

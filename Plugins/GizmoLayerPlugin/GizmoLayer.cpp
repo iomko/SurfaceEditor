@@ -1,12 +1,11 @@
 #include "GizmoLayer.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 
-static AutoRegisterLayerArgs<GizmoLayer, std::string> reg;
+static AutoRegisterLayerArgs<GizmoLayer, std::string> reg("GIZMO_LAYER");
 
-GizmoLayer::GizmoLayer(const std::string &name) : LayerWithID(name) {}
+GizmoLayer::GizmoLayer(const std::string &name) : Layer(name) {}
 
 void GizmoLayer::onImGuiRender()
 {
@@ -35,7 +34,7 @@ void GizmoLayer::onImGuiRender()
         gizmoParams.m_type = operation();
         gizmoParams.m_selectionMode = m_selectionMode;
 
-        auto *command = CommandRegistry::instance().getCommand(HANDLE_GIZMO_COMMAND);
+        auto *command = CommandRegistry::instance().getCommand("HANDLE_GIZMO_COMMAND");
         if (command)
             command->execute(gizmoParams);
     }

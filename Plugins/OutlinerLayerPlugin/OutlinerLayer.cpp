@@ -1,9 +1,9 @@
 #include "OutlinerLayer.h"
 
-static AutoRegisterLayerArgs<OutlinerLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg;
+static AutoRegisterLayerArgs<OutlinerLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg("OUTLINER_LAYER");
 
 OutlinerLayer::OutlinerLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : LayerWithID(name), m_windowLayerBus(windowLayerBus) 
+    : Layer(name), m_windowLayerBus(windowLayerBus) 
     {
     }
 
@@ -63,7 +63,6 @@ void OutlinerLayer::onImGuiRender()
 }
 void OutlinerLayer::update(Observable* observable, const OpParams& iParams)
 {
-    printf("EXECUTING UPDARE\n");
     AddOutlinerNodeCallBackParams& params = dynamic_cast<AddOutlinerNodeCallBackParams&>(const_cast<OpParams&>(iParams));
     params.state = &m_state;
 

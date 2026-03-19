@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class ExportMeshesPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(EXPORT_MESHES_COMMAND, EXPORT_MESHES_CALLBACK);
+        setupPlugin("EXPORT_MESHES_COMMAND", "EXPORT_MESHES_CALLBACK");
     }
     void OnUnload() override 
     {

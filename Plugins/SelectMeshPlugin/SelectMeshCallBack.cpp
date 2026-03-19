@@ -2,7 +2,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
 
-static AutoRegisterCallback<SelectMeshCallBack> reg;
+static AutoRegisterCallback<SelectMeshCallBack> reg("SELECT_MESH_CALLBACK");
 
 void SelectMeshCallBack::execute()
 {

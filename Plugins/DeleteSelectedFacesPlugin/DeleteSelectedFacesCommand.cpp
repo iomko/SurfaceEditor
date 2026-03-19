@@ -9,4 +9,4 @@ void DeleteSelectedFacesCommand::execute()
 void DeleteSelectedFacesCommand::undo()
 {
 }
-static AutoRegister<DeleteSelectedFacesCommand> regDeleteSelectedFaces;
+static AutoRegister<DeleteSelectedFacesCommand> regDeleteSelectedFaces("DELETE_SELECTED_FACES_COMMAND");

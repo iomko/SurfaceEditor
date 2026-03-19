@@ -9,4 +9,4 @@ void FetchSurfaceCommand::execute(const OpenTopoParams &params)
 void FetchSurfaceCommand::undo()
 {
 }
-static AutoRegister<FetchSurfaceCommand> regFetchSurface;
+static AutoRegister<FetchSurfaceCommand> regFetchSurface("FETCH_SURFACE_COMMAND");

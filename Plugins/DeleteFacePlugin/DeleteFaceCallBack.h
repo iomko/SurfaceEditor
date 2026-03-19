@@ -3,9 +3,7 @@
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Params/OperationParams.h"
 
-#include "../../src/Callbacks/CallbackIDs.h"
-
-class DeleteFaceCallBack : public Callback<DELETE_FACE_CALLBACK ,SingleFaceParams>, public Observer
+class DeleteFaceCallBack : public Callback<SingleFaceParams>, public Observer
 {
 public:
 	void execute(const SingleFaceParams& iParams) override;

@@ -2,9 +2,8 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterCallback<HandleGizmoCallBack> registerHandleGizmoCallback;
+static AutoRegisterCallback<HandleGizmoCallBack> registerHandleGizmoCallback("HANDLE_GIZMO_CALLBACK");
 
 HandleGizmoCallBack::HandleGizmoCallBack(){}
 
@@ -96,7 +95,7 @@ void HandleGizmoCallBack::update()
         MoveSelectedMeshesParams meshParams;
         meshParams.transformMatrix = m_realTimeTransform;
 
-        auto* command = CommandRegistry::instance().getCommand(MOVE_SELECTED_MESHES_COMMAND);
+        auto* command = CommandRegistry::instance().getCommand("MOVE_SELECTED_MESHES_COMMAND");
 
         if(command)
             command->execute(meshParams);
@@ -106,7 +105,7 @@ void HandleGizmoCallBack::update()
         MoveSelectedFacesParams faceParams;
         faceParams.moveByVector = m_realTimeTransform[3];
 
-        auto* command = CommandRegistry::instance().getCommand(MOVE_SELECTED_FACES_COMMAND);
+        auto* command = CommandRegistry::instance().getCommand("MOVE_SELECTED_FACES_COMMAND");
         if(command)
         {
             

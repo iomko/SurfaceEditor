@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class MoveVertexPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(MOVE_VERTEX_COMMAND, MOVE_VERTEX_CALLBACK);
+        setupPlugin("MOVE_VERTEX_COMMAND", "MOVE_VERTEX_CALLBACK");
     }
     void OnUnload() override 
     {

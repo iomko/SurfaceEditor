@@ -3,4 +3,4 @@
 
 FaceSelectionTool::FaceSelectionTool(CommandConcept* command)
     : Tool(command) {}
-static AutoRegisterTool<FaceSelectionTool> regFaceSelectionTool;
+static AutoRegisterTool<FaceSelectionTool> regFaceSelectionTool("FACE_SELECTION_TOOL");

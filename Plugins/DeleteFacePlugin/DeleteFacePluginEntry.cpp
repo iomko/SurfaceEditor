@@ -1,13 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 
 class DeleteFacePlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(DELETE_FACE_COMMAND, DELETE_FACE_CALLBACK);
+	    setupPlugin("DELETE_FACE_COMMAND", "DELETE_FACE_CALLBACK");
     }
     void OnUnload() override 
     {

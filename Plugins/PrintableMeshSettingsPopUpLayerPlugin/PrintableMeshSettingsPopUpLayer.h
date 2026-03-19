@@ -3,7 +3,6 @@
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
 #include "../../src/UI/WindowLayerBus.h"
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 
 struct PrintableMeshSettingsPopUpLayerState : LayerState {
@@ -14,8 +13,7 @@ struct PrintableMeshSettingsPopUpLayerState : LayerState {
     Mesh* m_selectedMesh = nullptr;
 };
 
-
-class PrintableMeshSettingsPopUpLayer : public LayerWithID<PRINTABLE_MESH_SETTINGS_POP_UP_LAYER>, public Observable, public Observer {
+class PrintableMeshSettingsPopUpLayer : public Layer, public Observable, public Observer {
 public:
     PrintableMeshSettingsPopUpLayer(const std::string& name, WindowLayerBus& windowLayerBus);
 

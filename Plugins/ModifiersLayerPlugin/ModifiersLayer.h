@@ -4,14 +4,14 @@
 #include "../../src/Core/Layer.h"
 #include "../../src/UI/WindowLayerBus.h"
 #include "../../src/UI/LayerRegistry.h"
-#include "../../src/UI/LayerIDs.h"
 
 struct ModifiersLayerState : public LayerState{
     Mesh* m_selectedMesh = nullptr;
     bool m_isMouseInsideWindow;
 };
 
-class ModifiersLayer : public LayerWithID<MODIFIERS_LAYER>, public Observable, public Observer {
+
+class ModifiersLayer : public Layer, public Observable, public Observer {
 public:
     ModifiersLayer(const std::string& name, WindowLayerBus& windowLayerBus);
 

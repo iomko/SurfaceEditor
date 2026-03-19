@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class AdditionLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class AdditionLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(ADDITION_LAYER, "AdditionLayer", false);
+        setupLayerPlugin("ADDITION_LAYER", "AdditionLayer", false);
     }
     void OnUnload() override 
     {

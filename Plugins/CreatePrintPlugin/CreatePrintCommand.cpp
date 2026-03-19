@@ -10,4 +10,4 @@ void CreatePrintCommand::undo()
 {
 }
 
-static AutoRegister<CreatePrintCommand> regCreatePrint;
+static AutoRegister<CreatePrintCommand> regCreatePrint("CREATE_PRINT_COMMAND");

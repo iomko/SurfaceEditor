@@ -1,9 +1,0 @@
-#pragma once
-
-enum ToolIDS {
-    BRUSH_TOOL = 0,
-    FACE_DESELECTION_TOOL,
-    FACE_SELECTION_TOOL,
-    MESH_DESELECTION_TOOL,
-    MESH_SELECTION_TOOL
-};

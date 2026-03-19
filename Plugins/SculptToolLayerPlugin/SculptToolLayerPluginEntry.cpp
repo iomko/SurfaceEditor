@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class SculptToolLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class SculptToolLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(SCULPT_TOOLS_LAYER, "SculptToolsLayer", false);
+        setupLayerPlugin("SCULPT_TOOLS_LAYER", "SculptToolsLayer", false);
     }
     void OnUnload() override 
     {

@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class OutlinerLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class OutlinerLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(OUTLINER_LAYER, "OutlinerLayer", true);
+        setupLayerPlugin("OUTLINER_LAYER", "OutlinerLayer", true);
     }
     void OnUnload() override 
     {

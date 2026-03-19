@@ -2,7 +2,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
 
-static AutoRegisterCallback<DeselectMeshCallBack> autoRegisterDeselectMeshCallBack;
+static AutoRegisterCallback<DeselectMeshCallBack> autoRegisterDeselectMeshCallBack("DESELECT_MESH_CALLBACK");
 void DeselectMeshCallBack::execute()
 {
     Camera* camera = ViewPortsHolderContext::s_camera;

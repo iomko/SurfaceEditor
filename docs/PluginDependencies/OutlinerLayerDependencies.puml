@@ -6,6 +6,6 @@ package AddNodesToOutlinerLayerPlugin {
 }
 
 class OutlinerLayer
-AddNodesToOutlinerLayerPlugin -[thickness=3]-> OutlinerLayer
+AddNodesToOutlinerLayerPlugin --> OutlinerLayer
 
 @enduml

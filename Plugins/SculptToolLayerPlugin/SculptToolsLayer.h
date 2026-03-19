@@ -2,10 +2,9 @@
 #include <string>
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
-#include "../../src/UI/LayerIDs.h"
 #include "../../src/UI/LayerRegistry.h"
 
-class SculptToolsLayer : public LayerWithID<SCULPT_TOOLS_LAYER>, public Observable, public Observer {
+class SculptToolsLayer : public Layer, public Observable, public Observer {
 public:
 	SculptToolsLayer(const std::string& name);
 

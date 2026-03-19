@@ -1,14 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Tools/ToolIDs.h"
 
 class DeselectMeshPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(DESELECT_MESH_COMMAND, DESELECT_MESH_CALLBACK, MESH_DESELECTION_TOOL);
+	    setupPlugin("DESELECT_MESH_COMMAND", "DESELECT_MESH_CALLBACK", "MESH_DESELECTION_TOOL");
     }
     void OnUnload() override 
     {

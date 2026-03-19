@@ -1,14 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Tools/ToolIDs.h"
 
 class SelectFacePlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(SELECT_FACE_COMMAND, SELECT_FACE_CALLBACK, FACE_SELECTION_TOOL);
+	    setupPlugin("SELECT_FACE_COMMAND", "SELECT_FACE_CALLBACK", "FACE_SELECTION_TOOL");
     }
     void OnUnload() override 
     {

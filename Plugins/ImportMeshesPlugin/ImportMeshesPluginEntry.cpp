@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class ImportMeshesPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(IMPORT_MESHES_COMMAND, IMPORT_MESHES_CALLBACK);
+        setupPlugin("IMPORT_MESHES_COMMAND", "IMPORT_MESHES_CALLBACK");
     }
     void OnUnload() override 
     {

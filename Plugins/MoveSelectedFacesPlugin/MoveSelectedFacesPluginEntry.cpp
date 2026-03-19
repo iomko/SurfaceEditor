@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class MoveSelectedFacesPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(MOVE_SELECTED_FACES_COMMAND, MOVE_SELECTED_FACES_CALLBACK);
+        setupPlugin("MOVE_SELECTED_FACES_COMMAND", "MOVE_SELECTED_FACES_CALLBACK");
     }
     void OnUnload() override 
     {

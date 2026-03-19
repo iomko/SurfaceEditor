@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class ImGuiLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class ImGuiLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(GIZMO_LAYER, "GizmoLayer", false);
+        setupLayerPlugin("GIZMO_LAYER", "GizmoLayer", false);
     }
     void OnUnload() override 
     {

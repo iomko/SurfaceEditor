@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class MoveMeshPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
+        setupPlugin("MOVE_MESH_COMMAND", "MOVE_MESH_CALLBACK");
     }
     void OnUnload() override 
     {

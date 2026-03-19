@@ -1,13 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 
 class DeleteMeshPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(DELETE_MESH_COMMAND, DELETE_MESH_CALLBACK);
+	    setupPlugin("DELETE_MESH_COMMAND", "DELETE_MESH_CALLBACK");
     }
     void OnUnload() override 
     {

@@ -6,9 +6,8 @@
 #include "../../src/Utils/GeometryUtils.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterCallback<MoveSelectedMeshesCallBack> registerMoveSelectedMeshesCallback;
+static AutoRegisterCallback<MoveSelectedMeshesCallBack> registerMoveSelectedMeshesCallback("MOVE_SELECTED_MESHES_CALLBACK");
 
 void MoveSelectedMeshesCallBack::execute(const MoveSelectedMeshesParams &iParams)
 {
@@ -18,7 +17,7 @@ void MoveSelectedMeshesCallBack::execute(const MoveSelectedMeshesParams &iParams
     SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
     const SelectionHolder &selectionHolder = selectionController->getHolder();
     const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
-    auto *moveMeshCommand = CommandRegistry::instance().getCommand(MOVE_MESH_COMMAND);
+    auto *moveMeshCommand = CommandRegistry::instance().getCommand("MOVE_MESH_COMMAND");
 
     if(moveMeshCommand)
     {

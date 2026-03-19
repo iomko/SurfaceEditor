@@ -2,11 +2,10 @@
 #include <functional>
 #include "ImGuizmo.h"
 #include "../../src/Params/OperationParams.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Callbacks/Callback.h"
 
-class HandleGizmoCallBack : public Callback<HANDLE_GIZMO_CALLBACK ,GizmoParams>, public Observer
+class HandleGizmoCallBack : public Callback<GizmoParams>, public Observer
 {
 public:
     HandleGizmoCallBack();

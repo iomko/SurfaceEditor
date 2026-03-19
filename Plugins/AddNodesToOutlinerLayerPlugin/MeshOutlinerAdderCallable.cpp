@@ -6,7 +6,7 @@
 #include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 
-static AutoRegisterCallable<MeshOutlinerAdderCallable> reg;
+static AutoRegisterCallable<MeshOutlinerAdderCallable> reg("MESH_OUTLINER_ADDER_CALLABLE");
 
 void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
 {

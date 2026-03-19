@@ -3,7 +3,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "OBJImporter.h"
 
-static AutoRegisterCallback<ImportMeshesCallback> autoRegister;
+static AutoRegisterCallback<ImportMeshesCallback> autoRegister("IMPORT_MESHES_CALLBACK");
 
 void ImportMeshesCallback::execute(const ImportExportMeshesParams &params)
 {

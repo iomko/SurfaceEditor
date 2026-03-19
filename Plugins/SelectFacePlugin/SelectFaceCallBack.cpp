@@ -2,7 +2,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
 
-static AutoRegisterCallback<SelectFaceCallBack> reg;
+static AutoRegisterCallback<SelectFaceCallBack> reg("SELECT_FACE_CALLBACK");
 
 void SelectFaceCallBack::execute()
 {

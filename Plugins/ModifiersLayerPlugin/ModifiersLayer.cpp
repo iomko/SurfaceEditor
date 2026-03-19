@@ -1,12 +1,11 @@
 #include "ModifiersLayer.h"
 #include "imgui.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<ModifiersLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg;
+static AutoRegisterLayerArgs<ModifiersLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg("MODIFIERS_LAYER");
 
 ModifiersLayer::ModifiersLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : LayerWithID(name)
+    : Layer(name)
 {
     windowLayerBus.on<OutlinerLayerState>([&](OutlinerLayerState &outlinerLayerState)
                                           {
@@ -41,7 +40,7 @@ void ModifiersLayer::onImGuiRender()
     m_state.m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                                      mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
     
-    auto *solidifyMeshesCommand = CommandRegistry::instance().getCommand(SOLIDIFY_MESHES_COMMAND);
+    auto *solidifyMeshesCommand = CommandRegistry::instance().getCommand("SOLIDIFY_MESHES_COMMAND");
     if(solidifyMeshesCommand)
     {
         if (ImGui::Button("Solidify"))
@@ -49,7 +48,7 @@ void ModifiersLayer::onImGuiRender()
             solidifyMeshesCommand->execute();
         }
     }
-    auto *createPrintCommand = CommandRegistry::instance().getCommand(CREATE_PRINT_COMMAND);
+    auto *createPrintCommand = CommandRegistry::instance().getCommand("CREATE_PRINT_COMMAND");
     if(createPrintCommand)
     {
         if (ImGui::Button("CreatePrint"))

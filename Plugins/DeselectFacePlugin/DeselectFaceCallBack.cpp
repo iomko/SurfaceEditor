@@ -4,7 +4,7 @@
 #include "../../src/ViewPortsController.h"
 #include "../../src/Scene/Scene.h"
 
-static AutoRegisterCallback<DeselectFaceCallBack> autoRegisterDeselectFaceCallBack;
+static AutoRegisterCallback<DeselectFaceCallBack> autoRegisterDeselectFaceCallBack("DESELECT_FACE_CALLBACK");
 void DeselectFaceCallBack::execute()
 {
     Camera *camera = ViewPortsHolderContext::s_camera;

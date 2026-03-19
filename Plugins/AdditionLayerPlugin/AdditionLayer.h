@@ -3,8 +3,7 @@
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
 #include "../../src/UI/LayerRegistry.h"
-#include "../../src/UI/LayerIDs.h"
-class AdditionLayer : public LayerWithID<ADDITION_LAYER>, public Observable, public Observer {
+class AdditionLayer : public Layer, public Observable, public Observer {
 public:
     AdditionLayer(const std::string& name);
 

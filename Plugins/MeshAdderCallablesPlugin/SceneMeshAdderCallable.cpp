@@ -1,7 +1,7 @@
 #include "SceneMeshAdderCallable.h"
 #include "../../src/Callables/CallableRegistry.h"
 #include "../../src/ViewPortsController.h"
-static AutoRegisterCallable<SceneMeshAdderCallable> reg;
+static AutoRegisterCallable<SceneMeshAdderCallable> reg("SCENE_MESH_ADDER_CALLABLE");
 
 void SceneMeshAdderCallable::invoke(const MeshParams &input) 
 {

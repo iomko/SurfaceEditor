@@ -6,11 +6,10 @@
 #include "../../src/Core/Layer.h"
 #include <vector>
 #include <cassert>
-
-static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer;
+static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer("DEBUG_LAYER");
 
 DebugLayer::DebugLayer(const std::string &name)
-    : LayerWithID(name)
+    : Layer(name)
 {
 }
 

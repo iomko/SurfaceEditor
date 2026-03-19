@@ -1,5 +1,4 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/UI/LayerIDs.h"
 
 
 class RemovalLayerPlugin : public IPlugin
@@ -7,7 +6,7 @@ class RemovalLayerPlugin : public IPlugin
 public:
     void OnLoad() override 
     {
-        setupLayerPlugin(REMOVAL_LAYER, "RemovalLayer", false);
+        setupLayerPlugin("REMOVAL_LAYER", "RemovalLayer", false);
     }
     void OnUnload() override 
     {

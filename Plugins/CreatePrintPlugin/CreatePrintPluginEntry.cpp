@@ -1,13 +1,11 @@
 #include "../../src/Core/PluginAPI.h"
-#include "../../src/Commands/CommandIDs.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 
 class CreatePrintPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-	    setupPlugin(CREATE_PRINT_COMMAND, CREATE_PRINT_STRUCTURE_CALLBACK);
+	    setupPlugin("CREATE_PRINT_COMMAND", "CREATE_PRINT_STRUCTURE_CALLBACK");
     }
     void OnUnload() override 
     {

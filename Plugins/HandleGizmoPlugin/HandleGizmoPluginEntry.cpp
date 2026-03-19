@@ -1,13 +1,12 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
-#include "../../src/Commands/CommandIDs.h"
 
 class HandleGizmoPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin(HANDLE_GIZMO_COMMAND, HANDLE_GIZMO_CALLBACK);
+        setupPlugin("HANDLE_GIZMO_COMMAND", "HANDLE_GIZMO_CALLBACK");
     }
     void OnUnload() override 
     {

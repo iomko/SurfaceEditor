@@ -1,13 +1,11 @@
 #pragma once
 #include "../../src/Callbacks/Callback.h"
 #include "../../src/Patterns/Observer.h"
-#include "../../src/Commands/CommandRegistry.h"
 #include "../../src/Params/OperationParams.h"
-#include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/UI/WindowLayerBus.h"
 
 template<typename T>
-class AddNewOutlinerNodeCallBack : public Callback<-1, AddNewOutlinerNodeCallBackParams<T>>, public Observable
+class AddNewOutlinerNodeCallBack : public Callback<AddNewOutlinerNodeCallBackParams<T>>, public Observable
 {
 public:
 	void execute(const AddNewOutlinerNodeCallBackParams<T>& iParams) override
