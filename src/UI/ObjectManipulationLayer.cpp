@@ -4,6 +4,7 @@
 #include "../Commands/CommandIDs.h"
 #include "../Tools/ToolRegistry.h"
 #include "LayerRegistry.h"
+#include "GizmoLayer.h"
 
 namespace
 {
@@ -25,7 +26,10 @@ namespace
 static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg;
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
-    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{} {}
+    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
+{
+    ViewPortsHolderContext::s_selectionController->registerUiWindow(this);
+}
 
 void ObjectManipulationLayer::loadPanelImages()
 {
@@ -46,19 +50,40 @@ void ObjectManipulationLayer::loadPanelImages()
     }));
 
     // Move gizmo
-    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {
-        //TODO
-    }, []() {}));
+    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {        
+        GizmoParams params;
+        params.m_type          = ImGuizmo::OPERATION::TRANSLATE;
+        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        
+        GizmoLayer::init(params);
+        VisibilityHandler::show(GIZMO_LAYER);
+    }, []() {
+        VisibilityHandler::hide(GIZMO_LAYER);
+    }));
 
     // Rotate gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button* button) {
-        //TODO
-    }, []() {}));
+        GizmoParams params;
+        params.m_type          = ImGuizmo::OPERATION::ROTATE;
+        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        
+        GizmoLayer::init(params);
+        VisibilityHandler::show(GIZMO_LAYER);
+    }, []() {
+        VisibilityHandler::hide(GIZMO_LAYER);
+    }));
 
     // Scale gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button* button) {
-        //TODO
-    }, []() {}));
+        GizmoParams params;
+        params.m_type          = ImGuizmo::OPERATION::SCALE;
+        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        
+        GizmoLayer::init(params);
+        VisibilityHandler::show(GIZMO_LAYER);
+    }, []() {
+        VisibilityHandler::hide(GIZMO_LAYER);
+    }));
 
     // Add object
     m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath, [](Button* button) {
@@ -98,10 +123,13 @@ void ObjectManipulationLayer::setWindowSizeAndPosition()
     float posX = viewport->WorkPos.x + leftInset;
     float posY = viewport->WorkPos.y + (viewportHeight - windowHeight) * 0.5f;
 
+    m_pos  = ImVec2(posX, posY);
+    m_size = ImVec2(windowWidth, windowHeight);
+
     m_rightBottomCorner = { posX + windowWidth - (m_iconSize / 2), posY + windowHeight - (m_iconSize / 2) };
 
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(m_size, ImGuiCond_Always);
+    ImGui::SetNextWindowPos(m_pos, ImGuiCond_Always);
 
     WindowStyle::checkResolutionRange(OBJECT_MANIPULATION_LAYER, viewportHeight, viewportWidth);
 }
@@ -134,23 +162,19 @@ void ObjectManipulationLayer::onImGuiRender()
 
         if (ImGui::ImageButton(button->name().c_str(), button->textureID(), ImVec2(m_iconSize, m_iconSize)))
         {
-            if (button->isSelected())
+            for (auto& unselectedButton : m_buttons)
             {
-                button->isSelected() = false;
-            }
-            else
-            {
-                for (auto& unselectedButton : m_buttons)
+                if (button != unselectedButton)
                 {
                     unselectedButton->isSelected() = false;
                     unselectedButton->end();
                 }
-
-                button->isSelected() = true;
-                button->execute();
             }
-        }
 
+            button->isSelected() = true;
+            button->execute();
+        }
+        
         ButtonStyle::closeStyling(apppliedColorStyles, appliedVarStyles);
     }
 

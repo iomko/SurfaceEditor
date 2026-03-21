@@ -27,23 +27,27 @@ bool SelectionLayerCallBack::isSelectedByClick(const SelectionLayerParams& param
 
 	//TODO isEdgeSelected
 	//TODO isVertexSelected
-	if (params.m_selectionMode == SelectionLayerParams::SelectionMode::Object && mesh != nullptr)
+	if ((params.m_selectionMode == SelectionLayerParams::SelectionMode::Object && mesh != nullptr) ||
+		(params.m_selectionMode == SelectionLayerParams::SelectionMode::Face && face != nullptr))
 	{
-		toolParams->m_selectedMeshes.push_back(meshFaceHitPair.first.first);
+		toolParams->m_selectedData.push_back(meshFacePair);
 		return true;
 	}
-	else if (params.m_selectionMode == SelectionLayerParams::SelectionMode::Face && face != nullptr)
-	{
-		toolParams->m_selectedFaces.push_back(meshFaceHitPair.first.second);
-		return true;
-	}
-
 	return false;
 }
 
-bool SelectionLayerCallBack::isSelectedByRectangle(const RectanglePos& rectanglePos, const SelectionLayerParams& params, SelectionToolParams* toolParams)
+bool SelectionLayerCallBack::isSelectedByRectangle(const SelectionLayerParams& params, SelectionToolParams* toolParams)
 {
-	return false;
+	Camera* camera = ViewPortsHolderContext::s_camera;
+    Window* window = ViewPortsHolderContext::s_window;
+    Scene* scene   = ViewPortsHolderContext::s_viewPortsController->m_scene;
+
+	toolParams->m_selectedData = SceneUtilities::retDataUnderSelectionRectangle(params.m_rectanglePos, camera, window, scene->m_res);
+	
+	//TODO Edge
+	//TODO Vertex
+
+	return !toolParams->m_selectedData.empty();
 }
 
 void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
@@ -53,11 +57,16 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 	
 	if (isClick(params.m_rectanglePos))
 	{
+		if (ViewPortsHolderContext::s_selectionController->clickedOnUiWindow(params.m_rectanglePos.startPos))
+		{
+			return;
+		}
+
 		select = isSelectedByClick(params, toolParams);
 	}
 	else
 	{
-		select = isSelectedByRectangle(params.m_rectanglePos, params, toolParams);
+		select = isSelectedByRectangle(params, toolParams);
 	}
 	
 	ITool* tool = nullptr;

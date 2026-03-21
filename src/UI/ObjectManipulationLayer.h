@@ -11,9 +11,10 @@
 #include "Components/WindowStyle.h"
 #include "Components/ButtonStyle.h"
 #include "VisibilityHandler.h"
+#include "OverlappingWindow.h"
 
 
-class ObjectManipulationLayer : public LayerWithID<OBJECT_MANIPULATION_LAYER>, public Observable, public IWindow
+class ObjectManipulationLayer : public LayerWithID<OBJECT_MANIPULATION_LAYER>, public Observable, public OverlappingWindow, public IWindow
 {
 public:
     ObjectManipulationLayer(const std::string& name);

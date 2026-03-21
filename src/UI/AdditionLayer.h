@@ -56,9 +56,9 @@ private:
     int m_subdivision = 1;
     float m_size = 1.0f;
 	bool m_automaticSubdivision{};
-	float m_xPos{1.0f};
-	float m_yPos{1.0f};
-	float m_zPos{1.0f};
+	float m_xPos{0.0f};
+	float m_yPos{0.0f};
+	float m_zPos{0.0f};
 
 	static constexpr const auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
 

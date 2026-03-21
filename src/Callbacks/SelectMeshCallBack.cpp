@@ -6,7 +6,9 @@ static AutoRegisterCallback<SelectMeshCallBack> reg;
 
 void SelectMeshCallBack::execute(const SelectionToolParams& iParams)
 {
-    for (auto mesh : iParams.m_selectedMeshes)
+    ViewPortsHolderContext::s_selectionController->clear();
+    
+    for (auto& [mesh, face] : iParams.m_selectedData)
     {
         ViewPortsHolderContext::s_selectionController->registerMesh(mesh);
     }

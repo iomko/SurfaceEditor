@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshSelectionManager.h"
 #include "FaceSelectionManager.h"
+#include "../../UI/OverlappingWindow.h"
 
 class SelectionController
 {
@@ -32,38 +33,19 @@ public:
 		m_meshManager.unregisterMesh(mesh);
 	}
 
-	void clear()
+	void clear();
+
+	void registerUiWindow(OverlappingWindow* uiWindow)
 	{
-		if (!m_holder.faces.empty())
-		{
-			for (auto& [mesh, faces] : m_holder.faces)
-			{
-				mesh->m_selected = false;
-				mesh->m_selectionIndex = -1;
-
-				for (auto& face : faces)
-				{
-					face->m_selected = false;
-					face->m_selectionIndex = -1;
-				}
-			}
-		}
-
-		if (!m_holder.meshes.empty())
-		{
-			for (auto& mesh : m_holder.meshes)
-			{
-				mesh->m_selected = false;
-				mesh->m_selectionIndex = -1;
-			}
-		}
-		
-		m_holder.faces.clear();
-		m_holder.meshes.clear();
+		m_uiWindow.push_back(uiWindow);
 	}
 
+	bool clickedOnUiWindow(const glm::vec2& clickPos);
+
 private:
-	SelectionHolder m_holder;
+	SelectionHolder 	 m_holder;
 	FaceSelectionManager m_faceManager;
 	MeshSelectionManager m_meshManager;
+	
+	std::vector<OverlappingWindow*> m_uiWindow;
 };

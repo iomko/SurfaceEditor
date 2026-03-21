@@ -16,5 +16,5 @@ private:
 
 	bool isSelectedByClick(const SelectionLayerParams& params, SelectionToolParams* toolParams);
 
-	bool isSelectedByRectangle(const RectanglePos& rectanglePos, const SelectionLayerParams& params, SelectionToolParams* toolParams);
+	bool isSelectedByRectangle(const SelectionLayerParams& params, SelectionToolParams* toolParams);
 };

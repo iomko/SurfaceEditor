@@ -20,6 +20,9 @@ public:
     void onImGuiRender() override;
 
 private:
+    void drawSelectionRectangle();
+
+private:
     SelectionLayerParams::SelectionMode m_selectionMode = SelectionLayerParams::SelectionMode::Face;
     SelectionRectangle                  m_selectionRectangle;
     RectanglePos                        m_rectanglePos;

@@ -26,21 +26,10 @@ struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
 };
+
 struct BoxSelectionParams : public OpParams
 {
 	glm::vec2 start_mouse_pos;
-};
-struct GizmoLayerParams : public OpParams
-{
-    enum Type
-    {
-        Move,
-        Rotate,
-		Scale,
-        Disable
-    };
-
-    Type m_type;
 };
 
 struct GizmoParams : public OpParams
@@ -163,8 +152,7 @@ struct BrushToolParams : public OpParams
 
 struct SelectionToolParams : public OpParams
 {
-	std::vector<Mesh*> m_selectedMeshes;
-	std::vector<ExtendedFace*> m_selectedFaces;
+	std::vector<SceneResources::MeshFacePair> m_selectedData;
 };
 
 struct EdgeConnectionsParams : public OpParams 

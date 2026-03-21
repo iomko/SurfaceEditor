@@ -55,6 +55,11 @@ void SelectionLayer::onImGuiRender()
         }
     }
 
+    drawSelectionRectangle();
+}
+
+void SelectionLayer::drawSelectionRectangle()
+{
     const int windowWidth  = ViewPortsHolderContext::s_window->getScreenWidth();
     const int windowHeight = ViewPortsHolderContext::s_window->getScreenHeight();
 
