@@ -1,6 +1,6 @@
 #pragma once
+
 #include "../Scene/Scene.h"
-#include "Structures/PrintableMesh.h"
 #include "ImGuizmo.h"
 
 struct OpParams {

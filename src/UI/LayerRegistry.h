@@ -22,18 +22,18 @@ public:
     }
 
     template <typename LayerT>
-    void registerLayer()
+    void registerLayer(std::string id)
     {
-        m_creators[LayerT::ID] = [](const std::any &) -> std::unique_ptr<Layer>
+        m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
         {
             return std::make_unique<LayerT>();
         };
     }
 
     template <typename LayerT, typename... CtorArgs>
-    void registerLayerWithArgs()
+    void registerLayerWithArgs(std::string id)
     {
-        m_creators[LayerT::ID] = [](const std::any &a) -> std::unique_ptr<Layer>
+        m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
         {
             // musí existovať tuple argumentov
             if (!a.has_value())
@@ -55,7 +55,7 @@ public:
     }
 
     template <typename... Args>
-    Layer *getLayer(int id, Args &&...args)
+    Layer *getLayer(std::string id, Args &&...args)
     {
         auto it = m_instances.find(id);
         if (it != m_instances.end())
@@ -86,20 +86,20 @@ public:
     }
 
 private:
-    std::unordered_map<int, Creator> m_creators;
-    std::unordered_map<int, std::unique_ptr<Layer>> m_instances;
+    std::unordered_map<std::string, Creator> m_creators;
+    std::unordered_map<std::string, std::unique_ptr<Layer>> m_instances;
 };
 
 template <typename LayerT>
 struct AutoRegisterLayer
 {
-    AutoRegisterLayer()
+    AutoRegisterLayer(std::string id)
     {
-        LayerRegistry::instance().registerLayer<LayerT>();
+        LayerRegistry::instance().registerLayer<LayerT>(id);
     }
 };
 template <typename LayerT, typename... CtorArgs>
 struct AutoRegisterLayerArgs
 {
-    AutoRegisterLayerArgs() { LayerRegistry::instance().registerLayerWithArgs<LayerT, CtorArgs...>(); }
+    AutoRegisterLayerArgs(std::string id) { LayerRegistry::instance().registerLayerWithArgs<LayerT, CtorArgs...>(id); }
 };

@@ -15,13 +15,13 @@ public:
     }
 
     template<typename CallableT>
-    void registerCallable() {        
-        m_creators[CallableT::ID] = []() -> std::unique_ptr<CallableConcept> {
+    void registerCallable(std::string id) {        
+        m_creators[id] = []() -> std::unique_ptr<CallableConcept> {
             return std::make_unique<CallableT>();
         };
     }
 
-    CallableConcept* getCallable(int id) {
+    CallableConcept* getCallable(std::string id) {
         auto it = m_instances.find(id);
         if (it != m_instances.end()) {
             return it->second.get();
@@ -43,13 +43,13 @@ public:
     }
 
 private:
-    std::unordered_map<int, Creator> m_creators;
-    std::unordered_map<int, std::unique_ptr<CallableConcept>> m_instances;
+    std::unordered_map<std::string, Creator> m_creators;
+    std::unordered_map<std::string, std::unique_ptr<CallableConcept>> m_instances;
 };
 
 template<typename CallableT>
 struct AutoRegisterCallable {
-    AutoRegisterCallable() {
-        CallableRegistry::instance().registerCallable<CallableT>();
+    AutoRegisterCallable(std::string id) {
+        CallableRegistry::instance().registerCallable<CallableT>(id);
     }
 };

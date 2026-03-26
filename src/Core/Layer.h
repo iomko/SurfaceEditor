@@ -20,15 +20,6 @@ private:
 	std::string m_name;
 };
 
-template<int id>
-class LayerWithID : public Layer
-{
-public:
-	static constexpr int ID = id;
-	LayerWithID(std::string name)
-		: Layer(name) {}
-};
-
 class LayerStack
 {
 public:

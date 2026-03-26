@@ -1,7 +1,8 @@
 #pragma once
 #include <queue>
-#include "Callable.h"
 #include "CallableRegistry.h"
+#include <stdexcept>
+#include <iostream>
 
 template <typename T, typename = void>
 struct has_input_params : std::false_type {};
@@ -38,7 +39,7 @@ public:
 		return newFunctionNode;
 	}
 
-	FunctionNode* initRootByID(int callableID, bool hasInputParams) {
+	FunctionNode* initRootByID(std::string callableID, bool hasInputParams) {
 		m_rootNode = new FunctionNode();
 		m_rootNode->m_function = CallableRegistry::instance().getCallable(callableID);
 
@@ -46,7 +47,7 @@ public:
 		return m_rootNode;
 	}
 
-	FunctionNode* addFuncByID(FunctionNode* parent, int callableID)
+	FunctionNode* addFuncByID(FunctionNode* parent, std::string callableID)
     {
         auto* node = new FunctionNode();
         node->m_function =

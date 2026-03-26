@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <typeinfo>
 #include <typeindex>
-#include "../Renderer/Material.h"
+#include "Material.h"
 
 class MaterialRegistry {
 public:
