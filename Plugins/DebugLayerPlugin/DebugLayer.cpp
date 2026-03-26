@@ -1,9 +1,10 @@
 #include "DebugLayer.h"
 #include "../../src/UI/LayerRegistry.h"
+#include "../../src/Ml/Analyser/AnalyserRegistry.h"
 
-#include "../../src/Ml/Models/TriangleSkewMlModel.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Core/Layer.h"
+#include "../../src/Renderer/MaterialRegistry.h"
 #include <vector>
 #include <cassert>
 static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer("DEBUG_LAYER");
@@ -37,7 +38,7 @@ void DebugLayer::onImGuiRender()
         m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
             mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
-        std::vector<std::pair<std::string, int>> analyserNamesWithId = AnalyserRegistry::instance().getNamesWithId();
+        std::vector<std::pair<std::string, std::string>> analyserNamesWithId = AnalyserRegistry::instance().getNamesWithId();
 
         if (m_selectedAnalyserName.first.empty() && !analyserNamesWithId.empty())
         {

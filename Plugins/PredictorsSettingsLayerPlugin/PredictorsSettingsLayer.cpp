@@ -1,24 +1,23 @@
-#include "DebugLayer.h"
-#include "LayerRegistry.h"
+#include "../../src/UI/LayerRegistry.h"
 
-#include "../ViewPortsController.h"
-#include "../Core/Layer.h"
+#include "../../src/ViewPortsController.h"
+#include "../../src/Core/Layer.h"
 #include <vector>
 #include <cassert>
 
-#include "Callbacks/SplitEdgeCallback.h"
-#include "Renderer/MaterialRegistry.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
-#include "../Ml/Analyser/AnalyserRegistry.h"
-#include "Ml/NeuralNetworkModels/FaceSkewnessModel.h"
+#include "../../src/Renderer/MaterialRegistry.h"
+#include "../../src/Commands/CommandRegistry.h"
+#include "../../src/Commands/CommandIDs.h"
+#include "../../src/Ml/Analyser/AnalyserRegistry.h"
 #include "PredictorsSettingsLayer.h"
 #include <algorithm>
+#include "../../src/Ml/FeatureStrategies/FeatureStrategyRegistry.h"
 
-static AutoRegisterLayerArgs<PredictorsSettingsLayer, std::string> regPredictorsSettingsLayer;
+
+static AutoRegisterLayerArgs<PredictorsSettingsLayer, std::string> reg("PREDICTORS_SETTINGS_LAYER");
 
 PredictorsSettingsLayer::PredictorsSettingsLayer(const std::string &name)
-    : LayerWithID(name)
+    : Layer(name)
 {
 }
 

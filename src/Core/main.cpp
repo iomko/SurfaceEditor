@@ -74,11 +74,11 @@ static void setupLayer(std::string layer_id, Application &app, const std::string
 }
 
 //add all features for now here
-#include "../Ml/FeatureStrategies/FaceAreaFeature.h"
-#include "../Ml/FeatureStrategies/FaceHeightsFeature.h"
-#include "../Ml/FeatureStrategies/FaceInternalAnglesFeature.h"
-#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
-#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
+//#include "../Ml/FeatureStrategies/FaceAreaFeature.h"
+//#include "../Ml/FeatureStrategies/FaceHeightsFeature.h"
+//#include "../Ml/FeatureStrategies/FaceInternalAnglesFeature.h"
+//#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
+//#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
 
 int main()
 {
@@ -128,8 +128,6 @@ int main()
 	//spravit aby sa to natiahlo uz pocas buildenia nieco ako ine veci ze tie so su nakopirovane do hlavneho build adresara
 
 	PluginLoader::LoadPlugins("plugins");
-
-	setupLayer(PREDICTORS_SETTINGS_LAYER, app, "PredictorsLayer");
 
 	glm::mat4 model = glm::mat4(1.0f);
 	// mesh shader

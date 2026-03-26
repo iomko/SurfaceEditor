@@ -24,6 +24,10 @@ public:
 
     template<typename FeatureT>
     void registerFeature() {
+        if (m_entries.contains(FeatureT::ID)) {
+            return;
+        }
+
         m_entries[FeatureT::ID] = {
             []() { return std::make_unique<FeatureT>(); },
             FeatureT::NAME
@@ -31,13 +35,11 @@ public:
     }
 
     FeatureStrategyConcept* getFeature(int id) {
-        // already created
         auto itInstance = m_instances.find(id);
         if (itInstance != m_instances.end()) {
             return itInstance->second.get();
         }
 
-        // create from entry
         auto itEntry = m_entries.find(id);
         if (itEntry != m_entries.end()) {
             auto instance = itEntry->second.creator();
@@ -95,6 +97,6 @@ template<typename FeatureT>
 struct AutoRegisterFeatureStrategy {
     AutoRegisterFeatureStrategy() {
         FeatureStrategyRegistry::instance().registerFeature<FeatureT>();
-        std::cout << "REGISTERED FEATURE STRATEGY: " << FeatureT::NAME << std::endl;
+        //std::cout << "REGISTERED FEATURE STRATEGY: " << FeatureT::NAME << std::endl;
     }
 };

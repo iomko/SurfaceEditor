@@ -1,6 +1,11 @@
 #pragma once
+
 #include <functional>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "Analyser.h"
 
 class AnalyserRegistry {
@@ -18,8 +23,8 @@ public:
     }
 
     template<typename AnalyserT>
-    void registerAnalyser() {
-        m_entries[AnalyserT::ID] = {
+    void registerAnalyser(const std::string& id) {
+        m_entries[id] = {
             []() { return std::make_unique<AnalyserT>(); },
             AnalyserT::NAME
         };
@@ -27,6 +32,7 @@ public:
 
     std::vector<Predictor*> getPredictors() {
         std::vector<Predictor*> predictors;
+
         for (const auto& [id, instance] : m_instances) {
             auto* predictor = dynamic_cast<Predictor*>(instance.get());
             if (predictor) {
@@ -37,7 +43,7 @@ public:
         return predictors;
     }
 
-    Analyser* getAnalyser(int id) {
+    Analyser* getAnalyser(const std::string& id) {
         auto itInstance = m_instances.find(id);
         if (itInstance != m_instances.end()) {
             return itInstance->second.get();
@@ -54,23 +60,24 @@ public:
         return nullptr;
     }
 
-    std::vector<std::pair<std::string, int>> getNamesWithId() const {
-        std::vector<std::pair<std::string, int>> names;
+    std::vector<std::pair<std::string, std::string>> getNamesWithId() const {
+        std::vector<std::pair<std::string, std::string>> names;
+
         for (const auto& [id, entry] : m_entries) {
             names.emplace_back(entry.name, id);
         }
+
         return names;
     }
 
 private:
-    std::unordered_map<int, Entry> m_entries;
-    std::unordered_map<int, std::unique_ptr<Analyser>> m_instances;
+    std::unordered_map<std::string, Entry> m_entries;
+    std::unordered_map<std::string, std::unique_ptr<Analyser>> m_instances;
 };
 
 template<typename AnalyserT>
 struct AutoRegisterAnalyser {
-    AutoRegisterAnalyser() {
-        AnalyserRegistry::instance().registerAnalyser<AnalyserT>();
-        std::cout << "REGISTERED ANALYSER" << AnalyserT::NAME << std::endl;
+    AutoRegisterAnalyser(const std::string& id) {
+        AnalyserRegistry::instance().registerAnalyser<AnalyserT>(id);
     }
 };

@@ -1,16 +1,16 @@
-#include "SplitEdgeCallback.h"
-#include "CallbackRegister.h"
+#include "SplitEdgeCallBack.h"
+#include "../../src/Callbacks/CallbackRegister.h"
 
-#include "../Callbacks/Callback.h"
-#include "../Patterns/Observer.h"
-#include "ViewPortsController.h"
-#include "Renderer/MaterialRegistry.h"
+#include "../../src/Callbacks/Callback.h"
+#include "../../src/Patterns/Observer.h"
+#include "../../src/ViewPortsController.h"
+#include "../../src/Renderer/MaterialRegistry.h"
 
-static AutoRegisterCallback<SplitEdgeCallback> autoRegisterSplitEdgeCallback;
+static AutoRegisterCallback<SplitEdgeCallBack> registerCallback("SPLIT_EDGE_CALLBACK");
 
-SplitEdgeCallback::SplitEdgeCallback() {}
+SplitEdgeCallBack::SplitEdgeCallBack() {}
 
-void SplitEdgeCallback::execute(const SplitEdgeParams& params) {
+void SplitEdgeCallBack::execute(const SplitEdgeParams& params) {
 
     Mesh* mesh = params.mesh;
     ExtendedEdge* edge = params.edge;
@@ -59,7 +59,7 @@ void SplitEdgeCallback::execute(const SplitEdgeParams& params) {
     */
 }
 
-void SplitEdgeCallback::updateEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
+void SplitEdgeCallBack::updateEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
 
     Material* defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
 
@@ -76,7 +76,7 @@ void SplitEdgeCallback::updateEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
 
 }
 
-void SplitEdgeCallback::createEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
+void SplitEdgeCallBack::createEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
 
     Material* defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
 
@@ -105,7 +105,7 @@ void SplitEdgeCallback::createEdgeVao(Mesh *mesh, ExtendedEdge *edge) {
 
 }
 
-void SplitEdgeCallback::updateFaceVao(Mesh *mesh, ExtendedFace *face) {
+void SplitEdgeCallBack::updateFaceVao(Mesh *mesh, ExtendedFace *face) {
 
     Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
@@ -132,7 +132,7 @@ void SplitEdgeCallback::updateFaceVao(Mesh *mesh, ExtendedFace *face) {
 
 }
 
-void SplitEdgeCallback::createFaceVao(Mesh *mesh, ExtendedFace *face) {
+void SplitEdgeCallBack::createFaceVao(Mesh *mesh, ExtendedFace *face) {
 
     Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 

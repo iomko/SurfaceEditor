@@ -1,12 +1,11 @@
 #pragma once
 #include <string>
 #include "imgui.h"
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "LayerIDs.h"
-#include "../Ml/Analyser/Analyser.h"
+#include "../../src/Patterns/Observer.h"
+#include "../../src/Core/Layer.h"
+#include "../../src/Ml/Analyser/Analyser.h"
 
-class PredictorsSettingsLayer : public LayerWithID<PREDICTORS_SETTINGS_LAYER>, public Observable, public Observer {
+class PredictorsSettingsLayer : public Layer, public Observable, public Observer {
 public:
     PredictorsSettingsLayer(const std::string& name);
     void onEvent(Event& event) override;

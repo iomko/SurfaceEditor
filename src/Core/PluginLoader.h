@@ -48,6 +48,8 @@ public:
         printf("Directory: %s \n", directory.c_str());
         std::vector<LoadedPlugin> plugins;
 
+        std::cout << "Toto je to directory: " << directory << std::endl;
+
         for (auto &file : std::filesystem::recursive_directory_iterator(directory))
         {
             if (file.path().extension() == ".so")

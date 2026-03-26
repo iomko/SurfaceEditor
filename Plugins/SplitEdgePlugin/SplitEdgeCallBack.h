@@ -1,15 +1,12 @@
 #pragma once
-#include "../Params/OperationParams.h"
-#include "Callback.h"
-#include "../Patterns/Observer.h"
+#include "../../src/Params/OperationParams.h"
+#include "../../src/Callbacks/Callback.h"
+#include "../../src/Patterns/Observer.h"
 
-#include "CallbackIDs.h"
-
-
-class SplitEdgeCallback : public Callback<SPLIT_EDGE_CALLBACK, SplitEdgeParams>, public Observer
+class SplitEdgeCallBack : public Callback<SplitEdgeParams>, public Observer
 {
 public:
-    SplitEdgeCallback();
+    SplitEdgeCallBack();
 
     void execute(const SplitEdgeParams& params) override;
 private:
