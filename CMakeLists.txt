@@ -145,7 +145,9 @@ add_executable(SurfaceEditor ${SRC_FILES}
         src/Callbacks/SplitEdgeCallback.h
         src/Callbacks/SplitEdgeCallback.cpp
         src/Commands/SplitEdgeCommand.h
-        src/Commands/SplitEdgeCommand.cpp)
+        src/Commands/SplitEdgeCommand.cpp
+        src/UI/PredictorsSettingsLayer.h
+        src/UI/PredictorsSettingsLayer.cpp)
 
 add_dependencies(SurfaceEditor libtorch_ep)
 
@@ -158,27 +160,38 @@ endif()
 
 add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
 if(WIN32)
-  set_property(TARGET Torch::Torch PROPERTY
-    INTERFACE_LINK_LIBRARIES
-    "${LIBTORCH_LIBDIR}/torch.lib;${LIBTORCH_LIBDIR}/torch_cpu.lib;${LIBTORCH_LIBDIR}/c10.lib"
-  )
+    set_property(TARGET Torch::Torch PROPERTY
+            INTERFACE_LINK_LIBRARIES
+            "${LIBTORCH_LIBDIR}/torch.lib;${LIBTORCH_LIBDIR}/torch_cpu.lib;${LIBTORCH_LIBDIR}/c10.lib"
+    )
 else()
-  set_property(TARGET Torch::Torch PROPERTY
-    INTERFACE_LINK_LIBRARIES
-    "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
-  )
+    set_property(TARGET Torch::Torch PROPERTY
+            INTERFACE_LINK_LIBRARIES
+            "${LIBTORCH_LIBDIR}/libtorch.so;${LIBTORCH_LIBDIR}/libtorch_cpu.so;${LIBTORCH_LIBDIR}/libc10.so"
+    )
 endif()
 
-target_include_directories(Torch::Torch INTERFACE
-  "${LIBTORCH_ROOT}/include"
+target_link_libraries(SurfaceEditor PRIVATE
+        glad_core
+        glfw
+        OpenGL::GL
+        glm::glm
+        ImGui
+        ImGuizmo
+        CURL::libcurl
+        Eigen3::Eigen
+        TIFF::TIFF
+        TrianglePP
+        Torch::Torch
 )
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP Torch::Torch)
 
 if(UNIX)
     target_link_libraries(SurfaceEditor PRIVATE X11::X11)
 endif()
 
 target_include_directories(SurfaceEditor PRIVATE
-    "${PROJECT_SOURCE_DIR}/src"
-    ${ImGuizmo_SOURCE_DIR}
+        "${PROJECT_SOURCE_DIR}/src"
+        ${ImGuizmo_SOURCE_DIR}
+        "${LIBTORCH_ROOT}/include"
+        "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )

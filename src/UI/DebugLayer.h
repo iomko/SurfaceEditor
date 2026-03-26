@@ -4,6 +4,7 @@
 #include "../Patterns/Observer.h"
 #include "../Core/Layer.h"
 #include "LayerIDs.h"
+#include "../Ml/Analyser/Analyser.h"
 
 class DebugLayer : public LayerWithID<DEBUG_LAYER>, public Observable, public Observer {
 public:
@@ -22,4 +23,6 @@ private:
 
     bool m_skewCheckboxState = false;
 	bool m_isMouseInsideWindow;
+
+	std::pair<std::string, int> m_selectedAnalyserName;
 };

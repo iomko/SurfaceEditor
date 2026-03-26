@@ -1,7 +1,6 @@
 #include "DebugLayer.h"
 #include "LayerRegistry.h"
 
-#include "../Ml/Models/TriangleSkewMlModel.h"
 #include "../ViewPortsController.h"
 #include "../Core/Layer.h"
 #include <vector>
@@ -11,7 +10,8 @@
 #include "Renderer/MaterialRegistry.h"
 #include "../Commands/CommandRegistry.h"
 #include "../Commands/CommandIDs.h"
-#include "Ml/Models/NeuralNetworkModel.h"
+#include "../Ml/Analyser/AnalyserRegistry.h"
+#include "Ml/NeuralNetworkModels/FaceSkewnessModel.h"
 
 static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer;
 
@@ -44,6 +44,64 @@ void DebugLayer::onImGuiRender()
         m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
             mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
+        std::vector<std::pair<std::string, int>> analyserNamesWithId = AnalyserRegistry::instance().getNamesWithId();
+
+        if (m_selectedAnalyserName.first.empty() && !analyserNamesWithId.empty())
+        {
+            m_selectedAnalyserName = analyserNamesWithId.front();
+        }
+
+        ImGui::Text("Neural network model:");
+        if (ImGui::BeginCombo("##ModelDropdown", m_selectedAnalyserName.first.empty() ? "None" : m_selectedAnalyserName.first.c_str()))
+        {
+            for (auto& [modelName, modelId] : analyserNamesWithId)
+            {
+                bool isSelected = (m_selectedAnalyserName.first == modelName);
+
+                if (ImGui::Selectable(modelName.c_str(), isSelected))
+                {
+                    m_selectedAnalyserName.first = modelName;
+                    m_selectedAnalyserName.second = modelId;
+                }
+
+                if (isSelected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+
+            ImGui::EndCombo();
+        }
+
+        auto* selectedAnalyser =  AnalyserRegistry::instance().getAnalyser(m_selectedAnalyserName.second);
+
+        if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
+
+            if (ImGui::Button("Predict")) {
+                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+                const SelectionHolder& selectionHolder = selectionController->getHolder();
+                const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+
+                for (Mesh* mesh : selectedMeshes) {
+                    predictor->predict(mesh);
+                }
+            }
+
+        } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
+
+            if (ImGui::Button("Process")) {
+                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+                const SelectionHolder& selectionHolder = selectionController->getHolder();
+                const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+
+                for (Mesh* mesh : selectedMeshes) {
+                    processor->process(mesh);
+                }
+            }
+
+        }
+
+        /*
 
         if(ImGui::Button("Recalculate")) {
 
@@ -55,49 +113,15 @@ void DebugLayer::onImGuiRender()
             }
 
             if(m_skewCheckboxState) {
-                //TriangleSkewModel triangleSkewModel;
-                //triangleSkewModel.loadModel();
-                FaceSkewnessModel faceSkewnessModel;
 
-                Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-                for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
+                auto* faceSkewnessAnalyser = AnalyserRegistry::instance().getAnalyser(FACE_SKEWNESS_ANALYSER);
+                if(faceSkewnessAnalyser)
+                {
+                    Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+                    for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
 
-                    std::vector<float> probs = faceSkewnessModel.predict(mesh);
-
-                    for (size_t i = 0; i < probs.size(); i++)
-                    {
-                        if (probs[i] > 0.995f)
-                        {
-                            ExtendedFace* face = mesh->m_halfEdgeStructure->m_faces[i];
-                            mesh->m_halfEdgeStructure->m_faces[i]->m_isSkewed = true;
-
-                            std::vector<FaceTriangleIndex>& triangleIndices = face->faceTriangleIndices;
-
-                            FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
-                            FaceTriangle& faceTriangle = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
-
-                            if(auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
-
-                                TriangleBufferStorage& triangleBufferStorage = opt->get();
-                                std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
-
-
-                                int faceIndexInVao = faceTriangle.indexInVAO;
-                                for (int i = faceIndexInVao; i < faceIndexInVao + 3; ++i)
-                                {
-                                    triangleBufferVertices.at(i).isSkewed = 1.0f;
-                                }
-                            }
-
-                        }
+                        //std::vector<float> probs = faceSkewnessAnalyser->predict(mesh);
                     }
-
-                    for(auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-                        TriangleBufferStorage& triangleBufferStorage = it->second;
-                        triangleBufferStorage.update();
-                    }
-
-                    updateFacesVaoData(mesh);
                 }
             }
 
@@ -108,8 +132,6 @@ void DebugLayer::onImGuiRender()
 
         if (ImGui::Button("Repair")) {
 
-            TriangleSkewModel triangleSkewModel;
-            triangleSkewModel.loadModel();
             Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
             //musime si najskor zobrat vsetky trojuholniky, ktore boli cervene/skewed
@@ -185,7 +207,6 @@ void DebugLayer::onImGuiRender()
                         }
                     }
 
-                    triangleSkewModel.run(*mesh);
                 }
 
                 unhighlightAllFaces(mesh);
@@ -194,6 +215,8 @@ void DebugLayer::onImGuiRender()
             }
 
         }
+
+        */
 
         ImGui::End();
 }
