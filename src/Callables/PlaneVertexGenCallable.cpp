@@ -39,6 +39,9 @@ void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output
 
     // get proper material
     Mesh *mesh = new Mesh(planeIndices, planeVertices);
-
+    mesh->m_transform[3].x = position.x;
+    mesh->m_transform[3].y = position.y;
+    mesh->m_transform[3].z = position.z;
+    
     output.m_mesh = mesh;
 }

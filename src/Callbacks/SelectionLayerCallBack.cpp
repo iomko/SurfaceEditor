@@ -27,8 +27,8 @@ bool SelectionLayerCallBack::isSelectedByClick(const SelectionLayerParams& param
 
 	//TODO isEdgeSelected
 	//TODO isVertexSelected
-	if ((params.m_selectionMode == SelectionLayerParams::SelectionMode::Object && mesh != nullptr) ||
-		(params.m_selectionMode == SelectionLayerParams::SelectionMode::Face && face != nullptr))
+	if ((m_selectionMode == SelectionMode::MESH && mesh != nullptr) ||
+		(m_selectionMode == SelectionMode::FACE && face != nullptr))
 	{
 		toolParams->m_selectedData.push_back(meshFacePair);
 		return true;
@@ -52,12 +52,14 @@ bool SelectionLayerCallBack::isSelectedByRectangle(const SelectionLayerParams& p
 
 void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 {
+	m_selectionMode = ViewPortsHolderContext::s_selectionController->selectionMode();
+	
 	SelectionToolParams* toolParams = new SelectionToolParams();
 	bool select{};
 	
 	if (isClick(params.m_rectanglePos))
 	{
-		if (ViewPortsHolderContext::s_selectionController->clickedOnUiWindow(params.m_rectanglePos.startPos))
+		if (ViewPortsHolderContext::s_uiLayerController->clickedOnUiWindow(params.m_rectanglePos.startPos))
 		{
 			return;
 		}
@@ -71,21 +73,21 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 	
 	ITool* tool = nullptr;
 
-	switch (params.m_selectionMode)
+	switch (m_selectionMode)
 	{
-		case SelectionLayerParams::SelectionMode::Object:
+		case SelectionMode::MESH:
 			tool = select ? ToolRegistry::instance().getTool(MESH_SELECTION_TOOL)
 						  : ToolRegistry::instance().getTool(MESH_DESELECTION_TOOL);
 			break;
-		case SelectionLayerParams::SelectionMode::Face:
+		case SelectionMode::FACE:
 			// selectionTool = select ? ToolRegistry::instance().getTool(FACE_SELECTION_TOOL)
 			// 					   : ToolRegistry::instance().getTool(FACE_DESELECTION_TOOL);
 			//TODO
 			break;
-		case SelectionLayerParams::SelectionMode::Edge:
+		case SelectionMode::EDGE:
 			//TODO
 			break;
-		case SelectionLayerParams::SelectionMode::Vertex:
+		case SelectionMode::VERTEX:
 			//TODO
 			break;
 		default:
@@ -96,13 +98,19 @@ void SelectionLayerCallBack::execute(const SelectionLayerParams& params)
 	{
 		return;
 	}
-	tool->getInteractionHandler()->onUpdate(*toolParams);
-
 	ViewPortsHolderContext::s_viewPortsController->m_currentTool = tool;
 
 	if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
 	{
 		delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+		ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
 	}
-	ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = toolParams;
+	if (select)
+	{
+		ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = toolParams;
+	}
+	else
+	{
+		delete toolParams;
+	}
 }

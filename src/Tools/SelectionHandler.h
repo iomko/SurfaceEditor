@@ -11,7 +11,7 @@ public:
 
 	void onBegin(const SelectionToolParams& iParams) override
 	{
-		// this->getCommand()->execute(iParams);
+		//
 	}
 	void onUpdate(const SelectionToolParams& iParams) override
 	{

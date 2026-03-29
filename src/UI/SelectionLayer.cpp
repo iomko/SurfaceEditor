@@ -9,11 +9,6 @@ SelectionLayer::SelectionLayer(const std::string &name)
     m_selectionRectangle.create();
 }
 
-SelectionLayerParams::SelectionMode SelectionLayer::getSelectionMode() const
-{
-    return m_selectionMode;
-}
-
 void SelectionLayer::onImGuiRender()
 {
     if (!VisibilityHandler::isVisible(SELECTION_LAYER))
@@ -34,7 +29,6 @@ void SelectionLayer::onImGuiRender()
         m_eventHandled = true;
     
         SelectionLayerParams toolBarParams;
-        toolBarParams.m_selectionMode = SelectionLayerParams::SelectionMode::Object; //m_selectionMode;
         toolBarParams.m_rectanglePos  = m_rectanglePos;
         notifyObservers(toolBarParams);
     }

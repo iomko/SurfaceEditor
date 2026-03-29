@@ -2,21 +2,20 @@
 #include "InteractionHandler.h"
 
 template<typename DeselectCommandT>
-class DeselectionHandler : public InteractionHandler<DeselectCommandT, SelectionToolParams>
+class DeselectionHandler : public InteractionHandler<DeselectCommandT>
 {
 public:
 	DeselectionHandler(DeselectCommandT* command)
-		: InteractionHandler<DeselectCommandT, SelectionToolParams>(command) {}
+		: InteractionHandler<DeselectCommandT>(command) {}
 
-	void onBegin(const SelectionToolParams& iParams) override
+	void onBegin() override
 	{
-		// this->getCommand()->execute(iParams);
 	}
 
-	void onUpdate(const SelectionToolParams& iParams) override
+	void onUpdate() override
 	{
-		this->getCommand()->execute(iParams);
+		this->getCommand()->execute();
 	}
 	
-	void onEnd(const SelectionToolParams& iParams) override {}
+	void onEnd() override {}
 };

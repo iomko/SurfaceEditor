@@ -30,9 +30,35 @@ public:
 	OpParams* m_currentToolParams = nullptr;
 };
 
+class ViewPortsUILayerController
+{
+public:
+	void registerUiWindow(OverlappingWindow* uiWindow)
+	{
+		m_uiWindow.push_back(uiWindow);
+	}
+
+	bool clickedOnUiWindow(const glm::vec2& clickPos)
+	{
+		for (auto& window : m_uiWindow)
+		{
+			if (window->clickedOnWindow(clickPos))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+private:
+	std::vector<OverlappingWindow*> m_uiWindow;
+};
+
 class ViewPortsHolderContext
 {
 public:
+	static inline std::unique_ptr<ViewPortsUILayerController> s_uiLayerController = std::make_unique<ViewPortsUILayerController>();
 	static inline ViewPortsController* s_viewPortsController = nullptr;
 	static inline SelectionController* s_selectionController = nullptr;
 	static inline Camera* s_camera = nullptr;

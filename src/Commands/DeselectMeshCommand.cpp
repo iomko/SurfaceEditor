@@ -1,9 +1,9 @@
 #include "DeselectMeshCommand.h"
 #include "CommandRegistry.h"
 
-void DeselectMeshCommand::execute(const SelectionToolParams& iParams)
+void DeselectMeshCommand::execute()
 {
-    notifyObservers(iParams);
+    notifyObservers();
 }
 
 void DeselectMeshCommand::undo()

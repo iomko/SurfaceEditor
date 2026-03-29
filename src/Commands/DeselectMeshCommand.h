@@ -3,9 +3,9 @@
 #include "../Patterns/Observer.h"
 #include "CommandIDs.h"
 
-class DeselectMeshCommand : public Observable, public Command<DESELECT_MESH_COMMAND, SelectionToolParams> {
+class DeselectMeshCommand : public Observable, public Command<DESELECT_MESH_COMMAND> {
 public:
-	virtual void execute(const SelectionToolParams& iParams) override;
+	virtual void execute() override;
 
 	void undo() override;
 };

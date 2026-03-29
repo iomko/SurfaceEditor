@@ -11,5 +11,6 @@ void SelectMeshCallBack::execute(const SelectionToolParams& iParams)
     for (auto& [mesh, face] : iParams.m_selectedData)
     {
         ViewPortsHolderContext::s_selectionController->registerMesh(mesh);
+        ViewPortsHolderContext::s_selectionController->setNewSelectionEvent(true);
     }
 }

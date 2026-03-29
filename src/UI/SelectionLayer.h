@@ -15,15 +15,12 @@ class SelectionLayer : public LayerWithID<SELECTION_LAYER>, public Observable {
 public:
     SelectionLayer(const std::string& name);
 
-    SelectionLayerParams::SelectionMode getSelectionMode() const;
-
     void onImGuiRender() override;
 
 private:
     void drawSelectionRectangle();
 
 private:
-    SelectionLayerParams::SelectionMode m_selectionMode = SelectionLayerParams::SelectionMode::Face;
     SelectionRectangle                  m_selectionRectangle;
     RectanglePos                        m_rectanglePos;
     bool                                m_eventHandled;

@@ -1,16 +1,21 @@
 #pragma once
 #include <functional>
-#include "ImGuizmo.h"
-#include "../Params/OperationParams.h"
+#include <ImGuizmo.h>
 #include "CallbackIDs.h"
-#include "../Patterns/Observer.h"
 #include "Callback.h"
+#include "../Params/OperationParams.h"
+#include "../Patterns/Observer.h"
+
+enum class SelectionMode;
 
 class HandleGizmoCallBack : public Callback<HANDLE_GIZMO_CALLBACK ,GizmoParams>, public Observer
 {
 public:
     HandleGizmoCallBack();
 
+	void execute(const GizmoParams& iParams) override;
+
+private:
     glm::vec3 calcFaceMiddlePos(ExtendedFace* face);
 
     template<typename T>
@@ -30,21 +35,18 @@ public:
         m_gizmoTransform[3] = glm::vec4(center, 1.0f);
     }
 
-    void chooseSelectionMode(const GizmoParams& iParams, bool& end);
+    // void chooseSelectionMode(const GizmoParams& iParams, bool& end);
+
+    void init(bool& earlyReturn);
 
     void update();
 
     void handleGizmo(ImGuizmo::OPERATION operation, std::function<void()> executeRealTime);
-
-	void execute(const GizmoParams& iParams) override;
 
 private:
     glm::mat4 m_realTimeTransform = glm::mat4(1.0f);
     glm::mat4 m_gizmoTransform = glm::mat4(1.0f);
     glm::mat4 m_transform = glm::mat4(1.0f);
     
-    int m_lastSelectedMeshesCount = 0;
-    int m_lastSelectedFacesCount = 0;
-
-    GizmoParams::SelectionMode m_selectionMode;
+    SelectionMode m_selectionMode;
 };

@@ -3,6 +3,14 @@
 #include "FaceSelectionManager.h"
 #include "../../UI/OverlappingWindow.h"
 
+enum class SelectionMode
+{
+	MESH,
+	FACE,
+	EDGE,
+	VERTEX
+};
+
 class SelectionController
 {
 public:
@@ -35,17 +43,30 @@ public:
 
 	void clear();
 
-	void registerUiWindow(OverlappingWindow* uiWindow)
+	const SelectionMode& selectionMode() const
 	{
-		m_uiWindow.push_back(uiWindow);
+		return m_selectionMode;
 	}
 
-	bool clickedOnUiWindow(const glm::vec2& clickPos);
+	void setSelectionMode(const SelectionMode& selectionMode)
+	{
+		m_selectionMode = selectionMode;
+	}
+
+	const bool& newSelectionEvent() const
+	{
+		return m_newSelectionEvent;
+	}
+
+	void setNewSelectionEvent(bool isNewSelectionEvent)
+	{
+		m_newSelectionEvent = isNewSelectionEvent;
+	}
 
 private:
 	SelectionHolder 	 m_holder;
 	FaceSelectionManager m_faceManager;
 	MeshSelectionManager m_meshManager;
-	
-	std::vector<OverlappingWindow*> m_uiWindow;
+	SelectionMode		 m_selectionMode = SelectionMode::MESH;
+	bool				 m_newSelectionEvent;
 };

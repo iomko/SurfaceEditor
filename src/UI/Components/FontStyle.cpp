@@ -4,9 +4,9 @@ void FontStyle::init(ImGuiIO& io)
 {
     io.Fonts->AddFontDefault();
 
-    s_regular   = io.Fonts->AddFontFromFileTTF("../src/UI/Fonts/OpenSans-Regular.ttf", 16.0f);
-    s_bold      = io.Fonts->AddFontFromFileTTF("../src/UI/Fonts/OpenSans_Condensed-Bold.ttf", 20.0f);
-    s_extraBold = io.Fonts->AddFontFromFileTTF("../src/UI/Fonts/OpenSans_Condensed-ExtraBold.ttf", 20.0f);
+    s_regular   = io.Fonts->AddFontFromFileTTF("../fonts/OpenSans-Regular.ttf", 16.0f);
+    s_bold      = io.Fonts->AddFontFromFileTTF("../fonts/OpenSans_Condensed-Bold.ttf", 20.0f);
+    s_extraBold = io.Fonts->AddFontFromFileTTF("../fonts/OpenSans_Condensed-ExtraBold.ttf", 20.0f);
 }
 
 void FontStyle::headliner()

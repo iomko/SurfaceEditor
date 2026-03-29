@@ -28,7 +28,7 @@ static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg;
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
 {
-    ViewPortsHolderContext::s_selectionController->registerUiWindow(this);
+    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
 }
 
 void ObjectManipulationLayer::loadPanelImages()
@@ -52,8 +52,7 @@ void ObjectManipulationLayer::loadPanelImages()
     // Move gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {        
         GizmoParams params;
-        params.m_type          = ImGuizmo::OPERATION::TRANSLATE;
-        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        params.m_type = ImGuizmo::OPERATION::TRANSLATE;
         
         GizmoLayer::init(params);
         VisibilityHandler::show(GIZMO_LAYER);
@@ -64,8 +63,7 @@ void ObjectManipulationLayer::loadPanelImages()
     // Rotate gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button* button) {
         GizmoParams params;
-        params.m_type          = ImGuizmo::OPERATION::ROTATE;
-        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        params.m_type = ImGuizmo::OPERATION::ROTATE;
         
         GizmoLayer::init(params);
         VisibilityHandler::show(GIZMO_LAYER);
@@ -76,8 +74,7 @@ void ObjectManipulationLayer::loadPanelImages()
     // Scale gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button* button) {
         GizmoParams params;
-        params.m_type          = ImGuizmo::OPERATION::SCALE;
-        params.m_selectionMode = GizmoParams::SelectionMode::Mesh; //TODO
+        params.m_type = ImGuizmo::OPERATION::SCALE;
         
         GizmoLayer::init(params);
         VisibilityHandler::show(GIZMO_LAYER);

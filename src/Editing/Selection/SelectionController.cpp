@@ -29,16 +29,3 @@ void SelectionController::clear()
 		m_holder.faces.clear();
 		m_holder.meshes.clear();
 }
-
-bool SelectionController::clickedOnUiWindow(const glm::vec2& clickPos)
-{
-    for (auto& window : m_uiWindow)
-    {
-        if (window->clickedOnWindow(clickPos))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}

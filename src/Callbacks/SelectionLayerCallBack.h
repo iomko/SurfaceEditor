@@ -6,6 +6,8 @@
 #include "Callback.h"
 #include "../UI/SelectionRectangle.h"
 
+enum class SelectionMode;
+
 class SelectionLayerCallBack : public Callback<SELECTION_LAYER_CALLBACK, SelectionLayerParams>, public Observer
 {
 public:
@@ -17,4 +19,7 @@ private:
 	bool isSelectedByClick(const SelectionLayerParams& params, SelectionToolParams* toolParams);
 
 	bool isSelectedByRectangle(const SelectionLayerParams& params, SelectionToolParams* toolParams);
+
+private:
+	SelectionMode m_selectionMode;
 };

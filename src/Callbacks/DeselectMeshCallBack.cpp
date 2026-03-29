@@ -4,7 +4,8 @@
 
 static AutoRegisterCallback<DeselectMeshCallBack> autoRegisterDeselectMeshCallBack;
 
-void DeselectMeshCallBack::execute(const SelectionToolParams& iParams)
+void DeselectMeshCallBack::execute()
 {
     ViewPortsHolderContext::s_selectionController->clear();
+    ViewPortsHolderContext::s_selectionController->setNewSelectionEvent(true);
 }

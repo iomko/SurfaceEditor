@@ -11,14 +11,6 @@ struct OpParams {
 struct SelectionLayerParams : public OpParams
 {
 public:
-	enum SelectionMode {
-		Face,
-		Edge,
-		Vertex,
-		Object
-	};
-
-	SelectionMode m_selectionMode;
 	RectanglePos  m_rectanglePos;
 };
 
@@ -34,13 +26,6 @@ struct BoxSelectionParams : public OpParams
 
 struct GizmoParams : public OpParams
 {
-	enum SelectionMode
-	{
-		Mesh,
-		Face
-	};
-
-	SelectionMode m_selectionMode;
 	ImGuizmo::OPERATION m_type;
 };
 
