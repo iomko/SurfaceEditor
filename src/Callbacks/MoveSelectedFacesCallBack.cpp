@@ -16,7 +16,7 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
     glm::vec3 moveByVector = iParams.moveByVector;
 
     // Get selected meshes
-    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
+    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController.get();
     const SelectionHolder &selectionHolder = selectionController->getHolder();
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
     const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;

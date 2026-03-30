@@ -25,7 +25,7 @@ glm::vec3 HandleGizmoCallBack::calcFaceMiddlePos(ExtendedFace *face)
 void HandleGizmoCallBack::init(bool& earlyReturn)
 {
     earlyReturn = false;
-    auto selectionController    = ViewPortsHolderContext::s_selectionController;
+    auto selectionController    = ViewPortsHolderContext::s_selectionController.get();
     const auto& selectionHolder = selectionController->getHolder();
 
     if (m_selectionMode == SelectionMode::MESH)

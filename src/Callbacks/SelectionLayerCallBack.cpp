@@ -16,7 +16,7 @@ bool SelectionLayerCallBack::isClick(const RectanglePos& rectanglePos)
 
 bool SelectionLayerCallBack::isSelectedByClick(const SelectionLayerParams& params, SelectionToolParams* toolParams)
 {
-	Camera* camera = ViewPortsHolderContext::s_camera;
+	Camera* camera = ViewPortsHolderContext::s_camera.get();
     Window* window = ViewPortsHolderContext::s_window;
     Scene* scene   = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
@@ -38,7 +38,7 @@ bool SelectionLayerCallBack::isSelectedByClick(const SelectionLayerParams& param
 
 bool SelectionLayerCallBack::isSelectedByRectangle(const SelectionLayerParams& params, SelectionToolParams* toolParams)
 {
-	Camera* camera = ViewPortsHolderContext::s_camera;
+	Camera* camera = ViewPortsHolderContext::s_camera.get();
     Window* window = ViewPortsHolderContext::s_window;
     Scene* scene   = ViewPortsHolderContext::s_viewPortsController->m_scene;
 

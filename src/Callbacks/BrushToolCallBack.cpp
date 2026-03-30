@@ -17,7 +17,7 @@ void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataPa
 
     // Get closest mesh and it's face that was hit by the ray from the camera
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-    Camera *camera = ViewPortsHolderContext::s_camera;
+    Camera *camera = ViewPortsHolderContext::s_camera.get();
     Window *window = ViewPortsHolderContext::s_window;
     std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
     SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;

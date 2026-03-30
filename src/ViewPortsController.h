@@ -58,11 +58,12 @@ private:
 class ViewPortsHolderContext
 {
 public:
+	static inline Window* s_window 								  				  = nullptr;
 	static inline std::unique_ptr<ViewPortsUILayerController> s_uiLayerController = std::make_unique<ViewPortsUILayerController>();
-	static inline ViewPortsController* s_viewPortsController = nullptr;
-	static inline SelectionController* s_selectionController = nullptr;
-	static inline Camera* s_camera = nullptr;
-	static inline Window* s_window = nullptr;
+	static inline std::unique_ptr<ViewPortsController> s_viewPortsController 	  = std::make_unique<ViewPortsController>();
+	static inline std::unique_ptr<SelectionController> s_selectionController 	  = std::make_unique<SelectionController>();
+	static inline std::unique_ptr<Camera> s_camera =
+		std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 };
 
 class ViewPortLayer : public Layer, public Observable
@@ -120,7 +121,7 @@ public:
 
 	void onEvent(Event& event) override
 	{
-		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController;
+		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController.get();
 
 		if (event.getType() == EventType::MouseButtonPress ||
 			event.getType() == EventType::MouseScroll ||

@@ -163,7 +163,6 @@ int main()
 	WindowLayerBus windowLayerBus;
 
 	Application &app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
-	Camera *camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
@@ -175,25 +174,22 @@ int main()
 	// Shader meshShader = Shader("src/Renderer/Shaders/meshShader.vert", "src/Renderer/Shaders/meshShader.frag");
 	Shader meshShader(getShaderPath("meshShader.vert"), getShaderPath("meshShader.frag"));
 
+	Camera* camera = ViewPortsHolderContext::s_camera.get();
 	Scene scene(25.0f, 25.0f, 25.0f);
 
 	// viewPortLayer
-	ViewPortLayer *viewPortLayer = new ViewPortLayer("viewPortLayer");
+	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
 	viewPortLayer->m_camera = camera;
 
 	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
 
-	ViewPortsController *viewPortsHolder = new ViewPortsController();
+	ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController.get();
 	viewPortsHolder->addLayer(viewPortLayer);
 	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
-	SelectionController *selectionController = new SelectionController();
 
 	viewPortsHolder->m_scene = &scene;
-	ViewPortsHolderContext::s_viewPortsController = viewPortsHolder;
-	ViewPortsHolderContext::s_selectionController = selectionController;
-	ViewPortsHolderContext::s_camera = camera;
 	ViewPortsHolderContext::s_window = app.window;
 
 	// ViewPortLayer
@@ -389,7 +385,7 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-		const SelectionHolder& selectionHolder = selectionController->getHolder();
+		const SelectionHolder& selectionHolder = ViewPortsHolderContext::s_selectionController->getHolder();
 
 		//Render transparent meshes
 		glDisable(GL_BLEND);
@@ -405,7 +401,6 @@ int main()
 		}
 		//Render solid meshes
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDepthMask(GL_FALSE);
 		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
 		{
