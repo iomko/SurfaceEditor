@@ -321,9 +321,35 @@ int main()
 	MaterialRegistry::registerMaterial("defaultMeshMaterial", &meshShader);
 	MaterialRegistry::registerMaterial("defaultLineMaterial", &linesShader);
 
+	auto drawMesh = [&](Mesh* mesh, const SelectionHolder& selectionHolder)
+	{
+		auto& faces = selectionHolder.faces.find(mesh)->second;
+
+		for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it)
+		{
+			Shader* shader = it->first->m_shader;
+
+			glm::mat4 model;
+			if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+			{
+				model = *mesh->m_realTimeTransform;
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+			}
+
+			shader->bind();
+			shader->setMat4("u_model", model);
+
+			Renderer::drawTriangles(it->second.data, shader);
+
+			shader->unbind();
+		}
+	};
+
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
-
 		linesShader.bind();
 		glm::mat4 projection = glm::mat4(1.0f);
 
@@ -361,16 +387,45 @@ int main()
 
         //chcem zapisovat do depth bufferu
         glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
 		const SelectionHolder& selectionHolder = selectionController->getHolder();
 
-        //draw meshes
-        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
-			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+		//Render transparent meshes
+		glDisable(GL_BLEND);
+		glDepthMask(GL_TRUE);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			if (mesh->m_selected)
+			{
+				continue;
+			}
+
+			drawMesh(mesh, selectionHolder);
+		}
+		//Render solid meshes
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthMask(GL_FALSE);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			if (!mesh->m_selected)
+			{
+				continue;
+			}
+
+			drawMesh(mesh, selectionHolder);
+		}
+		// restore state
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			auto& faces = selectionHolder.faces.find(mesh)->second;
+
+			for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it)
+			{
 				Shader* shader = it->first->m_shader;
-				auto& faces = selectionHolder.faces.find(mesh)->second;
 
 				glm::mat4 model;
 				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
@@ -381,43 +436,22 @@ int main()
 				{
 					model = glm::mat4(1.0f);
 				}
+
 				shader->bind();
 				shader->setMat4("u_model", model);
+
+				Renderer::drawLines(it->second.data, shader);
+
 				shader->unbind();
+			}
+		}
 
-				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
-				Renderer::drawTriangles(triangleBufferData, shader);
-            }
-            
-            for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
-				Shader *shader = it->first->m_shader;
-				auto& faces = selectionHolder.faces.find(mesh)->second;
-
-				glm::mat4 model;
-				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
-				{
-					model = *mesh->m_realTimeTransform;
-				}
-				else
-				{
-					model = glm::mat4(1.0f);
-				}
-				shader->bind();
-				shader->setMat4("u_model", model);
-				shader->unbind();
-
-				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader);
-            }
-        }
-        //draw printableMeshes
-        for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
-
+		for (auto& [_, printableMesh] : scene.m_res.printableMeshMap)
+		{
 			for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it)
 			{
-				Shader *shader = it->first->m_shader;
-				BufferStorageData<BufferStorageDataType::LineVertex> &lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader);
+				Shader* shader = it->first->m_shader;
+				Renderer::drawLines(it->second.data, shader);
 			}
 		}
 

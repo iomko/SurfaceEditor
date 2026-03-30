@@ -21,7 +21,7 @@ private:
     void drawSelectionRectangle();
 
 private:
-    SelectionRectangle                  m_selectionRectangle;
-    RectanglePos                        m_rectanglePos;
-    bool                                m_eventHandled;
+    SelectionRectangle m_selectionRectangle;
+    RectanglePos       m_rectanglePos;
+    bool               m_eventHandled;
 };
