@@ -2,9 +2,19 @@
 
 #include "../Analyser/Analyser.h"
 #include "../FeatureStrategies/FeatureStrategyRegistry.h"
+#include "../Editor/PredictorConfig.h"
+#include "../Editor/PredictorConfigDeserializer.h"
+#include "../Editor/PredictorConfigSerializer.h"
+
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 struct ModelInfo {
-    size_t featuresSize = -1;
+    size_t featuresSize = static_cast<size_t>(-1);
 };
 
 template<typename Type>
@@ -87,8 +97,8 @@ public:
         };
     }
 
-    std::string getFeatureConfigPath() const override {
-        return std::string(ML_DATA_DIR) + "/" + m_modelName + ".features.cfg";
+    std::string getModelConfigPath() const override {
+        return std::string(ML_DATA_DIR) + "/" + m_modelName + ".config.json";
     }
 
     std::string getName() const override {
@@ -113,54 +123,32 @@ private:
         m_info.featuresSize = featuresSize;
     }
 
+    PredictorConfig makeDefaultConfig() const
+    {
+        PredictorConfig config;
+        config.featureIds = m_defaultFeatureIds;
+        return config;
+    }
+
+    PredictorConfig loadOrCreateConfig()
+    {
+        PredictorConfig config = PredictorConfigDeserializer::loadFromFile(getModelConfigPath());
+
+        if (config.featureIds.empty()) {
+            config = makeDefaultConfig();
+            PredictorConfigSerializer::saveToFile(getModelConfigPath(), config);
+        }
+
+        return config;
+    }
+
     void initializeFeaturesWithConfig()
     {
-        std::vector<int> featureIds;
-
-        std::ifstream in(getFeatureConfigPath());
-
-        if (in.is_open())
-        {
-            //config exists
-
-            std::string line;
-            while (std::getline(in, line))
-            {
-                if (line.empty() || line[0] == '#') {
-                    continue;
-                }
-
-                std::istringstream iss(line);
-                int id;
-                if (iss >> id) {
-                    featureIds.push_back(id);
-                }
-            }
-
-            std::cout << "[ML] Loaded feature config: " << getFeatureConfigPath() << "\n";
-        }
-        else
-        {
-            //config doesnt exist
-            std::cout << "[ML] Config not found. Creating default config: "
-                      << getFeatureConfigPath() << "\n";
-
-            featureIds = m_defaultFeatureIds;
-
-            std::ofstream out(getFeatureConfigPath(), std::ios::out | std::ios::trunc);
-            if (!out.is_open()) {
-                std::cerr << "[ML] ERROR: Cannot create config file.\n";
-            }
-            else {
-                out << "# Auto-generated feature config\n";
-                for (int id : featureIds) {
-                    out << id << "\n";
-                }
-            }
-        }
+        PredictorConfig config = loadOrCreateConfig();
 
         m_featureStrategies.clear();
-        for (int id : featureIds)
+
+        for (int id : config.featureIds)
         {
             FeatureStrategyConcept* feature =
                 FeatureStrategyRegistry::instance().getFeature(id);
@@ -170,7 +158,22 @@ private:
                 continue;
             }
 
-            addFeature(feature);
+            if (feature->getObjectType() != getFeatureObjectType()) {
+                std::cerr << "[ML] WARNING: Feature ID " << id
+                          << " has incompatible object type for model " << m_modelName << ".\n";
+                continue;
+            }
+
+            auto* typedFeature = dynamic_cast<FeatureStrategy<Type>*>(feature);
+            if (!typedFeature) {
+                std::cerr << "[ML] WARNING: Failed to cast feature ID " << id << ".\n";
+                continue;
+            }
+
+            auto it = std::find(m_featureStrategies.begin(), m_featureStrategies.end(), typedFeature);
+            if (it == m_featureStrategies.end()) {
+                m_featureStrategies.push_back(typedFeature);
+            }
         }
 
         rebuildModelInfo();
@@ -178,15 +181,16 @@ private:
 
     void saveFeatureIdsToConfig() const
     {
-        std::ofstream out(getFeatureConfigPath(), std::ios::out | std::ios::trunc);
-        if (!out.is_open()) {
-            std::cerr << "ERROR: Cannot save feature config to " << getFeatureConfigPath() << "\n";
-            return;
+        PredictorConfig config = PredictorConfigDeserializer::loadFromFile(getModelConfigPath());
+
+        config.featureIds.clear();
+        for (auto* feature : m_featureStrategies)
+        {
+            if (feature) {
+                config.featureIds.push_back(feature->getId());
+            }
         }
 
-        for (auto* feature : m_featureStrategies) {
-            out << feature->getId() << "\n";
-        }
+        PredictorConfigSerializer::saveToFile(getModelConfigPath(), config);
     }
-
 };

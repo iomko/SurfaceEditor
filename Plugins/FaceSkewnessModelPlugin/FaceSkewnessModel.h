@@ -6,11 +6,13 @@
 
 #include "../../src/Ml/NeuralNetworkModels/NeuralNetworkModel.h"
 #include "../../src/Ml/Analyser/AnalyserIDS.h"
+#include "../../src/Ml/Editor/PredictorConfig.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "FaceMLP.h"
 
 class Mesh;
 class ExtendedFace;
+class FeatureStrategyConcept;
 
 class FaceSkewnessModel : public NeuralNetworkModel<ExtendedFace> {
 public:
@@ -44,6 +46,27 @@ private:
     void saveTxt(const std::string& path, const std::vector<float>& values);
 
     void updateFacesVaoData(Mesh* mesh);
+
+private:
+    bool evaluateTrainingLabel(
+        ExtendedFace* face,
+        const PredictorConfig& config) const;
+
+    bool evaluateLabelDefinition(
+        ExtendedFace* face,
+        const LabelDefinition& label) const;
+
+    bool evaluateCondition(
+        ExtendedFace* face,
+        const LabelCondition& condition) const;
+
+    bool tryGetFeatureComponentValue(
+        ExtendedFace* face,
+        int featureId,
+        int componentIndex,
+        float& outValue) const;
+
+    bool compareValues(float lhs, LabelOperator op, float rhs) const;
 
 private:
     FaceMLP model;

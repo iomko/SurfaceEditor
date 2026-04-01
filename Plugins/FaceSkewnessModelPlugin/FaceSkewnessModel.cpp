@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "../../src/Ml/Analyser/AnalyserRegistry.h"
+#include "../../src/Ml/Editor/PredictorConfigDeserializer.h"
 #include "../../src/Ml/FeatureStrategies/FeatureStrategyRegistry.h"
 #include "../../src/Ml/FeatureStrategies/FaceSideLengthsFeature.h"
 #include "../../src/Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
@@ -16,8 +17,6 @@
 #include "../../src/Utils/GeometryUtils.h"
 
 static AutoRegisterAnalyser<FaceSkewnessModel> regFaceSkewnessPredictor("FACE_SKEWNESS_PREDICTOR");
-
-//ked sa buildne toto tak vzdy musime aj automaticky zaregistrovat vsetky features, ktore su v configu
 
 FaceSkewnessModel::FaceSkewnessModel()
     : NeuralNetworkModel<ExtendedFace>(
@@ -113,7 +112,6 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
     return results;
 }
 
-
 std::vector<float> FaceSkewnessModel::loadTxt(const std::string& path)
 {
     std::vector<float> values;
@@ -130,6 +128,116 @@ std::vector<float> FaceSkewnessModel::loadTxt(const std::string& path)
     return values;
 }
 
+bool FaceSkewnessModel::compareValues(float lhs, LabelOperator op, float rhs) const
+{
+    switch (op)
+    {
+        case LabelOperator::Equal:        return lhs == rhs;
+        case LabelOperator::NotEqual:     return lhs != rhs;
+        case LabelOperator::Less:         return lhs < rhs;
+        case LabelOperator::LessEqual:    return lhs <= rhs;
+        case LabelOperator::Greater:      return lhs > rhs;
+        case LabelOperator::GreaterEqual: return lhs >= rhs;
+        default:                          return false;
+    }
+}
+
+bool FaceSkewnessModel::tryGetFeatureComponentValue(
+    ExtendedFace* face,
+    int featureId,
+    int componentIndex,
+    float& outValue) const
+{
+    if (!face) {
+        return false;
+    }
+
+    FeatureStrategyConcept* featureConcept =
+        FeatureStrategyRegistry::instance().getFeature(featureId);
+
+    if (!featureConcept) {
+        return false;
+    }
+
+    if (featureConcept->getObjectType() != getFeatureObjectType()) {
+        return false;
+    }
+
+    auto* typedFeature = dynamic_cast<FeatureStrategy<ExtendedFace>*>(featureConcept);
+    if (!typedFeature) {
+        return false;
+    }
+
+    std::vector<float> values = typedFeature->invoke(face);
+
+    if (componentIndex < 0 || componentIndex >= static_cast<int>(values.size())) {
+        return false;
+    }
+
+    outValue = values[componentIndex];
+    return true;
+}
+
+bool FaceSkewnessModel::evaluateCondition(
+    ExtendedFace* face,
+    const LabelCondition& condition) const
+{
+    float featureValue = 0.0f;
+    if (!tryGetFeatureComponentValue(face, condition.featureId, condition.componentIndex, featureValue)) {
+        return false;
+    }
+
+    return compareValues(featureValue, condition.op, condition.value);
+}
+
+bool FaceSkewnessModel::evaluateLabelDefinition(
+    ExtendedFace* face,
+    const LabelDefinition& label) const
+{
+    if (label.conditions.empty()) {
+        return false;
+    }
+
+    if (label.mode == LabelMatchMode::All)
+    {
+        for (const LabelCondition& condition : label.conditions)
+        {
+            if (!evaluateCondition(face, condition)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    if (label.mode == LabelMatchMode::Any)
+    {
+        for (const LabelCondition& condition : label.conditions)
+        {
+            if (evaluateCondition(face, condition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    return false;
+}
+
+bool FaceSkewnessModel::evaluateTrainingLabel(
+    ExtendedFace* face,
+    const PredictorConfig& config) const
+{
+    if (config.labels.empty()) {
+        return false;
+    }
+
+    // Current FaceSkewnessModel is a binary classifier.
+    // We use the first label definition in config as the positive class.
+    return evaluateLabelDefinition(face, config.labels.front());
+}
+
 void FaceSkewnessModel::extractDataset(
     const std::vector<Mesh*>& meshes,
     std::vector<float>& featuresOut,
@@ -137,6 +245,20 @@ void FaceSkewnessModel::extractDataset(
 {
     featuresOut.clear();
     labelsOut.clear();
+
+    PredictorConfig config = PredictorConfigDeserializer::loadFromFile(getModelConfigPath());
+
+    if (config.labels.empty())
+    {
+        std::cerr << "[ML] WARNING: No labels defined in config for " << getName()
+                  << ". Training labels will default to 0.\n";
+    }
+
+    if (config.labels.size() > 1)
+    {
+        std::cerr << "[ML] WARNING: " << getName()
+                  << " is currently a binary classifier. Only the first label in config will be used for training.\n";
+    }
 
     for (Mesh* mesh : meshes)
     {
@@ -159,13 +281,8 @@ void FaceSkewnessModel::extractDataset(
 
             featuresOut.insert(featuresOut.end(), row.begin(), row.end());
 
-            auto angles = FeaturesExtractor::internalAngles2(face);
-            float minAngle = std::min({angles[0], angles[1], angles[2]});
-            float maxAngle = std::max({angles[0], angles[1], angles[2]});
-            float ratio = FeaturesExtractor::ratio2(face);
-
-            bool isSkewedLabel = ((minAngle < 10.0f) || (maxAngle > 150.0f) || ratio > 10.0f);
-            labelsOut.push_back(isSkewedLabel);
+            const bool positiveLabel = evaluateTrainingLabel(face, config);
+            labelsOut.push_back(positiveLabel ? 1 : 0);
         }
     }
 }
@@ -224,9 +341,10 @@ void FaceSkewnessModel::updateFacesVaoData(Mesh *mesh)
     }
 }
 
-
 void FaceSkewnessModel::train(const std::vector<Mesh*>& meshes)
 {
+    std::cout << "START TRAINING MODEL" << std::endl;
+
     std::vector<float> rawFeatures;
     std::vector<int64_t> labels;
 
@@ -264,4 +382,6 @@ void FaceSkewnessModel::train(const std::vector<Mesh*>& meshes)
     torch::save(model, std::string(ML_DATA_DIR) + "/triangle_skew_model.pt");
     saveTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_mean.txt", normMean);
     saveTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_std.txt", normStd);
+
+    std::cout << "DONE TRAINING MODEL" << std::endl;
 }

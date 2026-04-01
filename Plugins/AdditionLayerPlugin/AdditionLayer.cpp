@@ -77,7 +77,13 @@ void AdditionLayer::onImGuiRender()
 
             ImGui::TreePop();
         }
+
         auto *fetchCommand = CommandRegistry::instance().getCommand("FETCH_SURFACE_COMMAND");
+
+        if(!fetchCommand) {
+            std::cout << "FETCH COMMAND DOESNT EXIST" << std::endl;
+        }
+
         if(fetchCommand)
         {
             if (ImGui::TreeNode("Fetch Surface Data (OpenTopography)"))

@@ -11,6 +11,7 @@ public:
     virtual std::string getName() const = 0;
     virtual FeatureObjectType getObjectType() const = 0;
     virtual int getId() const = 0;
+    virtual size_t getSize() = 0;
 };
 
 template<typename Type>
@@ -20,5 +21,4 @@ public:
         return FeatureObjectTypeTrait<Type>::value;
     }
     virtual std::vector<float> invoke(Type* obj) = 0;
-    virtual size_t getSize() = 0;
 };

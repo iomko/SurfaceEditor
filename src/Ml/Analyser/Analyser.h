@@ -1,11 +1,11 @@
 #pragma once
 #include "../Analyser/AnalyserIDS.h"
 #include <vector>
+#include <string>
 
 #include "../FeatureStrategies/FeatureObject.h"
 #include "../FeatureStrategies/FeatureStrategy.h"
 #include "../../Scene/Mesh.h"
-
 
 class Analyser {
 public:
@@ -21,7 +21,7 @@ public:
     virtual bool addFeature(FeatureStrategyConcept* feature) = 0;
     virtual bool removeFeature(FeatureStrategyConcept* feature) = 0;
     virtual std::vector<FeatureStrategyConcept*> getFeatures() const = 0;
-    virtual std::string getFeatureConfigPath() const = 0;
+    virtual std::string getModelConfigPath() const = 0;
 };
 
 class Processor : public Analyser {
