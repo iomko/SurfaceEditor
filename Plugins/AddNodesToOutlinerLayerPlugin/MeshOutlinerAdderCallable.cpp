@@ -17,7 +17,7 @@ void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
     {
         AddNewOutlinerNodeCallBackParams<Mesh> params;
         params.id = 0;
-        params.name = "Mesh";
+        params.name = input.m_name;
         params.data = mesh;
 
         observable->notifyObservers(params);

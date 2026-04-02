@@ -123,6 +123,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ImGuizmo)
 
+FetchContent_Declare(
+    ImGuiFileDialog
+    GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
+    GIT_TAG master
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(ImGuiFileDialog)
+
+target_include_directories(ImGuiFileDialog PUBLIC
+    ${imguifiledialog_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+target_link_libraries(ImGuiFileDialog PUBLIC ImGui)
+
+
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
 file(GLOB_RECURSE CORE_SRC
@@ -157,7 +172,7 @@ endif()
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
-target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuizmo glfw Torch::Torch)
+target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuiFileDialog ImGuizmo glfw Torch::Torch)
 target_link_libraries(SurfaceEditorCore PRIVATE OpenGL::GL glm::glm CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP)
 
 if(UNIX)
@@ -219,4 +234,4 @@ foreach(plugin ${PLUGINS})
     endif()
 endforeach()
 
-export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
+export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo ImGuiFileDialog TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)

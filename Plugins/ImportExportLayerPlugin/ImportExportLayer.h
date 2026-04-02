@@ -14,4 +14,7 @@ public:
 
 private:    
     bool m_isMouseInsideWindow = false;
+    bool importClicked = false;
+    bool exportClicked = false;
+    bool onlySelected = false;
 };

@@ -18,7 +18,7 @@ struct ExtendedHalfEdgeTraits {
     using DerType = ExtendedHalfEdgeMesh;
 };
 
-class GraphEdge
+class   GraphEdge
 {
 public:
     ExtendedVertex* vertex = nullptr;
@@ -84,12 +84,24 @@ public:
 
 class ExtendedHalfEdgeMesh : public HalfEdgeDS::HalfEdgeMesh<ExtendedHalfEdgeTraits> {
 public:
-    ExtendedHalfEdgeMesh() : ExtendedHalfEdgeMesh::HalfEdgeMesh() {
+    ExtendedHalfEdgeMesh() : ExtendedHalfEdgeMesh::HalfEdgeMesh(), m_graphBuilt(false) {
     }
 
     void build(const std::vector<std::vector<int>>& polygons, const std::vector<glm::vec3>& vertices){
         ExtendedHalfEdgeMesh::HalfEdgeMesh::build(polygons, vertices);
-        buildGraph();
+        // Defer graph building for memory efficiency during import
+        m_graphBuilt = false;
+    }
+
+    void ensureGraphBuilt() {
+        if (!m_graphBuilt) {
+            buildGraph();
+            m_graphBuilt = true;
+        }
+    }
+
+    bool isGraphBuilt() const {
+        return m_graphBuilt;
     }
 
 public:
@@ -313,6 +325,9 @@ private:
 
 public:
     std::map<Material*, std::vector<FaceTriangle>> m_faceTriangles;
+
+private:
+    bool m_graphBuilt;
 };
 
 

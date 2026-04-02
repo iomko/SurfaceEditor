@@ -1,6 +1,7 @@
 #include "ImportExportLayer.h"
 #include "imgui.h" 
 #include "../../src/Commands/CommandRegistry.h"
+#include "ImGuiFileDialog.h"
 
 static AutoRegisterLayerArgs<ImportExportLayer, std::string> reg("IMPORT_EXPORT_LAYER");
 
@@ -31,8 +32,6 @@ void ImportExportLayer::onImGuiRender()
     m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                              mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
-    bool exportClicked = false;
-    bool importClicked = false;
     std::string filePath;
     
     
@@ -40,24 +39,36 @@ void ImportExportLayer::onImGuiRender()
     if(importMeshesCommand)
     {
         if (ImGui::Button("Import"))
-        {
-            /*
-            // Call a function or perform actions for Import
-            filePath = WindowsFileDialogs::openFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-            importClicked = true;
-            */
+        {            
+            importClicked = !importClicked;
+            
         }
-        if (importClicked && !filePath.empty())
+        if(importClicked)
         {
-            /*
-            std::cout << "filePath: " << filePath << std::endl;
+            // open
+            ImGuiFileDialog::Instance()->OpenDialog("ChooseFile", "Choose File", ".obj,.ply");
 
-            ImportExportMeshesParams importExportMeshesParams;
-            importExportMeshesParams.m_filePathMeshes = filePath;
-            importMeshesCommand->execute(importExportMeshesParams);
-            */
+            // display
+            if (ImGuiFileDialog::Instance()->Display("ChooseFile"))
+            {
+                if (ImGuiFileDialog::Instance()->IsOk())
+                {
+                    filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+                    importClicked = false;
+                }
+                ImGuiFileDialog::Instance()->Close();
+            }
+            if (!filePath.empty())
+            {
+                
+                std::cout << "filePath: " << filePath << std::endl;
+
+                ImportExportMeshesParams importExportMeshesParams;
+                importExportMeshesParams.m_filePathMeshes = filePath;
+                importMeshesCommand->execute(importExportMeshesParams);
+                
+            }
         }
-        ImGui::SameLine();
     }
         
     auto* exportMeshesCommand = CommandRegistry::instance().getCommand("EXPORT_MESHES_COMMAND");
@@ -65,21 +76,36 @@ void ImportExportLayer::onImGuiRender()
     {
         if (ImGui::Button("Export"))
         {
-            /*
-            // Call a function or perform actions for Import
-            filePath = WindowsFileDialogs::saveFile("OBJ Files\0*.obj\0All Files\0*.*\0");
-            exportClicked = true;
-            */
+            exportClicked = !exportClicked;
         }
-        if (exportClicked && !filePath.empty())
+        ImGui::SameLine();
+        ImGui::Checkbox("Export only selected", &onlySelected);
+        if (exportClicked)
         {
-            /*
-            std::cout << "filePath: " << filePath << std::endl;
+            // open
+            ImGuiFileDialog::Instance()->OpenDialog("ChooseFile", "Choose File", ".obj,.ply");
 
-            ImportExportMeshesParams importExportMeshesParams;
-            importExportMeshesParams.m_filePathMeshes = filePath;
-            exportMeshesCommand->execute(importExportMeshesParams);
-            */
+            // display
+            if (ImGuiFileDialog::Instance()->Display("ChooseFile"))
+            {
+                if (ImGuiFileDialog::Instance()->IsOk())
+                {
+                    filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+                    exportClicked = false;
+                }
+                ImGuiFileDialog::Instance()->Close();
+            }
+            if (!filePath.empty())
+            {
+                
+                std::cout << "filePath: " << filePath << std::endl;
+
+                ImportExportMeshesParams importExportMeshesParams;
+                importExportMeshesParams.m_filePathMeshes = filePath;
+                importExportMeshesParams.exportOnlySelected = onlySelected;
+                exportMeshesCommand->execute(importExportMeshesParams);
+                
+            }
         }
     }
     
