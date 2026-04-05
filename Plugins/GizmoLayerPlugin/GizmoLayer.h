@@ -1,9 +1,9 @@
 #pragma once
 #include "ImGuizmo.h"
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "VisibilityHandler.h"
-#include "LayerRegistry.h"
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/VisibilityHandler.h"
+#include "../src/UI/LayerRegistry.h"
 
 class GizmoLayer : public Layer, public Observable
 {

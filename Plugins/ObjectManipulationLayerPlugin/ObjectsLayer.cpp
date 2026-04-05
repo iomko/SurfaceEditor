@@ -1,15 +1,14 @@
 #include "ObjectsLayer.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
-#include "LayerRegistry.h"
+#include "../src/Commands/CommandRegistry.h"
+#include "../src/Commands/CommandIDs.h"
 
-static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg;
+static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
-    : LayerWithID(name), m_windowSize{}
+    : Layer(name), m_windowSize{}
 {
     auto& layerRegistry = LayerRegistry::instance();
-    auto layer = layerRegistry.getLayer(OBJECT_MANIPULATION_LAYER, "ObjectManipulationLayer");
+    auto layer = layerRegistry.getLayer("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer");
     auto objectManipulationLayer = static_cast<ObjectManipulationLayer*>(layer);
 
     m_windowPos = objectManipulationLayer->rightBottomCorner();
@@ -30,14 +29,14 @@ void ObjectsLayer::setWindowSizeAndPosition()
     ImGui::SetNextWindowSize(m_windowSize, ImGuiCond_Always);
     ImGui::SetNextWindowPos(*m_windowPos, ImGuiCond_Always);
 
-    WindowStyle::checkResolutionRange(OBJECTS, viewportHeight, viewportWidth);
+    WindowStyle::checkResolutionRange("OBJECTS", viewportHeight, viewportWidth);
 }
 
 void ObjectsLayer::onImGuiRender()
 {
     setWindowSizeAndPosition();
 
-    if (!VisibilityHandler::isVisible(OBJECTS))
+    if (!VisibilityHandler::isVisible("OBJECTS"))
     {
         return;
     }
@@ -57,20 +56,20 @@ void ObjectsLayer::onImGuiRender()
     if (ImGui::Button("Plane", ImVec2(layout.width, layout.height)))
     {
         AdditionLayer::setAdditionType(AdditionType::PLANE);
-        VisibilityHandler::show(ADDITION_LAYER);
-        VisibilityHandler::hide(OBJECTS);
+        VisibilityHandler::show("ADDITION_LAYER");
+        VisibilityHandler::hide("OBJECTS");
     }
     if (ImGui::Button("Cube", ImVec2(layout.width, layout.height)))
     {
         AdditionLayer::setAdditionType(AdditionType::CUBE);
-        VisibilityHandler::show(ADDITION_LAYER);
-        VisibilityHandler::hide(OBJECTS);
+        VisibilityHandler::show("ADDITION_LAYER");
+        VisibilityHandler::hide("OBJECTS");
     }
     if (ImGui::Button("Surface", ImVec2(layout.width, layout.height)))
     {
         AdditionLayer::setAdditionType(AdditionType::SURFACE);
-        VisibilityHandler::show(ADDITION_LAYER);
-        VisibilityHandler::hide(OBJECTS);
+        VisibilityHandler::show("ADDITION_LAYER");
+        VisibilityHandler::hide("OBJECTS");
     }
 
     ButtonStyle::closeStyling(styleColorApplied, styleVarApplied);

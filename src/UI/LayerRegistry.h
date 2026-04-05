@@ -25,11 +25,11 @@ public:
     template <typename LayerT>
     void registerLayer(std::string id)
     {
-        m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
+        m_creators[id] = [&id](const std::any &) -> std::unique_ptr<Layer>
         {
             auto layer = std::make_unique<LayerT>();
 
-            VisibilityHandler::init(LayerT::ID);
+            VisibilityHandler::init(id);
 
             return layer;
         };
@@ -38,7 +38,7 @@ public:
     template <typename LayerT, typename... CtorArgs>
     void registerLayerWithArgs(std::string id)
     {
-        m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
+        m_creators[id] = [&id](const std::any &a) -> std::unique_ptr<Layer>
         {
             // musí existovať tuple argumentov
             if (!a.has_value())
@@ -57,7 +57,7 @@ public:
                 },
                 tup);
                 
-            VisibilityHandler::init(LayerT::ID);
+            VisibilityHandler::init(id);
 
             return layer;
         };

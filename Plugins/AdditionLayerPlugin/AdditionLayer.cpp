@@ -20,7 +20,7 @@ AdditionLayer::AdditionLayer(const std::string& name)
 
 void AdditionLayer::addPlane()
 {
-    auto* addPlaneCommand = CommandRegistry::instance().getCommand(ADD_PLANE_COMMAND);
+    auto* addPlaneCommand = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
 
     if (addPlaneCommand)
     {
@@ -37,7 +37,7 @@ void AdditionLayer::addPlane()
 
 void AdditionLayer::addCube()
 {
-    auto* addCubeCommand = CommandRegistry::instance().getCommand(ADD_CUBE_COMMAND);
+    auto* addCubeCommand = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");
 
     if (addCubeCommand)
     {
@@ -54,7 +54,7 @@ void AdditionLayer::addCube()
 
 void AdditionLayer::addSurface()
 {
-    auto* fetchCommand = CommandRegistry::instance().getCommand(FETCH_SURFACE_COMMAND);
+    auto* fetchCommand = CommandRegistry::instance().getCommand("FETCH_SURFACE_COMMAND");
 
     if (!fetchCommand)
     {
@@ -139,7 +139,7 @@ void AdditionLayer::addSurface()
 
         fetchCommand->execute(params);
 
-        VisibilityHandler::hide(ADDITION_LAYER);
+        VisibilityHandler::hide("ADDITION_LAYER");
     }
     ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
 
@@ -285,7 +285,7 @@ void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function
             params
         );
 
-        VisibilityHandler::hide(ADDITION_LAYER);
+        VisibilityHandler::hide("ADDITION_LAYER");
     }
     ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
 
@@ -311,14 +311,14 @@ void AdditionLayer::setWindowSizeAndPosition()
 
     float minHeight = 0.8f;
     float minWidth = 0.4f;
-    WindowStyle::checkResolutionRange(ADDITION_LAYER, viewportHeight, viewportWidth, minHeight, minWidth);
+    WindowStyle::checkResolutionRange("ADDITION_LAYER", viewportHeight, viewportWidth, minHeight, minWidth);
 }
 
 void AdditionLayer::onImGuiRender()
 {
     setWindowSizeAndPosition();
 
-    if (!VisibilityHandler::isVisible(ADDITION_LAYER))
+    if (!VisibilityHandler::isVisible("ADDITION_LAYER"))
     {
         return;
     }

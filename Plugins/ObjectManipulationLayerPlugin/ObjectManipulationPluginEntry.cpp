@@ -7,6 +7,7 @@ public:
     void OnLoad() override 
     {
         setupPlugin("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer", false);
+        setupPlugin("OBJECTS_LAYER", "ObjectsLayer", false);
     }
     void OnUnload() override 
     {

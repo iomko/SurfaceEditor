@@ -345,7 +345,7 @@ void PredictorsSettingsLayer::onImGuiRender()
             m_predictorEditor.applyFeatureChanges();
             m_predictorEditor.save();
 
-            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
             const SelectionHolder& selectionHolder = selectionController->getHolder();
             const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 

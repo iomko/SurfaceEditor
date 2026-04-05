@@ -1,10 +1,9 @@
 #pragma once
 #include <functional>
 #include <ImGuizmo.h>
-#include "CallbackIDs.h"
-#include "Callback.h"
-#include "../Params/OperationParams.h"
-#include "../Patterns/Observer.h"
+#include "../src/Callbacks/CallbackIDs.h"
+#include "../src/Callbacks/Callback.h"
+#include "../src/Patterns/Observer.h"
 
 enum class SelectionMode;
 

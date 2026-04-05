@@ -9,12 +9,12 @@ GizmoLayer::GizmoLayer(const std::string &name) : Layer(name) {}
 
 void GizmoLayer::onImGuiRender()
 {
-    if (!VisibilityHandler::isVisible(GIZMO_LAYER))
+    if (!VisibilityHandler::isVisible("GIZMO_LAYER"))
     {
         return;
     }
 
-    auto* command = CommandRegistry::instance().getCommand(HANDLE_GIZMO_COMMAND);
+    auto* command = CommandRegistry::instance().getCommand("HANDLE_GIZMO_COMMAND");
     if (command)
     {
         command->execute(m_gizmoParams);

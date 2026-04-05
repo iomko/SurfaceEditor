@@ -2,18 +2,19 @@
 #include <imgui.h>
 #include <vector>
 #include <memory>
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "LayerRegistry.h"
-#include "Components/IWindow.h"
-#include "Components/ImageButton.h"
-#include "Components/WindowStyle.h"
-#include "Components/ButtonStyle.h"
-#include "VisibilityHandler.h"
-#include "OverlappingWindow.h"
+#include "../GizmoLayerPlugin/GizmoLayer.h"
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+#include "../src/UI/Components/IWindow.h"
+#include "../src/UI/Components/ImageButton.h"
+#include "../src/UI/Components/WindowStyle.h"
+#include "../src/UI/Components/ButtonStyle.h"
+#include "../src/UI/VisibilityHandler.h"
+#include "../src/UI/OverlappingWindow.h"
 
 
-class ObjectManipulationLayer : public LayerWithID<OBJECT_MANIPULATION_LAYER>, public Observable, public OverlappingWindow, public IWindow
+class ObjectManipulationLayer : public Layer, public Observable, public OverlappingWindow, public IWindow
 {
 public:
     ObjectManipulationLayer(const std::string& name);

@@ -22,17 +22,17 @@ namespace
     static constexpr const char* plusPath = "../images/gui/plus.png";
 }
 
-static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg;
+static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg("OBJECT_MANIPULATION_LAYER");
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
-    : LayerWithID(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
+    : Layer(name), m_imagesLoaded{}, m_iconSize{}, m_rightBottomCorner{}
 {
     ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
 }
 
 void ObjectManipulationLayer::loadPanelImages()
 {
-    VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
+    VisibilityHandler::show("OBJECT_MANIPULATION_LAYER");
 
     // Selection
     m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button*) {
@@ -43,10 +43,10 @@ void ObjectManipulationLayer::loadPanelImages()
         switch (selectionMode)
         {
             case SelectionMode::MESH:
-                tool = ToolRegistry::instance().getTool(MESH_SELECTION_TOOL);
+                tool = ToolRegistry::instance().getTool("MESH_SELECTION_TOOL");
                 break;
             case SelectionMode::FACE:
-                // tool = ToolRegistry::instance().getTool(FACE_SELECTION_TOOL);
+                // tool = ToolRegistry::instance().getTool("FACE_SELECTION_TOOL");
                 break;
             case SelectionMode::EDGE:
                 // TODO
@@ -86,9 +86,9 @@ void ObjectManipulationLayer::loadPanelImages()
         params.m_type = ImGuizmo::OPERATION::TRANSLATE;
         
         GizmoLayer::init(params);
-        VisibilityHandler::show(GIZMO_LAYER);
+        VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
-        VisibilityHandler::hide(GIZMO_LAYER);
+        VisibilityHandler::hide("GIZMO_LAYER");
     }));
 
     // Rotate gizmo
@@ -97,9 +97,9 @@ void ObjectManipulationLayer::loadPanelImages()
         params.m_type = ImGuizmo::OPERATION::ROTATE;
         
         GizmoLayer::init(params);
-        VisibilityHandler::show(GIZMO_LAYER);
+        VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
-        VisibilityHandler::hide(GIZMO_LAYER);
+        VisibilityHandler::hide("GIZMO_LAYER");
     }));
 
     // Scale gizmo
@@ -108,9 +108,9 @@ void ObjectManipulationLayer::loadPanelImages()
         params.m_type = ImGuizmo::OPERATION::SCALE;
         
         GizmoLayer::init(params);
-        VisibilityHandler::show(GIZMO_LAYER);
+        VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
-        VisibilityHandler::hide(GIZMO_LAYER);
+        VisibilityHandler::hide("GIZMO_LAYER");
     }));
 
     // Add object
@@ -122,10 +122,10 @@ void ObjectManipulationLayer::loadPanelImages()
             imageButton->isSelected() = false;
         }
         
-        VisibilityHandler::show(OBJECTS);
+        VisibilityHandler::show("OBJECTS");
     }, [this]() {
-        VisibilityHandler::hide(OBJECTS);
-        VisibilityHandler::hide(ADDITION_LAYER);
+        VisibilityHandler::hide("OBJECTS");
+        VisibilityHandler::hide("ADDITION_LAYER");
     }));
 
     m_imagesLoaded = true;
@@ -159,7 +159,7 @@ void ObjectManipulationLayer::setWindowSizeAndPosition()
     ImGui::SetNextWindowSize(m_size, ImGuiCond_Always);
     ImGui::SetNextWindowPos(m_pos, ImGuiCond_Always);
 
-    WindowStyle::checkResolutionRange(OBJECT_MANIPULATION_LAYER, viewportHeight, viewportWidth);
+    WindowStyle::checkResolutionRange("OBJECT_MANIPULATION_LAYER", viewportHeight, viewportWidth);
 }
 
 void ObjectManipulationLayer::onImGuiRender()
@@ -171,7 +171,7 @@ void ObjectManipulationLayer::onImGuiRender()
 
     setWindowSizeAndPosition();
 
-    if (!VisibilityHandler::isVisible(OBJECT_MANIPULATION_LAYER))
+    if (!VisibilityHandler::isVisible("OBJECT_MANIPULATION_LAYER"))
     {
         return;
     }

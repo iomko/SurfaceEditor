@@ -1,16 +1,16 @@
 #pragma once
 #include <imgui.h>
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "LayerRegistry.h"
-#include "VisibilityHandler.h"
 #include "ObjectManipulationLayer.h"
-#include "AdditionLayer.h"
-#include "Components/IWindow.h"
-#include "Components/WindowStyle.h"
-#include "Components/ButtonStyle.h"
+#include "../AdditionLayerPlugin/AdditionLayer.h"
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+#include "../src/UI/VisibilityHandler.h"
+#include "../src/UI/Components/IWindow.h"
+#include "../src/UI/Components/WindowStyle.h"
+#include "../src/UI/Components/ButtonStyle.h"
 
-class ObjectsLayer : public LayerWithID<OBJECTS>, public Observable, public IWindow
+class ObjectsLayer : public Layer, public Observable, public IWindow
 {
 public:
     ObjectsLayer(const std::string& name);

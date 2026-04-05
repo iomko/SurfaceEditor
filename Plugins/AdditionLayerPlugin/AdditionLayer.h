@@ -1,16 +1,16 @@
 #pragma once
 #include <string>
 #include <variant>
-#include "../Patterns/Observer.h"
-#include "../Core/Layer.h"
-#include "LayerRegistry.h"
-#include "VisibilityHandler.h"
-#include "Components/IWindow.h"
-#include "Components/WindowStyle.h"
-#include "Components/FontStyle.h"
-#include "Components/CheckBoxStyle.h"
-#include "Components/SliderStyle.h"
-#include "Components/ButtonStyle.h"
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+#include "../src/UI/VisibilityHandler.h"
+#include "../src/UI/Components/IWindow.h"
+#include "../src/UI/Components/WindowStyle.h"
+#include "../src/UI/Components/FontStyle.h"
+#include "../src/UI/Components/CheckBoxStyle.h"
+#include "../src/UI/Components/SliderStyle.h"
+#include "../src/UI/Components/ButtonStyle.h"
 
 using CommandParams = std::variant<PlaneParams, CubeParams>;
 
@@ -22,7 +22,7 @@ enum class AdditionType
 	SURFACE	= 2
 };
 
-class AdditionLayer : public LayerWithID<ADDITION_LAYER>, public Observable, public Observer, public IWindow {
+class AdditionLayer : public Layer, public Observable, public Observer, public IWindow {
 public:
     AdditionLayer(const std::string& name);
 
