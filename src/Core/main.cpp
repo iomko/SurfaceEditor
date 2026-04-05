@@ -235,23 +235,6 @@ int main()
 	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
 
 	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
-	// Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
-	// if (selectionLayer)
-	// {
-	// 	app.getLayerStack().addLayer(selectionLayer);
-
-	// 	// SelectionLayerCallBack selectionLayerCallBack;
-	// 	auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
-	// 	auto *observerSelectionLayer = dynamic_cast<Observer *>(selectionLayerCallBack);
-	// 	auto *observableSelectionLayer = dynamic_cast<Observable *>(selectionLayer);
-	// 	if (selectionLayerCallBack && observerSelectionLayer && observableSelectionLayer)
-	// 	{
-	// 		viewPortsHolder->observe(observableSelectionLayer, selectionLayerCallBack);
-
-	// 		observableSelectionLayer->addObserver(observerSelectionLayer);
-	// 		observerSelectionLayer->observe(observableSelectionLayer, selectionLayerCallBack);
-	// 	}
-	// }
 
 	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
 
