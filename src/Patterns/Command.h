@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Params/OperationParams.h"
+#include <stdexcept>
 
 struct CommandConcept
 {
@@ -11,14 +12,13 @@ struct CommandConcept
 	virtual void undo() = 0;
 };
 
-template <int id, typename IParams = OpParams, typename OParams = OpParams>
+template <typename IParams = OpParams, typename OParams = OpParams>
 class Command;
 
-template <int id, typename IParams, typename OParams>
+template <typename IParams, typename OParams>
 class Command : public CommandConcept
 {
 public:
-	static constexpr int ID = id; 
 	void undo() override {}
 	void execute() override {}
 	virtual void execute(const OpParams &iParams) override {}
@@ -32,11 +32,10 @@ public:
 	}
 };
 
-template <int id, typename IParams>
-class Command<id, IParams, OpParams> : public CommandConcept
+template <typename IParams>
+class Command<IParams, OpParams> : public CommandConcept
 {
 public:
-	static constexpr int ID = id;
 	void undo() override {}
 	void execute() override {}
 	void execute(const OpParams &iParams, OpParams &oParams) override {}
@@ -49,11 +48,10 @@ public:
 	}
 };
 
-template <int id>
-class Command<id, OpParams> : public CommandConcept
+template <>
+class Command<OpParams> : public CommandConcept
 {
 public:
-	static constexpr int ID = id;
 	void undo() override {}
 	void execute() override = 0;
 	void execute(const OpParams &) override {}

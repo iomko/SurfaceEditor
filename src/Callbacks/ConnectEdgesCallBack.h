@@ -3,9 +3,8 @@
 #include "Callbacks/Callback.h"
 #include "Patterns/Observer.h"
 
-#include "CallbackIDs.h"
 
-class ConnectEdgesCallBack : public Callback<CONNECT_EDGES_CALLBACK, EdgeConnectionsParams>, public Observer
+class ConnectEdgesCallBack : public Callback<EdgeConnectionsParams>, public Observer
 {
 public:
 	void execute(const EdgeConnectionsParams& iParams) override;

@@ -25,65 +25,7 @@
 // import Patterns.Observer;
 // #include "../Patterns/Observer.h"
 #include "../ViewPortsController.h"
-#include "../Callbacks/AddPlaneCallback.h"
-#include "../Commands/AddPlaneCommand.h"
-#include "../Tools/ToolRegistry.h"
-//#include "../Commands/CommandRegistry.h"
-#include "../Commands/AddCubeCommand.h"
-#include "../Callbacks/AddCubeCallback.h"
 
-#include "../Callbacks/DeselectFaceCallBack.h"
-#include "../Callbacks/SelectMeshCallBack.h"
-#include "../Commands/SelectMeshCommand.h"
-#include "../UI/AdditionLayer.h"
-#include "../UI/RemovalLayer.h"
-
-#include "../Callbacks/SelectFaceCallBack.h"
-#include "../Callbacks/MoveVertexCallBack.h"
-#include "../Commands/MoveVertexCommand.h"
-
-#include "../Commands/DeselectFaceCommand.h"
-#include "../Commands/SelectFaceCommand.h"
-
-#include "../Callbacks/DeleteSelectedFacesCallBack.h"
-#include "../Commands/DeleteSelectedFacesCommand.h"
-
-#include "../Callbacks/DeleteFaceCallBack.h"
-#include "../Commands/DeleteFaceCommand.h"
-
-#include "../Callbacks/DeleteSelectedMeshesCallBack.h"
-#include "../Commands/DeleteSelectedMeshesCommand.h"
-
-#include "../Commands/BasicSculptToolCommand.h"
-
-#include "../Commands/BrushToolCommand.h"
-#include "../Tools/MeshDeselectionTool.h"
-#include "../Tools/BrushTool.h"
-#include "../Tools/FaceSelectionTool.h"
-#include "../Tools/FaceDeselectionTool.h"
-
-#include "../Callables/PlaneVertexGenCallable.h"
-#include "../Callables/MeshVaoInitCallable.h"
-#include "../Callables/SceneMeshAdderCallable.h"
-#include "../Callables/CubeVertexGenCallable.h"
-
-//ImportExportLayer
-#include "../Callbacks/ImportMeshesCallBack.h"
-#include "../Commands/ImportMeshesCommand.h"
-#include "../UI/ImportExportLayer.h"
-
-#include "../Callbacks/ExportMeshesCallBack.h"
-#include "../Commands/ExportMeshesCommand.h"
-
-#include "../Callables/FetchedSurfaceVertexGenCallable.h"
-#include "../Callbacks/FetchSurfaceCallBack.h"
-
-#include "../Callbacks/SolidifyMeshesCallBack.h"
-#include "../Commands/SolidifyMeshesCommand.h"
-#include "../Commands/DeleteMeshCommand.h"
-#include "../Callbacks/DeleteMeshCallBack.h"
-#include "../Callbacks/MoveSelectedFacesCallBack.h"
-#include "../Commands/MoveSelectedFacesCommand.h"
 
 #include "../Structures/ExtendedHalfEdge.h"
 
@@ -94,13 +36,13 @@
 #include "../Callbacks/CallbackRegister.h"
 #include "../Callbacks/CallbackIDs.h"
 #include "../Tools/ToolRegistry.h"
-#include "../Tools/ToolIDs.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
 #include "../UI/LayerRegistry.h"
-#include "../UI/LayerIDs.h"
+
+#include "../Callables/CallableRegistry.h"
 
 #include "../UI/WindowLayerBus.h"
+
+#include "PluginLoader.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -115,29 +57,7 @@ std::string getShaderPath(const std::string &file)
 #endif
 }
 
-static void setup(const int command_id, const int callback_id, const int tool_id = -1)
-{
-	auto *callback = CallbackRegistry::instance().getCallback(callback_id);
-	if (callback == nullptr)
-	{
-		printf("not callback with id %d\n", callback_id);
-		return;
-	}
-	auto *command = CommandRegistry::instance().getCommand(command_id); // zjednotit + osobitny .h ako ciselnik a robit cez id
-	auto *observableCommand = dynamic_cast<Observable *>(command);
-	auto *observerCallback = dynamic_cast<Observer *>(callback);
-	if (observableCommand && observerCallback)
-	{
-		observableCommand->addObserver(observerCallback);
-		observerCallback->observe(observableCommand, callback);
-		if (tool_id != -1)
-		{
-			ToolRegistry::instance().initializeTool(tool_id, command);
-		}
-	}
-}
-
-static void setupLayer(const int layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
+static void setupLayer(std::string layer_id, Application &app, const std::string name, WindowLayerBus *bus = nullptr)
 {
 	Layer *layer;
 	if (bus == nullptr)
@@ -152,11 +72,18 @@ static void setupLayer(const int layer_id, Application &app, const std::string n
 		app.getLayerStack().addLayer(layer);
 }
 
+//add all features for now here
+//#include "../Ml/FeatureStrategies/FaceAreaFeature.h"
+//#include "../Ml/FeatureStrategies/FaceHeightsFeature.h"
+//#include "../Ml/FeatureStrategies/FaceInternalAnglesFeature.h"
+//#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
+//#include "../Ml/FeatureStrategies/FaceSideLengthRatioFeature.h"
+
 int main()
 {
 
-	WindowLayerBus windowLayerBus;
-
+	WindowLayerBus& windowLayerBus = WindowLayerBus::instance();
+	std::cout << &windowLayerBus << std::endl;
 	Application &app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -192,92 +119,12 @@ int main()
 	// ViewPortLayer
 	app.getLayerStack().addLayer(viewPortLayer);
 
-	// ImporExportLayer
-	setupLayer(IMPORT_EXPORT_LAYER, app, "ImportExportLayer");
+	std::filesystem::path cwd = std::filesystem::current_path();
+    std::cout << "Aktuálny pracovný adresár: " << cwd << std::endl;
 
-	// GizmoLayer
-	setupLayer(GIZMO_LAYER, app, "GizmoLayer");
+	//spravit aby sa to natiahlo uz pocas buildenia nieco ako ine veci ze tie so su nakopirovane do hlavneho build adresara
 
-	setup(MOVE_MESH_COMMAND, MOVE_MESH_CALLBACK);
-	setup(MOVE_SELECTED_MESHES_COMMAND, MOVE_SELECTED_MESHES_CALLBACK);
-	setup(HANDLE_GIZMO_COMMAND, HANDLE_GIZMO_CALLBACK);
-
-	setup(IMPORT_MESHES_COMMAND, IMPORT_MESHES_CALLBACK);
-	setup(EXPORT_MESHES_COMMAND, EXPORT_MESHES_CALLBACK);
-
-	setup(ADD_PLANE_COMMAND, ADD_PLANE_CALLBACK);
-
-	setup(ADD_CUBE_COMMAND, ADD_CUBE_CALLBACK);
-
-	setup(SOLIDIFY_MESHES_COMMAND, SOLIDIFY_MESHES_CALLBACK);
-
-	setup(CREATE_PRINT_COMMAND, CREATE_PRINT_STRUCTURE_CALLBACK);
-
-	setup(FETCH_SURFACE_COMMAND, FETCH_SURFACE_CALLBACK);
-
-	setup(SELECT_MESH_COMMAND, SELECT_MESH_CALLBACK, MESH_SELECTION_TOOL);
-
-	setup(BRUSH_TOOL_COMMAND, BRUSH_TOOL_CALLBACK, BRUSH_TOOL);
-
-	setup(DESELECT_MESH_COMMAND, DESELECT_MESH_CALLBACK, MESH_DESELECTION_TOOL);
-
-	setup(SELECT_FACE_COMMAND, SELECT_FACE_CALLBACK, FACE_SELECTION_TOOL);
-	setup(MOVE_VERTEX_COMMAND, MOVE_VERTEX_CALLBACK);
-
-	setup(MOVE_SELECTED_FACES_COMMAND, MOVE_SELECTED_FACES_CALLBACK);
-
-	setup(DESELECT_FACE_COMMAND, DESELECT_FACE_CALLBACK, FACE_DESELECTION_TOOL);
-
-	setup(DELETE_FACE_COMMAND, DELETE_FACE_CALLBACK);
-
-	setup(DELETE_MESH_COMMAND, DELETE_MESH_CALLBACK);
-
-	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
-
-	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
-
-	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
-
-	Layer* outlinerLayer = LayerRegistry::instance().getLayer(OUTLINER_LAYER, std::string("OutlinerLayer") , std::ref(windowLayerBus));
-	
-	if (outlinerLayer)
-	{
-		app.getLayerStack().addLayer(outlinerLayer);		
-		Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
-		if(outlinerObserver)
-		{
-			int id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
-			auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
-			printf("Getting template on id %d\n", id);
-			if(addNewOutlinerNodeCallBackMesh)
-			{
-				Observable* addNewOutlinerNodeMeshObservalbe = dynamic_cast<Observable*>(addNewOutlinerNodeCallBackMesh);
-				addNewOutlinerNodeMeshObservalbe->addObserver(outlinerObserver);
-				outlinerObserver->observe(addNewOutlinerNodeMeshObservalbe, addNewOutlinerNodeCallBackMesh);
-			}
-			id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true);
-			auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
-			printf("Getting template on id %d\n", id);
-			
-			if(addChildOutlinerNodeCallBackPrintableMesh)
-			{
-				Observable* addChildOutlinerNodePrintableMeshObservable = dynamic_cast<Observable*>(addChildOutlinerNodeCallBackPrintableMesh);
-				addChildOutlinerNodePrintableMeshObservable->addObserver(outlinerObserver);
-				outlinerObserver->observe(addChildOutlinerNodePrintableMeshObservable, addChildOutlinerNodeCallBackPrintableMesh);
-			}
-		}
-	}
-	//setupLayer(OUTLINER_LAYER, app, "OutlinerLayer", &windowLayerBus);
-
-	setupLayer(PRINTABLE_MESH_SETTINGS_POP_UP_LAYER, app, "PopUpLayer", &windowLayerBus);
-
-	setupLayer(MODIFIERS_LAYER, app, "ModifiersLayer", &windowLayerBus);
-
-	setupLayer(REMOVAL_LAYER, app, "RemovalLayer");
-
-	setupLayer(SCULPT_TOOLS_LAYER, app, "SculptToolsLayer");
-
-	setupLayer(DEBUG_LAYER, app, "DebugLayer");
+	PluginLoader::LoadPlugins("plugins");
 
 	setupLayer(OBJECT_MANIPULATION_LAYER, app, "ObjectManipulationLayer");
 

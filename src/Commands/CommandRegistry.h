@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
-#include "Patterns/Command.h"
+#include "../Patterns/Command.h"
 
 class CommandRegistry {
 public:
@@ -15,13 +15,13 @@ public:
     }
 
     template<typename CommandT>
-    void registerCommand() {        
-        m_creators[CommandT::ID] = []() -> std::unique_ptr<CommandConcept> {
+    void registerCommand(std::string id) {        
+        m_creators[id] = []() -> std::unique_ptr<CommandConcept> {
             return std::make_unique<CommandT>();
         };
     }
 
-    CommandConcept* getCommand(int id) {
+    CommandConcept* getCommand(std::string id) {
         auto it = m_instances.find(id);
         if (it != m_instances.end()) {
             return it->second.get();
@@ -43,13 +43,13 @@ public:
     }
 
 private:
-    std::unordered_map<int, Creator> m_creators;
-    std::unordered_map<int, std::unique_ptr<CommandConcept>> m_instances;
+    std::unordered_map<std::string, Creator> m_creators;
+    std::unordered_map<std::string, std::unique_ptr<CommandConcept>> m_instances;
 };
 
 template<typename CommandT>
 struct AutoRegister {
-    AutoRegister() {
-        CommandRegistry::instance().registerCommand<CommandT>();
+    AutoRegister(std::string id) {
+        CommandRegistry::instance().registerCommand<CommandT>(id);
     }
 };

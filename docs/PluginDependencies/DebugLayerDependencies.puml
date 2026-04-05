@@ -1,0 +1,6 @@
+@startuml DebugLayerDependencies
+package DebugLayerPlugin
+{
+    class DebugLayer
+}
+@enduml

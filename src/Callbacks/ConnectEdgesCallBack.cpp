@@ -6,7 +6,7 @@
 #include "../Renderer/MaterialRegistry.h"
 #include "../Renderer/Renderer.h"
 
-static AutoRegisterCallback<ConnectEdgesCallBack> autoRegisterConnectEdgesCallBack;
+static AutoRegisterCallback<ConnectEdgesCallBack> autoRegisterConnectEdgesCallBack("CONNECT_EDGES_CALLBACK");
 
 void ConnectEdgesCallBack::execute(const EdgeConnectionsParams &iParams)
 {

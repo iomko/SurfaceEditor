@@ -2,14 +2,12 @@
 
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
-#include "LayerIDs.h"
-#include "Components/FontStyle.h"
 
-class ImGuiLayer : public LayerWithID<IM_GUI_LAYER>
+class ImGuiLayer : public Layer
 {
 public:
 	explicit ImGuiLayer(const std::string& name)
-		: LayerWithID(name) {}
+		: Layer(name) {}
 	void onAttach() override;
 	void onDetach() override;
 	void begin();

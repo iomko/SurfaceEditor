@@ -1,7 +1,5 @@
 #pragma once
 #include "../Scene/Scene.h"
-#include "../UI/SelectionRectangle.h"
-#include "Structures/PrintableMesh.h"
 #include "ImGuizmo.h"
 
 struct OpParams {
@@ -140,6 +138,12 @@ struct EdgeConnectionsParams : public OpParams
     Mesh* mesh;
     ExtendedEdge* firstEdge;
     ExtendedEdge* secondEdge;
+};
+
+struct SplitEdgeParams : public OpParams
+{
+	Mesh* mesh;
+	ExtendedEdge* edge;
 };
 
 struct BrushInteractionParams : public OpParams

@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include(ExternalProject)
 
 if(UNIX)
@@ -55,15 +57,10 @@ if(UNIX)
 endif()
 
 find_package(glfw3 CONFIG REQUIRED)
-
 find_package(OpenGL REQUIRED)
-
 find_package(glm REQUIRED)
-
 find_package(TIFF REQUIRED)
-
 find_package(CURL REQUIRED)
-
 find_package(Eigen3 REQUIRED)
 
 #FETCH
@@ -78,8 +75,8 @@ FetchContent_MakeAvailable(TrianglePP)
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git  
-    GIT_TAG v1.92.5-docking                                     
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.5-docking
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
@@ -90,7 +87,6 @@ add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
@@ -100,6 +96,7 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}/backends
 )
 target_link_libraries(ImGui PUBLIC glfw)
+
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -108,7 +105,11 @@ FetchContent_Declare(
     SOURCE_SUBDIR  cmake
 )
 FetchContent_MakeAvailable(glad)
+
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
+set_target_properties(glad_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
 
 FetchContent_Declare(
     ImGuizmo
@@ -117,6 +118,14 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(ImGuizmo)
+
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
@@ -127,37 +136,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb)
 
-include("${PROJECT_SOURCE_DIR}/Features.cmake")
+file(GLOB_RECURSE CORE_SRC
+    "${PROJECT_SOURCE_DIR}/src/*.cpp"
+)
 
-file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+# Core library
+add_library(SurfaceEditorCore SHARED ${CORE_SRC})
 
+add_dependencies(SurfaceEditorCore libtorch_ep)
 
-
-foreach(entry ${FEATURE_MAP})
-    string(REPLACE "," ";" entry_list "${entry}")
-    list(GET entry_list 0 featureName)
-    string(TOUPPER "${featureName}" FEATURE_UPPER)
-    if(NOT FEATURE_${FEATURE_UPPER})
-        list(LENGTH entry_list len)
-        math(EXPR count "${len} - 1")
-        foreach(i RANGE 1 ${count})
-            list(GET entry_list ${i} file)
-            list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/${file}")
-        endforeach()
-    endif()
-endforeach()
-
-# Teraz vytvor executable
-add_executable(SurfaceEditor ${SRC_FILES})
-
-add_dependencies(SurfaceEditor libtorch_ep)
-
-#find libtorch .so
+# find libtorch .so
 if(UNIX)
-  set_property(TARGET SurfaceEditor PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
-  set_property(TARGET SurfaceEditor PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
+  set_property(TARGET SurfaceEditorCore PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
+  set_property(TARGET SurfaceEditorCore PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
 endif()
-
 
 add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
 if(WIN32)
@@ -175,14 +167,92 @@ endif()
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
-target_link_libraries(SurfaceEditor PRIVATE glad_core glfw OpenGL::GL glm::glm ImGui ImGuizmo CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP Torch::Torch)
+
+target_link_libraries(SurfaceEditorCore PUBLIC
+    glad_core
+    ImGui
+    ImGuizmo
+    glfw
+    Torch::Torch
+    nlohmann_json::nlohmann_json
+)
+
+target_link_libraries(SurfaceEditorCore PRIVATE
+    OpenGL::GL
+    glm::glm
+    CURL::libcurl
+    Eigen3::Eigen
+    TIFF::TIFF
+    TrianglePP
+)
 
 if(UNIX)
-    target_link_libraries(SurfaceEditor PRIVATE X11::X11)
+    target_link_libraries(SurfaceEditorCore PRIVATE X11::X11)
 endif()
 
-target_include_directories(SurfaceEditor PRIVATE
-    "${PROJECT_SOURCE_DIR}/src"
+target_include_directories(SurfaceEditorCore PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
     ${ImGuizmo_SOURCE_DIR}
-    ${stb_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+    ${glad_SOURCE_DIR}
+    "${LIBTORCH_ROOT}/include"
+    "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
+)
+
+set_target_properties(SurfaceEditorCore PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
+
+add_executable(SurfaceEditor
+    "${PROJECT_SOURCE_DIR}/src/Core/main.cpp"
+)
+
+target_link_libraries(SurfaceEditor PRIVATE
+    SurfaceEditorCore
+)
+
+get_target_property(CORE_INCLUDE_DIRS SurfaceEditorCore INCLUDE_DIRECTORIES)
+
+set_target_properties(ImGuizmo PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/_deps/imguizmo-src;${CMAKE_BINARY_DIR}/_deps/imgui-src"
+  INTERFACE_LINK_LIBRARIES "ImGui;ImGuizmo"
+)
+
+target_compile_definitions(SurfaceEditorCore PUBLIC
+    SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Renderer/Shaders"
+    ML_DATA_DIR="${CMAKE_SOURCE_DIR}/src/Ml/ModelsData"
+)
+
+function(add_surface_editor_plugin PLUGIN_NAME)
+    add_subdirectory(Plugins/${PLUGIN_NAME})
+
+    set_target_properties(${PLUGIN_NAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+    )
+endfunction()
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/Plugins)
+file(GLOB PLUGINS Plugins/*)
+
+foreach(plugin ${PLUGINS})
+    message(STATUS "Looking for plugin in: ${plugin}")
+    get_filename_component(plugin_name ${plugin} NAME)
+
+    option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+
+    if(BUILD_PLUGIN_${plugin_name})
+        add_surface_editor_plugin(${plugin_name})
+    endif()
+endforeach()
+
+export(TARGETS
+    SurfaceEditorCore
+    glad_core
+    ImGui
+    ImGuizmo
+    TrianglePP
+    Torch::Torch
+    nlohmann_json
+    FILE SurfaceEditorCoreConfig.cmake
 )

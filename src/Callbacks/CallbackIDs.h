@@ -3,35 +3,6 @@
 #include <typeindex>
 #include <map>
 
-enum CallbackIDS {
-    BRUSH_TOOL_CALLBACK = 0,
-    CONNECT_EDGES_CALLBACK,
-    CREATE_PRINT_STRUCTURE_CALLBACK,
-    DELETE_FACE_CALLBACK,
-    DELETE_MESH_CALLBACK,
-    DELETE_SELECTED_FACES_CALLBACK,
-    DELETE_SELECTED_MESHES_CALLBACK,
-    DESELECT_FACE_CALLBACK,
-    DESELECT_MESH_CALLBACK,
-    EXPORT_MESHES_CALLBACK,
-    IMPORT_MESHES_CALLBACK,
-    MOVE_SELECTED_FACES_CALLBACK,
-    MOVE_VERTEX_CALLBACK,
-    SELECT_FACE_CALLBACK,
-    SELECTION_LAYER_CALLBACK,
-    SELECT_MESH_CALLBACK,
-    SOLIDIFY_MESHES_CALLBACK,
-    ADD_CUBE_CALLBACK,
-    ADD_PLANE_CALLBACK,
-    FETCH_SURFACE_CALLBACK,
-    HANDLE_GIZMO_CALLBACK,
-    MOVE_MESH_CALLBACK,
-    MOVE_SELECTED_MESHES_CALLBACK,
-
-    CALLBACK_IDS_COUNT   // ← počet prvkov
-};
-
-
 class TemplateOutlinerNodeAdderCallbackIDManger
 {
 public:
@@ -42,15 +13,15 @@ public:
 
     TemplateOutlinerNodeAdderCallbackIDManger()
     {
-        freeIndex = CALLBACK_IDS_COUNT;
-        while (!CallbackRegistry::instance().availableID(freeIndex))
+        freeIndex = 0;
+        while (!CallbackRegistry::instance().availableID(std::to_string(freeIndex)))
         {
             freeIndex++;
         }
                 
     }
     template<typename CallbackT>
-    int RegisterIndex(bool child)
+    std::string RegisterIndex(bool child)
     {
         std::type_index type_id = std::type_index(typeid(CallbackT));
         int index = freeIndex;
@@ -59,7 +30,7 @@ public:
         {
             if(addChildOutlinerNodeCallbacks.contains(type_id))
             {
-                return addChildOutlinerNodeCallbacks[type_id]; 
+                return std::to_string(addChildOutlinerNodeCallbacks[type_id]);
             }
             addChildOutlinerNodeCallbacks[type_id] = index; 
             registered = true;
@@ -68,7 +39,7 @@ public:
         {
             if(addNewOutlinerNodeCallbacks.contains(type_id))
             {
-                return addNewOutlinerNodeCallbacks[type_id]; 
+                return std::to_string(addNewOutlinerNodeCallbacks[type_id]);
             }
             addNewOutlinerNodeCallbacks[type_id] = index;
             registered = true;
@@ -76,25 +47,27 @@ public:
         if(registered)
         {
             freeIndex++;
-            while (!CallbackRegistry::instance().availableID(freeIndex))
+            while (!CallbackRegistry::instance().availableID(std::to_string(freeIndex)))
             {
                 freeIndex++;
             }
         }
-        return index;
+        return std::to_string(index);
     }
     template<typename CallbackT>
-    int GetIndex(bool child)
+    std::string GetIndex(bool child)
     {
         std::type_index type_id = std::type_index(typeid(CallbackT));
+        int id;
         if(child)
         {
-            return addChildOutlinerNodeCallbacks[type_id];
+            id = addChildOutlinerNodeCallbacks[type_id];
         }
         else
         {
-            return addNewOutlinerNodeCallbacks[type_id];
+            id = addNewOutlinerNodeCallbacks[type_id];
         }
+        return std::to_string(id);
     }
 private:
     int freeIndex;
