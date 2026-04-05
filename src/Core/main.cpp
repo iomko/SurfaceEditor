@@ -34,18 +34,13 @@
 
 #include "../Callbacks/DeselectFaceCallBack.h"
 #include "../Callbacks/SelectMeshCallBack.h"
-#include "../Callbacks/SelectionLayerCallBack.h"
 #include "../Commands/SelectMeshCommand.h"
 #include "../UI/AdditionLayer.h"
 #include "../UI/RemovalLayer.h"
-#include "../UI/SelectionLayer.h"
 
 #include "../Callbacks/SelectFaceCallBack.h"
 #include "../Callbacks/MoveVertexCallBack.h"
 #include "../Commands/MoveVertexCommand.h"
-
-#include "../Callbacks/DeselectMeshCallBack.h"
-#include "../Commands/DeselectMeshCommand.h"
 
 #include "../Commands/DeselectFaceCommand.h"
 #include "../Commands/SelectFaceCommand.h"
@@ -174,6 +169,8 @@ int main()
 	// Shader meshShader = Shader("src/Renderer/Shaders/meshShader.vert", "src/Renderer/Shaders/meshShader.frag");
 	Shader meshShader(getShaderPath("meshShader.vert"), getShaderPath("meshShader.frag"));
 
+	ViewPortsHolderContext::s_selectionController->createSelectionRectangle();
+
 	Camera* camera = ViewPortsHolderContext::s_camera.get();
 	Scene scene(25.0f, 25.0f, 25.0f);
 
@@ -238,23 +235,23 @@ int main()
 	setup(DELETE_SELECTED_FACES_COMMAND, DELETE_SELECTED_FACES_CALLBACK);
 
 	setup(DELETE_SELECTED_MESHES_COMMAND, DELETE_SELECTED_MESHES_CALLBACK);
-	Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
-	if (selectionLayer)
-	{
-		app.getLayerStack().addLayer(selectionLayer);
+	// Layer* selectionLayer = LayerRegistry::instance().getLayer(SELECTION_LAYER, std::string("SelectionLayer"));
+	// if (selectionLayer)
+	// {
+	// 	app.getLayerStack().addLayer(selectionLayer);
 
-		// SelectionLayerCallBack selectionLayerCallBack;
-		auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
-		auto *observerSelectionLayer = dynamic_cast<Observer *>(selectionLayerCallBack);
-		auto *observableSelectionLayer = dynamic_cast<Observable *>(selectionLayer);
-		if (selectionLayerCallBack && observerSelectionLayer && observableSelectionLayer)
-		{
-			viewPortsHolder->observe(observableSelectionLayer, selectionLayerCallBack);
+	// 	// SelectionLayerCallBack selectionLayerCallBack;
+	// 	auto *selectionLayerCallBack = CallbackRegistry::instance().getCallback(SELECTION_LAYER_CALLBACK);
+	// 	auto *observerSelectionLayer = dynamic_cast<Observer *>(selectionLayerCallBack);
+	// 	auto *observableSelectionLayer = dynamic_cast<Observable *>(selectionLayer);
+	// 	if (selectionLayerCallBack && observerSelectionLayer && observableSelectionLayer)
+	// 	{
+	// 		viewPortsHolder->observe(observableSelectionLayer, selectionLayerCallBack);
 
-			observableSelectionLayer->addObserver(observerSelectionLayer);
-			observerSelectionLayer->observe(observableSelectionLayer, selectionLayerCallBack);
-		}
-	}
+	// 		observableSelectionLayer->addObserver(observerSelectionLayer);
+	// 		observerSelectionLayer->observe(observableSelectionLayer, selectionLayerCallBack);
+	// 	}
+	// }
 
 	setupLayer(ADDITION_LAYER, app, "AdditionLayer");
 
@@ -449,6 +446,8 @@ int main()
 				Renderer::drawLines(it->second.data, shader);
 			}
 		}
+
+		ViewPortsHolderContext::s_selectionController->drawSelectionRectangle();
 
 		app.run();
 		app.getWindow().update();

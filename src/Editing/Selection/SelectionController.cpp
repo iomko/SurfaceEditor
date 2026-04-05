@@ -1,5 +1,9 @@
 #include "SelectionController.h"
 
+SelectionController::SelectionController()
+	: m_faceManager(m_holder), m_meshManager(m_holder), m_selectionModeActive{}
+{ }
+
 void SelectionController::clear()
 {
     if (!m_holder.faces.empty())
@@ -34,4 +38,17 @@ void SelectionController::clear()
 
 	m_holder.faces.clear();
 	m_holder.meshes.clear();
+}
+
+void SelectionController::drawSelectionRectangle()
+{
+	if (m_selectionModeActive)
+	{
+		m_selectionRectangle.draw();
+	}
+}
+
+void SelectionController::updateSelectionRectangle(int width, int height, const RectanglePos& rectanglePos)
+{
+	m_selectionRectangle.update(width, height, rectanglePos);
 }

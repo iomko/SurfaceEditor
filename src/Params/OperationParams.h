@@ -8,12 +8,6 @@ struct OpParams {
 	virtual ~OpParams() = default;
 };
 
-struct SelectionLayerParams : public OpParams
-{
-public:
-	RectanglePos  m_rectanglePos;
-};
-
 struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
@@ -138,9 +132,10 @@ struct BrushToolParams : public OpParams
 struct SelectionToolParams : public OpParams
 {
 	std::vector<SceneResources::MeshFacePair> m_selectedData;
+	bool m_select;
 };
 
-struct EdgeConnectionsParams : public OpParams 
+struct EdgeConnectionsParams : public OpParams
 {
     Mesh* mesh;
     ExtendedEdge* firstEdge;

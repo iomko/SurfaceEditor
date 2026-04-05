@@ -36,21 +36,53 @@ void ObjectManipulationLayer::loadPanelImages()
     VisibilityHandler::show(OBJECT_MANIPULATION_LAYER);
 
     // Selection
-    m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button* button) {
-        VisibilityHandler::show(SELECTION_LAYER);
+    m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath, [](Button*) {
+        ViewPortsHolderContext::s_selectionController->setSelectionModeActive(true);
+        auto selectionMode = ViewPortsHolderContext::s_selectionController->selectionMode();
+        ITool* tool{};
+
+        switch (selectionMode)
+        {
+            case SelectionMode::MESH:
+                tool = ToolRegistry::instance().getTool(MESH_SELECTION_TOOL);
+                break;
+            case SelectionMode::FACE:
+                // tool = ToolRegistry::instance().getTool(FACE_SELECTION_TOOL);
+                break;
+            case SelectionMode::EDGE:
+                // TODO
+                break;
+            case SelectionMode::VERTEX:
+                // TODO
+                break;
+            default:
+                break;
+        }
+
+        if (tool == nullptr)
+        {
+            return;
+        }
+        ViewPortsHolderContext::s_viewPortsController->m_currentTool = tool;
+        if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+        {
+            delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+            ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+        }
+
     }, []() {
+        ViewPortsHolderContext::s_selectionController->setSelectionModeActive(false);
+
         if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
         {
             delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
             ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
         }
         ViewPortsHolderContext::s_viewPortsController->m_currentTool = nullptr;
-
-        VisibilityHandler::hide(SELECTION_LAYER);
     }));
 
     // Move gizmo
-    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button* button) {        
+    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button*) {        
         GizmoParams params;
         params.m_type = ImGuizmo::OPERATION::TRANSLATE;
         
@@ -61,7 +93,7 @@ void ObjectManipulationLayer::loadPanelImages()
     }));
 
     // Rotate gizmo
-    m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button* button) {
+    m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button*) {
         GizmoParams params;
         params.m_type = ImGuizmo::OPERATION::ROTATE;
         
@@ -72,7 +104,7 @@ void ObjectManipulationLayer::loadPanelImages()
     }));
 
     // Scale gizmo
-    m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button* button) {
+    m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button*) {
         GizmoParams params;
         params.m_type = ImGuizmo::OPERATION::SCALE;
         

@@ -161,6 +161,19 @@ public:
 						currentTool->getInteractionHandler()->onUpdate();
 					}
 				}
+
+				if (Input::isMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT))
+				{
+					if (currentToolParams != nullptr)
+					{
+						currentTool->getInteractionHandler()->onEnd(*currentToolParams);
+					}
+					else
+					{
+						currentTool->getInteractionHandler()->onEnd();
+					}
+				}
+
 				event.isHandled = true;
 			}
 			updateCameraDirection(event);
