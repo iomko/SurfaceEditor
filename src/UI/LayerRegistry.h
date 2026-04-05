@@ -57,7 +57,7 @@ public:
                 },
                 tup);
                 
-            VisibilityHandler::init(static_cast<LayerIDS>(LayerT::ID));
+            VisibilityHandler::init(LayerT::ID);
 
             return layer;
         };

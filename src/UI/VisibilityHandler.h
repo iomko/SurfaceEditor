@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <string>
 
 class VisibilityHandler
 {
@@ -8,19 +9,19 @@ public:
 
     ~VisibilityHandler() = delete;
 
-    static void init(LayerIDS layer);
+    static void init(const std::string& layer);
 
-    static bool isVisible(LayerIDS layer);
+    static bool isVisible(const std::string& layer);
 
-    inline static void show(LayerIDS layer) { s_layerVisibility[layer] = true; }
+    inline static void show(const std::string& layer) { s_layerVisibility[layer] = true; }
 
-    inline static void hide(LayerIDS layer) { s_layerVisibility[layer] = false; }
+    inline static void hide(const std::string& layer) { s_layerVisibility[layer] = false; }
 
-    inline static void setOutOfRange(LayerIDS layer) { s_layerInRange[layer] = false; }
+    inline static void setOutOfRange(const std::string& layer) { s_layerInRange[layer] = false; }
 
-    inline static void setInRange(LayerIDS layer) { s_layerInRange[layer] = true; }
+    inline static void setInRange(const std::string& layer) { s_layerInRange[layer] = true; }
 
 protected:
-    inline static std::map<LayerIDS, bool> s_layerVisibility{};
-    inline static std::map<LayerIDS, bool> s_layerInRange{};
+    inline static std::map<const std::string, bool> s_layerVisibility{};
+    inline static std::map<const std::string, bool> s_layerInRange{};
 };

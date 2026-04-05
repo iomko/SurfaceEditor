@@ -1,10 +1,9 @@
 #include "ObjectManipulationLayer.h"
-#include "../ViewPortsController.h"
-#include "../Commands/CommandRegistry.h"
-#include "../Commands/CommandIDs.h"
-#include "../Tools/ToolRegistry.h"
-#include "LayerRegistry.h"
-#include "GizmoLayer.h"
+#include "../src/ViewPortsController.h"
+#include "../src/Commands/CommandRegistry.h"
+#include "../src/Commands/CommandIDs.h"
+#include "../src/Tools/ToolRegistry.h"
+#include "../src/UI/LayerRegistry.h"
 
 namespace
 {

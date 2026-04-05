@@ -29,7 +29,7 @@ public:
 
     static void setDefaultTitleBar(int& appliedColorStyles);
 
-    static void checkResolutionRange(LayerIDS layer, float height, float width, float minHeight = 0.6f, float minWidth = 0.6f);
+    static void checkResolutionRange(const std::string& layer, float height, float width, float minHeight = 0.6f, float minWidth = 0.6f);
 
     static void drawHorizontalSeparator(float length);
 

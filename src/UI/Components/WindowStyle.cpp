@@ -13,7 +13,7 @@ void WindowStyle::setDefaultTitleBar(int& appliedColorStyles)
     appliedColorStyles += 3;
 }
 
-void WindowStyle::checkResolutionRange(LayerIDS layer, float height, float width, float minHeight, float minWidth)
+void WindowStyle::checkResolutionRange(const std::string& layer, float height, float width, float minHeight, float minWidth)
 {
     static constexpr const int fullWidth = 1920;
     static constexpr const int fullHeight = 1080;
