@@ -4,7 +4,6 @@
 #include "../Patterns/Observer.h"
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
-#include "LayerIDs.h"
 #include "VisibilityHandler.h"
 #include "Components/IWindow.h"
 #include "Components/WindowStyle.h"

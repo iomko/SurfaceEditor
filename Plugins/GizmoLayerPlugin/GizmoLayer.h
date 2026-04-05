@@ -4,7 +4,6 @@
 #include "../Core/Layer.h"
 #include "VisibilityHandler.h"
 #include "LayerRegistry.h"
-#include "LayerIDs.h"
 
 class GizmoLayer : public Layer, public Observable
 {

@@ -81,6 +81,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
 add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -195,6 +203,7 @@ target_include_directories(SurfaceEditorCore PUBLIC
     ${ImGuizmo_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
     ${glad_SOURCE_DIR}
+    ${stb_SOURCE_DIR}
     "${LIBTORCH_ROOT}/include"
     "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )
