@@ -9,7 +9,6 @@
 #include <type_traits>
 #include "../Core/Layer.h"
 #include <stdexcept>
-#include "VisibilityHandler.h"
 
 class LayerRegistry
 {
@@ -25,20 +24,16 @@ public:
     template <typename LayerT>
     void registerLayer(std::string id)
     {
-        m_creators[id] = [&id](const std::any &) -> std::unique_ptr<Layer>
+        m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
         {
-            auto layer = std::make_unique<LayerT>();
-
-            VisibilityHandler::init(id);
-
-            return layer;
+            return std::make_unique<LayerT>();
         };
     }
 
     template <typename LayerT, typename... CtorArgs>
     void registerLayerWithArgs(std::string id)
     {
-        m_creators[id] = [&id](const std::any &a) -> std::unique_ptr<Layer>
+        m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
         {
             // musí existovať tuple argumentov
             if (!a.has_value())
@@ -49,17 +44,13 @@ public:
             using TupleT = std::tuple<std::decay_t<CtorArgs>...>;
             const TupleT &tup = std::any_cast<const TupleT &>(a);
                 
-            auto layer =  std::apply(
+            return std::apply(
                 [&](auto &&...args)
                 {
                     return std::make_unique<LayerT>(
                         std::forward<decltype(args)>(args)...);
                 },
                 tup);
-                
-            VisibilityHandler::init(id);
-
-            return layer;
         };
     }
 

@@ -13,6 +13,7 @@ if(NOT TARGET SurfaceEditorCore)
     )
 endif()
 add_library(ObjectManipulationLayerPlugin SHARED
+    ObjectManipulationLayerPluginEntry.cpp
     ObjectManipulationLayer.cpp
     ObjectsLayer.cpp
 )

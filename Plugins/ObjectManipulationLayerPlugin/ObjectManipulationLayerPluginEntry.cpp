@@ -1,13 +1,13 @@
 #include "../../src/Core/PluginAPI.h"
 #include "../../src/Callbacks/CallbackIDs.h"
 
-class ObjectManipulationPlugin : public IPlugin
+class ObjectManipulationLayerPlugin : public IPlugin
 {
 public:
     void OnLoad() override 
     {
-        setupPlugin("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer", false);
-        setupPlugin("OBJECTS_LAYER", "ObjectsLayer", false);
+        setupLayerPlugin("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer", false);
+        setupLayerPlugin("OBJECTS_LAYER", "ObjectsLayer", false);
     }
     void OnUnload() override 
     {
@@ -22,5 +22,5 @@ __declspec(dllexport)
 #endif
 IPlugin* CreatePlugin()
 {
-    return new ObjectManipulationPlugin();
+    return new ObjectManipulationLayerPlugin();
 }

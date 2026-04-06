@@ -29,7 +29,7 @@ public:
 
         if (!create)
         {
-            std::cout << "CreatePlugin symbol not found\n";
+            std::cout << "CreatePlugin symbol not found: " << path << "\n";
             return {nullptr, nullptr, path};
         }
 

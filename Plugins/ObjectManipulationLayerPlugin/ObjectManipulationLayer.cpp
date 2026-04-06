@@ -4,6 +4,7 @@
 #include "../src/Commands/CommandIDs.h"
 #include "../src/Tools/ToolRegistry.h"
 #include "../src/UI/LayerRegistry.h"
+#include "../src/UI/WindowLayerBus.h"
 
 namespace
 {
@@ -84,7 +85,7 @@ void ObjectManipulationLayer::loadPanelImages()
     m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button*) {        
         GizmoParams params;
         params.m_type = ImGuizmo::OPERATION::TRANSLATE;
-        
+
         GizmoLayer::init(params);
         VisibilityHandler::show("GIZMO_LAYER");
     }, []() {

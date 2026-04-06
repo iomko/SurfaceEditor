@@ -185,7 +185,7 @@ target_link_libraries(SurfaceEditorCore PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-target_link_libraries(SurfaceEditorCore PRIVATE
+target_link_libraries(SurfaceEditorCore PUBLIC
     OpenGL::GL
     glm::glm
     CURL::libcurl

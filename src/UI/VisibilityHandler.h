@@ -22,6 +22,6 @@ public:
     inline static void setInRange(const std::string& layer) { s_layerInRange[layer] = true; }
 
 protected:
-    inline static std::map<const std::string, bool> s_layerVisibility{};
-    inline static std::map<const std::string, bool> s_layerInRange{};
+    inline static std::map<std::string, bool> s_layerVisibility{};
+    inline static std::map<std::string, bool> s_layerInRange{};
 };
