@@ -16,6 +16,7 @@ add_library(HandleGizmoPlugin SHARED
     HandleGizmoPluginEntry.cpp
     HandleGizmoCallback.cpp
     HandleGizmoCommand.cpp
+    GizmoLayer.cpp
 )
 
 target_link_libraries(HandleGizmoPlugin PRIVATE

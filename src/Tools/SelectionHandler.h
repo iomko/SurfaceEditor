@@ -73,6 +73,7 @@ private:
 		auto& meshFacePair = meshFaceHitPair.first;
 		auto mesh = meshFacePair.first;
 
+		//TODO FACE, VERTEX, EDGE
 		if (mesh != nullptr)
 		{
 			toolParams.m_selectedData.push_back(meshFacePair);
@@ -90,6 +91,7 @@ private:
 		Window* window = ViewPortsHolderContext::s_window;
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
+		//TODO FACE, VERTEX, EDGE
 		toolParams.m_selectedData = SceneUtilities::retDataUnderSelectionRectangle(m_selectionRectanglePos, camera, window, scene->m_res);
 		toolParams.m_select = !toolParams.m_selectedData.empty();
 	}

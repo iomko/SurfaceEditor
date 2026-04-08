@@ -34,8 +34,6 @@ private:
         m_gizmoTransform[3] = glm::vec4(center, 1.0f);
     }
 
-    // void chooseSelectionMode(const GizmoParams& iParams, bool& end);
-
     void init(bool& earlyReturn);
 
     void update();

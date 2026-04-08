@@ -5,7 +5,7 @@
 
 static AutoRegisterLayerArgs<GizmoLayer, std::string> reg("GIZMO_LAYER");
 
-GizmoLayer::GizmoLayer(const std::string &name) : Layer(name) {}
+GizmoLayer::GizmoLayer(const std::string& name) : Layer(name) {}
 
 void GizmoLayer::onImGuiRender()
 {
@@ -17,6 +17,9 @@ void GizmoLayer::onImGuiRender()
     auto* command = CommandRegistry::instance().getCommand("HANDLE_GIZMO_COMMAND");
     if (command)
     {
-        command->execute(m_gizmoParams);
+        GizmoParams params;
+        params.m_type = ImGuizmo::OPERATION::TRANSLATE; //TODO
+
+        command->execute(params);
     }
 }

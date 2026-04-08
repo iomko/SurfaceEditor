@@ -1,5 +1,7 @@
 #include "VisibilityHandler.h"
 
+#include <iostream>
+
 void VisibilityHandler::init(const std::string& layer)
 {
     hide(layer);

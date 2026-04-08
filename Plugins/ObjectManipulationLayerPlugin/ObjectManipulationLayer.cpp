@@ -82,11 +82,7 @@ void ObjectManipulationLayer::loadPanelImages()
     }));
 
     // Move gizmo
-    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button*) {        
-        GizmoParams params;
-        params.m_type = ImGuizmo::OPERATION::TRANSLATE;
-
-        GizmoLayer::init(params);
+    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath, [](Button*) {
         VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
         VisibilityHandler::hide("GIZMO_LAYER");
@@ -94,10 +90,6 @@ void ObjectManipulationLayer::loadPanelImages()
 
     // Rotate gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath, [](Button*) {
-        GizmoParams params;
-        params.m_type = ImGuizmo::OPERATION::ROTATE;
-        
-        GizmoLayer::init(params);
         VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
         VisibilityHandler::hide("GIZMO_LAYER");
@@ -105,10 +97,6 @@ void ObjectManipulationLayer::loadPanelImages()
 
     // Scale gizmo
     m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath, [](Button*) {
-        GizmoParams params;
-        params.m_type = ImGuizmo::OPERATION::SCALE;
-        
-        GizmoLayer::init(params);
         VisibilityHandler::show("GIZMO_LAYER");
     }, []() {
         VisibilityHandler::hide("GIZMO_LAYER");
@@ -116,16 +104,16 @@ void ObjectManipulationLayer::loadPanelImages()
 
     // Add object
     m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath, [](Button* button) {
-        auto imageButton = dynamic_cast<ImageButton*>(button);
+        auto* imageButton = dynamic_cast<ImageButton*>(button);
         
         if (imageButton)
         {
             imageButton->isSelected() = false;
         }
         
-        VisibilityHandler::show("OBJECTS");
+        VisibilityHandler::show("OBJECTS_LAYER");
     }, [this]() {
-        VisibilityHandler::hide("OBJECTS");
+        VisibilityHandler::hide("OBJECTS_LAYER");
         VisibilityHandler::hide("ADDITION_LAYER");
     }));
 

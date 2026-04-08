@@ -2,7 +2,6 @@
 #include <imgui.h>
 #include <vector>
 #include <memory>
-#include "../GizmoLayerPlugin/GizmoLayer.h"
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
