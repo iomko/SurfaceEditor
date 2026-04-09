@@ -26,8 +26,8 @@ void SolidifyMeshesCallBack::execute()
 
     for (Mesh *selectedMesh : selectedMeshes)
     {
-
         ExtendedHalfEdgeMesh *halfEdgeStructure = selectedMesh->getHalfEdgeStructure();
+        halfEdgeStructure->ensureGraphBuilt();
 
         std::vector<ExtendedFace *> originalFaces = halfEdgeStructure->m_faces;
 

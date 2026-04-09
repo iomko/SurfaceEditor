@@ -1,6 +1,6 @@
 #include "SceneFacesAdderCallable.h"
-#include "CallableRegistry.h"
-#include "../ViewPortsController.h"
+#include "../../src/Callables/CallableRegistry.h"
+#include "../../src/ViewPortsController.h"
 
 static AutoRegisterCallable<SceneFacesAdderCallable> reg("SCENE_FACES_ADDER_CALLABLE");
 

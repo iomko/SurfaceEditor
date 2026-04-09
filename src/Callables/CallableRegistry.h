@@ -50,6 +50,7 @@ private:
 template<typename CallableT>
 struct AutoRegisterCallable {
     AutoRegisterCallable(std::string id) {
+        printf("Registering callable with id: %s\n", id.c_str());
         CallableRegistry::instance().registerCallable<CallableT>(id);
     }
 };
