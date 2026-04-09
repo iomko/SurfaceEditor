@@ -81,6 +81,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
 add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -129,6 +137,13 @@ FetchContent_MakeAvailable(nlohmann_json)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
 file(GLOB_RECURSE CORE_SRC
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
@@ -170,7 +185,7 @@ target_link_libraries(SurfaceEditorCore PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-target_link_libraries(SurfaceEditorCore PRIVATE
+target_link_libraries(SurfaceEditorCore PUBLIC
     OpenGL::GL
     glm::glm
     CURL::libcurl
@@ -188,6 +203,7 @@ target_include_directories(SurfaceEditorCore PUBLIC
     ${ImGuizmo_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
     ${glad_SOURCE_DIR}
+    ${stb_SOURCE_DIR}
     "${LIBTORCH_ROOT}/include"
     "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )

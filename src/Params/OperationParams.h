@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../Scene/Scene.h"
 #include "ImGuizmo.h"
 
@@ -7,55 +6,18 @@ struct OpParams {
 	virtual ~OpParams() = default;
 };
 
-struct SelectionLayerParams : public OpParams
-{
-public:
-	enum SelectionMode {
-		Face,
-		Edge,
-		Vertex,
-		Object
-	};
-
-	enum Type {
-		Selection,
-		Deselection
-	};
-
-	SelectionMode m_selectionMode;
-	Type m_type;
-};
-
 struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
 };
+
 struct BoxSelectionParams : public OpParams
 {
 	glm::vec2 start_mouse_pos;
 };
-struct GizmoLayerParams : public OpParams
-{
-    enum Type
-    {
-        Move,
-        Rotate,
-		Scale,
-        Disable
-    };
-
-    Type m_type;
-};
 
 struct GizmoParams : public OpParams
 {
-	enum SelectionMode
-	{
-		Mesh,
-		Face
-	};
-
-	SelectionMode m_selectionMode;
 	ImGuizmo::OPERATION m_type;
 };
 
@@ -73,6 +35,7 @@ struct PlaneParams : public OpParams
 {
 	float m_size;
 	int m_subdivisionLevel;
+	glm::vec3 m_position;
 };
 
 struct CubeParams : public OpParams
@@ -164,7 +127,13 @@ struct BrushToolParams : public OpParams
 	float brushStrength;
 };
 
-struct EdgeConnectionsParams : public OpParams 
+struct SelectionToolParams : public OpParams
+{
+	std::vector<SceneResources::MeshFacePair> m_selectedData;
+	bool m_select;
+};
+
+struct EdgeConnectionsParams : public OpParams
 {
     Mesh* mesh;
     ExtendedEdge* firstEdge;

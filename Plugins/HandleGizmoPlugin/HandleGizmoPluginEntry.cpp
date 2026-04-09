@@ -7,6 +7,7 @@ public:
     void OnLoad() override 
     {
         setupPlugin("HANDLE_GIZMO_COMMAND", "HANDLE_GIZMO_CALLBACK");
+        setupLayerPlugin("GIZMO_LAYER", "GizmoLayer", false);
     }
     void OnUnload() override 
     {

@@ -72,7 +72,7 @@ void DebugLayer::onImGuiRender()
         if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
 
             if (ImGui::Button("Predict")) {
-                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
                 const SelectionHolder& selectionHolder = selectionController->getHolder();
                 const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
@@ -84,7 +84,7 @@ void DebugLayer::onImGuiRender()
         } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
 
             if (ImGui::Button("Process")) {
-                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
                 const SelectionHolder& selectionHolder = selectionController->getHolder();
                 const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 

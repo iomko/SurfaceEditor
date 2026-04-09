@@ -11,7 +11,7 @@ void setupLayerPlugin(std::string layer_id, const std::string name, bool useWind
 {
 	WindowLayerBus &bus = WindowLayerBus::instance();
 	Application &app = Application::getInstance();
-	Layer *layer;
+	Layer* layer{};
 	if (useWindowLateyBus == false)
 	{
 		layer = LayerRegistry::instance().getLayer(layer_id, name);
