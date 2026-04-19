@@ -1,26 +1,26 @@
 #pragma once
+#include <string>
 #include <imgui.h>
-#include "RadioButton.h"
 #include "../../Renderer/ImageLoader.h"
 
-class ImageButton : public RadioButton
+class ImageButton
 {
 public:
-    ImageButton(
-        const std::string name,
-        const std::string iconFilePath,
-        std::function<void(Button*)> callback,
-        std::function<void()> endCallback
-    );
+    ImageButton(const std::string& name, const std::string& iconFilePath)
+        : m_name(name), m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
+    { }
 
-    ~ImageButton() = default;
+    const std::string& name() const
+    {
+        return m_name;
+    }
 
-    inline const int textureID() const { return m_textureID; }
+    const int textureID() const
+    {
+        return m_textureID;
+    }
 
 private:
-    void loadIcon();
-
-private:
-    const std::string m_iconFilePath;
+    std::string m_name;
     ImTextureID m_textureID;
 };
