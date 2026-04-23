@@ -5,7 +5,8 @@
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/OverlappingWindow.h"
-#include "../src/UI/Components/ImageButton.h"
+#include "../src/UI/Components/RadioImageButton.h"
+#include "../src/UI/Styling/Button.h"
 
 class ObjectManipulationLayer : public Layer, public Observable, public OverlappingWindow
 {
@@ -23,6 +24,10 @@ public:
 private:
     void initButtons();
 
+    void resetModeState();
+
 private:
-    std::vector<std::unique_ptr<ImageButton>> m_buttons;
+    ui::styling::ButtonConfig m_buttonConfig;
+
+    std::vector<std::unique_ptr<ui::components::RadioImageButton>> m_buttons;
 };

@@ -5,25 +5,24 @@
 #include "../src/Tools/ToolRegistry.h"
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/WindowLayerBus.h"
-#include "../src/UI/Components/Window.h"
-#include "../src/UI/Components/Colors.h"
+#include "../src/UI/Styling/Window.h"
 #include "../src/UI/VisibilityHandler.h"
 
 namespace
 {
     //Names
-    static constexpr const char* cursor = "cursor";
+    static constexpr const char* cursor    = "cursor";
     static constexpr const char* translate = "translate";
-    static constexpr const char* rotate = "rotate";
-    static constexpr const char* scale = "scale";
-    static constexpr const char* plus = "plus";
+    static constexpr const char* rotate    = "rotate";
+    static constexpr const char* scale     = "scale";
+    static constexpr const char* plus      = "plus";
 
     //Paths
-    static constexpr const char* cursorPath = "../images/gui/cursor.png";
+    static constexpr const char* cursorPath    = "../images/gui/cursor.png";
     static constexpr const char* translatePath = "../images/gui/translate.png";
-    static constexpr const char* rotatePath = "../images/gui/rotate.png";
-    static constexpr const char* scalePath = "../images/gui/scale.png";
-    static constexpr const char* plusPath = "../images/gui/plus.png";
+    static constexpr const char* rotatePath    = "../images/gui/rotate.png";
+    static constexpr const char* scalePath     = "../images/gui/scale.png";
+    static constexpr const char* plusPath      = "../images/gui/plus.png";
 }
 
 static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg("OBJECT_MANIPULATION_LAYER");
@@ -35,15 +34,6 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
 
     setupWindow();
     initButtons();
-}
-
-void ObjectManipulationLayer::initButtons()
-{
-    m_buttons.emplace_back(std::make_unique<ImageButton>(cursor, cursorPath));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(translate, translatePath));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(rotate, rotatePath));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(scale, scalePath));
-    m_buttons.emplace_back(std::make_unique<ImageButton>(plus, plusPath));
 }
 
 void ObjectManipulationLayer::initWindowPosConfig()
@@ -64,7 +54,7 @@ void ObjectManipulationLayer::initWindowConfig()
 {
     m_windowConfig.name                      = this->getName().c_str();
     m_windowConfig.layerName                 = "OBJECT_MANIPULATION_LAYER";
-    m_windowConfig.backgroundColor           = ui::Color::gray;
+    m_windowConfig.backgroundColor           = ui::styling::Color::gray;
     m_windowConfig.rounding                  = 12.0f;
     m_windowConfig.flags = ImGuiWindowFlags_NoTitleBar
                          | ImGuiWindowFlags_NoResize
@@ -73,27 +63,82 @@ void ObjectManipulationLayer::initWindowConfig()
                          | ImGuiWindowFlags_NoCollapse;;
 }
 
+void ObjectManipulationLayer::initButtons()
+{
+    m_buttonConfig.rounding         = 17.0f;
+    m_buttonConfig.background       = ui::styling::Color::black;
+    m_buttonConfig.onHoverOverColor = ui::styling::Color::hoverOverOrange;
+    m_buttonConfig.onClickColor     = ui::styling::Color::onClickOrange;
+
+    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(cursor, cursorPath, []() {
+        //TODO
+    }));
+    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(translate, translatePath, []() {
+        //TODO
+    }));
+    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(rotate, rotatePath), []() {
+        //TODO
+    });
+    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(scale, scalePath), []() {
+        //TODO
+    });
+    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(plus, plusPath), []() {
+        //TODO
+    });
+}
+
+void ObjectManipulationLayer::resetModeState()
+{
+    for (auto& button : m_buttons)
+    {
+        button->setIsSelected(false);
+        
+        // ui::styling::Button::changeBackgroundColor(button)
+    }
+
+    VisibilityHandler::hide("GIZMO_LAYER");
+
+    ViewPortsHolderContext::s_selectionController->setSelectionModeActive(false);
+
+    if (ViewPortsHolderContext::s_viewPortsController->m_currentToolParams != nullptr)
+    {
+        delete ViewPortsHolderContext::s_viewPortsController->m_currentToolParams;
+        ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
+    }
+    ViewPortsHolderContext::s_viewPortsController->m_currentTool = nullptr;
+}
+
 void ObjectManipulationLayer::onImGuiRender()
 {
-    ui::Window::setPosAndSize(m_windowConfig.layerName, m_windowConfig.pos, m_windowConfig.size);
+    ui::styling::Window::setPosAndSize(m_windowConfig.layerName, m_windowConfig.pos, m_windowConfig.size);
     if (!VisibilityHandler::isVisible("OBJECT_MANIPULATION_LAYER"))
     {
         return;
     }
 
-    ui::Window::init(m_windowConfig);
+    ui::styling::Window::init(m_windowConfig);
 
-    ui::Window::addToLayout([this]() {
+    ui::styling::Window::addToLayout([this]() {
         const float iconSize = ImGui::GetMainViewport()->WorkSize.x * 0.015f;
+
+        ui::styling::Button::init(m_buttonConfig);
 
         for (auto& button : m_buttons)
         {
             if (ImGui::ImageButton(button->name().c_str(), button->textureID(), ImVec2(iconSize, iconSize)))
             {
-                //TODO
+                button->setIsSelected(true);
+
+                resetModeState();
+
+                //change background color
+
+                button->execute();
             }
         }
+
+        ui::styling::Button::destroy(m_buttonConfig);
     });
     
-    ui::Window::destroy(m_windowConfig);
+    ui::styling::Window::destroy(m_windowConfig);
 }

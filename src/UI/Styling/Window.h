@@ -2,14 +2,10 @@
 #include <imgui.h>
 #include <string>
 #include <functional>
+#include "Common.h"
 
-namespace ui
+namespace ui::styling
 {
-    struct AppliedStyling
-    {
-        int appliedColorStyles{};
-        int appliedVarStyles{};
-    };
 
     struct WindowPosConfig
     {
@@ -54,4 +50,4 @@ namespace ui
 
         static void addToLayout(std::function<void()> asignComponents);
     };
-} // ui
+} // ui::styling

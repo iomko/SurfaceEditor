@@ -1,26 +1,27 @@
 #pragma once
-#include <string>
 #include <imgui.h>
+#include "Button.h"
 #include "../../Renderer/ImageLoader.h"
 
-class ImageButton
+namespace ui::components
 {
-public:
-    ImageButton(const std::string& name, const std::string& iconFilePath)
-        : m_name(name), m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
-    { }
 
-    const std::string& name() const
+    class ImageButton : public virtual Button
     {
-        return m_name;
-    }
+    public:
+        ImageButton(const std::string& name, const std::string& iconFilePath, std::function<void()> action)
+            : Button(name, action), m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
+        { }
 
-    const int textureID() const
-    {
-        return m_textureID;
-    }
+        virtual ~ImageButton() = default;
 
-private:
-    std::string m_name;
-    ImTextureID m_textureID;
-};
+        const int textureID() const
+        {
+            return m_textureID;
+        }
+
+    private:
+        ImTextureID m_textureID;
+    };
+
+} // ui::components

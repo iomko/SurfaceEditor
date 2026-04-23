@@ -1,7 +1,7 @@
 #pragma once
 #include  <imgui.h>
 #include <glm/glm.hpp>
-#include "Components/Window.h"
+#include "Styling/Window.h"
 
 class OverlappingWindow
 {
@@ -20,5 +20,5 @@ protected:
     virtual void initWindowConfig() = 0;
 
 protected:
-    ui::WindowConfig m_windowConfig;
+    ui::styling::WindowConfig m_windowConfig;
 };

@@ -1,15 +1,16 @@
 #include "Window.h"
 #include "../VisibilityHandler.h"
 
-namespace ui
+namespace ui::styling
 {
 
     namespace
     {
         void checkResolutionInRange(const std::string& layer, float height, float width, float minHeight, float minWidth)
         {
-            static constexpr const int fullWidth  = 1920;
-            static constexpr const int fullHeight = 1080;
+            static constexpr int fullWidth  = 1920;
+            static constexpr int fullHeight = 1080;
+            
             const int minResWidth  = fullWidth * minWidth;
             const int minResHeight = fullHeight * minHeight;
 
@@ -69,4 +70,4 @@ namespace ui
         ImGui::EndGroup();
     }
 
-} // ui
+} // ui::styling
