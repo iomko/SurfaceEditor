@@ -68,6 +68,9 @@ find_package(CURL REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
+#tests
+find_package(Catch2 3 REQUIRED)
+
 #FETCH
 include(FetchContent)
 
@@ -192,6 +195,16 @@ add_executable(SurfaceEditor
     "${PROJECT_SOURCE_DIR}/src/Core/main.cpp"
 )
 
+add_executable(Test
+    "${PROJECT_SOURCE_DIR}/Tests/testMain.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/octreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/quadtreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/extendedHalfEdgeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/meshTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/printableMeshTests.cpp"
+)   
+
+target_link_libraries(Test PRIVATE Catch2::Catch2WithMain SurfaceEditorCore)
 target_link_libraries(SurfaceEditor PRIVATE
     SurfaceEditorCore
 )
