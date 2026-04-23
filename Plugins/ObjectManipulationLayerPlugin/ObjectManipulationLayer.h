@@ -14,6 +14,8 @@ public:
 
     void initWindowPosConfig() override;
 
+    void initWindowSizeConfig() override;
+
     void initWindowConfig() override;
 
     void onImGuiRender() override;

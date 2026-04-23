@@ -11,11 +11,14 @@ public:
     bool clickedOnWindow(const glm::vec2& clickPos);
 
 protected:
+    void setupWindow();
+
     virtual void initWindowPosConfig() = 0;
+
+    virtual void initWindowSizeConfig() = 0;
 
     virtual void initWindowConfig() = 0;
 
 protected:
-    ui::WindowPosConfig m_windowPosConfig;
-    ui::WindowConfig    m_windowConfig;
+    ui::WindowConfig m_windowConfig;
 };

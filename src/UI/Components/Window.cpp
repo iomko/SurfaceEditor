@@ -6,9 +6,6 @@ namespace ui
 
     namespace
     {
-        static constexpr ImVec4 DEFAULT_BACKGROUND(0.15f, 0.15f, 0.17f, 0.85f);
-        static constexpr ImVec4 TRANSPARENT_BACKGROUND(0.15f, 0.15f, 0.17f, 0.70f);
-
         void checkResolutionInRange(const std::string& layer, float height, float width, float minHeight, float minWidth)
         {
             static constexpr const int fullWidth  = 1920;
@@ -27,33 +24,26 @@ namespace ui
         }
     } // namespace
 
-    void Window::setPosAndSize(WindowPosConfig& config)
+    void Window::setPosAndSize(const std::string& layerName, WindowPosConfig& posConfig, WindowSizeConfig& sizeConfig)
     {
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
         const ImVec2 vpPos  = viewport->WorkPos;
         const ImVec2 vpSize = viewport->WorkSize;
 
-        config.rawPos  = ImVec2(vpPos.x + config.posX * vpSize.x, vpPos.y + config.posY * vpSize.y);
-        config.rawSize = ImVec2(config.width * vpSize.x, config.height * vpSize.y);
+        posConfig.rawPos  = ImVec2(vpPos.x + posConfig.posX * vpSize.x, vpPos.y + posConfig.posY * vpSize.y);
+        sizeConfig.rawSize = ImVec2(sizeConfig.width * vpSize.x, sizeConfig.height * vpSize.y);
 
-        ImGui::SetNextWindowPos(config.rawPos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(config.rawSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(posConfig.rawPos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(sizeConfig.rawSize, ImGuiCond_Always);
 
-        checkResolutionInRange(config.layer, vpSize.y, vpSize.x, config.minHeight, config.minWidth);
+        checkResolutionInRange(layerName, vpSize.y, vpSize.x, sizeConfig.minHeight, sizeConfig.minWidth);
     }
 
     void Window::init(WindowConfig& config)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, config.rounding);
-        if (!config.transparent)
-        {
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, DEFAULT_BACKGROUND);
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, TRANSPARENT_BACKGROUND);
-        }
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, config.backgroundColor);
         ImGui::Begin(config.name, nullptr, config.flags);
 
         ++config.styles.appliedColorStyles;
@@ -70,25 +60,13 @@ namespace ui
         config.styles.appliedVarStyles = 0;
     }
 
-    void Window::addToLayout(float margin, std::function<void()> asignComponents)
+    void Window::addToLayout(std::function<void()> asignComponents)
     {
-        //TODO - set margin
-
         ImGui::BeginGroup();
 
         asignComponents();
         
         ImGui::EndGroup();
-    }
-
-    void Window::nextItem(const Orientation& orientation)
-    {
-        //TODO
-    }
-
-    void Window::drawSeparator(const Orientation& orientation, float length)
-    {
-        //TODO
     }
 
 } // ui

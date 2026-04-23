@@ -1,10 +1,20 @@
 #include "OverlappingWindow.h"
+#include "../ViewPortsController.h"
+
+void OverlappingWindow::setupWindow()
+{
+    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
+
+    initWindowPosConfig();
+    initWindowSizeConfig();
+    initWindowConfig();
+}
 
 bool OverlappingWindow::clickedOnWindow(const glm::vec2& clickPos)
 {
     ImVec2 bottomRight = ImVec2(
-        m_windowPosConfig.rawPos.x + m_windowPosConfig.rawSize.x,
-        m_windowPosConfig.rawPos.y + m_windowPosConfig.rawSize.y
+        m_windowConfig.pos.rawPos.x + m_windowConfig.size.rawSize.x,
+        m_windowConfig.pos.rawPos.y + m_windowConfig.size.rawSize.y
     );
     
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -12,6 +22,6 @@ bool OverlappingWindow::clickedOnWindow(const glm::vec2& clickPos)
 
     ImVec2 actualClickPos(pos.x + clickPos.x, pos.y + clickPos.y); 
 
-    return actualClickPos.x >= m_windowPosConfig.rawPos.x && actualClickPos.x <= bottomRight.x &&
-           actualClickPos.y >= m_windowPosConfig.rawPos.y && actualClickPos.y <= bottomRight.y;
+    return actualClickPos.x >= m_windowConfig.pos.rawPos.x && actualClickPos.x <= bottomRight.x &&
+           actualClickPos.y >= m_windowConfig.pos.rawPos.y && actualClickPos.y <= bottomRight.y;
 }

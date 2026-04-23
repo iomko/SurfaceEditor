@@ -5,37 +5,37 @@
 
 namespace ui
 {
-    enum class Orientation
-    {
-        HORIZONTAL,
-        VERTICAL
-    };
-
     struct AppliedStyling
     {
-        int appliedColorStyles;
-        int appliedVarStyles;
+        int appliedColorStyles{};
+        int appliedVarStyles{};
     };
 
     struct WindowPosConfig
     {
-        std::string layer;
         float       posX;         // represents percentage of screen to achieve responsive design
         float       posY;         // represents percentage of screen to achieve responsive design
-        float       width;        // represents percentage of screen to achieve responsive design
-        float       height;       // represents percentage of screen to achieve responsive design
-        float       minWidth;     // represents percentage of screen to achieve responsive design
-        float       minHeight;    // represents percentage of screen to achieve responsive design
         ImVec2      rawPos;       // used automaticly by OverlappingWindow class
-        ImVec2      rawSize;      // used automaticly by OverlappingWindow class
+    };
+
+    struct WindowSizeConfig
+    {
+        float  width{};     // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
+        float  height{};    // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
+        float  minWidth;    // represents percentage of screen to achieve responsive design
+        float  minHeight;   // represents percentage of screen to achieve responsive design
+        ImVec2 rawSize;     // used automaticly by OverlappingWindow class
     };
 
     struct WindowConfig
     {
         const char*      name;
-        bool             transparent;
+        std::string      layerName;
+        ImVec4           backgroundColor;
         float            rounding;
         ImGuiWindowFlags flags;
+        WindowPosConfig  pos;
+        WindowSizeConfig size;
         AppliedStyling   styles;
     };
 
@@ -46,16 +46,12 @@ namespace ui
 
         ~Window() = delete;
 
-        static void setPosAndSize(WindowPosConfig& config);
+        static void setPosAndSize(const std::string& layerName, WindowPosConfig& posConfig, WindowSizeConfig& sizeConfig);
 
         static void init(WindowConfig& config);
 
         static void destroy(WindowConfig& config);
 
-        static void addToLayout(float margin, std::function<void()> asignComponents);
-
-        static void nextItem(const Orientation& orientation);
-
-        static void drawSeparator(const Orientation& orientation, float length);
+        static void addToLayout(std::function<void()> asignComponents);
     };
 } // ui

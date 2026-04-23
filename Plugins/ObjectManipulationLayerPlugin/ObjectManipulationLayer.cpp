@@ -6,6 +6,7 @@
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/WindowLayerBus.h"
 #include "../src/UI/Components/Window.h"
+#include "../src/UI/Components/Colors.h"
 #include "../src/UI/VisibilityHandler.h"
 
 namespace
@@ -30,12 +31,10 @@ static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg("OBJECT_M
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name)
 {
-    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
     VisibilityHandler::show("OBJECT_MANIPULATION_LAYER");
 
+    setupWindow();
     initButtons();
-    initWindowPosConfig();
-    initWindowConfig();
 }
 
 void ObjectManipulationLayer::initButtons()
@@ -49,22 +48,24 @@ void ObjectManipulationLayer::initButtons()
 
 void ObjectManipulationLayer::initWindowPosConfig()
 {
-    m_windowPosConfig.layer     = "OBJECT_MANIPULATION_LAYER";
-    m_windowPosConfig.posX      = 0.025f;
-    m_windowPosConfig.posY      = 0.37f;
-    m_windowPosConfig.width     = 0.0f; // implicit
-    m_windowPosConfig.height    = 0.0f; // implicit
-    m_windowPosConfig.minWidth  = 0.6f;
-    m_windowPosConfig.minHeight = 0.6f;
+    auto& posConfig = m_windowConfig.pos;
+    posConfig.posX  = 0.025f;
+    posConfig.posY  = 0.37f;
+}
+
+void ObjectManipulationLayer::initWindowSizeConfig()
+{
+    auto& sizeConfig     = m_windowConfig.size;
+    sizeConfig.minWidth  = 0.6f;
+    sizeConfig.minHeight = 0.6f;
 }
 
 void ObjectManipulationLayer::initWindowConfig()
 {
     m_windowConfig.name                      = this->getName().c_str();
-    m_windowConfig.transparent               = false;
+    m_windowConfig.layerName                 = "OBJECT_MANIPULATION_LAYER";
+    m_windowConfig.backgroundColor           = ui::Color::gray;
     m_windowConfig.rounding                  = 12.0f;
-    m_windowConfig.styles.appliedColorStyles = 0;
-    m_windowConfig.styles.appliedVarStyles   = 0;
     m_windowConfig.flags = ImGuiWindowFlags_NoTitleBar
                          | ImGuiWindowFlags_NoResize
                          | ImGuiWindowFlags_NoMove
@@ -74,7 +75,7 @@ void ObjectManipulationLayer::initWindowConfig()
 
 void ObjectManipulationLayer::onImGuiRender()
 {
-    ui::Window::setPosAndSize(m_windowPosConfig);
+    ui::Window::setPosAndSize(m_windowConfig.layerName, m_windowConfig.pos, m_windowConfig.size);
     if (!VisibilityHandler::isVisible("OBJECT_MANIPULATION_LAYER"))
     {
         return;
@@ -82,12 +83,12 @@ void ObjectManipulationLayer::onImGuiRender()
 
     ui::Window::init(m_windowConfig);
 
-    ui::Window::addToLayout(0.0f, [this]() {
-        float iconSize = ImGui::GetMainViewport()->WorkSize.x * 0.015f;
+    ui::Window::addToLayout([this]() {
+        const float iconSize = ImGui::GetMainViewport()->WorkSize.x * 0.015f;
 
         for (auto& button : m_buttons)
         {
-            if (ImGui::ImageButton(button->name().c_str(), button->textureID(), { iconSize, iconSize }))
+            if (ImGui::ImageButton(button->name().c_str(), button->textureID(), ImVec2(iconSize, iconSize)))
             {
                 //TODO
             }
