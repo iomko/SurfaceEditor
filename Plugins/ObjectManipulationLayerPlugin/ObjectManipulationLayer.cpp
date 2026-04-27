@@ -9,6 +9,7 @@
 #include "../src/UI/Styling/Window.h"
 #include "../src/UI/VisibilityHandler.h"
 #include "../src/Builders/UIWindowBuilder.h"
+#include "../src/Builders/UIButtonBuilder.h"
 
 namespace
 {
@@ -33,7 +34,6 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name),
       OverlappingWindow(initWindowConfig())
 {
-    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
     VisibilityHandler::show(m_windowConfig.name);
 
     initButtons();
@@ -61,12 +61,12 @@ ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
 
 void ObjectManipulationLayer::initButtons()
 {
-    static constexpr ui::styling::ButtonConfig defaultConfig{
-        17.0f,
-        ui::styling::Color::black,
-        ui::styling::Color::hoverOverOrange,
-        ui::styling::Color::onClickOrange
-    };
+    auto defaultConfig = ButtonConfigBuilder()
+        .rounding(17.0f)
+        .background(ui::styling::Color::black)
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
 
     m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(cursor, defaultConfig, cursorPath, []() {
         //TODO
@@ -85,7 +85,15 @@ void ObjectManipulationLayer::initButtons()
         auto* layer         = layerRegistry.getLayer("OBJECTS_LAYER", "ObjectsLayer");
         auto* objectsLayer  = static_cast<ObjectsLayer*>(layer);
 
-        objectsLayer->updatePosition(m_windowConfig.pos.rawPos.x, m_windowConfig.pos.rawPos.y);
+        objectsLayer->setOnFinishCallback([this]() {
+            resetModeState();
+        });
+        objectsLayer->setPosCallback([this]() {
+            return ImVec2{
+                m_windowConfig.pos.rawPos.x + m_windowConfig.size.autoFitSize.x,
+                m_windowConfig.pos.rawPos.y + m_windowConfig.size.autoFitSize.y
+            };
+        });
 
         VisibilityHandler::show("OBJECTS_LAYER");
     }));
@@ -114,13 +122,15 @@ void ObjectManipulationLayer::resetModeState()
 
 void ObjectManipulationLayer::onImGuiRender()
 {
-    ui::styling::Window::setPosAndSize(m_windowConfig.name, m_windowConfig.pos, m_windowConfig.size);
+    ui::styling::Window::setPosAndSize(m_windowConfig);
     if (!VisibilityHandler::isVisible(m_windowConfig.name))
     {
         return;
     }
 
     ui::styling::Window::init(m_windowConfig);
+
+    m_windowConfig.size.autoFitSize = ImGui::GetWindowSize(); // used by ObjectsLayer position initialization
 
     ui::styling::Window::addToLayout([this]() {
         const float iconSize = ImGui::GetMainViewport()->WorkSize.x * 0.015f;

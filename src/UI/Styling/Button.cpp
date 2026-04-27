@@ -9,9 +9,11 @@ namespace ui::styling
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, config.onHoverOverColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, config.onClickColor);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, config.rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, config.framePadding);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, config.windowPadding);
 
         config.styles.appliedColorStyles += 3;
-        ++config.styles.appliedVarStyles;
+        config.styles.appliedVarStyles   += 3;
     }
 
     void Button::destroy(ButtonConfig& config)

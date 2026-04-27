@@ -1,8 +1,11 @@
 #include "OverlappingWindow.h"
+#include "../ViewPortsController.h"
 
 OverlappingWindow::OverlappingWindow(ui::styling::WindowConfig config)
     : m_windowConfig(std::move(config))
-{ }
+{
+    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
+}
 
 bool OverlappingWindow::clickedOnWindow(const glm::vec2& clickPos)
 {

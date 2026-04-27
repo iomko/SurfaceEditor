@@ -20,6 +20,18 @@ public:
         return *this;
     }
 
+    WindowPosConfigBuilder& relativePosX(float x)
+    {
+        m_config.rawPos.x = x;
+        return *this;
+    }
+
+    WindowPosConfigBuilder& relativePosY(float y)
+    {
+        m_config.rawPos.y = y;
+        return *this;
+    }
+
     ui::styling::WindowPosConfig&& build()
     {
         return std::move(m_config);   
@@ -114,6 +126,11 @@ public:
 
     ui::styling::WindowConfig&& build()
     {
+        if (m_config.name.empty())
+        {
+            throw std::logic_error("WindowConfig construction error: name parameter is mandatory");
+        }
+
         return std::move(m_config);
     }
 

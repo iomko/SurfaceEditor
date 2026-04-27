@@ -23,22 +23,42 @@ namespace ui::styling
                 VisibilityHandler::setInRange(layer);
             }
         }
+
+        void initPosAndSize(WindowConfig& config, bool isPosResponsive)
+        {
+            auto& posConfig  = config.pos;
+            auto& sizeConfig = config.size;
+
+            const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+            const ImVec2 vpPos  = viewport->WorkPos;
+            const ImVec2 vpSize = viewport->WorkSize;
+
+            if (isPosResponsive)
+            {
+                posConfig.rawPos   = ImVec2(vpPos.x + posConfig.posX * vpSize.x, vpPos.y + posConfig.posY * vpSize.y);
+            }
+            sizeConfig.rawSize = ImVec2(sizeConfig.width * vpSize.x, sizeConfig.height * vpSize.y);
+
+            ImGui::SetNextWindowPos(posConfig.rawPos, ImGuiCond_Always);
+            ImGui::SetNextWindowSize(sizeConfig.rawSize, ImGuiCond_Always);
+
+            checkResolutionInRange(config.name, vpSize.y, vpSize.x, sizeConfig.minHeight, sizeConfig.minWidth);
+        }
     } // namespace
 
-    void Window::setPosAndSize(const std::string& layerName, WindowPosConfig& posConfig, WindowSizeConfig& sizeConfig)
+    void Window::setPosAndSize(WindowConfig& config)
     {
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        bool isPosResponsive = true;
 
-        const ImVec2 vpPos  = viewport->WorkPos;
-        const ImVec2 vpSize = viewport->WorkSize;
+        initPosAndSize(config, isPosResponsive);
+    }
 
-        posConfig.rawPos  = ImVec2(vpPos.x + posConfig.posX * vpSize.x, vpPos.y + posConfig.posY * vpSize.y);
-        sizeConfig.rawSize = ImVec2(sizeConfig.width * vpSize.x, sizeConfig.height * vpSize.y);
+    void Window::setRelativePosAndSize(WindowConfig& config)
+    {
+        bool isPosResponsive = false;
 
-        ImGui::SetNextWindowPos(posConfig.rawPos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(sizeConfig.rawSize, ImGuiCond_Always);
-
-        checkResolutionInRange(layerName, vpSize.y, vpSize.x, sizeConfig.minHeight, sizeConfig.minWidth);
+        initPosAndSize(config, isPosResponsive);
     }
 
     void Window::init(WindowConfig& config)

@@ -21,6 +21,7 @@ namespace ui::styling
         float  minWidth;    // represents percentage of screen to achieve responsive design
         float  minHeight;   // represents percentage of screen to achieve responsive design
         ImVec2 rawSize;     // used automaticly by OverlappingWindow class
+        ImVec2 autoFitSize; // auto fit size value
     };
 
     struct WindowConfig
@@ -41,7 +42,9 @@ namespace ui::styling
 
         ~Window() = delete;
 
-        static void setPosAndSize(const std::string& layerName, WindowPosConfig& posConfig, WindowSizeConfig& sizeConfig);
+        static void setPosAndSize(WindowConfig& config);
+
+        static void setRelativePosAndSize(WindowConfig& config);
 
         static void init(WindowConfig& config);
 
