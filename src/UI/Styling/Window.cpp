@@ -45,7 +45,7 @@ namespace ui::styling
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, config.rounding);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, config.backgroundColor);
-        ImGui::Begin(config.name, nullptr, config.flags);
+        ImGui::Begin(config.name.c_str(), nullptr, config.flags);
 
         ++config.styles.appliedColorStyles;
         ++config.styles.appliedVarStyles;

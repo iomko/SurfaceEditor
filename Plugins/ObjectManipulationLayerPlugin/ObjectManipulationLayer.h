@@ -13,13 +13,10 @@ class ObjectManipulationLayer : public Layer, public Observable, public Overlapp
 public:
     ObjectManipulationLayer(const std::string& name);
 
-    void initWindowPosConfig() override;
-
-    void initWindowSizeConfig() override;
-
-    void initWindowConfig() override;
-
     void onImGuiRender() override;
+
+protected:
+    ui::styling::WindowConfig initWindowConfig() override;
 
 private:
     void initButtons();
@@ -27,7 +24,5 @@ private:
     void resetModeState();
 
 private:
-    ui::styling::ButtonConfig m_buttonConfig;
-
     std::vector<std::unique_ptr<ui::components::RadioImageButton>> m_buttons;
 };

@@ -1,20 +1,36 @@
 #include "ObjectsLayer.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
+#include "../src/ViewPortsController.h"
 
 static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
-    : Layer(name)
+    : Layer(name),
+      OverlappingWindow(initWindowConfig())
 {
-    // auto& layerRegistry = LayerRegistry::instance();
-    // auto layer = layerRegistry.getLayer("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer");
-    // auto objectManipulationLayer = static_cast<ObjectManipulationLayer*>(layer);
+    ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
+}
 
-    // m_windowPos = objectManipulationLayer->rightBottomCorner();
+void ObjectsLayer::updatePosition(float x, float y)
+{
+    m_posX = x;
+    m_posY = y;
+}
+
+ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
+{
+    //TODO
+
+    return {};
 }
 
 void ObjectsLayer::onImGuiRender()
 {
+    if (!VisibilityHandler::isVisible("OBJECTS_LAYER"))
+    {
+        return;
+    }
+
     //TODO
 }

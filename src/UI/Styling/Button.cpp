@@ -23,11 +23,4 @@ namespace ui::styling
         config.styles.appliedVarStyles   = 0;
     }
 
-    void Button::changeBackgroundColor(ButtonConfig& config)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, config.background);
-
-        ++config.styles.appliedColorStyles;
-    }
-
 } // ui::styling

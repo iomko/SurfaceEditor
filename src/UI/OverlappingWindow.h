@@ -6,18 +6,14 @@
 class OverlappingWindow
 {
 public:
+    OverlappingWindow(ui::styling::WindowConfig config);
+
     virtual ~OverlappingWindow() = default;
 
     bool clickedOnWindow(const glm::vec2& clickPos);
 
 protected:
-    void setupWindow();
-
-    virtual void initWindowPosConfig() = 0;
-
-    virtual void initWindowSizeConfig() = 0;
-
-    virtual void initWindowConfig() = 0;
+    virtual ui::styling::WindowConfig initWindowConfig() = 0;
 
 protected:
     ui::styling::WindowConfig m_windowConfig;

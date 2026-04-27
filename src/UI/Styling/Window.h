@@ -9,15 +9,15 @@ namespace ui::styling
 
     struct WindowPosConfig
     {
-        float       posX;         // represents percentage of screen to achieve responsive design
-        float       posY;         // represents percentage of screen to achieve responsive design
-        ImVec2      rawPos;       // used automaticly by OverlappingWindow class
+        float  posX;         // represents percentage of screen to achieve responsive design
+        float  posY;         // represents percentage of screen to achieve responsive design
+        ImVec2 rawPos;       // used automaticly by OverlappingWindow class
     };
 
     struct WindowSizeConfig
     {
-        float  width{};     // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
-        float  height{};    // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
+        float  width;       // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
+        float  height;      // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
         float  minWidth;    // represents percentage of screen to achieve responsive design
         float  minHeight;   // represents percentage of screen to achieve responsive design
         ImVec2 rawSize;     // used automaticly by OverlappingWindow class
@@ -25,8 +25,7 @@ namespace ui::styling
 
     struct WindowConfig
     {
-        const char*      name;
-        std::string      layerName;
+        std::string      name;
         ImVec4           backgroundColor;
         float            rounding;
         ImGuiWindowFlags flags;

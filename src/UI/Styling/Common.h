@@ -6,8 +6,8 @@ namespace ui::styling
 
     struct AppliedStyling
     {
-        int appliedColorStyles{};
-        int appliedVarStyles{};
+        int appliedColorStyles;
+        int appliedVarStyles;
     };
     
     struct Color

@@ -23,8 +23,6 @@ namespace ui::styling
         static void init(ButtonConfig& config);
 
         static void destroy(ButtonConfig& config);
-
-        static void changeBackgroundColor(ButtonConfig& config);
     };
 
 } // ui::styling
