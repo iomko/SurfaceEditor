@@ -7,6 +7,7 @@
 #include "../../src/Renderer/MaterialRegistry.h"
 #include <vector>
 #include <cassert>
+
 static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer("DEBUG_LAYER");
 
 DebugLayer::DebugLayer(const std::string &name)
@@ -27,192 +28,75 @@ void DebugLayer::onEvent(Event &event)
 
 void DebugLayer::onImGuiRender()
 {
-  ImGui::Begin(this->getName().c_str());
+    ImGui::Begin(this->getName().c_str());
 
-        // Get window position and size
-        ImVec2 windowPos = ImGui::GetWindowPos();
-        ImVec2 windowSize = ImGui::GetWindowSize();
-        ImVec2 mousePos = ImGui::GetMousePos();
+    ImVec2 windowPos = ImGui::GetWindowPos();
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    ImVec2 mousePos = ImGui::GetMousePos();
 
-        // Update the class variable to track if the mouse is inside the window
-        m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
-            mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
+    m_isMouseInsideWindow =
+        (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
+         mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
-        std::vector<std::pair<std::string, std::string>> analyserNamesWithId = AnalyserRegistry::instance().getNamesWithId();
+    m_analyserInstances = AnalyserRegistry::instance().getAnalyserInstances();
 
-        if (m_selectedAnalyserName.first.empty() && !analyserNamesWithId.empty())
+    if (m_selectedAnalyserName.first.empty() && !m_analyserInstances.empty())
+    {
+        m_selectedAnalyserName.first = m_analyserInstances.front().displayName;
+        m_selectedAnalyserName.second = m_analyserInstances.front().instanceId;
+    }
+
+    ImGui::Text("Neural network model:");
+    if (ImGui::BeginCombo("##ModelDropdown", m_selectedAnalyserName.first.empty() ? "None" : m_selectedAnalyserName.first.c_str()))
+    {
+        for (const auto& instanceInfo : m_analyserInstances)
         {
-            m_selectedAnalyserName = analyserNamesWithId.front();
-        }
+            bool isSelected = (m_selectedAnalyserName.second == instanceInfo.instanceId);
 
-        ImGui::Text("Neural network model:");
-        if (ImGui::BeginCombo("##ModelDropdown", m_selectedAnalyserName.first.empty() ? "None" : m_selectedAnalyserName.first.c_str()))
-        {
-            for (auto& [modelName, modelId] : analyserNamesWithId)
+            if (ImGui::Selectable(instanceInfo.displayName.c_str(), isSelected))
             {
-                bool isSelected = (m_selectedAnalyserName.first == modelName);
-
-                if (ImGui::Selectable(modelName.c_str(), isSelected))
-                {
-                    m_selectedAnalyserName.first = modelName;
-                    m_selectedAnalyserName.second = modelId;
-                }
-
-                if (isSelected)
-                {
-                    ImGui::SetItemDefaultFocus();
-                }
+                m_selectedAnalyserName.first = instanceInfo.displayName;
+                m_selectedAnalyserName.second = instanceInfo.instanceId;
             }
 
-            ImGui::EndCombo();
+            if (isSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
         }
 
-        auto* selectedAnalyser =  AnalyserRegistry::instance().getAnalyser(m_selectedAnalyserName.second);
+        ImGui::EndCombo();
+    }
 
-        if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
+    auto* selectedAnalyser = AnalyserRegistry::instance().getAnalyserInstance(m_selectedAnalyserName.second);
 
-            if (ImGui::Button("Predict")) {
-                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-                const SelectionHolder& selectionHolder = selectionController->getHolder();
-                const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+    if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
 
-                for (Mesh* mesh : selectedMeshes) {
-                    predictor->predict(mesh);
-                }
+        if (ImGui::Button("Predict")) {
+            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+            const SelectionHolder& selectionHolder = selectionController->getHolder();
+            const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+
+            for (Mesh* mesh : selectedMeshes) {
+                predictor->predict(mesh);
             }
-
-        } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
-
-            if (ImGui::Button("Process")) {
-                SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-                const SelectionHolder& selectionHolder = selectionController->getHolder();
-                const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
-
-                for (Mesh* mesh : selectedMeshes) {
-                    processor->process(mesh);
-                }
-            }
-
         }
 
-        /*
+    } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
 
-        if(ImGui::Button("Recalculate")) {
+        if (ImGui::Button("Process")) {
+            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+            const SelectionHolder& selectionHolder = selectionController->getHolder();
+            const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
 
-            Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-            for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-                unhighlightAllFaces(mesh);
-                updateFacesVaoData(mesh);
+            for (Mesh* mesh : selectedMeshes) {
+                processor->process(mesh);
             }
-
-            if(m_skewCheckboxState) {
-
-                auto* faceSkewnessAnalyser = AnalyserRegistry::instance().getAnalyser(FACE_SKEWNESS_ANALYSER);
-                if(faceSkewnessAnalyser)
-                {
-                    Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-                    for(auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-
-                        //std::vector<float> probs = faceSkewnessAnalyser->predict(mesh);
-                    }
-                }
-            }
-
         }
 
-        if(ImGui::Checkbox("TriangleSkew", &m_skewCheckboxState)) {
-        }
+    }
 
-        if (ImGui::Button("Repair")) {
-
-            Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-            //musime si najskor zobrat vsetky trojuholniky, ktore boli cervene/skewed
-            std::unordered_set<ExtendedFace*> skewedFaces;
-
-            for (auto &[mesh, _] : scene->m_res.meshFaceOctreeCoordsMap) {
-
-                //musime ist cez vsetky faces daneho meshu
-                //musime zobrat vsetky cervene faces
-
-                while (true) {
-                    for (ExtendedFace* face : mesh->m_halfEdgeStructure->m_faces) {
-                        if (face->m_isSkewed) {
-                            //bola pridana redFace do skewedFaces
-                            skewedFaces.insert(face);
-                        }
-                    }
-
-                    if (skewedFaces.empty()) {
-                        break;
-                    }
-
-                    while (!skewedFaces.empty()) {
-
-                        auto skewedFacesIt = skewedFaces.begin();
-                        ExtendedFace* skewedFace = *skewedFacesIt;
-
-                        //musime najst pre tuto skewedFace najdlhsiu hranu
-                        ExtendedEdge* longestEdge = nullptr;
-
-                        for (auto it = skewedFace->faceHalfEdgeBegin(); it != skewedFace->faceHalfEdgeEnd(); ++it) {
-
-                            ExtendedHalfEdge* halfEdge = &(*it);
-
-                            glm::vec3 firstVertexPos = halfEdge->m_edge->m_firstVertex->m_position;
-                            glm::vec3 secondVertexPos = halfEdge->m_edge->m_secondVertex->m_position;
-
-                            glm::vec3 vector = secondVertexPos - firstVertexPos;
-                            float length = glm::length(vector);
-
-                            //musime najst nadlhsi edge
-                            if (longestEdge == nullptr || glm::length(longestEdge->m_secondVertex->m_position - longestEdge->m_firstVertex->m_position) < length) {
-                                longestEdge = halfEdge->m_edge;
-                            }
-                        }
-
-                        //mame pre tuto hranu najdlshi edge
-
-                        //teraz je potrebne zistit ci sa susedny face taktiez nachadza v skewedFaces kontajneri
-
-                        //dobre, vymazali sme obe faces, teraz potrebujeme dany vybrany face opravit
-                        if (longestEdge != nullptr && longestEdge->m_halfEdge->m_face->m_isSkewed) {
-                            longestEdge->m_halfEdge->m_face->m_isSkewed = false;
-                            skewedFaces.erase(longestEdge->m_halfEdge->m_face);
-                        }
-
-                        if (longestEdge != nullptr && longestEdge->m_halfEdge->m_twin != nullptr && longestEdge->m_halfEdge->m_twin->m_face->m_isSkewed) {
-                            longestEdge->m_halfEdge->m_twin->m_face->m_isSkewed = false;
-                            skewedFaces.erase(longestEdge->m_halfEdge->m_twin->m_face);
-                        }
-
-                        //opravit skewedFace na longestEdge
-                        //cize v skratke je potrebne implementovat metodu splitEdge v triede ExtendedHalfEdge
-
-                        SplitEdgeParams splitEdgeParams;
-                        splitEdgeParams.mesh = mesh;
-                        splitEdgeParams.edge = longestEdge;
-
-                        auto* command = CommandRegistry::instance().getCommand(SPLIT_EDGE_COMMAND);
-
-                        if (command) {
-                           command->execute(splitEdgeParams);
-                        }
-                    }
-
-                }
-
-                unhighlightAllFaces(mesh);
-                updateFacesVaoData(mesh);
-                updateEdgesVaoData(mesh);
-            }
-
-        }
-
-        */
-
-        ImGui::End();
+    ImGui::End();
 }
 
 void DebugLayer::updateEdgesVaoData(Mesh *mesh) {
