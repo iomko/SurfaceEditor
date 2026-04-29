@@ -30,6 +30,7 @@ void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataPa
 
     if (closestMesh != nullptr)
     {
+        closestMesh->m_halfEdgeStructure->ensureGraphBuilt();
         // Find vertex on the face, which was closest to the hit point
         Sphere sphere{hitPoint, iParams.radius};
         ExtendedVertex *closestVertex = findClosestVertexOnFace(closestFace, hitPoint);

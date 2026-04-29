@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 template<typename T>
 class QuadtreeNode 

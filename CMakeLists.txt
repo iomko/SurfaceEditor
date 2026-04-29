@@ -63,6 +63,9 @@ find_package(TIFF REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+#tests
+find_package(Catch2 3 REQUIRED)
+
 #FETCH
 include(FetchContent)
 
@@ -120,6 +123,21 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ImGuizmo)
 
 FetchContent_Declare(
+    ImGuiFileDialog
+    GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
+    GIT_TAG master
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(ImGuiFileDialog)
+
+target_include_directories(ImGuiFileDialog PUBLIC
+    ${imguifiledialog_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+target_link_libraries(ImGuiFileDialog PUBLIC ImGui)
+
+
+FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG v3.11.3
@@ -164,6 +182,7 @@ target_include_directories(Torch::Torch INTERFACE
 target_link_libraries(SurfaceEditorCore PUBLIC
     glad_core
     ImGui
+    ImGuiFileDialog
     ImGuizmo
     glfw
     Torch::Torch
@@ -200,6 +219,16 @@ add_executable(SurfaceEditor
     "${PROJECT_SOURCE_DIR}/src/Core/main.cpp"
 )
 
+add_executable(Test
+    "${PROJECT_SOURCE_DIR}/Tests/testMain.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/octreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/quadtreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/extendedHalfEdgeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/meshTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/printableMeshTests.cpp"
+)   
+
+target_link_libraries(Test PRIVATE Catch2::Catch2WithMain SurfaceEditorCore)
 target_link_libraries(SurfaceEditor PRIVATE
     SurfaceEditorCore
 )
@@ -244,6 +273,7 @@ export(TARGETS
     glad_core
     ImGui
     ImGuizmo
+    ImGuiFileDialog 
     TrianglePP
     Torch::Torch
     nlohmann_json

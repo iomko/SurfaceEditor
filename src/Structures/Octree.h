@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 template<typename T>
 class OctreeNode
@@ -311,5 +312,57 @@ public:
 
     void cleanAndRetrieveData() {
 
+    }
+
+    bool validateOctreeNode(OctreeNode<T>* node)
+    {
+        if (!node) return true;
+
+        if (node->parentNode) {
+            if (node->depth != node->parentNode->depth + 1)
+                return false;
+        } else {
+            if (node->depth != 0)
+                return false;
+        }
+
+        bool hasChildren = false;
+        for (int i = 0; i < 8; ++i) {
+            if (node->childrenNodes[i] != nullptr) {
+                hasChildren = true;
+                break;
+            }
+        }
+
+        if (node->isLeaf && hasChildren)
+            return false;
+
+        if (!node->isLeaf && !hasChildren)
+            return false;
+
+        for (int i = 0; i < 8; ++i) {
+            auto* child = node->childrenNodes[i];
+
+            if (child) {
+
+                // parent pointer check
+                if (child->parentNode != node)
+                    return false;
+
+                // depth check
+                if (child->depth != node->depth + 1)
+                    return false;
+
+                // bounding box containment check
+                if(!node->nodeBounds.intersectsAABB(child->nodeBounds))
+                    return false;
+
+                // recursive validation
+                if (!validateOctreeNode(child))
+                    return false;
+            }
+        }
+
+        return true;
     }
 };

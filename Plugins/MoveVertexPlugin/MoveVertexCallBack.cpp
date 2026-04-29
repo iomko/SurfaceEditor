@@ -12,6 +12,7 @@ void MoveVertexCallBack::execute(const VertexParams &iParams)
 
         ExtendedVertex* vertex = iParams.vertex;
         Mesh* mesh = iParams.mesh;
+        mesh->m_halfEdgeStructure->ensureGraphBuilt();
         glm::vec3 moveByVector = iParams.newPosition;
         glm::mat4 transformMatrix = iParams.transformMatrix;
 
