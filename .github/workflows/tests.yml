@@ -27,7 +27,7 @@ jobs:
             libeigen3-dev
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI_BUILD=ON
 
       - name: Build
         run: cmake --build build --parallel
