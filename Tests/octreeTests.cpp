@@ -409,3 +409,143 @@ TEST_CASE("Random insert/remove consistency test", "[octree][random]") {
     REQUIRE(result.size() == inserted.size());
     REQUIRE(tree.validateOctreeNode(tree.rootNode));
 }
+
+TEST_CASE("Invalid inverted AABB", "[octree][edge]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    REQUIRE_NOTHROW(tree.addDataToOctree(1, AABBBoundingRegion({10,10,10}, {0,0,0})));
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
+
+TEST_CASE("Max depth enforcement", "[octree][edge]") {
+    Octree<int> tree({0,0,0}, {100,100,100});
+
+    for (int i = 0; i < 1000; ++i) {
+        tree.addDataToOctree(i, makeBoxOctree(i, i+0.1f));
+    }
+
+    REQUIRE(tree.rootNode->depth == 0);
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
+
+TEST_CASE("Split invariant correctness", "[octree]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    for (int i = 0; i < 100; ++i)
+        tree.addDataToOctree(i, makeBoxOctree(i % 10, (i % 10) + 0.1f));
+
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
+
+TEST_CASE("Remove triggers node cleanup", "[octree][edge]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    tree.addDataToOctree(1, makeBoxOctree(1,2));
+    tree.addDataToOctree(2, makeBoxOctree(1,2));
+
+    tree.removeData(1);
+    tree.removeData(2);
+
+    REQUIRE(tree.rootNode->dataCount == 0);
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
+
+TEST_CASE("Remove under heavy subdivision", "[octree][stress]") {
+    Octree<int> tree({0,0,0}, {100,100,100});
+
+    for (int i = 0; i < 5000; ++i)
+        tree.addDataToOctree(i, makeBoxOctree(i % 20, i % 20 + 0.5f));
+
+    for (int i = 0; i < 2500; ++i)
+        tree.removeData(i);
+
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
+
+TEST_CASE("Query empty octree", "[octree]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    std::set<int> result;
+
+    tree.findDataInOctree(
+        makeBoxOctree(0,10),
+        boundsFuncOctree,
+        std::function<bool(const int&, const AABBBoundingRegion&)>(
+            [&](const int& d, const AABBBoundingRegion&) {
+                result.insert(d);
+                return true;
+            }
+        )
+    );
+
+    REQUIRE(result.empty());
+}
+
+TEST_CASE("Partial overlap query correctness", "[octree]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    tree.addDataToOctree(1, makeBoxOctree(4,6));
+    tree.addDataToOctree(2, makeBoxOctree(6,8));
+
+    std::set<int> result;
+
+    tree.findDataInOctree(
+        makeBoxOctree(5,5),
+        boundsFuncOctree,
+        std::function<bool(const int&, const AABBBoundingRegion&)>(
+            [&](const int& d, const AABBBoundingRegion&) {
+                result.insert(d);
+                return true;
+            }
+        )
+    );
+
+    REQUIRE(result.size() >= 1);
+}
+
+TEST_CASE("Iterator on empty tree", "[octree]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    int count = 0;
+    for (auto it = tree.begin(); it != tree.end(); ++it)
+        count++;
+
+    REQUIRE(count == 0);
+}
+
+TEST_CASE("Iterator single element", "[octree]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    tree.addDataToOctree(1, makeBoxOctree(1,2));
+
+    int count = 0;
+    for (auto it = tree.begin(); it != tree.end(); ++it)
+        count++;
+
+    REQUIRE(count >= 1);
+}
+
+TEST_CASE("Random fuzz stability", "[octree][stress]") {
+    Octree<int> tree({0,0,0}, {100,100,100});
+
+    std::mt19937 rng(42);
+    std::uniform_real_distribution<float> d(0, 100);
+    std::uniform_int_distribution<int> v(0, 1000);
+
+    std::vector<int> inserted;
+
+    for (int i = 0; i < 10000; ++i) {
+        int val = v(rng);
+        float a = d(rng);
+
+        tree.addDataToOctree(val, makeBoxOctree(a, a + 0.1f));
+        inserted.push_back(val);
+
+        if (i % 3 == 0 && !inserted.empty()) {
+            tree.removeData(inserted.back());
+            inserted.pop_back();
+        }
+    }
+
+    REQUIRE(tree.validateOctreeNode(tree.rootNode));
+}
