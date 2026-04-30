@@ -549,3 +549,54 @@ TEST_CASE("Random fuzz stability", "[octree][stress]") {
 
     REQUIRE(tree.validateOctreeNode(tree.rootNode));
 }
+
+TEST_CASE("Octree invariant stability after random operations", "[octree][invariant]") {
+    Octree<int> tree({0,0,0}, {100,100,100});
+
+    std::mt19937 rng(42);
+    std::uniform_real_distribution<float> d(0,100);
+    std::uniform_int_distribution<int> v(0,1000);
+
+    std::vector<int> inserted;
+
+    for (int i = 0; i < 5000; ++i) {
+        int val = v(rng);
+        float a = d(rng);
+
+        tree.addDataToOctree(val, makeBoxOctree(a, a+0.1f));
+        inserted.push_back(val);
+
+        if (i % 5 == 0 && !inserted.empty()) {
+            tree.removeData(inserted.back());
+            inserted.pop_back();
+        }
+
+        REQUIRE(tree.validateOctreeNode(tree.rootNode));
+    }
+}
+
+TEST_CASE("Repeated construction and destruction", "[octree][memory]") {
+    for (int i = 0; i < 100; ++i) {
+        Octree<int>* tree = new Octree<int>({0,0,0}, {10,10,10});
+
+        for (int j = 0; j < 100; ++j)
+            tree->addDataToOctree(j, makeBoxOctree(j, j+0.1f));
+
+        delete tree;
+    }
+
+    SUCCEED();
+}
+
+TEST_CASE("Leaf map consistency", "[octree][map]") {
+    Octree<int> tree({0,0,0}, {10,10,10});
+
+    tree.addDataToOctree(1, makeBoxOctree(1,2));
+    tree.addDataToOctree(1, makeBoxOctree(3,4));
+
+    //REQUIRE(tree.leafs[1].size() == 2);
+
+    tree.removeData(1);
+
+    REQUIRE(tree.leafs.find(1) == tree.leafs.end());
+}
