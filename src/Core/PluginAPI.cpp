@@ -29,7 +29,7 @@ void setupPlugin(std::string command_id, std::string callback_id, std::string to
 	auto *callback = CallbackRegistry::instance().getCallback(callback_id);
 	if (callback == nullptr)
 	{
-		printf("not callback with id %d\n", callback_id);
+		printf("not callback with id %s\n", callback_id.c_str());
 		return;
 	}
 	auto *command = CommandRegistry::instance().getCommand(command_id); // zjednotit + osobitny .h ako ciselnik a robit cez id
