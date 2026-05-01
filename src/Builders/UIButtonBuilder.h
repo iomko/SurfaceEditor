@@ -15,6 +15,18 @@ public:
         return *this;
     }
 
+    ButtonConfigBuilder& font(ImFont* font)
+    {
+        m_config.font = font;
+        return *this;
+    }
+
+    ButtonConfigBuilder& size(const ImVec2& size)
+    {
+        m_config.size = size;
+        return *this;
+    }
+
     ButtonConfigBuilder& background(const ImVec4& background)
     {
         m_config.background = background;
@@ -39,9 +51,9 @@ public:
         return *this;
     }
 
-    ButtonConfigBuilder& windowPadding(const ImVec2& padding)
+    ButtonConfigBuilder& square(bool square)
     {
-        m_config.windowPadding = padding;
+        m_config.square = square;
         return *this;
     }
 

@@ -61,26 +61,31 @@ ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
 
 void ObjectManipulationLayer::initButtons()
 {
+    using namespace ui::components;
+
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(17.0f)
+        .size(ImVec2{ 0.025f, 0.025f })
+        .square(true)
+        .framePadding(ImVec2{ 5.0f, 5.0f })
         .background(ui::styling::Color::black)
         .onHoverColor(ui::styling::Color::hoverOverOrange)
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(cursor, defaultConfig, cursorPath, []() {
+    m_buttons.emplace_back(std::make_unique<RadioImageButton>(cursor, defaultConfig, cursorPath, [](Button*) {
         //TODO
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(translate, defaultConfig, translatePath, []() {
+    m_buttons.emplace_back(std::make_unique<RadioImageButton>(translate, defaultConfig, translatePath, [](Button*) {
         //TODO
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(rotate, defaultConfig, rotatePath, []() {
+    m_buttons.emplace_back(std::make_unique<RadioImageButton>(rotate, defaultConfig, rotatePath, [](Button*) {
         //TODO
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(scale, defaultConfig, scalePath, []() {
+    m_buttons.emplace_back(std::make_unique<RadioImageButton>(scale, defaultConfig, scalePath, [](Button*) {
         //TODO
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::RadioImageButton>(plus, defaultConfig, plusPath, [this]() {
+    m_buttons.emplace_back(std::make_unique<RadioImageButton>(plus, defaultConfig, plusPath, [this](Button* button) {
         auto& layerRegistry = LayerRegistry::instance();
         auto* layer         = layerRegistry.getLayer("OBJECTS_LAYER", "ObjectsLayer");
         auto* objectsLayer  = static_cast<ObjectsLayer*>(layer);
@@ -88,10 +93,10 @@ void ObjectManipulationLayer::initButtons()
         objectsLayer->setOnFinishCallback([this]() {
             resetModeState();
         });
-        objectsLayer->setPosCallback([this]() {
+        objectsLayer->setPosCallback([this, button]() {
             return ImVec2{
-                m_windowConfig.pos.rawPos.x + m_windowConfig.size.autoFitSize.x,
-                m_windowConfig.pos.rawPos.y + m_windowConfig.size.autoFitSize.y
+                m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x - button->config().realSize.x,
+                m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y - button->config().realSize.y
             };
         });
 
@@ -130,16 +135,14 @@ void ObjectManipulationLayer::onImGuiRender()
 
     ui::styling::Window::init(m_windowConfig);
 
-    m_windowConfig.size.autoFitSize = ImGui::GetWindowSize(); // used by ObjectsLayer position initialization
-
     ui::styling::Window::addToLayout([this]() {
-        const float iconSize = ImGui::GetMainViewport()->WorkSize.x * 0.015f;
-
         for (auto& button : m_buttons)
         {
             ui::styling::Button::init(button->config());
 
-            if (ImGui::ImageButton(button->name().c_str(), button->textureID(), ImVec2(iconSize, iconSize)))
+            const ImVec2 buttonSize = button->config().realSize;
+
+            if (ImGui::ImageButton(button->name().c_str(), button->textureID(), buttonSize))
             {
                 resetModeState();
 

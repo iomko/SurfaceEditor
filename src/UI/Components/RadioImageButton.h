@@ -11,7 +11,7 @@ namespace ui::components
         RadioImageButton(const std::string& name,
                          const ui::styling::ButtonConfig& config,
                          const std::string& iconFilePath,
-                         std::function<void()> action)
+                         std::function<void(Button*)> action)
             : Button(name, config, action),
               ImageButton(name, config, iconFilePath, action),
               RadioButton(name, config, action)

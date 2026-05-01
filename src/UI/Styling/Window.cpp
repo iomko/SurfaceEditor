@@ -66,7 +66,8 @@ namespace ui::styling
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, config.rounding);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, config.backgroundColor);
         ImGui::Begin(config.name.c_str(), nullptr, config.flags);
-
+        
+        config.size.realSize = ImGui::GetWindowSize();
         ++config.styles.appliedColorStyles;
         ++config.styles.appliedVarStyles;
     }
@@ -81,11 +82,20 @@ namespace ui::styling
         config.styles.appliedVarStyles = 0;
     }
 
-    void Window::addToLayout(std::function<void()> asignComponents)
+    void Window::addToLayout(std::function<void()> asignComponents, const ImVec2& margin)
     {
         ImGui::BeginGroup();
 
+        const ImVec2 windowSize       = ImGui::GetWindowSize();
+        const float responsiveMarginX = windowSize.x * margin.x;
+        const float responsiveMarginY = windowSize.y * margin.y;
+
+        //TODO horizontal margin
+        ImGui::Dummy(ImVec2{0.0f, responsiveMarginY});
+        
         asignComponents();
+
+        ImGui::Dummy(ImVec2{0.0f, responsiveMarginY});
         
         ImGui::EndGroup();
     }

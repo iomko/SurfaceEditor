@@ -7,7 +7,7 @@ namespace ui::components
     class RadioButton : public virtual Button
     {
     public:
-        RadioButton(const std::string& name, const ui::styling::ButtonConfig& config, std::function<void()> action)
+        RadioButton(const std::string& name, const ui::styling::ButtonConfig& config, std::function<void(Button*)> action)
             : Button(name, config, action)
         { }
 

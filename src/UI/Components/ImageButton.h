@@ -12,7 +12,7 @@ namespace ui::components
         ImageButton(const std::string& name,
                     const ui::styling::ButtonConfig& config,
                     const std::string& iconFilePath,
-                    std::function<void()> action)
+                    std::function<void(Button*)> action)
             : Button(name, config, action),
               m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
         { }

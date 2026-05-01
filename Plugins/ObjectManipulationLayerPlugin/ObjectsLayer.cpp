@@ -1,4 +1,5 @@
 #include "ObjectsLayer.h"
+#include "../src/UI/Styling/Font.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
 #include "../src/Builders/UIWindowBuilder.h"
@@ -15,22 +16,27 @@ ObjectsLayer::ObjectsLayer(const std::string& name)
 
 void ObjectsLayer::initButtons()
 {
+    using namespace ui::components;
+
+    auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
+
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(12.0f)
-        .background(ui::styling::Color::black)
+        .size(buttonSize)
+        .background(ui::styling::Color::darkGray)
+        .font(ui::styling::Font::regular(0.8f))
+        .size(ImVec2{ 0.04f, 0.02f })
         .onHoverColor(ui::styling::Color::hoverOverOrange)
         .onClickColor(ui::styling::Color::onClickOrange)
-        // .framePadding()
-        // .windowPadding()
         .build();
 
-    m_buttons.emplace_back(std::make_unique<ui::components::Button>("Plane", defaultConfig, []() {
+    m_buttons.emplace_back(std::make_unique<Button>("Plane", defaultConfig, [](Button*) {
         // AdditionLayer::setAdditionType(AdditionType::PLANE);
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::Button>("Cube", defaultConfig, []() {
+    m_buttons.emplace_back(std::make_unique<Button>("Cube", defaultConfig, [](Button*) {
         // AdditionLayer::setAdditionType(AdditionType::CUBE);
     }));
-    m_buttons.emplace_back(std::make_unique<ui::components::Button>("Surface", defaultConfig, []() {
+    m_buttons.emplace_back(std::make_unique<Button>("Surface", defaultConfig, [](Button*) {
         // AdditionLayer::setAdditionType(AdditionType::SURFACE);
     }));
 }
@@ -49,7 +55,7 @@ void ObjectsLayer::updatePosition()
 {
     ImVec2 pos = m_getPos();
 
-    m_windowConfig.pos = WindowPosConfigBuilder().relativePosX(pos.x * 0.9f).relativePosY(pos.y * 0.95f).build();
+    m_windowConfig.pos = WindowPosConfigBuilder().relativePosX(pos.x).relativePosY(pos.y).build();
 }
 
 ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
@@ -88,13 +94,9 @@ void ObjectsLayer::onImGuiRender()
 
     for (auto& button : m_buttons)
     {
-        ImVec2 windowSize = ImGui::GetWindowSize();
-        ImVec2 buttonSize{
-            windowSize.x * 0.7f,
-            windowSize.y * 0.25f
-        };
-
         ui::styling::Button::init(button->config());
+
+        const ImVec2 buttonSize = button->config().realSize;
 
         if (ImGui::Button(button->name().c_str(), buttonSize))
         {

@@ -21,7 +21,7 @@ namespace ui::styling
         float  minWidth;    // represents percentage of screen to achieve responsive design
         float  minHeight;   // represents percentage of screen to achieve responsive design
         ImVec2 rawSize;     // used automaticly by OverlappingWindow class
-        ImVec2 autoFitSize; // auto fit size value
+        ImVec2 realSize;    // auto fit size value
     };
 
     struct WindowConfig
@@ -50,6 +50,6 @@ namespace ui::styling
 
         static void destroy(WindowConfig& config);
 
-        static void addToLayout(std::function<void()> asignComponents);
+        static void addToLayout(std::function<void()> asignComponents, const ImVec2& margin = {});
     };
 } // ui::styling

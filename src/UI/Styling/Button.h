@@ -6,12 +6,15 @@ namespace ui::styling
 
     struct ButtonConfig
     {
+        bool           square;
         float          rounding;
+        ImFont*        font;
+        ImVec2         size;
+        ImVec2         realSize;
         ImVec4         background;
         ImVec4         onHoverOverColor;
         ImVec4         onClickColor;
         ImVec2         framePadding;
-        ImVec2         windowPadding;
         AppliedStyling styles;
     };
 
