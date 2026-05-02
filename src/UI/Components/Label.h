@@ -18,7 +18,7 @@ namespace ui::components
             return m_text;
         }
 
-        const ui::styling::LabelConfig& config() const
+        ui::styling::LabelConfig& config()
         {
             return m_config;
         }

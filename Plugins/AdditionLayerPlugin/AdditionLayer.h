@@ -9,6 +9,7 @@
 namespace ui::components
 {
     class Label;
+    class CheckBox;
 } // ui::components
 
 enum class AdditionType
@@ -61,7 +62,6 @@ private:
 	char m_apiKeyBuffer[API_BUFFER_SIZE];
 
     // Mesh inputs
-	bool  m_automaticSubdivision{};
 	float m_xPos{};
 	float m_yPos{};
 	float m_zPos{};
@@ -69,9 +69,11 @@ private:
     int   m_subdivision = 1;
 
     // Mesh components
-    std::unique_ptr<ui::components::Label> m_subdivisionLabel;
-    std::unique_ptr<ui::components::Label> m_sizeLabel;
-    std::unique_ptr<ui::components::Label> m_positionLabel;
+    std::unique_ptr<ui::components::Label>    m_subdivisionLabel;
+    std::unique_ptr<ui::components::Label>    m_sizeLabel;
+    std::unique_ptr<ui::components::Label>    m_positionLabel;
+    std::unique_ptr<ui::components::Label>    m_automaticLabel;
+    std::unique_ptr<ui::components::CheckBox> m_automaticCheckbox;
 
     // Surface components
     //TODO

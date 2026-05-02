@@ -6,7 +6,9 @@
 #include "../../src/Builders/UIWindowBuilder.h"
 #include "../../src/Builders/UIButtonBuilder.h"
 #include "../../src/Builders/UILabelBuilder.h"
+#include "../../src/Builders/UICheckBoxBuilder.h"
 #include "../src/UI/Components/Label.h"
+#include "../src/UI/Components/CheckBox.h"
 
 static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
@@ -20,7 +22,7 @@ AdditionLayer::AdditionLayer(const std::string& name)
 
 ui::styling::WindowConfig AdditionLayer::initWindowConfig()
 {
-    auto posConfig      = WindowPosConfigBuilder().posX(0.38f).posY(0.3f).build();
+    auto posConfig      = WindowPosConfigBuilder().posX(0.38f).posY(0.28f).build();
     auto sizeConfig     = WindowSizeConfigBuilder().width(0.25f).height(0.35f).minWidth(0.6f).minHeight(0.6f).build();
     auto titleBarConfig = WindowTitleBarBuilder().background(ui::styling::Color::titleBarOrange).font(ui::styling::Font::extraBold(20.0f)).build();
     auto flags          = ImGuiWindowFlags_NoResize
@@ -42,12 +44,25 @@ ui::styling::WindowConfig AdditionLayer::initWindowConfig()
 void AdditionLayer::initComponents()
 {
     auto headlinersConfig = LabelConfigBuilder()
-        .font(ui::styling::Font::extraBold(15.0f))
+        .font(ui::styling::Font::extraBold(0.025f))
         .build();
 
-    m_subdivisionLabel = std::make_unique<ui::components::Label>("Subdivision", headlinersConfig);
-    m_sizeLabel        = std::make_unique<ui::components::Label>("Size", headlinersConfig);
-    m_positionLabel    = std::make_unique<ui::components::Label>("Position", headlinersConfig);
+    auto defaultTextConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::regular(0.02))
+        .build();
+
+    auto checkBoxConfig = CheckBoxConfigBuilder()
+        .checkMarkColor(ui::styling::Color::selectedOrange)
+        .background(ui::styling::Color::darkGray)
+        .onHoverBackground(ui::styling::Color::darkGray)
+        .onActiveBackground(ui::styling::Color::darkGray)
+        .build();
+
+    m_subdivisionLabel  = std::make_unique<ui::components::Label>("Subdivision", headlinersConfig);
+    m_sizeLabel         = std::make_unique<ui::components::Label>("Size", headlinersConfig);
+    m_positionLabel     = std::make_unique<ui::components::Label>("Position", headlinersConfig);
+    m_automaticLabel    = std::make_unique<ui::components::Label>("Automatic:", defaultTextConfig);
+    m_automaticCheckbox = std::make_unique<ui::components::CheckBox>(checkBoxConfig);
 }
 
 void AdditionLayer::addPlane()
@@ -100,21 +115,31 @@ void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<Co
         // Subdivision
         ui::styling::Label::init(m_subdivisionLabel->text(), m_subdivisionLabel->config());
         ui::styling::Label::destroy(m_subdivisionLabel->config());
-        ui::styling::Window::drawHorizontalSeparator(0.7f);
+
+        ui::styling::Label::init(m_automaticLabel->text(), m_automaticLabel->config());
+        ui::styling::Label::destroy(m_automaticLabel->config());
+        
+        ImGui::SameLine();
+
+        ui::styling::CheckBox::init(m_automaticLabel->text(), m_automaticCheckbox->isChecked(), m_automaticCheckbox->config());
+        ui::styling::CheckBox::destroy(m_automaticCheckbox->config());
+
+        ui::styling::Window::drawHorizontalSeparator(0.55f);
 
         // Size
         ui::styling::Label::init(m_sizeLabel->text(), m_sizeLabel->config());
         ui::styling::Label::destroy(m_sizeLabel->config());
-        ui::styling::Window::drawHorizontalSeparator(0.7f);
+        ui::styling::Window::drawHorizontalSeparator(0.55f);
 
         // Position
         ui::styling::Label::init(m_positionLabel->text(), m_positionLabel->config());
         ui::styling::Label::destroy(m_positionLabel->config());
-        ui::styling::Window::drawHorizontalSeparator(0.7f);
+        ui::styling::Window::drawHorizontalSeparator(0.55f);
+    }, ImVec2{ 0.2f, 0.05f });
 
-        // Dialog
+    ui::styling::Window::addToLayout([]() {
         //TODO
-    }, ImVec2{ 0.2f, 0.1f });
+    });
 }
 
 void AdditionLayer::drawSurfaceComponents(CommandConcept* command)

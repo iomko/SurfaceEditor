@@ -18,9 +18,9 @@ namespace ui::styling
 
         ~Label() = delete;
 
-        static void init(const std::string& text, const LabelConfig& config);
+        static void init(const std::string& text, LabelConfig& config);
 
-        static void destroy(const LabelConfig& config);
+        static void destroy(LabelConfig& config);
     };
 
 } // ui::styling
