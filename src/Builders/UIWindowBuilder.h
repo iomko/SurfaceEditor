@@ -131,6 +131,12 @@ public:
         return *this;
     }
 
+    WindowConfigBuilder& layerName(const std::string& name)
+    {
+        m_config.layerName = name;
+        return *this;
+    }
+
     WindowConfigBuilder& background(const ImVec4& background)
     {
         m_config.backgroundColor = background;
@@ -172,6 +178,10 @@ public:
         if (m_config.name.empty())
         {
             throw std::logic_error("WindowConfig construction error: name parameter is mandatory");
+        }
+        if (m_config.layerName.empty())
+        {
+            m_config.layerName = m_config.name;
         }
 
         return std::move(m_config);

@@ -33,6 +33,7 @@ namespace ui::styling
     struct WindowConfig
     {
         std::string          name;
+        std::string          layerName;
         ImVec4               backgroundColor;
         float                rounding;
         ImGuiWindowFlags     flags;

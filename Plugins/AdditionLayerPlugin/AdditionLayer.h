@@ -10,6 +10,9 @@ namespace ui::components
 {
     class Label;
     class CheckBox;
+
+    template<typename T>
+    class InputBox;
 } // ui::components
 
 enum class AdditionType
@@ -54,26 +57,27 @@ private:
 
 	AdditionType m_additionType;
 
-    // Surface inputs
-	float m_lowerLeftLon{};
-	float m_lowerLeftLat{};
-	float m_upperRightLon{};
-	float m_upperRightLat{};
-	char m_apiKeyBuffer[API_BUFFER_SIZE];
-
-    // Mesh inputs
-	float m_xPos{};
-	float m_yPos{};
-	float m_zPos{};
-    float m_size        = 1.0f;
-    int   m_subdivision = 1;
+    // // Surface inputs
+	// float m_lowerLeftLon{};
+	// float m_lowerLeftLat{};
+	// float m_upperRightLon{};
+	// float m_upperRightLat{};
+	// char m_apiKeyBuffer[API_BUFFER_SIZE];
 
     // Mesh components
-    std::unique_ptr<ui::components::Label>    m_subdivisionLabel;
-    std::unique_ptr<ui::components::Label>    m_sizeLabel;
-    std::unique_ptr<ui::components::Label>    m_positionLabel;
-    std::unique_ptr<ui::components::Label>    m_automaticLabel;
-    std::unique_ptr<ui::components::CheckBox> m_automaticCheckbox;
+    std::unique_ptr<ui::components::Label>           m_subdivisionLabel;
+    std::unique_ptr<ui::components::Label>           m_sizeLabel;
+    std::unique_ptr<ui::components::Label>           m_positionLabel;
+    std::unique_ptr<ui::components::Label>           m_automaticLabel;
+    std::unique_ptr<ui::components::Label>           m_posXLabel;
+    std::unique_ptr<ui::components::Label>           m_posYLabel;
+    std::unique_ptr<ui::components::Label>           m_posZLabel;
+    std::unique_ptr<ui::components::CheckBox>        m_automaticCheckbox;
+    std::unique_ptr<ui::components::InputBox<int>>   m_subdivisionInputBox;
+    std::unique_ptr<ui::components::InputBox<float>> m_sizeInputBox;
+    std::unique_ptr<ui::components::InputBox<float>> m_posXInputBox;
+    std::unique_ptr<ui::components::InputBox<float>> m_posYInputBox;
+    std::unique_ptr<ui::components::InputBox<float>> m_posZInputBox;
 
     // Surface components
     //TODO

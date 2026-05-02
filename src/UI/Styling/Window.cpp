@@ -36,14 +36,14 @@ namespace ui::styling
 
             if (isPosResponsive)
             {
-                posConfig.rawPos   = ImVec2(vpPos.x + posConfig.posX * vpSize.x, vpPos.y + posConfig.posY * vpSize.y);
+                posConfig.rawPos = ImVec2(vpPos.x + posConfig.posX * vpSize.x, vpPos.y + posConfig.posY * vpSize.y);
             }
             sizeConfig.rawSize = ImVec2(sizeConfig.width * vpSize.x, sizeConfig.height * vpSize.y);
 
             ImGui::SetNextWindowPos(posConfig.rawPos, ImGuiCond_Always);
             ImGui::SetNextWindowSize(sizeConfig.rawSize, ImGuiCond_Always);
 
-            checkResolutionInRange(config.name, vpSize.y, vpSize.x, sizeConfig.minHeight, sizeConfig.minWidth);
+            checkResolutionInRange(config.layerName, vpSize.y, vpSize.x, sizeConfig.minHeight, sizeConfig.minWidth);
         }
     } // namespace
 
