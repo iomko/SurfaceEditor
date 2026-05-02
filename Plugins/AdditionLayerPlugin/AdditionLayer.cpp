@@ -3,14 +3,16 @@
 #include "../../src/Commands/CommandRegistry.h"
 #include "../../src/UI/Components/Button.h"
 #include "../../src/UI/Styling/Font.h"
+#include "../src/UI/Components/Label.h"
+#include "../src/UI/Components/CheckBox.h"
+#include "../src/UI/Components/InputBox.h"
+#include "../src/UI/Components/Slider.h"
 #include "../../src/Builders/UIWindowBuilder.h"
 #include "../../src/Builders/UIButtonBuilder.h"
 #include "../../src/Builders/UILabelBuilder.h"
 #include "../../src/Builders/UICheckBoxBuilder.h"
 #include "../../src/Builders/UIInputBoxBuilder.h"
-#include "../src/UI/Components/Label.h"
-#include "../src/UI/Components/CheckBox.h"
-#include "../src/UI/Components/InputBox.h"
+#include "../../src/Builders/UISliderBuilder.h"
 
 static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
@@ -31,9 +33,9 @@ ui::styling::WindowConfig AdditionLayer::initWindowConfig()
 
     auto sizeConfig = WindowSizeConfigBuilder()
         .width(0.25f)
-        .height(0.35f)
+        .height(0.4f)
         .minWidth(0.6f)
-        .minHeight(0.6f)
+        .minHeight(0.75f)
         .build();
 
     auto titleBarConfig = WindowTitleBarBuilder()
@@ -60,6 +62,21 @@ ui::styling::WindowConfig AdditionLayer::initWindowConfig()
 
 void AdditionLayer::initComponents()
 {
+    auto buttonSize = ImVec2{
+        m_windowConfig.size.width * 0.5f,
+        m_windowConfig.size.height * 0.25f
+    };
+
+    auto dialogButtonConfig = ButtonConfigBuilder()
+        .rounding(8.0f)
+        .size(buttonSize)
+        .background(ui::styling::Color::lightGray)
+        .font(ui::styling::Font::regular(0.6f))
+        .size(ImVec2{ 0.042f, 0.04f })
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
+
     auto headlinersConfig = LabelConfigBuilder()
         .font(ui::styling::Font::extraBold(0.025f))
         .build();
@@ -70,14 +87,34 @@ void AdditionLayer::initComponents()
 
     auto checkBoxConfig = CheckBoxConfigBuilder()
         .checkMarkColor(ui::styling::Color::selectedOrange)
-        .background(ui::styling::Color::darkGray)
-        .onHoverBackground(ui::styling::Color::darkGray)
-        .onActiveBackground(ui::styling::Color::darkGray)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
         .build();
 
     auto inputBoxConfig = InputBoxBuilder()
         .width(0.17f)
-        .background(ui::styling::Color::darkGray)
+        .background(ui::styling::Color::lightGray)
+        .build();
+
+    auto intSliderConfig = SliderConfigBuilder<int>()
+        .width(0.37f)
+        .max(100)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
+        .build();
+
+    auto floatSliderConfig = SliderConfigBuilder<float>()
+        .width(0.36f)
+        .max(100.0f)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
         .build();
 
     m_subdivisionLabel    = std::make_unique<ui::components::Label>("Subdivision", headlinersConfig);
@@ -93,6 +130,16 @@ void AdditionLayer::initComponents()
     m_posXInputBox        = std::make_unique<ui::components::InputBox<float>>("PosXInputBox", inputBoxConfig);
     m_posYInputBox        = std::make_unique<ui::components::InputBox<float>>("PosYInputBox", inputBoxConfig);
     m_posZInputBox        = std::make_unique<ui::components::InputBox<float>>("PosZInputBox", inputBoxConfig);
+    m_subdivisionSlider   = std::make_unique<ui::components::Slider<int>>("SubdivisionSlider", intSliderConfig);
+    m_sizeSlider          = std::make_unique<ui::components::Slider<float>>("SizeSlider", floatSliderConfig);
+    
+    m_dialogButtons.emplace_back(std::make_unique<ui::components::Button>("Add", dialogButtonConfig, [](ui::components::Button*) {
+        //TODO
+        VisibilityHandler::hide("ADDITION_LAYER");
+    }));
+    m_dialogButtons.emplace_back(std::make_unique<ui::components::Button>("Cancel", dialogButtonConfig, [](ui::components::Button*) {
+        VisibilityHandler::hide("ADDITION_LAYER");
+    }));
 
     *m_subdivisionInputBox->inputValue() = 1;
     *m_sizeInputBox->inputValue()        = 1;
@@ -150,6 +197,25 @@ void AdditionLayer::addSurface()
     }
 }
 
+void AdditionLayer::drawDialogComponents()
+{
+    for (auto& button : m_dialogButtons)
+    {
+        ui::styling::Button::init(button->config());
+
+        const ImVec2 buttonSize = button->config().realSize;
+
+        if (ImGui::Button(button->name().c_str(), buttonSize))
+        {
+            button->execute();
+        }
+
+        ui::styling::Button::destroy(button->config());
+
+        ImGui::SameLine();
+    }
+}
+
 void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback)
 {
     ui::styling::Window::addToLayout([this]() {
@@ -169,6 +235,10 @@ void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<Co
         {
             ui::styling::InputBox::init(m_subdivisionInputBox->name(), m_subdivisionInputBox->inputValue(), m_subdivisionInputBox->config());
             ui::styling::InputBox::destroy(m_subdivisionInputBox->config());
+            ImGui::SameLine();
+
+            ui::styling::Slider::init(m_subdivisionSlider->name(), m_subdivisionSlider->inputValue(), m_subdivisionSlider->config());
+            ui::styling::Slider::destroy(m_subdivisionSlider->config());
         }
         else
         {
@@ -184,6 +254,10 @@ void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<Co
 
         ui::styling::InputBox::init(m_sizeInputBox->name(), m_sizeInputBox->inputValue(), m_sizeInputBox->config());
         ui::styling::InputBox::destroy(m_sizeInputBox->config());
+        ImGui::SameLine();
+
+        ui::styling::Slider::init(m_sizeSlider->name(), m_sizeSlider->inputValue(), m_sizeSlider->config());
+        ui::styling::Slider::destroy(m_sizeSlider->config());
 
         ui::styling::Window::drawHorizontalSeparator(0.55f);
 
@@ -222,14 +296,16 @@ void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<Co
         ui::styling::Window::drawHorizontalSeparator(0.55f);
     }, ImVec2{ 0.2f, 0.05f });
 
-    ui::styling::Window::addToLayout([]() {
-        //TODO
-    });
+    ui::styling::Window::addToLayout([this]() {
+        drawDialogComponents();
+    }, ImVec2{ 0.28f, 0.0f });
 }
 
 void AdditionLayer::drawSurfaceComponents(CommandConcept* command)
 {
-    //TODO
+    // TODO
+    // InputBox limit values needs to be handled
+    // Find a way to share value between InputBox and Slider
 }
 
 void AdditionLayer::onImGuiRender()

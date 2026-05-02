@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <stdexcept>
-#include <imgui.h>
 #include "Common.h"
 
 namespace ui::styling

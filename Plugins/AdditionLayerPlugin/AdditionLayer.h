@@ -8,11 +8,15 @@
 
 namespace ui::components
 {
+    class Button;
     class Label;
     class CheckBox;
 
     template<typename T>
     class InputBox;
+
+    template<typename T>
+    class Slider;
 } // ui::components
 
 enum class AdditionType
@@ -48,7 +52,9 @@ private:
 
 	void addSurface();
 
-	void drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback);
+    void drawDialogComponents();
+
+    void drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback);
 
     void drawSurfaceComponents(CommandConcept* command);
 
@@ -78,7 +84,12 @@ private:
     std::unique_ptr<ui::components::InputBox<float>> m_posXInputBox;
     std::unique_ptr<ui::components::InputBox<float>> m_posYInputBox;
     std::unique_ptr<ui::components::InputBox<float>> m_posZInputBox;
+    std::unique_ptr<ui::components::Slider<int>>     m_subdivisionSlider;
+    std::unique_ptr<ui::components::Slider<float>>   m_sizeSlider;
 
     // Surface components
     //TODO
+
+    // Dialog components
+    std::vector<std::unique_ptr<ui::components::Button>> m_dialogButtons;
 };
