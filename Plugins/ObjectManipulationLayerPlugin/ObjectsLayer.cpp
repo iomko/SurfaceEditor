@@ -4,6 +4,7 @@
 #include "../src/Commands/CommandIDs.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
+#include "../AdditionLayerPlugin/AdditionLayer.h"
 
 static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
@@ -11,51 +12,7 @@ ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
       OverlappingWindow(initWindowConfig())
 {
-    initButtons();
-}
-
-void ObjectsLayer::initButtons()
-{
-    using namespace ui::components;
-
-    auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
-
-    auto defaultConfig = ButtonConfigBuilder()
-        .rounding(12.0f)
-        .size(buttonSize)
-        .background(ui::styling::Color::darkGray)
-        .font(ui::styling::Font::regular(0.8f))
-        .size(ImVec2{ 0.04f, 0.02f })
-        .onHoverColor(ui::styling::Color::hoverOverOrange)
-        .onClickColor(ui::styling::Color::onClickOrange)
-        .build();
-
-    m_buttons.emplace_back(std::make_unique<Button>("Plane", defaultConfig, [](Button*) {
-        // AdditionLayer::setAdditionType(AdditionType::PLANE);
-    }));
-    m_buttons.emplace_back(std::make_unique<Button>("Cube", defaultConfig, [](Button*) {
-        // AdditionLayer::setAdditionType(AdditionType::CUBE);
-    }));
-    m_buttons.emplace_back(std::make_unique<Button>("Surface", defaultConfig, [](Button*) {
-        // AdditionLayer::setAdditionType(AdditionType::SURFACE);
-    }));
-}
-
-void ObjectsLayer::setOnFinishCallback(std::function<void()> onFinishCallback)
-{
-    m_onFinish = std::move(onFinishCallback);
-}
-
-void ObjectsLayer::setPosCallback(std::function<ImVec2()> getPosCallback)
-{
-    m_getPos = std::move(getPosCallback);
-}
-
-void ObjectsLayer::updatePosition()
-{
-    ImVec2 pos = m_getPos();
-
-    m_windowConfig.pos = WindowPosConfigBuilder().relativePosX(pos.x).relativePosY(pos.y).build();
+    initComponents();
 }
 
 ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
@@ -76,6 +33,57 @@ ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
         .build();
 }
 
+void ObjectsLayer::initComponents()
+{
+    using namespace ui::components;
+
+    static constexpr int itemsCount = 3;
+    m_buttons.reserve(itemsCount);
+
+    auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
+
+    auto defaultConfig = ButtonConfigBuilder()
+        .rounding(12.0f)
+        .size(buttonSize)
+        .background(ui::styling::Color::darkGray)
+        .font(ui::styling::Font::regular(0.8f))
+        .size(ImVec2{ 0.04f, 0.02f })
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
+
+    auto& layerRegistry = LayerRegistry::instance();
+    auto* layer         = layerRegistry.getLayer("ADDITION_LAYER", "AdditionLayer");
+    auto* additionLayer = static_cast<AdditionLayer*>(layer);
+
+    m_buttons.emplace_back(std::make_unique<Button>("Plane", defaultConfig, [additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::PLANE);
+    }));
+    m_buttons.emplace_back(std::make_unique<Button>("Cube", defaultConfig, [additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::CUBE);
+    }));
+    m_buttons.emplace_back(std::make_unique<Button>("Surface", defaultConfig, [additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::SURFACE);
+    }));
+}
+
+void ObjectsLayer::setOnFinishCallback(std::function<void()> onFinishCallback)
+{
+    m_onFinish = std::move(onFinishCallback);
+}
+
+void ObjectsLayer::setPosCallback(std::function<ImVec2()> getPosCallback)
+{
+    m_getPos = std::move(getPosCallback);
+}
+
+void ObjectsLayer::updatePosition()
+{
+    ImVec2 pos = m_getPos();
+
+    m_windowConfig.pos = WindowPosConfigBuilder().relativePosX(pos.x).relativePosY(pos.y).build();
+}
+
 void ObjectsLayer::onImGuiRender()
 {
     if (m_getPos)
@@ -85,7 +93,7 @@ void ObjectsLayer::onImGuiRender()
     
     ui::styling::Window::setRelativePosAndSize(m_windowConfig);
 
-    if (!VisibilityHandler::isVisible(m_windowConfig.name))
+    if (!VisibilityHandler::isVisible("OBJECTS_LAYER"))
     {
         return;
     }
@@ -102,8 +110,8 @@ void ObjectsLayer::onImGuiRender()
         {
             button->execute();
 
-            VisibilityHandler::hide(m_windowConfig.name);
-            // VisibilityHandler::show("ADDITION_LAYER");
+            VisibilityHandler::hide("OBJECTS_LAYER");
+            VisibilityHandler::show("ADDITION_LAYER");
 
             m_onFinish();
         }

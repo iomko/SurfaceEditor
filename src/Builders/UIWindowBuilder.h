@@ -41,12 +41,17 @@ private:
     ui::styling::WindowPosConfig m_config;
 };
 
+
+
 class WindowSizeConfigBuilder
 {
 public:
     WindowSizeConfigBuilder()
         : m_config{}
-    { }
+    {
+        m_config.minWidth  = 1.0f;
+        m_config.minHeight = 1.0f;
+    }
 
     WindowSizeConfigBuilder& width(float windowWidth)
     {
@@ -80,6 +85,38 @@ public:
 private:
     ui::styling::WindowSizeConfig m_config;
 };
+
+
+
+class WindowTitleBarBuilder
+{
+public:
+    WindowTitleBarBuilder()
+        : m_config{}
+    { }
+
+    WindowTitleBarBuilder& background(const ImVec4& background)
+    {
+        m_config.background = background;
+        return *this;
+    }
+
+    WindowTitleBarBuilder& font(ImFont* font)
+    {
+        m_config.font = font;
+        return *this;
+    }
+
+    ui::styling::WindowTitleBarConfig&& build()
+    {
+        return std::move(m_config);
+    }
+
+private:
+    ui::styling::WindowTitleBarConfig m_config;
+};
+
+
 
 class WindowConfigBuilder
 {
@@ -121,6 +158,12 @@ public:
     WindowConfigBuilder& size(const ui::styling::WindowSizeConfig& size)
     {
         m_config.size = size;
+        return *this;
+    }
+
+    WindowConfigBuilder& titleBar(const ui::styling::WindowTitleBarConfig& titleBar)
+    {
+        m_config.titleBar = titleBar;
         return *this;
     }
 

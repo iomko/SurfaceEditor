@@ -34,9 +34,9 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name),
       OverlappingWindow(initWindowConfig())
 {
-    VisibilityHandler::show(m_windowConfig.name);
+    VisibilityHandler::show("OBJECT_MANIPULATION_LAYER");
 
-    initButtons();
+    initComponents();
 }
 
 ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
@@ -59,9 +59,12 @@ ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
         .build();
 }
 
-void ObjectManipulationLayer::initButtons()
+void ObjectManipulationLayer::initComponents()
 {
     using namespace ui::components;
+
+    static constexpr int itemsCount = 5;
+    m_buttons.reserve(itemsCount);
 
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(17.0f)
@@ -128,7 +131,7 @@ void ObjectManipulationLayer::resetModeState()
 void ObjectManipulationLayer::onImGuiRender()
 {
     ui::styling::Window::setPosAndSize(m_windowConfig);
-    if (!VisibilityHandler::isVisible(m_windowConfig.name))
+    if (!VisibilityHandler::isVisible("OBJECT_MANIPULATION_LAYER"))
     {
         return;
     }

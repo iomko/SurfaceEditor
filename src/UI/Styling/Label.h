@@ -1,0 +1,26 @@
+#pragma once
+#include <string>
+#include <imgui.h>
+
+namespace ui::styling
+{
+
+    struct LabelConfig
+    {
+        ImFont* font;
+        ImVec4  color;
+    };
+
+    class Label
+    {
+    public:
+        Label() = delete;
+
+        ~Label() = delete;
+
+        static void init(const std::string& text, const LabelConfig& config);
+
+        static void destroy(const LabelConfig& config);
+    };
+
+} // ui::styling

@@ -18,9 +18,9 @@ public:
 protected:
     ui::styling::WindowConfig initWindowConfig() override;
 
-private:
-    void initButtons();
+    void initComponents() override;
 
+private:
     void resetModeState();
 
 private:

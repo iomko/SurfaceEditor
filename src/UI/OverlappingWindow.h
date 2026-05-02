@@ -15,6 +15,8 @@ public:
 protected:
     virtual ui::styling::WindowConfig initWindowConfig() = 0;
 
+    virtual void initComponents() = 0;
+
 protected:
     ui::styling::WindowConfig m_windowConfig;
 };

@@ -31,8 +31,8 @@ namespace ui::styling
 
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-            const ImVec2 vpPos  = viewport->WorkPos;
-            const ImVec2 vpSize = viewport->WorkSize;
+            const ImVec2 vpPos  = viewport->Pos;
+            const ImVec2 vpSize = viewport->Size;
 
             if (isPosResponsive)
             {
@@ -65,16 +65,21 @@ namespace ui::styling
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, config.rounding);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, config.backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, config.titleBar.background);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, config.titleBar.background);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, config.titleBar.background);
+        ImGui::PushFont(config.titleBar.font);
         ImGui::Begin(config.name.c_str(), nullptr, config.flags);
         
         config.size.realSize = ImGui::GetWindowSize();
-        ++config.styles.appliedColorStyles;
+        config.styles.appliedColorStyles += 4;
         ++config.styles.appliedVarStyles;
     }
 
     void Window::destroy(WindowConfig& config)
     {
         ImGui::End();
+        ImGui::PopFont();
         ImGui::PopStyleColor(config.styles.appliedColorStyles);
         ImGui::PopStyleVar(config.styles.appliedVarStyles);
 
@@ -84,20 +89,38 @@ namespace ui::styling
 
     void Window::addToLayout(std::function<void()> asignComponents, const ImVec2& margin)
     {
-        ImGui::BeginGroup();
-
         const ImVec2 windowSize       = ImGui::GetWindowSize();
         const float responsiveMarginX = windowSize.x * margin.x;
         const float responsiveMarginY = windowSize.y * margin.y;
 
-        //TODO horizontal margin
+        if (responsiveMarginX > 0.0f)
+        {
+            ImGui::Indent(responsiveMarginX);
+        }
         ImGui::Dummy(ImVec2{0.0f, responsiveMarginY});
-        
-        asignComponents();
+        ImGui::BeginGroup();
 
-        ImGui::Dummy(ImVec2{0.0f, responsiveMarginY});
+        asignComponents();
         
         ImGui::EndGroup();
+        ImGui::Dummy(ImVec2{0.0f, responsiveMarginY});
+        if (responsiveMarginX > 0.0f)
+        {
+            ImGui::Unindent(responsiveMarginX);
+        }
+    }
+
+    void Window::drawHorizontalSeparator(const float length)
+    {
+        ImVec2 pos             = ImGui::GetCursorScreenPos();
+        ImVec2 windowSize      = ImGui::GetWindowSize();
+        float responsiveLenght = windowSize.x * length;
+
+        ImGui::GetWindowDrawList()->AddLine(
+            pos,
+            ImVec2(pos.x + responsiveLenght, pos.y),
+            ImGui::GetColorU32(ImGuiCol_Separator),
+            1.0f);
     }
 
 } // ui::styling

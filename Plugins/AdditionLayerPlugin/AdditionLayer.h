@@ -1,65 +1,78 @@
 #pragma once
-// #include <string>
-// #include <variant>
-// #include "../src/Patterns/Observer.h"
-// #include "../src/Core/Layer.h"
-// #include "../src/UI/LayerRegistry.h"
-// #include "../src/UI/VisibilityHandler.h"
-// #include "../src/UI/Components/IWindow.h"
-// #include "../src/UI/Components/WindowStyle.h"
-// #include "../src/UI/Components/FontStyle.h"
-// #include "../src/UI/Components/CheckBoxStyle.h"
-// #include "../src/UI/Components/SliderStyle.h"
-// #include "../src/UI/Components/ButtonStyle.h"
+#include <string>
+#include <variant>
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+#include "../src/UI/OverlappingWindow.h"
 
-// using CommandParams = std::variant<PlaneParams, CubeParams>;
+namespace ui::components
+{
+    class Label;
+} // ui::components
 
-// enum class AdditionType
-// {
-// 	NONE 	= -1,
-// 	PLANE 	= 0,
-// 	CUBE	= 1,
-// 	SURFACE	= 2
-// };
+enum class AdditionType
+{
+	NONE 	= -1,
+	PLANE 	= 0,
+	CUBE	= 1,
+	SURFACE	= 2
+};
 
-// class AdditionLayer : public Layer, public Observable, public Observer, public IWindow {
-// public:
-//     AdditionLayer(const std::string& name);
+class AdditionLayer : public Layer, public Observable, public Observer, public OverlappingWindow {
+public:
+    using CommandParams = std::variant<PlaneParams, CubeParams>;
 
-// 	inline static void setAdditionType(AdditionType additionType) { s_additionType = additionType; }
+    AdditionLayer(const std::string& name);
 
-//     void setWindowSizeAndPosition() override;
+	void onImGuiRender() override;
 
-//     // void onEvent(Event& event) override;
+    void setAdditionType(const AdditionType& additionType)
+    {
+        m_additionType = additionType;
+    }
 
-// 	void onImGuiRender() override;
+protected:
+    ui::styling::WindowConfig initWindowConfig() override;
 
-// private:
-// 	void defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback);
+    void initComponents() override;
 
-// 	void addPlane();
+private:
+	void addPlane();
 
-// 	void addCube();
+	void addCube();
 
-// 	void addSurface();
+	void addSurface();
 
-// private:
-// 	float m_lowerLeftLon = 0.0f;
-// 	float m_lowerLeftLat = 0.0f;
-// 	float m_upperRightLon = 0.0f;
-// 	float m_upperRightLat = 0.0f;
+	void drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback);
 
-// 	char m_apiKeyBuffer[256] = "";
+    void drawSurfaceComponents(CommandConcept* command);
 
-//     bool m_isMouseInsideWindow;
-//     int m_subdivision = 1;
-//     float m_size = 1.0f;
-// 	bool m_automaticSubdivision{};
-// 	float m_xPos{0.0f};
-// 	float m_yPos{0.0f};
-// 	float m_zPos{0.0f};
+private:
+    static constexpr int API_BUFFER_SIZE = 256;
 
-// 	static constexpr auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
+	AdditionType m_additionType;
 
-// 	inline static AdditionType s_additionType = AdditionType::NONE;
-// };
+    // Surface inputs
+	float m_lowerLeftLon{};
+	float m_lowerLeftLat{};
+	float m_upperRightLon{};
+	float m_upperRightLat{};
+	char m_apiKeyBuffer[API_BUFFER_SIZE];
+
+    // Mesh inputs
+	bool  m_automaticSubdivision{};
+	float m_xPos{};
+	float m_yPos{};
+	float m_zPos{};
+    float m_size        = 1.0f;
+    int   m_subdivision = 1;
+
+    // Mesh components
+    std::unique_ptr<ui::components::Label> m_subdivisionLabel;
+    std::unique_ptr<ui::components::Label> m_sizeLabel;
+    std::unique_ptr<ui::components::Label> m_positionLabel;
+
+    // Surface components
+    //TODO
+};

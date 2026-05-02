@@ -24,15 +24,22 @@ namespace ui::styling
         ImVec2 realSize;    // auto fit size value
     };
 
+    struct WindowTitleBarConfig
+    {
+        ImVec4  background;
+        ImFont* font;
+    };
+
     struct WindowConfig
     {
-        std::string      name;
-        ImVec4           backgroundColor;
-        float            rounding;
-        ImGuiWindowFlags flags;
-        WindowPosConfig  pos;
-        WindowSizeConfig size;
-        AppliedStyling   styles;
+        std::string          name;
+        ImVec4               backgroundColor;
+        float                rounding;
+        ImGuiWindowFlags     flags;
+        WindowPosConfig      pos;
+        WindowSizeConfig     size;
+        WindowTitleBarConfig titleBar;
+        AppliedStyling       styles;
     };
 
     class Window
@@ -51,5 +58,7 @@ namespace ui::styling
         static void destroy(WindowConfig& config);
 
         static void addToLayout(std::function<void()> asignComponents, const ImVec2& margin = {});
+
+        static void drawHorizontalSeparator(const float lenght);
     };
 } // ui::styling

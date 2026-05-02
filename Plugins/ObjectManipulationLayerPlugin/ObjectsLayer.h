@@ -20,12 +20,12 @@ public:
     void setPosCallback(std::function<ImVec2()> getPosCallback);
 
 private:
-    void initButtons();
-
     void updatePosition();
 
 protected:
     ui::styling::WindowConfig initWindowConfig() override;
+
+    void initComponents() override;
 
 private:
     std::function<void()>   m_onFinish;
