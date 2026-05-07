@@ -226,21 +226,22 @@ function(add_surface_editor_plugin PLUGIN_NAME)
     )
 endfunction()
 
-# 👇 VYPNUTÉ LEN V CI
-if(NOT CI_BUILD)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/Plugins)
 file(GLOB PLUGINS Plugins/*)
 
 foreach(plugin ${PLUGINS})
     message(STATUS "Looking for plugin in: ${plugin}")
     get_filename_component(plugin_name ${plugin} NAME)
-
-    option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+    if(CI_BUILD)
+        option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" OFF)
+    else()
+        option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+    endif(CI_BUILD)
+    
 
     if(BUILD_PLUGIN_${plugin_name})
         add_surface_editor_plugin(${plugin_name})
     endif()
 endforeach()
-endif()
 
 export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo ImGuiFileDialog TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
