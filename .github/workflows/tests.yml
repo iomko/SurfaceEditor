@@ -1,7 +1,6 @@
 name: Cpp CI SurfaceEditor
 
 on:
-  push:
   pull_request:
 
   workflow_dispatch:
@@ -9,7 +8,7 @@ on:
       modules:
         description: "Moduly: octree quadtree halfedge mesh printableMesh"
         required: false
-        default: ""
+        default: "octree quadtree halfedge mesh printableMesh"
 
 jobs:
   build-and-test:
@@ -43,6 +42,11 @@ jobs:
           cd build
 
           MODULES="${{ github.event.inputs.modules }}"
+
+          # AK push alebo PR → všetko zapnuté
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            MODULES="octree quadtree halfedge mesh printableMesh"
+          fi
 
           FLAGS="" 
           # example of setting flags: FLAGS="$FLAGS -DBUILD_PLUGIN_AddCubePlugin=ON"
