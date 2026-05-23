@@ -10,14 +10,19 @@ namespace ui::components
     {
     public:
         ImageButton(const std::string& name,
-                    const ui::styling::ButtonConfig& config,
                     const std::string& iconFilePath,
+                    std::shared_ptr<ui::styling::IConfig> config,
                     std::function<void(Button*)> action)
-            : Button(name, config, action),
-              m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
+            : Button(name, std::move(config), std::move(action))
+            , m_textureID((ImTextureID)(intptr_t)ImageLoader::loadImage(iconFilePath.c_str()))
         { }
 
         virtual ~ImageButton() = default;
+
+        void render() override
+        {
+            ui::styling::Button::render(this);
+        }
 
         const int textureID() const
         {

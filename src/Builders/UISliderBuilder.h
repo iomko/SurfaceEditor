@@ -60,9 +60,9 @@ public:
         return *this;
     }
 
-    ui::styling::SliderConfig<T>&& build()
+    std::shared_ptr<ui::styling::SliderConfig<T>> build()
     {
-        return std::move(m_config);
+        return std::make_shared<ui::styling::SliderConfig<T>>(std::move(m_config));
     }
 
 private:

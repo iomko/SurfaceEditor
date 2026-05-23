@@ -4,11 +4,11 @@
 #include <memory>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
-#include "../src/UI/OverlappingWindow.h"
+#include "../src/UI/IWindow.h"
 #include "../src/UI/Components/RadioImageButton.h"
 #include "../src/UI/Styling/Button.h"
 
-class ObjectManipulationLayer : public Layer, public Observable, public OverlappingWindow
+class ObjectManipulationLayer : public Layer, public Observable, public IWindow
 {
 public:
     ObjectManipulationLayer(const std::string& name);

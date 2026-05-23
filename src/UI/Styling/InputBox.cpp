@@ -3,19 +3,23 @@
 namespace ui::styling
 {
 
-    void InputBox::initConfig(InputBoxConfig& config)
+    void InputBox::initConfig(IConfig* config)
     {
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, config.background);
-        ImGui::SetNextItemWidth(config.width * ImGui::GetWindowSize().x);
+        auto* inputBoxConfig = dynamic_cast<InputBoxConfig*>(config);
 
-        ++config.styles.appliedColorStyles;
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxConfig->background);
+        ImGui::SetNextItemWidth(inputBoxConfig->width * ImGui::GetWindowSize().x);
+
+        ++inputBoxConfig->styles.appliedColorStyles;
     }
 
-    void InputBox::destroy(InputBoxConfig& config)
+    void InputBox::destroy(IConfig* config)
     {
-        ImGui::PopStyleColor(config.styles.appliedColorStyles);
+        auto* inputBoxConfig = dynamic_cast<InputBoxConfig*>(config);
 
-        config.styles.appliedColorStyles = 0;
+        ImGui::PopStyleColor(inputBoxConfig->styles.appliedColorStyles);
+
+        inputBoxConfig->styles.appliedColorStyles = 0;
     }
 
 } // ui::styling

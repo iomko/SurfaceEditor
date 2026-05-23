@@ -6,14 +6,13 @@
 namespace ui::styling
 {
 
-    struct CheckBoxConfig
+    struct CheckBoxConfig : IConfig
     {
         ImVec4         checkMarkColor;
         ImVec4         background;
         ImVec4         hoveredBackground;
         ImVec4         activeBackground;
         ImVec2         framePadding;
-        AppliedStyling styles;
     };
 
     class CheckBox
@@ -21,11 +20,7 @@ namespace ui::styling
     public:
         CheckBox() = delete;
 
-        ~CheckBox() = delete;
-
-        static void init(const std::string& name, bool* isChecked, CheckBoxConfig& config);
-
-        static void destroy(CheckBoxConfig& config);
+        static void render(ui::components::CheckBox* checkBox);
     };
 
 } // ui::styling

@@ -23,14 +23,14 @@ public:
         return *this;
     }
 
-    ui::styling::LabelConfig&& build()
+    std::shared_ptr<ui::styling::LabelConfig> build()
     {
         if (m_config.font == nullptr)
         {
             throw std::logic_error("Label construcion error: font parameter is mandatory");
         }
 
-        return std::move(m_config);
+        return std::make_shared<ui::styling::LabelConfig>(std::move(m_config));
     }
 
 private:

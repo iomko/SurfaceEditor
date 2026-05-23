@@ -18,7 +18,7 @@ static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
 AdditionLayer::AdditionLayer(const std::string& name)
     : Layer(name)
-    , OverlappingWindow(initWindowConfig())
+    , IWindow(initWindowConfig())
     , m_additionType(AdditionType::NONE)
 {
     initComponents();
@@ -201,21 +201,13 @@ void AdditionLayer::drawDialogComponents()
 {
     for (auto& button : m_dialogButtons)
     {
-        ui::styling::Button::init(button->config());
-
-        const ImVec2 buttonSize = button->config().realSize;
-
-        if (ImGui::Button(button->name().c_str(), buttonSize))
-        {
-            button->execute();
-        }
-
-        ui::styling::Button::destroy(button->config());
+        ui::styling::Button::render(button);
 
         ImGui::SameLine();
     }
 }
 
+// TOTO SPRAVIT AKO PRIVATNU METODU AUTOMATICKY VOLANU V OVERLAPPING WINDOW - PREMENOVAT OVERLAPPING WINDOW
 void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback)
 {
     ui::styling::Window::addToLayout([this]() {
@@ -231,7 +223,7 @@ void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<Co
         ui::styling::CheckBox::init(m_automaticLabel->text(), m_automaticCheckbox->isChecked(), m_automaticCheckbox->config());
         ui::styling::CheckBox::destroy(m_automaticCheckbox->config());
 
-        if (!*m_automaticCheckbox->isChecked())
+        if (!*m_automaticCheckbox->isChecked())  // NEMIESTO TOHTO NEJAKY PLACEHOLDER ICOMPONENT
         {
             ui::styling::InputBox::init(m_subdivisionInputBox->name(), m_subdivisionInputBox->inputValue(), m_subdivisionInputBox->config());
             ui::styling::InputBox::destroy(m_subdivisionInputBox->config());

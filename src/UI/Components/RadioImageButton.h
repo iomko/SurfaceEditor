@@ -9,13 +9,18 @@ namespace ui::components
     {
     public:
         RadioImageButton(const std::string& name,
-                         const ui::styling::ButtonConfig& config,
                          const std::string& iconFilePath,
+                         std::shared_ptr<ui::styling::IConfig> config,
                          std::function<void(Button*)> action)
-            : Button(name, config, action),
-              ImageButton(name, config, iconFilePath, action),
-              RadioButton(name, config, action)
+            : Button(name, std::move(config), std::move(action))
+            , ImageButton(name, iconFilePath, std::move(config), std::move(action))
+            , RadioButton(name, std::move(config), std::move(action))
         { }
+
+        void render() override
+        {
+            ui::styling::Button::render(this);
+        }
     };
 
 } // ui::components

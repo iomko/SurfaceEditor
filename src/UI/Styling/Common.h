@@ -23,4 +23,10 @@ namespace ui::styling
         static constexpr ImVec4 selectedOrange  = ImVec4(1.0f, 0.55f, 0.0f, 0.35f);
     };
 
+    struct IConfig
+    {
+        virtual ~IConfig() = default;
+        AppliedStyling styles;
+    };
+
 } // ui

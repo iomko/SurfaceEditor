@@ -11,7 +11,7 @@ namespace ui::styling
     {
         float  posX;         // represents percentage of screen to achieve responsive design
         float  posY;         // represents percentage of screen to achieve responsive design
-        ImVec2 rawPos;       // used automaticly by OverlappingWindow class
+        ImVec2 rawPos;       // used automaticly by IWindow class
     };
 
     struct WindowSizeConfig
@@ -20,7 +20,7 @@ namespace ui::styling
         float  height;      // represents percentage of screen to achieve responsive design - implicitly responsive (no need to define)
         float  minWidth;    // represents percentage of screen to achieve responsive design
         float  minHeight;   // represents percentage of screen to achieve responsive design
-        ImVec2 rawSize;     // used automaticly by OverlappingWindow class
+        ImVec2 rawSize;     // used automaticly by IWindow class
         ImVec2 realSize;    // auto fit size value
     };
 
@@ -47,8 +47,6 @@ namespace ui::styling
     {
     public:
         Window() = delete;
-
-        ~Window() = delete;
 
         static void setPosAndSize(WindowConfig& config);
 

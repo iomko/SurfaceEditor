@@ -1,22 +1,23 @@
 #pragma once
 #include "../Styling/InputBox.h"
+#include "../Styling/Common.h"
+#include "../Components/Common.h"
 
 namespace ui::components
 {
 
     template<typename T>
-    class InputBox
+    class InputBox : public IComponent
     {
     public:
-        InputBox(const std::string& name, const ui::styling::InputBoxConfig& config)
-            : m_name(name)
-            , m_config(config)
+        InputBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent(name, std::move(config))
             , m_inputValue{}
         { }
 
-        const std::string name() const
+        void render() override
         {
-            return "##" + m_name;
+            ui::styling::InputBox::render<T>(this);
         }
 
         T* inputValue()
@@ -24,29 +25,21 @@ namespace ui::components
             return &m_inputValue;
         }
 
-        ui::styling::InputBoxConfig& config()
-        {
-            return m_config;
-        }
-
     private:
-        T                           m_inputValue;
-        std::string                 m_name;
-        ui::styling::InputBoxConfig m_config;
+        T m_inputValue;
     };
 
     template<>
-    class InputBox<char>
+    class InputBox<char> : public IComponent
     {
     public:
-        InputBox(const std::string& name, const ui::styling::InputBoxConfig& config)
-            : m_name(name)
-            , m_config(config)
+        InputBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent(name, std::move(config))
         { }
 
-        const std::string& name() const
+        void render() override
         {
-            return m_name;
+            ui::styling::InputBox::render<char>(this);
         }
 
         char* inputValue()
@@ -54,17 +47,10 @@ namespace ui::components
             return m_inputValue;
         }
 
-        ui::styling::InputBoxConfig& config()
-        {
-            return m_config;
-        }
-
     private:
         static constexpr int BUFFER_SIZE = 256;
 
-        ui::styling::InputBoxConfig m_config;
-        std::string                 m_name;
-        char                        m_inputValue[BUFFER_SIZE];
+        char m_inputValue[BUFFER_SIZE];
     };
 
 } // ui::components

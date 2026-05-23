@@ -1,31 +1,22 @@
 #pragma once
 #include <string>
-#include "../Styling/Label.h"
+#include "../Styling/Common.h"
+#include "../Components/Common.h"
 
 namespace ui::components
 {
 
-    class Label
+    class Label : public IComponent
     {
     public:
-        Label(const std::string& text, const ui::styling::LabelConfig& config)
-            : m_text(text)
-            , m_config(config)
+        Label(const std::string& text, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent(text, std::move(config))
         { }
 
-        const std::string& text() const
+        void render() override
         {
-            return m_text;
+            ui::styling::Label::render(this);
         }
-
-        ui::styling::LabelConfig& config()
-        {
-            return m_config;
-        }
-
-    private:
-        std::string              m_text;
-        ui::styling::LabelConfig m_config;
     };
 
 } // ui::components

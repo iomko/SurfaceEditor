@@ -1,13 +1,13 @@
-#include "OverlappingWindow.h"
+#include "IWindow.h"
 #include "../ViewPortsController.h"
 
-OverlappingWindow::OverlappingWindow(ui::styling::WindowConfig config)
+IWindow::IWindow(ui::styling::WindowConfig config)
     : m_windowConfig(std::move(config))
 {
     ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
 }
 
-bool OverlappingWindow::clickedOnWindow(const glm::vec2& clickPos)
+bool IWindow::clickedOnWindow(const glm::vec2& clickPos)
 {
     ImVec2 bottomRight = ImVec2(
         m_windowConfig.pos.rawPos.x + m_windowConfig.size.rawSize.x,
@@ -21,4 +21,12 @@ bool OverlappingWindow::clickedOnWindow(const glm::vec2& clickPos)
 
     return actualClickPos.x >= m_windowConfig.pos.rawPos.x && actualClickPos.x <= bottomRight.x &&
            actualClickPos.y >= m_windowConfig.pos.rawPos.y && actualClickPos.y <= bottomRight.y;
+}
+
+void IWindow::renderComponents()
+{
+    for (auto& component : m_components)
+    {
+        component->render();
+    }
 }

@@ -5,7 +5,7 @@
 namespace ui::styling
 {
 
-    struct LabelConfig
+    struct LabelConfig : IConfig
     {
         ImFont* font;
         ImVec4  color;
@@ -16,11 +16,7 @@ namespace ui::styling
     public:
         Label() = delete;
 
-        ~Label() = delete;
-
-        static void init(const std::string& text, LabelConfig& config);
-
-        static void destroy(LabelConfig& config);
+        static void render(ui::components::Label* label);
     };
 
 } // ui::styling

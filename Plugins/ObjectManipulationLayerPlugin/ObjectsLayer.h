@@ -6,9 +6,9 @@
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/VisibilityHandler.h"
-#include "../src/UI/OverlappingWindow.h"
+#include "../src/UI/IWindow.h"
 
-class ObjectsLayer : public Layer, public Observable, public OverlappingWindow
+class ObjectsLayer : public Layer, public Observable, public IWindow
 {
 public:
     ObjectsLayer(const std::string& name);

@@ -20,9 +20,9 @@ public:
         return *this;
     }
 
-    ui::styling::InputBoxConfig&& build()
+    std::shared_ptr<ui::styling::InputBoxConfig> build()
     {
-        return std::move(m_config);
+        return std::make_shared<ui::styling::InputBoxConfig>(std::move(m_config));
     }
 
 private:

@@ -5,18 +5,22 @@ namespace ui::components
 {
 
     template<typename T>
-    class Slider
+    class Slider : public IComponent
     {
     public:
-        Slider(const std::string& name, const ui::styling::SliderConfig<T>& config)
-            : m_name(name)
-            , m_config(config)
+        Slider(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent(name, std::move(config))
             , m_inputValue{}
         { }
 
-        const std::string name() const
+        const std::string name() const override
         {
             return "##" + m_name;
+        }
+
+        void render() override
+        {
+            ui::styling::Slider::render(this);
         }
 
         T* inputValue()
@@ -24,15 +28,8 @@ namespace ui::components
             return &m_inputValue;
         }
 
-        ui::styling::SliderConfig<T>& config()
-        {
-            return m_config;
-        }
-
     private:
-        T                            m_inputValue;
-        std::string                  m_name;
-        ui::styling::SliderConfig<T> m_config;
+        T m_inputValue;
     };
 
 } // ui::components

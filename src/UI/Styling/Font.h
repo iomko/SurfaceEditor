@@ -9,8 +9,6 @@ namespace ui::styling
     public:
         Font() = delete;
 
-        ~Font() = delete;
-
         static ImFont* regular(float size)
         {
             auto& io = ImGui::GetIO();

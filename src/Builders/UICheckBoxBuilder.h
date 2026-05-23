@@ -39,9 +39,9 @@ public:
         return *this;
     }
 
-    ui::styling::CheckBoxConfig&& build()
+    std::shared_ptr<ui::styling::CheckBoxConfig> build()
     {
-        return std::move(m_config);
+        return std::make_shared<ui::styling::CheckBoxConfig>(std::move(m_config));
     }
 
 private:

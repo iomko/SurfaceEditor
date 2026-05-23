@@ -1,38 +1,31 @@
 #pragma once
 #include <string>
-#include "../Styling/CheckBox.h"
+#include "../Styling/Common.h"
+#include "../Components/Common.h"
 
 namespace ui::components
 {
 
-    class CheckBox
+    class CheckBox : public IComponent
     {
     public:
-        CheckBox(const std::string& name, const ui::styling::CheckBoxConfig& config)
-            : m_name(name)
+        CheckBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent(name, std::move(config))
             , m_isChecked{}
-            , m_config(config)
         { }
+
+        void render() override
+        {
+            ui::styling::CheckBox::render(this);
+        }
 
         bool* isChecked()
         {
             return &m_isChecked;
         }
 
-        const std::string& name() const
-        {
-            return m_name;
-        }
-
-        ui::styling::CheckBoxConfig& config()
-        {
-            return m_config;
-        }
-
     private:
-        bool                        m_isChecked;
-        std::string                 m_name;
-        ui::styling::CheckBoxConfig m_config;
+        bool m_isChecked;
     };
 
 } // ui::components

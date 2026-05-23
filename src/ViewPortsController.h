@@ -33,7 +33,7 @@ public:
 class ViewPortsUILayerController
 {
 public:
-	void registerUiWindow(OverlappingWindow* uiWindow)
+	void registerUiWindow(IWindow* uiWindow)
 	{
 		m_uiWindow.push_back(uiWindow);
 	}
@@ -52,7 +52,7 @@ public:
 	}
 
 private:
-	std::vector<OverlappingWindow*> m_uiWindow;
+	std::vector<IWindow*> m_uiWindow;
 };
 
 class ViewPortsHolderContext

@@ -10,7 +10,7 @@ static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
-      OverlappingWindow(initWindowConfig())
+      IWindow(initWindowConfig())
 {
     initComponents();
 }

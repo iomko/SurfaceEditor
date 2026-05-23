@@ -1,63 +1,88 @@
 #include "Button.h"
+#include "../Components/Button.h"
 #include <iostream>
 
 namespace ui::styling
 {
 
-    void Button::init(ButtonConfig& config)
+    namespace
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, config.background);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, config.onHoverOverColor);
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, config.onClickColor);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, config.rounding);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, config.framePadding);
 
-        const ImVec2 windowSize = ImGui::GetMainViewport()->Size;
-        
-        float realSizeX  = windowSize.x * config.size.x;
-        float realSizeY  = windowSize.y * config.size.y;
-        
-        if (config.square)
+        void init(ButtonConfig* config)
         {
-            const float squaredSize = std::min(realSizeX, realSizeY);
-            
-            realSizeX = squaredSize;
-            realSizeY = squaredSize;
+            ImGui::PushStyleColor(ImGuiCol_Button, config->background);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, config->onHoverOverColor);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, config->onClickColor);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, config->rounding);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, config->framePadding);
+
+            const ImVec2 windowSize = ImGui::GetMainViewport()->Size;
+
+            float realSizeX = windowSize.x * config->size.x;
+            float realSizeY = windowSize.y * config->size.y;
+
+            if (config->square)
+            {
+                const float squaredSize = std::min(realSizeX, realSizeY);
+
+                realSizeX = squaredSize;
+                realSizeY = squaredSize;
+            }
+
+            config->realSize = ImVec2{realSizeX, realSizeY};
+
+            if (config->font != nullptr)
+            {
+                ImGui::PushFont(config->font);
+
+                ImVec2 textSize = ImGui::CalcTextSize("Aa");
+
+                float scaleX = ImGui::GetFontSize() * (config->realSize.x / textSize.x);
+                float scaleY = ImGui::GetFontSize() * (config->realSize.y / textSize.y);
+
+                float scale = std::min(scaleX, scaleY);
+
+                ImGui::SetWindowFontScale(scale);
+            }
+
+            config->styles.appliedColorStyles += 3;
+            config->styles.appliedVarStyles += 2;
         }
 
-        config.realSize = ImVec2{realSizeX, realSizeY};
-
-        if (config.font != nullptr)
+        void destroy(ButtonConfig* config)
         {
-            ImGui::PushFont(config.font);
+            if (config->font != nullptr)
+            {
+                ImGui::SetWindowFontScale(1.0f);
+                ImGui::PopFont();
+            }
 
-            ImVec2 textSize = ImGui::CalcTextSize("Aa");
+            ImGui::PopStyleColor(config->styles.appliedColorStyles);
+            ImGui::PopStyleVar(config->styles.appliedVarStyles);
 
-            float scaleX = ImGui::GetFontSize() * (config.realSize.x / textSize.x);
-            float scaleY = ImGui::GetFontSize() * (config.realSize.y / textSize.y);
-
-            float scale = std::min(scaleX, scaleY);
-
-            ImGui::SetWindowFontScale(scale);
+            config->styles.appliedColorStyles = 0;
+            config->styles.appliedVarStyles = 0;
         }
 
-        config.styles.appliedColorStyles += 3;
-        config.styles.appliedVarStyles   += 2;
-    }
+        void draw(ui::components::Button* button, ButtonConfig* config)
+        {
+            const ImVec2 buttonSize = config->realSize;
 
-    void Button::destroy(ButtonConfig& config)
+            if (ImGui::Button(button->name().c_str(), buttonSize))
+            {
+                button->execute();
+            }
+        }
+
+    } // namespace
+
+    void Button::render(ui::components::Button* button)
     {
-        if (config.font != nullptr)
-        {
-            ImGui::SetWindowFontScale(1.0f);
-            ImGui::PopFont();
-        }
+        auto* config = dynamic_cast<ButtonConfig*>(button->config());
 
-        ImGui::PopStyleColor(config.styles.appliedColorStyles);
-        ImGui::PopStyleVar(config.styles.appliedVarStyles);
-
-        config.styles.appliedColorStyles = 0;
-        config.styles.appliedVarStyles   = 0;
+        init(config);
+        draw(button, config);
+        destroy(config);
     }
 
 } // ui::styling

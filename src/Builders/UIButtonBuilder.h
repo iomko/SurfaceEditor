@@ -57,9 +57,9 @@ public:
         return *this;
     }
 
-    ui::styling::ButtonConfig&& build()
+    std::shared_ptr<ui::styling::ButtonConfig> build()
     {
-        return std::move(m_config);
+        return std::make_shared<ui::styling::ButtonConfig>(std::move(m_config));
     }
 
 private:

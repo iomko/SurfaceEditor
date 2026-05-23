@@ -1,30 +1,29 @@
 #pragma once
 #include <string>
 #include <functional>
-#include "../Styling/Button.h"
+#include "../Components/Common.h"
 
 namespace ui::components
 {
 
-    class Button
+    class Button : public IComponent
     {
     public:
-        Button(const std::string& name, const ui::styling::ButtonConfig& config, std::function<void(Button*)> action)
-            : m_name(name),
-              m_config(config),
-              m_action(action)
+        Button(const std::string& name, std::shared_ptr<ui::styling::IConfig> config, std::function<void(Button*)> action)
+            : IComponent(name, std::move(config))
+            , m_action(std::move(action))
         { }
 
         virtual ~Button() = default;
 
-        const std::string& name() const
+        void render() override
         {
-            return m_name;
+            ui::styling::Button::render(this);
         }
 
-        ui::styling::ButtonConfig& config()
+        void setAction(std::function<void(Button*)> action)
         {
-            return m_config;
+            m_action = std::move(action);
         }
 
         void execute()
@@ -33,8 +32,6 @@ namespace ui::components
         }
 
     private:
-        std::string                  m_name;
-        ui::styling::ButtonConfig    m_config;
         std::function<void(Button*)> m_action;
     };
 

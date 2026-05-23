@@ -32,7 +32,7 @@ static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg("OBJECT_M
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name),
-      OverlappingWindow(initWindowConfig())
+      IWindow(initWindowConfig())
 {
     VisibilityHandler::show("OBJECT_MANIPULATION_LAYER");
 
