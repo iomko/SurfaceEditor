@@ -10,7 +10,7 @@ namespace ui::components
     {
     public:
         InputBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
-            : IComponent(name, std::move(config))
+            : IComponent("##" + name, std::move(config))
             , m_inputValue{}
         { }
 
@@ -33,7 +33,7 @@ namespace ui::components
     {
     public:
         InputBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
-            : IComponent(name, std::move(config))
+            : IComponent("##" + name, std::move(config))
         { }
 
         void render() override

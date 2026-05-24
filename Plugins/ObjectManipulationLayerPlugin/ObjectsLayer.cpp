@@ -60,19 +60,19 @@ void ObjectsLayer::initComponents()
 
     auto& layerRegistry = LayerRegistry::instance();
     auto* layer         = layerRegistry.getLayer("ADDITION_LAYER", "AdditionLayer");
-    // auto* additionLayer = static_cast<AdditionLayer*>(layer);
+    auto* additionLayer = static_cast<AdditionLayer*>(layer);
 
-    emplaceComponent<Button>("Plane", defaultConfig, [this/*, additionLayer*/](Button*) {
-        // additionLayer->setAdditionType(AdditionType::PLANE);
-        // invokeAdditionLayer();
+    emplaceComponent<Button>("Plane", defaultConfig, [this, additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::PLANE);
+        invokeAdditionLayer();
     });
-    emplaceComponent<Button>("Cube", defaultConfig, [this/*, additionLayer*/](Button*) {
-        // additionLayer->setAdditionType(AdditionType::CUBE);
-        // invokeAdditionLayer();
+    emplaceComponent<Button>("Cube", defaultConfig, [this, additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::CUBE);
+        invokeAdditionLayer();
     });
-    emplaceComponent<Button>("Surface", defaultConfig, [this/*, additionLayer*/](Button*) {
-        // additionLayer->setAdditionType(AdditionType::SURFACE);
-        // invokeAdditionLayer();
+    emplaceComponent<Button>("Surface", defaultConfig, [this, additionLayer](Button*) {
+        additionLayer->setAdditionType(AdditionType::SURFACE);
+        invokeAdditionLayer();
     });
 }
 

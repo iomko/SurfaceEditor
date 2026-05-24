@@ -9,20 +9,11 @@ namespace ui::components
     class CheckBox : public IComponent
     {
     public:
-        CheckBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
-            : IComponent(name, std::move(config))
-            , m_isChecked{}
-        { }
+        CheckBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config);
 
-        void render() override
-        {
-            ui::styling::CheckBox::render(this);
-        }
+        void render() override;
 
-        bool* isChecked()
-        {
-            return &m_isChecked;
-        }
+        bool* isChecked();
 
     private:
         bool m_isChecked;

@@ -1,73 +1,83 @@
-// #pragma once
-// #include <string>
-// #include <variant>
-// #include "../src/Patterns/Observer.h"
-// #include "../src/Core/Layer.h"
-// #include "../src/UI/LayerRegistry.h"
-// #include "../src/UI/IWindow.h"
+#pragma once
+#include <string>
+#include <variant>
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+#include "../src/UI/IWindow.h"
 
-// namespace ui::components
-// {
-//     class Button;
-//     class Label;
-//     class CheckBox;
+namespace ui::components
+{
+    class Button;
 
-//     template<typename T>
-//     class InputBox;
+    class CheckBox;
 
-//     template<typename T>
-//     class Slider;
-// } // ui::components
+    template<typename T>
+    class InputBox;
 
-// enum class AdditionType
-// {
-// 	NONE 	= -1,
-// 	PLANE 	= 0,
-// 	CUBE	= 1,
-// 	SURFACE	= 2
-// };
+    template<typename T>
+    class Slider;
+} // ui::components
 
-// class AdditionLayer : public Layer, public Observable, public Observer, public IWindow
-// {
-// public:
-//     using CommandParams = std::variant<PlaneParams, CubeParams>;
+enum class AdditionType
+{
+	NONE 	= -1,
+	PLANE 	= 0,
+	CUBE	= 1,
+	SURFACE	= 2
+};
 
-//     AdditionLayer(const std::string& name);
+class AdditionLayer : public Layer, public Observable, public Observer, public IWindow
+{
+public:
+    AdditionLayer(const std::string& name);
 
-// 	void onImGuiRender() override;
+	void onImGuiRender() override;
 
-//     void setAdditionType(const AdditionType& additionType)
-//     {
-//         m_additionType = additionType;
-//     }
+    void setAdditionType(const AdditionType& additionType)
+    {
+        m_additionType = additionType;
+    }
 
-// protected:
-//     ui::styling::WindowConfig initWindowConfig() override;
+protected:
+    void initWindowConfig() override;
 
-//     void initComponents() override;
+    void initComponents() override;
 
-// private:
-// 	void addPlane();
+private:
+    void initMeshComponents();
 
-// 	void addCube();
+    void initSurfaceComponents();
 
-// 	void addSurface();
+    void linkInputs();
 
-//     void drawDialogComponents();
+	void setCreateButtonAsAddPlane();
 
-//     void drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback);
+	void setCreateButtonAsAddCube();
 
-//     void drawSurfaceComponents(CommandConcept* command);
+	void setCreateButtonAsAddSurface();
 
-// private:
-// 	AdditionType m_additionType;
+private:
+	AdditionType m_additionType;
 
-//     // Surface components
-//     //TODO
-//     // static constexpr int API_BUFFER_SIZE = 256;
-//     // float m_lowerLeftLon{};
-// 	// float m_lowerLeftLat{};
-// 	// float m_upperRightLon{};
-// 	// float m_upperRightLat{};
-// 	// char m_apiKeyBuffer[API_BUFFER_SIZE];
-// };
+    // Mesh components
+    ui::components::InputBox<int>*   m_subdivisionInputBox;
+    ui::components::InputBox<float>* m_sizeInputBox;
+    ui::components::InputBox<float>* m_posXInputBox;
+    ui::components::InputBox<float>* m_posYInputBox;
+    ui::components::InputBox<float>* m_posZInputBox;
+    ui::components::Slider<int>*     m_subdivisionSlider;
+    ui::components::Slider<float>*     m_sizeSlider;
+    ui::components::Button*          m_createButton;
+    ui::components::CheckBox*        m_automaticCheckBox;
+    
+
+    // Surface components
+    //TODO
+    // static constexpr int API_BUFFER_SIZE = 256;
+    // float m_lowerLeftLon{};
+	// float m_lowerLeftLat{};
+	// float m_upperRightLon{};
+	// float m_upperRightLat{};
+	// char m_apiKeyBuffer[API_BUFFER_SIZE];
+};

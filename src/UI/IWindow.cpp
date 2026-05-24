@@ -44,7 +44,14 @@ void IWindow::render()
     ui::styling::Window::addToLayout([this]() {
         for (auto& component : m_components)
         {
-            component->render();
+            if (component->isVisible())
+            {
+                component->render();
+            }
+            else
+            {
+                ImGui::Dummy(ImVec2{ 0.0f, ImGui::GetFrameHeight() });
+            }
         }
     });
     

@@ -110,17 +110,4 @@ namespace ui::styling
         }
     }
 
-    void Window::drawHorizontalSeparator(const float length)
-    {
-        ImVec2 pos             = ImGui::GetCursorScreenPos();
-        ImVec2 windowSize      = ImGui::GetWindowSize();
-        float responsiveLenght = windowSize.x * length;
-
-        ImGui::GetWindowDrawList()->AddLine(
-            pos,
-            ImVec2(pos.x + responsiveLenght, pos.y),
-            ImGui::GetColorU32(ImGuiCol_Separator),
-            1.0f);
-    }
-
 } // ui::styling

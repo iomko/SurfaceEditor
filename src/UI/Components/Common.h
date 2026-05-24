@@ -10,7 +10,8 @@ namespace ui::components
     {
     public:
         IComponent(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
-            : m_name(name)
+            : m_isVisible{true}
+            , m_name(name)
             , m_config(std::move(config))
         { }
 
@@ -18,9 +19,14 @@ namespace ui::components
 
         virtual void render() = 0;
 
-        virtual const std::string& name() const
+        const std::string& name() const
         {
             return m_name;
+        }
+
+        bool isVisible() const
+        {
+            return m_isVisible;
         }
 
         ui::styling::IConfig* config()
@@ -28,7 +34,13 @@ namespace ui::components
             return m_config.get();
         }
 
+        void setIsVisible(bool isVisible)
+        {
+            m_isVisible = isVisible;
+        }
+
     protected:
+        bool                                  m_isVisible;
         std::string                           m_name;
         std::shared_ptr<ui::styling::IConfig> m_config;
     };

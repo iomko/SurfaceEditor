@@ -9,14 +9,9 @@ namespace ui::components
     class Label : public IComponent
     {
     public:
-        Label(const std::string& text, std::shared_ptr<ui::styling::IConfig> config)
-            : IComponent(text, std::move(config))
-        { }
+        Label(const std::string& text, std::shared_ptr<ui::styling::IConfig> config);
 
-        void render() override
-        {
-            ui::styling::Label::render(this);
-        }
+        void render() override;
     };
 
 } // ui::components

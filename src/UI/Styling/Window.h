@@ -58,7 +58,5 @@ namespace ui::styling
         static void destroy(WindowConfig& config);
 
         static void addToLayout(std::function<void()> asignComponents, const ImVec2& margin = {});
-
-        static void drawHorizontalSeparator(const float lenght);
     };
 } // ui::styling

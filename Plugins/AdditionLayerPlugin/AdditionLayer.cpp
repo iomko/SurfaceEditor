@@ -1,211 +1,187 @@
-// #include "AdditionLayer.h"
-// #include "imgui.h"
-// #include "../../src/Commands/CommandRegistry.h"
-// #include "../../src/UI/Components/Button.h"
-// #include "../../src/UI/Styling/Font.h"
-// #include "../src/UI/Components/Label.h"
-// #include "../src/UI/Components/CheckBox.h"
-// #include "../src/UI/Components/InputBox.h"
-// #include "../src/UI/Components/Slider.h"
-// #include "../../src/Builders/UIWindowBuilder.h"
-// #include "../../src/Builders/UIButtonBuilder.h"
-// #include "../../src/Builders/UILabelBuilder.h"
-// #include "../../src/Builders/UICheckBoxBuilder.h"
-// #include "../../src/Builders/UIInputBoxBuilder.h"
-// #include "../../src/Builders/UISliderBuilder.h"
+#include "AdditionLayer.h"
+#include "imgui.h"
+#include "../../src/Commands/CommandRegistry.h"
+#include "../../src/UI/Components/Button.h"
+#include "../../src/UI/Styling/Font.h"
+#include "../src/UI/Components/Label.h"
+#include "../src/UI/Components/CheckBox.h"
+#include "../src/UI/Components/InputBox.h"
+#include "../src/UI/Components/Slider.h"
+#include "../src/UI/Components/SameLine.h"
+#include "../src/UI/Components/Separator.h"
+#include "../src/UI/Components/Dummy.h"
+#include "../../src/Builders/UIWindowBuilder.h"
+#include "../../src/Builders/UIButtonBuilder.h"
+#include "../../src/Builders/UILabelBuilder.h"
+#include "../../src/Builders/UICheckBoxBuilder.h"
+#include "../../src/Builders/UIInputBoxBuilder.h"
+#include "../../src/Builders/UISliderBuilder.h"
 
-// static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
+namespace
+{
+    static constexpr const char* LAYER_NAME = "ADDITION_LAYER";
+} // namespace
 
-// AdditionLayer::AdditionLayer(const std::string& name)
-//     : Layer(name)
-//     , IWindow(initWindowConfig())
-//     , m_additionType(AdditionType::NONE)
-// {
-//     initComponents();
-// }
+static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
-// ui::styling::WindowConfig AdditionLayer::initWindowConfig()
-// {
-//     auto posConfig = WindowPosConfigBuilder()
-//         .posX(0.38f)
-//         .posY(0.28f)
-//         .build();
+AdditionLayer::AdditionLayer(const std::string& name)
+    : Layer(name)
+    , IWindow(LAYER_NAME)
+    , m_additionType(AdditionType::NONE)
+{
+    initWindowConfig();
+    initComponents();
+}
 
-//     auto sizeConfig = WindowSizeConfigBuilder()
-//         .width(0.25f)
-//         .height(0.4f)
-//         .minWidth(0.6f)
-//         .minHeight(0.75f)
-//         .build();
+void AdditionLayer::initWindowConfig()
+{
+    auto posConfig = WindowPosConfigBuilder()
+        .posX(0.38f)
+        .posY(0.28f)
+        .build();
 
-//     auto titleBarConfig = WindowTitleBarBuilder()
-//         .background(ui::styling::Color::titleBarOrange)
-//         .font(ui::styling::Font::extraBold(20.0f))
-//         .build();
+    auto sizeConfig = WindowSizeConfigBuilder()
+        .width(0.25f)
+        .height(0.4f)
+        .minWidth(0.6f)
+        .minHeight(0.75f)
+        .build();
 
-//     auto flags = ImGuiWindowFlags_NoResize
-//                | ImGuiWindowFlags_NoMove
-//                | ImGuiWindowFlags_NoScrollbar
-//                | ImGuiWindowFlags_NoCollapse;
+    auto titleBarConfig = WindowTitleBarBuilder()
+        .background(ui::styling::Color::titleBarOrange)
+        .font(ui::styling::Font::extraBold(20.0f))
+        .build();
+
+    auto flags = ImGuiWindowFlags_NoResize
+               | ImGuiWindowFlags_NoMove
+               | ImGuiWindowFlags_NoScrollbar
+               | ImGuiWindowFlags_NoCollapse;
     
-//     return WindowConfigBuilder()
-//         .name("\tEnter parameters")
-//         .layerName("ADDITION_LAYER")
-//         .background(ui::styling::Color::transparentGray)
-//         .rounding(20.0f)
-//         .pos(posConfig)
-//         .size(sizeConfig)
-//         .titleBar(titleBarConfig)
-//         .flags(flags)
-//         .build();
-// }
+    m_windowConfig = WindowConfigBuilder()
+        .name("\tEnter parameters")
+        .layerName(LAYER_NAME)
+        .background(ui::styling::Color::transparentGray)
+        .rounding(20.0f)
+        .pos(posConfig)
+        .size(sizeConfig)
+        .titleBar(titleBarConfig)
+        .flags(flags)
+        .build();
+}
 
-// void AdditionLayer::initComponents()
-// {
-//     auto buttonSize = ImVec2{
-//         m_windowConfig.size.width * 0.5f,
-//         m_windowConfig.size.height * 0.25f
-//     };
+void AdditionLayer::initComponents()
+{
+    static constexpr int itemsCount = 34; // change when adding surface UI
+    m_components.reserve(itemsCount);
 
-//     auto dialogButtonConfig = ButtonConfigBuilder()
-//         .rounding(8.0f)
-//         .size(buttonSize)
-//         .background(ui::styling::Color::lightGray)
-//         .font(ui::styling::Font::regular(0.6f))
-//         .size(ImVec2{ 0.042f, 0.04f })
-//         .onHoverColor(ui::styling::Color::hoverOverOrange)
-//         .onClickColor(ui::styling::Color::onClickOrange)
-//         .build();
+    initMeshComponents();
+    initSurfaceComponents();
+}
 
-//     auto headlinersConfig = LabelConfigBuilder()
-//         .font(ui::styling::Font::extraBold(0.025f))
-//         .build();
+void AdditionLayer::initMeshComponents()
+{
+    using namespace ui::components;
 
-//     auto defaultTextConfig = LabelConfigBuilder()
-//         .font(ui::styling::Font::regular(0.02))
-//         .build();
+    auto buttonSize = ImVec2{
+        m_windowConfig.size.width * 0.5f,
+        m_windowConfig.size.height * 0.25f
+    };
 
-//     auto checkBoxConfig = CheckBoxConfigBuilder()
-//         .checkMarkColor(ui::styling::Color::selectedOrange)
-//         .background(ui::styling::Color::lightGray)
-//         .onHoverBackground(ui::styling::Color::lightGray)
-//         .onActiveBackground(ui::styling::Color::lightGray)
-//         .build();
+    auto dialogButtonConfig = ButtonConfigBuilder()
+        .rounding(8.0f)
+        .size(buttonSize)
+        .background(ui::styling::Color::lightGray)
+        .font(ui::styling::Font::regular(0.6f))
+        .size(ImVec2{ 0.042f, 0.04f })
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
 
-//     auto inputBoxConfig = InputBoxBuilder()
-//         .width(0.17f)
-//         .background(ui::styling::Color::lightGray)
-//         .build();
+    auto headlinersConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::extraBold(0.025f))
+        .build();
 
-//     auto intSliderConfig = SliderConfigBuilder<int>()
-//         .width(0.37f)
-//         .max(100)
-//         .background(ui::styling::Color::lightGray)
-//         .onHoverBackground(ui::styling::Color::lightGray)
-//         .onActiveBackground(ui::styling::Color::lightGray)
-//         .grabBackground(ui::styling::Color::titleBarOrange)
-//         .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
-//         .build();
+    auto defaultTextConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::regular(0.02))
+        .build();
 
-//     auto floatSliderConfig = SliderConfigBuilder<float>()
-//         .width(0.36f)
-//         .max(100.0f)
-//         .background(ui::styling::Color::lightGray)
-//         .onHoverBackground(ui::styling::Color::lightGray)
-//         .onActiveBackground(ui::styling::Color::lightGray)
-//         .grabBackground(ui::styling::Color::titleBarOrange)
-//         .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
-//         .build();
+    auto checkBoxConfig = CheckBoxConfigBuilder()
+        .checkMarkColor(ui::styling::Color::selectedOrange)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .build();
 
-//     m_subdivisionLabel    = std::make_unique<ui::components::Label>("Subdivision", headlinersConfig);
-//     m_sizeLabel           = std::make_unique<ui::components::Label>("Size", headlinersConfig);
-//     m_positionLabel       = std::make_unique<ui::components::Label>("Position", headlinersConfig);
-//     m_automaticLabel      = std::make_unique<ui::components::Label>("Automatic:", defaultTextConfig);
-//     m_posXLabel           = std::make_unique<ui::components::Label>("X:", defaultTextConfig);
-//     m_posYLabel           = std::make_unique<ui::components::Label>("Y:", defaultTextConfig);
-//     m_posZLabel           = std::make_unique<ui::components::Label>("Z:", defaultTextConfig);
-//     m_automaticCheckbox   = std::make_unique<ui::components::CheckBox>("AutomaticCheckBox", checkBoxConfig);
-//     m_subdivisionInputBox = std::make_unique<ui::components::InputBox<int>>("SubdivisionInputBox", inputBoxConfig);
-//     m_sizeInputBox        = std::make_unique<ui::components::InputBox<float>>("SizeInputBox", inputBoxConfig);
-//     m_posXInputBox        = std::make_unique<ui::components::InputBox<float>>("PosXInputBox", inputBoxConfig);
-//     m_posYInputBox        = std::make_unique<ui::components::InputBox<float>>("PosYInputBox", inputBoxConfig);
-//     m_posZInputBox        = std::make_unique<ui::components::InputBox<float>>("PosZInputBox", inputBoxConfig);
-//     m_subdivisionSlider   = std::make_unique<ui::components::Slider<int>>("SubdivisionSlider", intSliderConfig);
-//     m_sizeSlider          = std::make_unique<ui::components::Slider<float>>("SizeSlider", floatSliderConfig);
-    
-//     m_dialogButtons.emplace_back(std::make_unique<ui::components::Button>("Add", dialogButtonConfig, [](ui::components::Button*) {
-//         //TODO
-//         VisibilityHandler::hide("ADDITION_LAYER");
-//     }));
-//     m_dialogButtons.emplace_back(std::make_unique<ui::components::Button>("Cancel", dialogButtonConfig, [](ui::components::Button*) {
-//         VisibilityHandler::hide("ADDITION_LAYER");
-//     }));
+    auto inputBoxConfig = InputBoxBuilder()
+        .width(0.17f)
+        .background(ui::styling::Color::lightGray)
+        .build();
 
-//     *m_subdivisionInputBox->inputValue() = 1;
-//     *m_sizeInputBox->inputValue()        = 1;
-// }
+    auto intSliderConfig = SliderConfigBuilder<int>()
+        .width(0.37f)
+        .max(100)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
+        .build();
 
-// void AdditionLayer::addPlane()
-// {
-//     auto* addPlaneCommand = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
+    auto floatSliderConfig = SliderConfigBuilder<float>()
+        .width(0.36f)
+        .max(100.0f)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
+        .build();
 
-//     if (/*addPlaneCommand*/ true)
-//     {
-//         drawMeshComponents(addPlaneCommand, [this]() -> PlaneParams {
-//             PlaneParams addPlaneCommandParams;
-//             addPlaneCommandParams.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
-//             addPlaneCommandParams.m_size             = *m_sizeInputBox->inputValue();
-//             addPlaneCommandParams.m_position = glm::vec3{
-//                 *m_posXInputBox->inputValue(),
-//                 *m_posZInputBox->inputValue(),
-//                 *m_posYInputBox->inputValue()
-//             };
-            
-//             return addPlaneCommandParams;
-//         });
-//     }
-// }
+    emplaceComponent<Label>("Subdivision", headlinersConfig);
+    emplaceComponent<Label>("Automatic:", defaultTextConfig);
+    emplaceComponent<SameLine>();
+    m_automaticCheckBox   = emplaceComponent<CheckBox>("AutomaticCheckBox", checkBoxConfig);
+    m_subdivisionInputBox = emplaceComponent<InputBox<int>>("SubdivisionInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>();
+    m_subdivisionSlider = emplaceComponent<Slider<int>>("SubdivisionSlider", intSliderConfig);
+    emplaceComponent<Separator>(0.55f);
+    emplaceComponent<Label>("Size", headlinersConfig);
+    m_sizeInputBox = emplaceComponent<InputBox<float>>("SizeInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>();
+    m_sizeSlider = emplaceComponent<Slider<float>>("SizeSlider", floatSliderConfig);
+    emplaceComponent<Separator>(0.55f);
+    emplaceComponent<Label>("Position", headlinersConfig);
+    emplaceComponent<Dummy>(0.003f, 0.0f);
+    emplaceComponent<SameLine>();
+    emplaceComponent<Label>("X:", defaultTextConfig);
+    emplaceComponent<SameLine>();
+    emplaceComponent<Dummy>(0.13f, 0.0f);
+    emplaceComponent<SameLine>();
+    emplaceComponent<Label>("Y:", defaultTextConfig);
+    emplaceComponent<SameLine>();
+    emplaceComponent<Dummy>(0.13f, 0.0f);
+    emplaceComponent<SameLine>();
+    emplaceComponent<Label>("Z:", defaultTextConfig);
+    m_posXInputBox = emplaceComponent<InputBox<float>>("PosXInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>();
+    m_posYInputBox = emplaceComponent<InputBox<float>>("PosYInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>();
+    m_posZInputBox = emplaceComponent<InputBox<float>>("PosZInputBox", inputBoxConfig);
+    emplaceComponent<Separator>(0.55f);
+    m_createButton = emplaceComponent<Button>("Add", dialogButtonConfig, [](ui::components::Button*){});
+    emplaceComponent<SameLine>();
+    emplaceComponent<Button>("Cancel", dialogButtonConfig, [](ui::components::Button*) {
+        VisibilityHandler::hide("ADDITION_LAYER");
+    });
 
-// void AdditionLayer::addCube()
-// {
-//     auto* addCubeCommand = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");
+    *m_subdivisionInputBox->inputValue() = 1;
+    *m_sizeInputBox->inputValue()        = 1.0f;
+}
 
-//     if (/*addCubeCommand*/ true)
-//     {
-//         drawMeshComponents(addCubeCommand, [this]() -> CubeParams {
-//             CubeParams addCubeParams;
-//             addCubeParams.m_size             = *m_sizeInputBox->inputValue();
-//             addCubeParams.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
-//             addCubeParams.m_position = glm::vec3{
-//                 *m_posXInputBox->inputValue(),
-//                 *m_posZInputBox->inputValue(),
-//                 *m_posYInputBox->inputValue()
-//             };
-            
-//             return addCubeParams;
-//         });
-//     }
-// }
 
-// void AdditionLayer::addSurface()
-// {
-//     auto* addSurfaceCommand = CommandRegistry::instance().getCommand("ADD_SURFACE_COMMAND");
+// DO WINDOW CONFIGU A BUILDERU LAYOUTS COUNT PARAMETER - POLE
 
-//     if (/*addSurfaceCommand*/ true)
-//     {
-//         drawSurfaceComponents(addSurfaceCommand);
-//     }
-// }
 
-// void AdditionLayer::drawDialogComponents()
-// {
-//     for (auto& button : m_dialogButtons)
-//     {
-//         ui::styling::Button::render(button);
-
-//         ImGui::SameLine();
-//     }
-// }
 
 // void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback)
 // {
@@ -292,37 +268,105 @@
 //     }, ImVec2{ 0.28f, 0.0f });
 // }
 
-// void AdditionLayer::drawSurfaceComponents(CommandConcept* command)
-// {
-//     // TODO
-//     // InputBox limit values needs to be handled
-//     // Find a way to share value between InputBox and Slider
-// }
+void AdditionLayer::initSurfaceComponents()
+{
+    using namespace ui::components;
 
-// void AdditionLayer::onImGuiRender()
-// {
-//     ui::styling::Window::setPosAndSize(m_windowConfig);
-//     if (!VisibilityHandler::isVisible("ADDITION_LAYER"))
-//     {
-//         return;
-//     }
+    //TODO
+}
 
-//     ui::styling::Window::init(m_windowConfig);
+void AdditionLayer::linkInputs()
+{
+    // TODO - LINK input box and input slider values
+    // *m_subdivisionSlider->inputValue() = *m_subdivisionInputBox->inputValue();
+    // *m_sizeSlider->inputValue()        = *m_sizeInputBox>inputValue();
 
-//     switch (m_additionType)
-//     {
-//         case AdditionType::PLANE:
-//             addPlane();
-//             break;
-//         case AdditionType::CUBE:
-//             addCube();
-//             break;
-//         case AdditionType::SURFACE:
-//             addSurface();
-//             break;
-//         default:
-//             break;
-//     }
+    m_subdivisionInputBox->setIsVisible(!*m_automaticCheckBox->isChecked());
+    m_subdivisionSlider->setIsVisible(!*m_automaticCheckBox->isChecked());
+}
 
-//     ui::styling::Window::destroy(m_windowConfig);
-// }
+void AdditionLayer::setCreateButtonAsAddPlane()
+{
+    using namespace ui::components;
+
+    // m_createButton->setAction([this](Button*) {
+    //     auto* command = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
+    //     if (command != nullptr)
+    //     {
+    //         PlaneParams params;
+    //         params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
+    //         params.m_size             = *m_sizeInputBox->inputValue();
+    //         params.m_position = glm::vec3{
+    //             *m_posXInputBox->inputValue(),
+    //             *m_posZInputBox->inputValue(),
+    //             *m_posYInputBox->inputValue()
+    //         };
+            
+    //         command->execute(params);
+    //     }
+    // });
+}
+
+void AdditionLayer::setCreateButtonAsAddCube()
+{
+    using namespace ui::components;
+
+    // m_createButton->setAction([this](Button*) {
+    //     auto* command = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");   
+    //     if (command != nullptr)
+    //     {
+    //         CubeParams params;
+    //         params.m_size             = *m_sizeInputBox->inputValue();
+    //         params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
+    //         params.m_position = glm::vec3{
+    //             *m_posXInputBox->inputValue(),
+    //             *m_posZInputBox->inputValue(),
+    //             *m_posYInputBox->inputValue()
+    //         };
+                
+    //         command->execute(params);
+    //     }
+    // });
+}
+
+void AdditionLayer::setCreateButtonAsAddSurface()
+{
+    using namespace ui::components; 
+
+    // m_createButton->setAction([this](Button*) {
+    //     auto* command = CommandRegistry::instance().getCommand("ADD_SURFACE_COMMAND");
+    //     if (command != nullptr)
+    //     {
+    //         OpenTopoParams params;
+    //         // params.m_lowerLeftLon = m_lowerLeftLon;
+    //         // params.m_lowerLeftLat = m_lowerLeftLat;
+    //         // params.m_upperRightLon = m_upperRightLon;
+    //         // params.m_upperRightLat = m_upperRightLat;
+    //         // params.m_apiKey = std::string(m_apiKeyBuffer);
+            
+    //         command->execute(params);
+    //     }
+    // });
+}
+
+void AdditionLayer::onImGuiRender()
+{
+    switch (m_additionType)
+    {
+        case AdditionType::PLANE:
+            setCreateButtonAsAddPlane();
+            break;
+        case AdditionType::CUBE:
+            setCreateButtonAsAddCube();
+            break;
+        case AdditionType::SURFACE:
+            setCreateButtonAsAddSurface();
+            break;
+        default:
+            break;
+    }
+
+    linkInputs();
+
+    this->render();
+}

@@ -24,7 +24,7 @@ namespace ui::styling
         Slider() = delete;
 
         template<typename T>
-        static void render(ui::components::Slider<T>* component);
+        static void render(std::string& name, T* value, IConfig* config);
 
     private:
         template<typename T>
@@ -50,33 +50,33 @@ namespace ui::styling
     };
 
     template<typename T>
-    void Slider::render(ui::components::Slider<T>*)
+    inline void Slider::render(std::string& name, T* value, IConfig* config)
     {
         throw std::logic_error("Unsupported type for slider");
     }
 
     template<>
-    void Slider::render<int>(ui::components::Slider<int>* slider)
+    inline void Slider::render<int>(std::string& name, int* value, IConfig* config)
     {
-        auto* config = dynamic_cast<SliderConfig<int>*>(slider->config());
+        auto* sliderConfig = dynamic_cast<SliderConfig<int>*>(config);
 
-        initConfig(config);
+        initConfig(sliderConfig);
 
-        ImGui::SliderInt(slider->name().c_str(), slider->inputValue(), config->min, config->max);
+        ImGui::SliderInt(name.c_str(), value, sliderConfig->min, sliderConfig->max);
 
-        destroy(config);
+        destroy(sliderConfig);
     }
 
     template<>
-    void Slider::render<float>(ui::components::Slider<float>* slider)
+    inline void Slider::render<float>(std::string& name, float* value, IConfig* config)
     {
-        auto* config = dynamic_cast<SliderConfig<float>*>(slider->config());
+        auto* sliderConfig = dynamic_cast<SliderConfig<float>*>(config);
 
-        initConfig(config);
+        initConfig(sliderConfig);
 
-        ImGui::SliderFloat(slider->name().c_str(), slider->inputValue(), config->min, config->max);
+        ImGui::SliderFloat(name.c_str(), value, sliderConfig->min, sliderConfig->max);
 
-        destroy(config);
+        destroy(sliderConfig);
     }
 
 } // ui::comopnents

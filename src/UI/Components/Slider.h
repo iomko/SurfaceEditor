@@ -9,18 +9,13 @@ namespace ui::components
     {
     public:
         Slider(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
-            : IComponent(name, std::move(config))
+            : IComponent("##" + name, std::move(config))
             , m_inputValue{}
         { }
 
-        const std::string name() const override
-        {
-            return "##" + m_name;
-        }
-
         void render() override
         {
-            ui::styling::Slider::render(this);
+            ui::styling::Slider::render(m_name, &m_inputValue, m_config.get());
         }
 
         T* inputValue()
