@@ -7,12 +7,16 @@
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/WindowLayerBus.h"
 #include "../src/UI/Styling/Window.h"
+#include "../src/UI/Styling/Button.h"
+#include "../src/UI/Components/RadioImageButton.h"
 #include "../src/UI/VisibilityHandler.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
 
 namespace
 {
+    static constexpr const char* LAYER_NAME = "OBJECT_MANIPULATION_LAYER";
+
     //Names
     static constexpr const char* cursor    = "cursor";
     static constexpr const char* translate = "translate";
@@ -26,20 +30,21 @@ namespace
     static constexpr const char* rotatePath    = "../images/gui/rotate.png";
     static constexpr const char* scalePath     = "../images/gui/scale.png";
     static constexpr const char* plusPath      = "../images/gui/plus.png";
-}
+} // namespace
 
-static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg("OBJECT_MANIPULATION_LAYER");
+static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg(LAYER_NAME);
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
-    : Layer(name),
-      IWindow(initWindowConfig())
+    : Layer(name)
+    , IWindow(LAYER_NAME)
 {
-    VisibilityHandler::show("OBJECT_MANIPULATION_LAYER");
+    VisibilityHandler::show(LAYER_NAME);
 
+    initWindowConfig();
     initComponents();
 }
 
-ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
+void ObjectManipulationLayer::initWindowConfig()
 {
     auto posConfig  = WindowPosConfigBuilder().posX(0.025f).posY(0.37f).build();
     auto sizeConfig = WindowSizeConfigBuilder().minWidth(0.6f).minHeight(0.6f).build();
@@ -49,8 +54,8 @@ ui::styling::WindowConfig ObjectManipulationLayer::initWindowConfig()
                     | ImGuiWindowFlags_NoScrollbar
                     | ImGuiWindowFlags_NoCollapse;
 
-    return WindowConfigBuilder()
-        .name("OBJECT_MANIPULATION_LAYER")
+    m_windowConfig = WindowConfigBuilder()
+        .name(LAYER_NAME)
         .background(ui::styling::Color::gray)
         .rounding(12.0f)
         .pos(std::move(posConfig))
@@ -64,7 +69,8 @@ void ObjectManipulationLayer::initComponents()
     using namespace ui::components;
 
     static constexpr int itemsCount = 5;
-    m_buttons.reserve(itemsCount);
+    m_components.reserve(itemsCount);
+    m_radioButtons.reserve(itemsCount);
 
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(17.0f)
@@ -76,45 +82,30 @@ void ObjectManipulationLayer::initComponents()
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    m_buttons.emplace_back(std::make_unique<RadioImageButton>(cursor, defaultConfig, cursorPath, [](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
+        resetModeState();
     }));
-    m_buttons.emplace_back(std::make_unique<RadioImageButton>(translate, defaultConfig, translatePath, [](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
+        resetModeState();
     }));
-    m_buttons.emplace_back(std::make_unique<RadioImageButton>(rotate, defaultConfig, rotatePath, [](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(rotate, rotatePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
+        resetModeState();
     }));
-    m_buttons.emplace_back(std::make_unique<RadioImageButton>(scale, defaultConfig, scalePath, [](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(scale, scalePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
+        resetModeState();
     }));
-    m_buttons.emplace_back(std::make_unique<RadioImageButton>(plus, defaultConfig, plusPath, [this](Button* button) {
-        auto& layerRegistry = LayerRegistry::instance();
-        auto* layer         = layerRegistry.getLayer("OBJECTS_LAYER", "ObjectsLayer");
-        auto* objectsLayer  = static_cast<ObjectsLayer*>(layer);
-
-        objectsLayer->setOnFinishCallback([this]() {
-            resetModeState();
-        });
-        objectsLayer->setPosCallback([this, button]() {
-            return ImVec2{
-                m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x - button->config().realSize.x,
-                m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y - button->config().realSize.y
-            };
-        });
-
-        VisibilityHandler::show("OBJECTS_LAYER");
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
+        resetModeState();
+        invokeObjectsLayer(button);
     }));
 }
 
 void ObjectManipulationLayer::resetModeState()
 {
-    for (auto& button : m_buttons)
-    {
-        button->setIsSelected(false);
-        button->config().background = ui::styling::Color::black;
-    }
-
     VisibilityHandler::hide("GIZMO_LAYER");
     VisibilityHandler::hide("OBJECTS_LAYER");
 
@@ -128,35 +119,27 @@ void ObjectManipulationLayer::resetModeState()
     ViewPortsHolderContext::s_viewPortsController->m_currentTool = nullptr;
 }
 
+void ObjectManipulationLayer::invokeObjectsLayer(ui::components::Button* button)
+{
+    auto* config = dynamic_cast<ui::styling::ButtonConfig*>(button->config());
+
+    auto& layerRegistry = LayerRegistry::instance();
+    auto* layer         = layerRegistry.getLayer("OBJECTS_LAYER", "ObjectsLayer");
+    auto* objectsLayer  = static_cast<ObjectsLayer *>(layer);
+
+    objectsLayer->setOnFinishCallback([this]() {
+        resetModeState();
+    });
+    objectsLayer->setPosCallback([this, config]() {
+        return ImVec2{
+            m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x - config->realSize.x,
+            m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y - config->realSize.y};
+    });
+
+    VisibilityHandler::show("OBJECTS_LAYER");
+}
+
 void ObjectManipulationLayer::onImGuiRender()
 {
-    ui::styling::Window::setPosAndSize(m_windowConfig);
-    if (!VisibilityHandler::isVisible("OBJECT_MANIPULATION_LAYER"))
-    {
-        return;
-    }
-
-    ui::styling::Window::init(m_windowConfig);
-
-    ui::styling::Window::addToLayout([this]() {
-        for (auto& button : m_buttons)
-        {
-            ui::styling::Button::init(button->config());
-
-            const ImVec2 buttonSize = button->config().realSize;
-
-            if (ImGui::ImageButton(button->name().c_str(), button->textureID(), buttonSize))
-            {
-                resetModeState();
-
-                button->setIsSelected(true);
-                button->config().background = ui::styling::Color::selectedOrange;
-                button->execute();
-            }
-
-            ui::styling::Button::destroy(button->config());
-        }
-    });
-    
-    ui::styling::Window::destroy(m_windowConfig);
+    this->render();
 }

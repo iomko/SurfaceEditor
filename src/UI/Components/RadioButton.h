@@ -7,29 +7,25 @@ namespace ui::components
     class RadioButton : public virtual Button
     {
     public:
-        RadioButton(const std::string& name, std::shared_ptr<ui::styling::IConfig> config, std::function<void(Button*)> action)
-            : Button(name, std::move(config), std::move(action))
-        { }
+        RadioButton(
+            const std::string&                    name,
+            std::vector<RadioButton*>&            group,
+            std::shared_ptr<ui::styling::IConfig> config,
+            std::function<void(Button*)>          action);
 
         virtual ~RadioButton() = default;
 
-        void render() override
-        {
-            ui::styling::Button::render(this);
-        }
+        void render() override;
 
-        const bool& isSelected() const
-        {
-            return m_isSelected;
-        }
+        const bool& isSelected() const;
 
-        void setIsSelected(const bool& isSelected)
-        {
-            m_isSelected = isSelected;
-        }
+        void setIsSelected(const bool& isSelected);
+
+        std::vector<RadioButton*>& group();
 
     private:
-        bool m_isSelected;
+        bool                       m_isSelected;
+        std::vector<RadioButton*>& m_group;
     };
 
 } // ui::components

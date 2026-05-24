@@ -1,11 +1,10 @@
 #pragma once
-#include "../Styling/InputBox.h"
-#include "../Styling/Common.h"
 #include "../Components/Common.h"
+#include "../Styling/InputBox.h"
 
 namespace ui::components
 {
-
+    
     template<typename T>
     class InputBox : public IComponent
     {
@@ -17,7 +16,7 @@ namespace ui::components
 
         void render() override
         {
-            ui::styling::InputBox::render<T>(this);
+            ui::styling::InputBox::render<T>(m_name, &m_inputValue, m_config.get());
         }
 
         T* inputValue()
@@ -39,7 +38,7 @@ namespace ui::components
 
         void render() override
         {
-            ui::styling::InputBox::render<char>(this);
+            ui::styling::InputBox::render<char>(m_name, m_inputValue, m_config.get());
         }
 
         char* inputValue()

@@ -19,17 +19,17 @@ public:
 
     void setPosCallback(std::function<ImVec2()> getPosCallback);
 
-private:
-    void updatePosition();
-
 protected:
-    ui::styling::WindowConfig initWindowConfig() override;
+    void initWindowConfig() override;
 
     void initComponents() override;
 
 private:
+    void updatePosition();
+
+    void invokeAdditionLayer();
+
+private:
     std::function<void()>   m_onFinish;
     std::function<ImVec2()> m_getPos;
-
-    std::vector<std::unique_ptr<ui::components::Button>> m_buttons;
 };

@@ -9,9 +9,10 @@ namespace ui::styling
 
     struct WindowPosConfig
     {
-        float  posX;         // represents percentage of screen to achieve responsive design
-        float  posY;         // represents percentage of screen to achieve responsive design
-        ImVec2 rawPos;       // used automaticly by IWindow class
+        bool   relativePosition;
+        float  posX;              // represents percentage of screen to achieve responsive design
+        float  posY;              // represents percentage of screen to achieve responsive design
+        ImVec2 rawPos;            // used automaticly by IWindow class
     };
 
     struct WindowSizeConfig

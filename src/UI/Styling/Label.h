@@ -1,6 +1,12 @@
 #pragma once
 #include <string>
 #include <imgui.h>
+#include "Common.h"
+
+namespace ui::components
+{
+    class Label;
+} // ui::components
 
 namespace ui::styling
 {

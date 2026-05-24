@@ -7,18 +7,18 @@
 class IWindow
 {
 public:
-    IWindow(ui::styling::WindowConfig config);
+    IWindow(const std::string& layerName);
 
     virtual ~IWindow() = default;
 
     bool clickedOnWindow(const glm::vec2& clickPos);
 
 protected:
-    virtual ui::styling::WindowConfig initWindowConfig() = 0;
+    virtual void initWindowConfig() = 0;
 
     virtual void initComponents() = 0;
 
-    void renderComponents();
+    void render();
 
     template<typename T, typename... Args>
     T* emplaceComponent(Args&&... args)
@@ -32,4 +32,7 @@ protected:
 protected:
     ui::styling::WindowConfig                                m_windowConfig;
     std::vector<std::unique_ptr<ui::components::IComponent>> m_components;
+
+private:
+    std::string m_layerName;
 };

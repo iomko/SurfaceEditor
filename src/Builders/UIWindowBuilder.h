@@ -8,6 +8,12 @@ public:
         : m_config{}
     { }
 
+    WindowPosConfigBuilder& relativePosition(bool relativePosition)
+    {
+        m_config.relativePosition = relativePosition;
+        return *this;
+    }
+
     WindowPosConfigBuilder& posX(float x)
     {
         m_config.posX = x;

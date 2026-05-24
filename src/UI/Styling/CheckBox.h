@@ -3,6 +3,11 @@
 #include <imgui.h>
 #include "Common.h"
 
+namespace ui::components
+{
+    class CheckBox;
+} // ui::components
+
 namespace ui::styling
 {
 

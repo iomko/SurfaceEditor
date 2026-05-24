@@ -6,16 +6,22 @@
 #include "../src/Builders/UIButtonBuilder.h"
 #include "../AdditionLayerPlugin/AdditionLayer.h"
 
+namespace
+{
+    static constexpr const char* LAYER_NAME = "OBJECTS_LAYER";
+} // namespace
+
 static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
-      IWindow(initWindowConfig())
+      IWindow(LAYER_NAME)
 {
+    initWindowConfig();
     initComponents();
 }
 
-ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
+void ObjectsLayer::initWindowConfig()
 {
     auto sizeConfig = WindowSizeConfigBuilder().width(0.05f).height(0.09f).minHeight(0.6f).minWidth(0.6f).build();
     auto flags      = ImGuiWindowFlags_NoTitleBar
@@ -24,8 +30,8 @@ ui::styling::WindowConfig ObjectsLayer::initWindowConfig()
                     | ImGuiWindowFlags_NoScrollbar
                     | ImGuiWindowFlags_NoCollapse;
 
-    return WindowConfigBuilder()
-        .name("OBJECTS_LAYER")
+    m_windowConfig = WindowConfigBuilder()
+        .name(LAYER_NAME)
         .background(ui::styling::Color::gray)
         .rounding(17.0f)
         .size(sizeConfig)
@@ -38,7 +44,7 @@ void ObjectsLayer::initComponents()
     using namespace ui::components;
 
     static constexpr int itemsCount = 3;
-    m_buttons.reserve(itemsCount);
+    m_components.reserve(itemsCount);
 
     auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
 
@@ -54,17 +60,20 @@ void ObjectsLayer::initComponents()
 
     auto& layerRegistry = LayerRegistry::instance();
     auto* layer         = layerRegistry.getLayer("ADDITION_LAYER", "AdditionLayer");
-    auto* additionLayer = static_cast<AdditionLayer*>(layer);
+    // auto* additionLayer = static_cast<AdditionLayer*>(layer);
 
-    m_buttons.emplace_back(std::make_unique<Button>("Plane", defaultConfig, [additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::PLANE);
-    }));
-    m_buttons.emplace_back(std::make_unique<Button>("Cube", defaultConfig, [additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::CUBE);
-    }));
-    m_buttons.emplace_back(std::make_unique<Button>("Surface", defaultConfig, [additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::SURFACE);
-    }));
+    emplaceComponent<Button>("Plane", defaultConfig, [this/*, additionLayer*/](Button*) {
+        // additionLayer->setAdditionType(AdditionType::PLANE);
+        // invokeAdditionLayer();
+    });
+    emplaceComponent<Button>("Cube", defaultConfig, [this/*, additionLayer*/](Button*) {
+        // additionLayer->setAdditionType(AdditionType::CUBE);
+        // invokeAdditionLayer();
+    });
+    emplaceComponent<Button>("Surface", defaultConfig, [this/*, additionLayer*/](Button*) {
+        // additionLayer->setAdditionType(AdditionType::SURFACE);
+        // invokeAdditionLayer();
+    });
 }
 
 void ObjectsLayer::setOnFinishCallback(std::function<void()> onFinishCallback)
@@ -81,7 +90,15 @@ void ObjectsLayer::updatePosition()
 {
     ImVec2 pos = m_getPos();
 
-    m_windowConfig.pos = WindowPosConfigBuilder().relativePosX(pos.x).relativePosY(pos.y).build();
+    m_windowConfig.pos = WindowPosConfigBuilder().relativePosition(true).relativePosX(pos.x).relativePosY(pos.y).build();
+}
+
+void ObjectsLayer::invokeAdditionLayer()
+{
+    VisibilityHandler::hide(LAYER_NAME);
+    VisibilityHandler::show("ADDITION_LAYER");
+
+    m_onFinish();
 }
 
 void ObjectsLayer::onImGuiRender()
@@ -91,33 +108,5 @@ void ObjectsLayer::onImGuiRender()
         updatePosition();
     }
     
-    ui::styling::Window::setRelativePosAndSize(m_windowConfig);
-
-    if (!VisibilityHandler::isVisible("OBJECTS_LAYER"))
-    {
-        return;
-    }
-
-    ui::styling::Window::init(m_windowConfig);
-
-    for (auto& button : m_buttons)
-    {
-        ui::styling::Button::init(button->config());
-
-        const ImVec2 buttonSize = button->config().realSize;
-
-        if (ImGui::Button(button->name().c_str(), buttonSize))
-        {
-            button->execute();
-
-            VisibilityHandler::hide("OBJECTS_LAYER");
-            VisibilityHandler::show("ADDITION_LAYER");
-
-            m_onFinish();
-        }
-
-        ui::styling::Button::destroy(button->config());
-    }
-
-    ui::styling::Window::destroy(m_windowConfig);
+    this->render();
 }

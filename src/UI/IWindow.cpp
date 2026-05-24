@@ -1,8 +1,8 @@
 #include "IWindow.h"
 #include "../ViewPortsController.h"
 
-IWindow::IWindow(ui::styling::WindowConfig config)
-    : m_windowConfig(std::move(config))
+IWindow::IWindow(const std::string& layerName)
+    : m_layerName(layerName)
 {
     ViewPortsHolderContext::s_uiLayerController->registerUiWindow(this);
 }
@@ -23,10 +23,30 @@ bool IWindow::clickedOnWindow(const glm::vec2& clickPos)
            actualClickPos.y >= m_windowConfig.pos.rawPos.y && actualClickPos.y <= bottomRight.y;
 }
 
-void IWindow::renderComponents()
+void IWindow::render()
 {
-    for (auto& component : m_components)
+    if (!m_windowConfig.pos.relativePosition)
     {
-        component->render();
+        ui::styling::Window::setPosAndSize(m_windowConfig);
     }
+    else
+    {
+        ui::styling::Window::setRelativePosAndSize(m_windowConfig);
+    }
+
+    if (!VisibilityHandler::isVisible(m_layerName))
+    {
+        return;
+    }
+
+    ui::styling::Window::init(m_windowConfig);
+
+    ui::styling::Window::addToLayout([this]() {
+        for (auto& component : m_components)
+        {
+            component->render();
+        }
+    });
+    
+    ui::styling::Window::destroy(m_windowConfig);
 }

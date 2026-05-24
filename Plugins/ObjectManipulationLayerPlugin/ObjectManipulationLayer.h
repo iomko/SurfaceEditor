@@ -5,8 +5,12 @@
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/IWindow.h"
-#include "../src/UI/Components/RadioImageButton.h"
-#include "../src/UI/Styling/Button.h"
+
+namespace ui::components
+{
+    class Button;
+    class RadioButton;
+} // ui::components
 
 class ObjectManipulationLayer : public Layer, public Observable, public IWindow
 {
@@ -16,13 +20,15 @@ public:
     void onImGuiRender() override;
 
 protected:
-    ui::styling::WindowConfig initWindowConfig() override;
+    void initWindowConfig() override;
 
     void initComponents() override;
 
 private:
     void resetModeState();
 
+    void invokeObjectsLayer(ui::components::Button* button);
+
 private:
-    std::vector<std::unique_ptr<ui::components::RadioImageButton>> m_buttons;
+    std::vector<ui::components::RadioButton*> m_radioButtons;
 };
