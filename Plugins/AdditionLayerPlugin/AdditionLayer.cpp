@@ -181,99 +181,12 @@ void AdditionLayer::initMeshComponents()
         VisibilityHandler::hide("ADDITION_LAYER");
     });
 
+    m_subdivisionSlider->linkWith(m_subdivisionInputBox);
+    m_sizeSlider->linkWith(m_sizeInputBox);
+
     *m_subdivisionInputBox->inputValue() = 1;
     *m_sizeInputBox->inputValue()        = 1.0f;
 }
-
-
-// DO WINDOW CONFIGU A BUILDERU LAYOUT COMPONENTS
-
-
-
-// void AdditionLayer::drawMeshComponents(CommandConcept* command, std::function<CommandParams()> paramsCallback)
-// {
-//     ui::styling::Window::addToLayout([this]() {
-//         // Subdivision
-//         ui::styling::Label::init(m_subdivisionLabel->text(), m_subdivisionLabel->config());
-//         ui::styling::Label::destroy(m_subdivisionLabel->config());
-
-//         ui::styling::Label::init(m_automaticLabel->text(), m_automaticLabel->config());
-//         ui::styling::Label::destroy(m_automaticLabel->config());
-        
-//         ImGui::SameLine();
-
-//         ui::styling::CheckBox::init(m_automaticLabel->text(), m_automaticCheckbox->isChecked(), m_automaticCheckbox->config());
-//         ui::styling::CheckBox::destroy(m_automaticCheckbox->config());
-
-//         if (!*m_automaticCheckbox->isChecked())  // NEMIESTO TOHTO NEJAKY PLACEHOLDER ICOMPONENT
-//         {
-//             ui::styling::InputBox::init(m_subdivisionInputBox->name(), m_subdivisionInputBox->inputValue(), m_subdivisionInputBox->config());
-//             ui::styling::InputBox::destroy(m_subdivisionInputBox->config());
-//             ImGui::SameLine();
-
-//             ui::styling::Slider::init(m_subdivisionSlider->name(), m_subdivisionSlider->inputValue(), m_subdivisionSlider->config());
-//             ui::styling::Slider::destroy(m_subdivisionSlider->config());
-//         }
-//         else
-//         {
-//             *m_subdivisionInputBox->inputValue() = 1;
-//             ImGui::Dummy(ImVec2{ 0.0f, ImGui::GetFrameHeight() });
-//         }
-
-//         ui::styling::Window::drawHorizontalSeparator(0.55f);
-
-//         // Size
-//         ui::styling::Label::init(m_sizeLabel->text(), m_sizeLabel->config());
-//         ui::styling::Label::destroy(m_sizeLabel->config());
-
-//         ui::styling::InputBox::init(m_sizeInputBox->name(), m_sizeInputBox->inputValue(), m_sizeInputBox->config());
-//         ui::styling::InputBox::destroy(m_sizeInputBox->config());
-//         ImGui::SameLine();
-
-//         ui::styling::Slider::init(m_sizeSlider->name(), m_sizeSlider->inputValue(), m_sizeSlider->config());
-//         ui::styling::Slider::destroy(m_sizeSlider->config());
-
-//         ui::styling::Window::drawHorizontalSeparator(0.55f);
-
-//         // Position
-//         ui::styling::Label::init(m_positionLabel->text(), m_positionLabel->config());
-//         ui::styling::Label::destroy(m_positionLabel->config());
-//         ImGui::Dummy(ImVec2{ 0.003f * ImGui::GetWindowSize().x, 0.0f });
-//         ImGui::SameLine();
-
-//         ui::styling::Label::init(m_posXLabel->text(), m_posXLabel->config());
-//         ui::styling::Label::destroy(m_posXLabel->config());
-//         ImGui::SameLine();
-//         ImGui::Dummy(ImVec2{ 0.13f * ImGui::GetWindowSize().x, 0.0f });
-//         ImGui::SameLine();
-
-//         ui::styling::Label::init(m_posYLabel->text(), m_posYLabel->config());
-//         ui::styling::Label::destroy(m_posYLabel->config());
-//         ImGui::SameLine();
-//         ImGui::Dummy(ImVec2{ 0.13f * ImGui::GetWindowSize().x, 0.0f });
-//         ImGui::SameLine();
-
-//         ui::styling::Label::init(m_posZLabel->text(), m_posZLabel->config());
-//         ui::styling::Label::destroy(m_posZLabel->config());
-
-//         ui::styling::InputBox::init(m_posXInputBox->name(), m_posXInputBox->inputValue(), m_posXInputBox->config());
-//         ui::styling::InputBox::destroy(m_posXInputBox->config());
-//         ImGui::SameLine();
-
-//         ui::styling::InputBox::init(m_posYInputBox->name(), m_posYInputBox->inputValue(), m_posYInputBox->config());
-//         ui::styling::InputBox::destroy(m_posYInputBox->config());
-//         ImGui::SameLine();
-
-//         ui::styling::InputBox::init(m_posZInputBox->name(), m_posZInputBox->inputValue(), m_posZInputBox->config());
-//         ui::styling::InputBox::destroy(m_posZInputBox->config());
-
-//         ui::styling::Window::drawHorizontalSeparator(0.55f);
-//     }, ImVec2{ 0.2f, 0.05f });
-
-//     ui::styling::Window::addToLayout([this]() {
-//         drawDialogComponents();
-//     }, ImVec2{ 0.28f, 0.0f });
-// }
 
 void AdditionLayer::initSurfaceComponents()
 {
@@ -282,12 +195,8 @@ void AdditionLayer::initSurfaceComponents()
     //TODO
 }
 
-void AdditionLayer::linkInputs()
+void AdditionLayer::handleComponentsVisibility()
 {
-    // TODO - LINK input box and input slider values
-    // *m_subdivisionSlider->inputValue() = *m_subdivisionInputBox->inputValue();
-    // *m_sizeSlider->inputValue()        = *m_sizeInputBox>inputValue();
-
     m_subdivisionInputBox->setIsVisible(!*m_automaticCheckBox->isChecked());
     m_subdivisionSlider->setIsVisible(!*m_automaticCheckBox->isChecked());
 }
@@ -373,7 +282,7 @@ void AdditionLayer::onImGuiRender()
             break;
     }
 
-    linkInputs();
+    handleComponentsVisibility();
 
     this->render();
 }

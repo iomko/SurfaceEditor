@@ -49,7 +49,7 @@ private:
 
     void initSurfaceComponents();
 
-    void linkInputs();
+    void handleComponentsVisibility();
 
 	void setCreateButtonAsAddPlane();
 
