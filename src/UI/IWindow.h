@@ -2,37 +2,43 @@
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include "Styling/Window.h"
-#include "Components/Common.h"
+#include "Layout.h"
 
-class IWindow
+namespace ui
 {
-public:
-    IWindow(const std::string& layerName);
 
-    virtual ~IWindow() = default;
-
-    bool clickedOnWindow(const glm::vec2& clickPos);
-
-protected:
-    virtual void initWindowConfig() = 0;
-
-    virtual void initComponents() = 0;
-
-    void render();
-
-    template<typename T, typename... Args>
-    T* emplaceComponent(Args&&... args)
+    class IWindow
     {
-        auto component = std::make_unique<T>(std::forward<Args>(args)...);
-        T* rawPtr = component.get();
-        m_components.push_back(std::move(component));
-        return rawPtr;
-    }
+    public:
+        IWindow(const std::string& layerName);
 
-protected:
-    ui::styling::WindowConfig                                m_windowConfig;
-    std::vector<std::unique_ptr<ui::components::IComponent>> m_components;
+        virtual ~IWindow() = default;
 
-private:
-    std::string m_layerName;
-};
+        bool clickedOnWindow(const glm::vec2& clickPos);
+
+    protected:
+        virtual void initWindowConfig() = 0;
+
+        virtual void initComponents() = 0;
+
+        void render();
+
+        Layout* emplaceLayout(const ImVec2& margin = {});
+
+        template<typename T, typename... Args>
+        T* emplaceComponent(Layout* layout, Args&&... args)
+        {
+            layout->asignComponent(std::make_unique<T>(std::forward<Args>(args)...));
+            T* component = dynamic_cast<T*>(layout->components().back().get());
+            return component;
+        }
+
+    protected:
+        ui::styling::WindowConfig            m_windowConfig;
+        std::vector<std::unique_ptr<Layout>> m_layouts;
+
+    private:
+        std::string m_layerName;
+    };
+
+} // ui

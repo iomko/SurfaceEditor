@@ -8,7 +8,7 @@
 #include "../src/UI/VisibilityHandler.h"
 #include "../src/UI/IWindow.h"
 
-class ObjectsLayer : public Layer, public Observable, public IWindow
+class ObjectsLayer : public Layer, public Observable, public ui::IWindow
 {
 public:
     ObjectsLayer(const std::string& name);

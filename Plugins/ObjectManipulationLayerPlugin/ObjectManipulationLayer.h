@@ -12,7 +12,7 @@ namespace ui::components
     class RadioButton;
 } // ui::components
 
-class ObjectManipulationLayer : public Layer, public Observable, public IWindow
+class ObjectManipulationLayer : public Layer, public Observable, public ui::IWindow
 {
 public:
     ObjectManipulationLayer(const std::string& name);

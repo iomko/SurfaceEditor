@@ -33,7 +33,7 @@ public:
 class ViewPortsUILayerController
 {
 public:
-	void registerUiWindow(IWindow* uiWindow)
+	void registerUiWindow(ui::IWindow* uiWindow)
 	{
 		m_uiWindow.push_back(uiWindow);
 	}
@@ -52,7 +52,7 @@ public:
 	}
 
 private:
-	std::vector<IWindow*> m_uiWindow;
+	std::vector<ui::IWindow*> m_uiWindow;
 };
 
 class ViewPortsHolderContext

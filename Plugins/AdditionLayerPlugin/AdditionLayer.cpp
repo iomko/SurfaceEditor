@@ -26,7 +26,7 @@ static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
 AdditionLayer::AdditionLayer(const std::string& name)
     : Layer(name)
-    , IWindow(LAYER_NAME)
+    , ui::IWindow(LAYER_NAME)
     , m_additionType(AdditionType::NONE)
 {
     initWindowConfig();
@@ -71,9 +71,6 @@ void AdditionLayer::initWindowConfig()
 
 void AdditionLayer::initComponents()
 {
-    static constexpr int itemsCount = 34; // change when adding surface UI
-    m_components.reserve(itemsCount);
-
     initMeshComponents();
     initSurfaceComponents();
 }
@@ -82,6 +79,9 @@ void AdditionLayer::initMeshComponents()
 {
     using namespace ui::components;
 
+    static constexpr int mainItemsCount   = 31;
+    static constexpr int dialogItemsCount = 3;
+    
     auto buttonSize = ImVec2{
         m_windowConfig.size.width * 0.5f,
         m_windowConfig.size.height * 0.25f
@@ -137,40 +137,47 @@ void AdditionLayer::initMeshComponents()
         .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
         .build();
 
-    emplaceComponent<Label>("Subdivision", headlinersConfig);
-    emplaceComponent<Label>("Automatic:", defaultTextConfig);
-    emplaceComponent<SameLine>();
-    m_automaticCheckBox   = emplaceComponent<CheckBox>("AutomaticCheckBox", checkBoxConfig);
-    m_subdivisionInputBox = emplaceComponent<InputBox<int>>("SubdivisionInputBox", inputBoxConfig);
-    emplaceComponent<SameLine>();
-    m_subdivisionSlider = emplaceComponent<Slider<int>>("SubdivisionSlider", intSliderConfig);
-    emplaceComponent<Separator>(0.55f);
-    emplaceComponent<Label>("Size", headlinersConfig);
-    m_sizeInputBox = emplaceComponent<InputBox<float>>("SizeInputBox", inputBoxConfig);
-    emplaceComponent<SameLine>();
-    m_sizeSlider = emplaceComponent<Slider<float>>("SizeSlider", floatSliderConfig);
-    emplaceComponent<Separator>(0.55f);
-    emplaceComponent<Label>("Position", headlinersConfig);
-    emplaceComponent<Dummy>(0.003f, 0.0f);
-    emplaceComponent<SameLine>();
-    emplaceComponent<Label>("X:", defaultTextConfig);
-    emplaceComponent<SameLine>();
-    emplaceComponent<Dummy>(0.13f, 0.0f);
-    emplaceComponent<SameLine>();
-    emplaceComponent<Label>("Y:", defaultTextConfig);
-    emplaceComponent<SameLine>();
-    emplaceComponent<Dummy>(0.13f, 0.0f);
-    emplaceComponent<SameLine>();
-    emplaceComponent<Label>("Z:", defaultTextConfig);
-    m_posXInputBox = emplaceComponent<InputBox<float>>("PosXInputBox", inputBoxConfig);
-    emplaceComponent<SameLine>();
-    m_posYInputBox = emplaceComponent<InputBox<float>>("PosYInputBox", inputBoxConfig);
-    emplaceComponent<SameLine>();
-    m_posZInputBox = emplaceComponent<InputBox<float>>("PosZInputBox", inputBoxConfig);
-    emplaceComponent<Separator>(0.55f);
-    m_createButton = emplaceComponent<Button>("Add", dialogButtonConfig, [](ui::components::Button*){});
-    emplaceComponent<SameLine>();
-    emplaceComponent<Button>("Cancel", dialogButtonConfig, [](ui::components::Button*) {
+    ui::Layout* mainLayout = emplaceLayout(ImVec2{ 0.2f, 0.05f });
+    mainLayout->reserveComponents(mainItemsCount);
+
+    emplaceComponent<Label>(mainLayout, "Subdivision", headlinersConfig);
+    emplaceComponent<Label>(mainLayout, "Automatic:", defaultTextConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    m_automaticCheckBox   = emplaceComponent<CheckBox>(mainLayout, "AutomaticCheckBox", checkBoxConfig);
+    m_subdivisionInputBox = emplaceComponent<InputBox<int>>(mainLayout, "SubdivisionInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    m_subdivisionSlider = emplaceComponent<Slider<int>>(mainLayout, "SubdivisionSlider", intSliderConfig);
+    emplaceComponent<Separator>(mainLayout, 0.55f);
+    emplaceComponent<Label>(mainLayout, "Size", headlinersConfig);
+    m_sizeInputBox = emplaceComponent<InputBox<float>>(mainLayout, "SizeInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    m_sizeSlider = emplaceComponent<Slider<float>>(mainLayout, "SizeSlider", floatSliderConfig);
+    emplaceComponent<Separator>(mainLayout, 0.55f);
+    emplaceComponent<Label>(mainLayout, "Position", headlinersConfig);
+    emplaceComponent<Dummy>(mainLayout, 0.003f, 0.0f);
+    emplaceComponent<SameLine>(mainLayout);
+    emplaceComponent<Label>(mainLayout, "X:", defaultTextConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    emplaceComponent<Dummy>(mainLayout, 0.13f, 0.0f);
+    emplaceComponent<SameLine>(mainLayout);
+    emplaceComponent<Label>(mainLayout, "Y:", defaultTextConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    emplaceComponent<Dummy>(mainLayout, 0.13f, 0.0f);
+    emplaceComponent<SameLine>(mainLayout);
+    emplaceComponent<Label>(mainLayout, "Z:", defaultTextConfig);
+    m_posXInputBox = emplaceComponent<InputBox<float>>(mainLayout, "PosXInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    m_posYInputBox = emplaceComponent<InputBox<float>>(mainLayout, "PosYInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(mainLayout);
+    m_posZInputBox = emplaceComponent<InputBox<float>>(mainLayout, "PosZInputBox", inputBoxConfig);
+    emplaceComponent<Separator>(mainLayout, 0.55f);
+
+    ui::Layout* dialogLayout = emplaceLayout(ImVec2{ 0.28f, 0.0f });
+    dialogLayout->reserveComponents(dialogItemsCount);
+
+    m_createButton = emplaceComponent<Button>(dialogLayout, "Add", dialogButtonConfig, [](Button*){});
+    emplaceComponent<SameLine>(dialogLayout);
+    emplaceComponent<Button>(dialogLayout, "Cancel", dialogButtonConfig, [](Button*) {
         VisibilityHandler::hide("ADDITION_LAYER");
     });
 
@@ -179,7 +186,7 @@ void AdditionLayer::initMeshComponents()
 }
 
 
-// DO WINDOW CONFIGU A BUILDERU LAYOUTS COUNT PARAMETER - POLE
+// DO WINDOW CONFIGU A BUILDERU LAYOUT COMPONENTS
 
 
 

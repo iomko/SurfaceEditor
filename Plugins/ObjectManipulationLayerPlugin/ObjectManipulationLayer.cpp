@@ -36,7 +36,7 @@ static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg(LAYER_NAM
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name)
-    , IWindow(LAYER_NAME)
+    , ui::IWindow(LAYER_NAME)
 {
     VisibilityHandler::show(LAYER_NAME);
 
@@ -69,7 +69,6 @@ void ObjectManipulationLayer::initComponents()
     using namespace ui::components;
 
     static constexpr int itemsCount = 5;
-    m_components.reserve(itemsCount);
     m_radioButtons.reserve(itemsCount);
 
     auto defaultConfig = ButtonConfigBuilder()
@@ -82,23 +81,26 @@ void ObjectManipulationLayer::initComponents()
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
+    ui::Layout* layout = emplaceLayout();
+    layout->reserveComponents(itemsCount);
+
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
         resetModeState();
     }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
         resetModeState();
     }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(rotate, rotatePath, m_radioButtons, defaultConfig, [this](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, rotate, rotatePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
         resetModeState();
     }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(scale, scalePath, m_radioButtons, defaultConfig, [this](Button*) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, scale, scalePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
         resetModeState();
     }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
+    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
         resetModeState();
         invokeObjectsLayer(button);
     }));

@@ -27,7 +27,7 @@ enum class AdditionType
 	SURFACE	= 2
 };
 
-class AdditionLayer : public Layer, public Observable, public Observer, public IWindow
+class AdditionLayer : public Layer, public Observable, public Observer, public ui::IWindow
 {
 public:
     AdditionLayer(const std::string& name);

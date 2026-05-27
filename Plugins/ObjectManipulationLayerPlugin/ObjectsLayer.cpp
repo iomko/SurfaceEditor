@@ -15,7 +15,7 @@ static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
-      IWindow(LAYER_NAME)
+      ui::IWindow(LAYER_NAME)
 {
     initWindowConfig();
     initComponents();
@@ -44,7 +44,6 @@ void ObjectsLayer::initComponents()
     using namespace ui::components;
 
     static constexpr int itemsCount = 3;
-    m_components.reserve(itemsCount);
 
     auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
 
@@ -62,15 +61,18 @@ void ObjectsLayer::initComponents()
     auto* layer         = layerRegistry.getLayer("ADDITION_LAYER", "AdditionLayer");
     auto* additionLayer = static_cast<AdditionLayer*>(layer);
 
-    emplaceComponent<Button>("Plane", defaultConfig, [this, additionLayer](Button*) {
+    ui::Layout* layout = emplaceLayout();
+    layout->reserveComponents(itemsCount);
+
+    emplaceComponent<Button>(layout, "Plane", defaultConfig, [this, additionLayer](Button*) {
         additionLayer->setAdditionType(AdditionType::PLANE);
         invokeAdditionLayer();
     });
-    emplaceComponent<Button>("Cube", defaultConfig, [this, additionLayer](Button*) {
+    emplaceComponent<Button>(layout, "Cube", defaultConfig, [this, additionLayer](Button*) {
         additionLayer->setAdditionType(AdditionType::CUBE);
         invokeAdditionLayer();
     });
-    emplaceComponent<Button>("Surface", defaultConfig, [this, additionLayer](Button*) {
+    emplaceComponent<Button>(layout, "Surface", defaultConfig, [this, additionLayer](Button*) {
         additionLayer->setAdditionType(AdditionType::SURFACE);
         invokeAdditionLayer();
     });
