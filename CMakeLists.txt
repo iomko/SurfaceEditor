@@ -203,6 +203,9 @@ add_executable(Test
     "${PROJECT_SOURCE_DIR}/Tests/rayTests.cpp"
     "${PROJECT_SOURCE_DIR}/Tests/ray2DTests.cpp"
     "${PROJECT_SOURCE_DIR}/Tests/aabbTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/boundingRegion2DTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/containerUtilsTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/geometryUtilsTests.cpp"
 )
 
 enable_testing()

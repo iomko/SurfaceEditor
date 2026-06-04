@@ -14,11 +14,17 @@ The repository includes a GitHub Actions workflow at `.github/workflows/tests.ym
 - `ray` (maps to the Catch2 tag `[ray]`)
 - `ray2D` (maps to the Catch2 tag `[ray2D]`)
 - `aabb` (maps to the Catch2 tag `[aabb]`)
+- `boundingregion2d` (BoundingRegion2D helper class)
+- `containerutils` (vector helper utilities)
+- `geometryutils` (geometry helper functions)
 
-When the workflow is triggered by a pull request it enables the default set: `octree quadtree halfedge mesh printableMesh ray ray2D aabb`.
+These utility tests run in the full default suite, and can also be invoked directly with Catch2 tags when needed.
+
+When the workflow is triggered by a pull request it enables the default set: `octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingregion2d containerutils geometryutils`.
 
 When triggering the workflow manually (`workflow_dispatch`) you can override `modules` (default value includes all modules listed above).
-
+## How the workflow includes packages
+The workflow builds the project and based on modules it can add `FLAGS`: FLAGS="$FLAGS -DBUILD_PLUGIN_NAMEOFPLUGIN=ON"
 ## How the workflow passes test filters
 
 The workflow builds the project and assembles a `TEST_ARGS` string containing Catch2 tags derived from the selected modules. The test runner is invoked as:

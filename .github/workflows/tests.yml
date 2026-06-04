@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       modules:
-        description: "Moduly: octree quadtree halfedge mesh printableMesh ray ray2D aabb"
+        description: "Moduly: octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
         required: false
-        default: "octree quadtree halfedge mesh printableMesh ray ray2D aabb"
+        default: "octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
 
 jobs:
   build-and-test:
@@ -45,7 +45,7 @@ jobs:
 
           # AK push alebo PR → všetko zapnuté
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            MODULES="octree quadtree halfedge mesh printableMesh"
+            MODULES="octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
           fi
 
           FLAGS="" 
@@ -97,6 +97,21 @@ jobs:
           # AABB
           if [[ "$MODULES" == *"aabb"* ]]; then
             TEST_ARGS="$TEST_ARGS [aabb],"
+          fi
+
+          # BOUNDING REGION 2D
+          if [[ "$MODULES" == *"boundingRegion2D"* ]]; then
+            TEST_ARGS="$TEST_ARGS [boundingRegion2D],"
+          fi
+
+          # CONTAINER UTILS
+          if [[ "$MODULES" == *"containerUtils"* ]]; then
+            TEST_ARGS="$TEST_ARGS [containerUtils],"
+          fi
+
+          # GEOMETRY UTILS
+          if [[ "$MODULES" == *"geometryUtils"* ]]; then
+            TEST_ARGS="$TEST_ARGS [geometryUtils],"
           fi
 
           echo "FLAGS=$FLAGS" >> $GITHUB_ENV
