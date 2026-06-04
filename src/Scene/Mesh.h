@@ -44,6 +44,11 @@ public:
         calculateMeshBounds();
 	}
 
+	~Mesh()
+	{
+		delete m_halfEdgeStructure;
+	}
+
     void calculateMeshBounds() {
         glm::vec3 minBounds(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
         glm::vec3 maxBounds(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());

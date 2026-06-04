@@ -5,6 +5,9 @@
 #include <set>
 #include <random>
 
+extern size_t get_active_allocations();
+extern void reset_allocation_counters();
+
 static std::vector<std::vector<int>> triangle = {
     {0, 1, 2}
 };
@@ -92,6 +95,73 @@ TEST_CASE("Mesh handles identical vertices", "[mesh][edgecase]") {
 
     REQUIRE(bounds.getMinBoundsPos() == glm::vec3(1));
     REQUIRE(bounds.getMaxBoundsPos() == glm::vec3(1));
+}
+
+TEST_CASE("Mesh handles repeated vertex indices in a face", "[mesh][edgecase]") {
+    std::vector<std::vector<int>> polygons = {
+        {0,1,1,2}
+    };
+
+    std::vector<glm::vec3> vertices = {
+        {0,0,0}, {1,0,0}, {0,1,0}
+    };
+
+    Mesh mesh(polygons, vertices);
+
+    auto* he = mesh.getHalfEdgeStructure();
+    REQUIRE(he != nullptr);
+    REQUIRE(he->m_faces.size() == 1);
+    REQUIRE(he->m_vertices.size() == 3);
+    REQUIRE(mesh.m_meshBounds.containsPoint(glm::vec3(1,0,0)));
+    REQUIRE(mesh.m_meshBounds.containsPoint(glm::vec3(0,1,0)));
+}
+
+TEST_CASE("Mesh destructor releases allocated structure", "[mesh][memory]") {
+    reset_allocation_counters();
+    size_t initial_allocations = get_active_allocations();
+
+    {
+        std::vector<glm::vec3> vertices = {
+            {0,0,0}, {1,0,0}, {0,1,0}
+        };
+        Mesh mesh(triangle, vertices);
+
+        REQUIRE(get_active_allocations() > initial_allocations);
+    }
+
+    REQUIRE(get_active_allocations() == initial_allocations);
+}
+
+TEST_CASE("Mesh repeated build and destroy does not leak", "[mesh][memory]") {
+    reset_allocation_counters();
+    size_t baseline = get_active_allocations();
+
+    for (int i = 0; i < 50; ++i) {
+        std::vector<glm::vec3> vertices = {
+            {0.0f, 0.0f, 0.0f},
+            {1.0f, 0.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f}
+        };
+
+        Mesh mesh(triangle, vertices);
+        REQUIRE(mesh.getHalfEdgeStructure() != nullptr);
+    }
+
+    REQUIRE(get_active_allocations() == baseline);
+}
+
+TEST_CASE("Mesh empty input repeated build does not leak", "[mesh][memory]") {
+    reset_allocation_counters();
+    size_t baseline = get_active_allocations();
+
+    for (int i = 0; i < 50; ++i) {
+        std::vector<std::vector<int>> polygons;
+        std::vector<glm::vec3> vertices;
+        Mesh mesh(polygons, vertices);
+        REQUIRE(mesh.getHalfEdgeStructure() != nullptr);
+    }
+
+    REQUIRE(get_active_allocations() == baseline);
 }
 
 //

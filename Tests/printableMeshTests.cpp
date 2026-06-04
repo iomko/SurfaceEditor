@@ -2,6 +2,12 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <set>
+#include <algorithm>
+#include <random>
+
+extern size_t get_active_allocations();
+extern void reset_allocation_counters();
 
 // -----------------------------
 // Helpers
@@ -163,6 +169,57 @@ TEST_CASE("Disconnected edges create multiple outlines", "[PrintableMesh]")
     REQUIRE(pm.m_structure.printLayers[0].perimeterOutlines.size() == 2);
 }
 
+TEST_CASE("Perimeter builder handles randomized edge order for closed loop", "[PrintableMesh][perimeter][random]")
+{
+    PrintableMesh pm;
+    std::vector<std::vector<int>> polygons = {{0,1,2}};
+    std::vector<glm::vec3> vertices = {{0,0,0},{1,0,0},{1,0,1}};
+    Mesh mesh(polygons, vertices);
+    DummyFace face;
+
+    std::vector<std::pair<ExtrudeEdge, ExtendedFace*>> edges = {
+        { makeEdge(0,0,0, 1,0,0), face.m_face },
+        { makeEdge(1,0,0, 1,0,1), face.m_face },
+        { makeEdge(1,0,1, 0,0,1), face.m_face },
+        { makeEdge(0,0,1, 0,0,0), face.m_face }
+    };
+
+    std::mt19937 rng(42);
+    std::shuffle(edges.begin(), edges.end(), rng);
+
+    pm.addPerimeterLayerLevel(&mesh, edges);
+
+    REQUIRE(pm.m_structure.printLayers.size() == 1);
+    REQUIRE(pm.m_structure.printLayers[0].perimeterOutlines.size() == 1);
+    REQUIRE(pm.m_structure.printLayers[0].perimeterOutlines[0].points.size() == 4);
+}
+
+TEST_CASE("PrintableMesh addInfillLayerLevel generates infill lines for a closed outline", "[PrintableMesh][infill]")
+{
+    PrintableMesh pm;
+    pm.m_structure.printLayers.emplace_back();
+
+    Quadtree<OutlinerEdgeHelperData> outlinerQuadtree({0.0f, 0.0f}, {10.0f, 10.0f});
+
+    std::vector<OutlinerEdgeHelperData> data = {
+        OutlinerEdgeHelperData({0,0,0}, {10,0,0}, true, 0),
+        OutlinerEdgeHelperData({10,0,0}, {10,0,10}, true, 0),
+        OutlinerEdgeHelperData({10,0,10}, {0,0,10}, true, 0),
+        OutlinerEdgeHelperData({0,0,10}, {0,0,0}, true, 0)
+    };
+
+    for (auto& helper : data) {
+        glm::vec2 minBounds = glm::min(glm::vec2(helper.m_edge.firstPoint.x, helper.m_edge.firstPoint.z), glm::vec2(helper.m_edge.secondPoint.x, helper.m_edge.secondPoint.z));
+        glm::vec2 maxBounds = glm::max(glm::vec2(helper.m_edge.firstPoint.x, helper.m_edge.firstPoint.z), glm::vec2(helper.m_edge.secondPoint.x, helper.m_edge.secondPoint.z));
+        outlinerQuadtree.addDataToQuadtree(helper, BoundingRegion2D(minBounds, maxBounds));
+    }
+
+    pm.addInfillLayerLevel(outlinerQuadtree, 0.5f);
+
+    REQUIRE(pm.m_structure.printLayers.size() == 1);
+    REQUIRE(pm.m_structure.printLayers[0].infillLines.size() > 0);
+}
+
 // -----------------------------
 // Edge merging edge cases
 // -----------------------------
@@ -251,4 +308,27 @@ TEST_CASE("Large number of edges does not crash", "[PrintableMesh]")
     }
 
     REQUIRE_NOTHROW(pm.addPerimeterLayerLevel(mesh, edges));
+}
+
+TEST_CASE("PrintableMesh repeated perimeter generation does not leak", "[PrintableMesh][memory]")
+{
+    reset_allocation_counters();
+    size_t baseline = get_active_allocations();
+
+    for (int i = 0; i < 25; ++i) {
+        PrintableMesh pm;
+        DummyFace face;
+
+        std::vector<std::pair<ExtrudeEdge, ExtendedFace*>> edges;
+        for (int j = 0; j < 10; ++j) {
+            edges.emplace_back(makeEdge(j * 1.0f, 0, j * 1.0f, (j + 1) * 1.0f, 0, j * 1.0f), face.m_face);
+        }
+
+        std::vector<std::vector<int>> polygons = {{0,1,2}};
+        std::vector<glm::vec3> vertices = { glm::vec3(0.0f), glm::vec3(1.0f,0.0f,0.0f), glm::vec3(0.0f,0.0f,1.0f) };
+        Mesh mesh(polygons, vertices);
+        pm.addPerimeterLayerLevel(&mesh, edges);
+    }
+
+    REQUIRE(get_active_allocations() == baseline);
 }

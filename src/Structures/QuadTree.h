@@ -30,16 +30,11 @@ public:
 
     ~QuadtreeNode()
     {
-        /*
-        if (childrenNodes[0] != nullptr)
-        {
-            for (size_t i = 0; i < 8; ++i) {
-                delete childrenNodes[i];
-                childrenNodes[i] = nullptr;
-            }
+        for (size_t i = 0; i < 4; ++i) {
+            delete childrenNodes[i];
+            childrenNodes[i] = nullptr;
         }
         this->isLeaf = true;
-        */
     }
 
     QuadtreeNode<T>* accessNeighbourChild() {
@@ -205,7 +200,7 @@ public:
     }
 
     Iterator begin() {
-        if (rootNode == nullptr) {
+        if (rootNode == nullptr || rootNode->dataCount == 0) {
             return end();
         }
 

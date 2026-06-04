@@ -200,6 +200,9 @@ add_executable(Test
     "${PROJECT_SOURCE_DIR}/Tests/extendedHalfEdgeTests.cpp"
     "${PROJECT_SOURCE_DIR}/Tests/meshTests.cpp"
     "${PROJECT_SOURCE_DIR}/Tests/printableMeshTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/rayTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/ray2DTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/aabbTests.cpp"
 )
 
 enable_testing()
