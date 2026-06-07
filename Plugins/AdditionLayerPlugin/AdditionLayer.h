@@ -45,6 +45,8 @@ protected:
     void initComponents() override;
 
 private:
+    void initDialogButtons();
+
     void initMeshComponents();
 
     void initSurfaceComponents();
@@ -60,6 +62,10 @@ private:
 private:
 	AdditionType m_additionType;
 
+    ui::Layout* m_meshLayout;
+    ui::Layout* m_surfaceLayout;
+    ui::Layout* m_dialogLayout;
+
     // Mesh components
     ui::components::InputBox<int>*   m_subdivisionInputBox;
     ui::components::InputBox<float>* m_sizeInputBox;
@@ -71,13 +77,10 @@ private:
     ui::components::Button*          m_createButton;
     ui::components::CheckBox*        m_automaticCheckBox;
     
-
     // Surface components
-    //TODO
-    // static constexpr int API_BUFFER_SIZE = 256;
-    // float m_lowerLeftLon{};
-	// float m_lowerLeftLat{};
-	// float m_upperRightLon{};
-	// float m_upperRightLat{};
-	// char m_apiKeyBuffer[API_BUFFER_SIZE];
+    ui::components::InputBox<float>* m_lowerLeftLon;
+	ui::components::InputBox<float>* m_lowerLeftLat;
+	ui::components::InputBox<float>* m_upperRightLon;
+	ui::components::InputBox<float>* m_upperRightLat;
+	ui::components::InputBox<char>*  m_apiKeyBuffer;
 };

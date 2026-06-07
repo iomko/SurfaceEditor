@@ -10,7 +10,13 @@ namespace ui
     public:
         Layout(const ImVec2& margin = {})
             : m_margin(margin)
+            , m_isVisible(true)
         { }
+
+        const bool isVisible() const
+        {
+            return m_isVisible;
+        }
 
         const ImVec2& margin() const
         {
@@ -32,7 +38,13 @@ namespace ui
             m_components.emplace_back(std::move(component));
         }
 
+        void setIsVisible(bool isVisible)
+        {
+            m_isVisible = isVisible;
+        }
+
     private:
+        bool                                                 m_isVisible;
         const ImVec2                                         m_margin;
         std::vector<std::unique_ptr<components::IComponent>> m_components;
     };

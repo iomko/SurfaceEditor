@@ -85,8 +85,8 @@ void ObjectManipulationLayer::initComponents()
     layout->reserveComponents(itemsCount);
 
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
-        //TODO
         resetModeState();
+        activateSelectionMode();
     }));
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
         //TODO
@@ -119,6 +119,37 @@ void ObjectManipulationLayer::resetModeState()
         ViewPortsHolderContext::s_viewPortsController->m_currentToolParams = nullptr;
     }
     ViewPortsHolderContext::s_viewPortsController->m_currentTool = nullptr;
+}
+
+void ObjectManipulationLayer::activateSelectionMode()
+{
+    ViewPortsHolderContext::s_selectionController->setSelectionModeActive(true);
+    auto selectionMode = ViewPortsHolderContext::s_selectionController->selectionMode();
+    ITool* tool{};
+
+    switch (selectionMode)
+    {
+    case SelectionMode::MESH:
+        tool = ToolRegistry::instance().getTool("MESH_SELECTION_TOOL");
+        break;
+    case SelectionMode::FACE:
+        // tool = ToolRegistry::instance().getTool("FACE_SELECTION_TOOL");
+        break;
+    case SelectionMode::EDGE:
+        // TODO
+        break;
+    case SelectionMode::VERTEX:
+        // TODO
+        break;
+    default:
+        break;
+    }
+
+    if (tool == nullptr)
+    {
+        return;
+    }
+    ViewPortsHolderContext::s_viewPortsController->m_currentTool = tool;
 }
 
 void ObjectManipulationLayer::invokeObjectsLayer(ui::components::Button* button)

@@ -25,4 +25,29 @@ namespace ui::components
         }
     };
 
+    template<>
+    class InputBox<char> : public IComponent
+    {
+    public:
+        InputBox(const std::string& name, std::shared_ptr<ui::styling::IConfig> config)
+            : IComponent("##" + name, std::move(config))
+            , m_buffer{}
+        { }
+
+        void render() override
+        {
+            ui::styling::InputBox::render<char>(m_name, m_buffer, m_config.get());
+        }
+
+        char* inputValue()
+        {
+            return m_buffer;
+        }
+
+    private:
+        static constexpr int BUFFER_SIZE = 256;
+        
+        char m_buffer[BUFFER_SIZE];
+    };
+
 } // ui::components

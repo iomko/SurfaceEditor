@@ -45,11 +45,8 @@ void ObjectsLayer::initComponents()
 
     static constexpr int itemsCount = 3;
 
-    auto buttonSize = ImVec2{m_windowConfig.size.width * 0.8f, m_windowConfig.size.height * 0.25f};
-
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(12.0f)
-        .size(buttonSize)
         .background(ui::styling::Color::darkGray)
         .font(ui::styling::Font::regular(0.8f))
         .size(ImVec2{ 0.04f, 0.02f })

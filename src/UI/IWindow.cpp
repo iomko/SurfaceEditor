@@ -46,6 +46,11 @@ namespace ui
 
         for (auto& layout : m_layouts)
         {
+            if (!layout->isVisible())
+            {
+                continue;
+            }
+
             ui::styling::Window::addToLayout([&]() {
                 for (auto& component : layout->components())
                 {

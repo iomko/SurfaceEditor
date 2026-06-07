@@ -1,6 +1,5 @@
 #include "AddCubeCallback.h"
 #include "../../src/Callbacks/CallbackRegister.h"
-
 #include "../../src/Callables/CallableRegistry.h"
 
 namespace {

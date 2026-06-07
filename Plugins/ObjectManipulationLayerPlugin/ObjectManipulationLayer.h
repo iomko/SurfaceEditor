@@ -27,6 +27,8 @@ protected:
 private:
     void resetModeState();
 
+    void activateSelectionMode();
+
     void invokeObjectsLayer(ui::components::Button* button);
 
 private:

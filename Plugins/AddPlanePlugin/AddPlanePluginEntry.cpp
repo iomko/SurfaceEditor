@@ -1,4 +1,5 @@
 #include "../../src/Core/PluginAPI.h"
+#include "../../src/Callbacks/CallbackIDs.h"
 
 
 class AddPlanePlugin : public IPlugin
