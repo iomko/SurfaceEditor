@@ -316,7 +316,7 @@ TEST_CASE("Connecting incompatible edges safely aborts", "[extendedHalfEdge][con
     REQUIRE(mesh.m_vertices.size() == initialVerts);
     REQUIRE(mesh.m_edges.size() == initialEdges);
 }
-TEST_CASE("ExtendedHalfEdgeMesh destroys all graph allocations without leaking", "[extendedHalfEdge][leak]") {
+TEST_CASE("ExtendedHalfEdgeMesh destroys all graph allocations without leaking", "[extendedHalfEdge][memory]") {
     // 1. Snapshot active allocations before creating the mesh
     reset_allocation_counters();
     size_t initial_allocations = get_active_allocations();
