@@ -11,6 +11,21 @@
 #include "../Core/Layer.h"
 #include "VisibilityHandler.h"
 
+template <typename T>
+struct NormalizeArg {
+    using type = T;
+};
+
+template <>
+struct NormalizeArg<const char*> {
+    using type = std::string;
+};
+
+template <>
+struct NormalizeArg<char*> {
+    using type = std::string;
+};
+
 class LayerRegistry
 {
 public:
@@ -75,7 +90,7 @@ public:
         std::any anyArgs;
         if constexpr (sizeof...(Args) > 0)
         {
-            using TupleT = std::tuple<std::decay_t<Args>...>;
+            using TupleT = std::tuple<typename NormalizeArg<std::decay_t<Args>>::type...>;
             anyArgs = std::make_any<TupleT>(std::forward<Args>(args)...);
         }
 
