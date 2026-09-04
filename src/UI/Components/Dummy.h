@@ -10,6 +10,8 @@ namespace ui::components
     public:
         Dummy(float x, float y)
             : IComponent({}, {})
+            , m_x(x)
+            , m_y(y)
         { }
 
         void render() override
@@ -27,6 +29,8 @@ namespace ui::components
     public:
         RelativeDummy(float x, float y)
             : IComponent({}, {})
+            , m_x(x)
+            , m_y(y)
         { }
 
         void render() override
