@@ -1,8 +1,5 @@
 #include "AdditionLayer.h"
 #include "imgui.h"
-#include "../../src/Commands/CommandRegistry.h"
-#include "../../src/UI/Components/Button.h"
-#include "../../src/UI/Styling/Font.h"
 #include "../src/UI/Components/Label.h"
 #include "../src/UI/Components/CheckBox.h"
 #include "../src/UI/Components/InputBox.h"
@@ -10,6 +7,11 @@
 #include "../src/UI/Components/SameLine.h"
 #include "../src/UI/Components/Separator.h"
 #include "../src/UI/Components/Dummy.h"
+#include "../../src/Commands/CommandRegistry.h"
+#include "../../src/UI/Components/Button.h"
+#include "../../src/UI/Styling/Font.h"
+#include "../../src/UI/WindowLayerBus.h"
+#include "../../src/UI/Events.h"
 #include "../../src/Builders/UIWindowBuilder.h"
 #include "../../src/Builders/UIButtonBuilder.h"
 #include "../../src/Builders/UILabelBuilder.h"
@@ -31,6 +33,14 @@ AdditionLayer::AdditionLayer(const std::string& name)
 {
     initWindowConfig();
     initComponents();
+    initConnections();
+}
+
+void AdditionLayer::initConnections()
+{
+    WindowLayerBus::on<AdditionLayerState>([this](AdditionLayerState& state) {
+        m_additionType = static_cast<AdditionType>(state.additionType);
+    });
 }
 
 void AdditionLayer::initWindowConfig()

@@ -1,7 +1,9 @@
 #pragma once
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include <vector>
 #include <memory>
+#include <stdint.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/IWindow.h"
@@ -20,6 +22,8 @@ public:
     void onImGuiRender() override;
 
 protected:
+    void initConnections();
+
     void initWindowConfig() override;
 
     void initComponents() override;
@@ -29,8 +33,9 @@ private:
 
     void activateSelectionMode();
 
-    void invokeObjectsLayer(ui::components::Button* button);
+    void activateGizmoMode(ImGuizmo::OPERATION operationType);
 
 private:
     std::vector<ui::components::RadioButton*> m_radioButtons;
+    ui::components::RadioButton*              m_addMeshButton;
 };

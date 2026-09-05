@@ -11,4 +11,10 @@ public:
     GizmoLayer(const std::string& name);
 
     void onImGuiRender() override;
+
+private:
+    void initConnections();
+
+private:
+    ImGuizmo::OPERATION m_currentOperation;
 };

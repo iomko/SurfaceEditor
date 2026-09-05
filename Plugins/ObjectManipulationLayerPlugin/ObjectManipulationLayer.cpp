@@ -1,5 +1,4 @@
 #include "ObjectManipulationLayer.h"
-#include "ObjectsLayer.h"
 #include "../src/ViewPortsController.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
@@ -10,6 +9,7 @@
 #include "../src/UI/Styling/Button.h"
 #include "../src/UI/Components/RadioImageButton.h"
 #include "../src/UI/VisibilityHandler.h"
+#include "../src/UI/Events.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
 
@@ -42,6 +42,19 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
 
     initWindowConfig();
     initComponents();
+    initConnections();
+}
+
+void ObjectManipulationLayer::initConnections()
+{
+    WindowLayerBus::on<ObjectsLayerState>([this](ObjectsLayerState& state) {
+        auto* addMeshButtonConfig = dynamic_cast<ui::styling::ButtonConfig*>(m_addMeshButton->config());
+        ImVec2 objectsLayerPos{
+            m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x - addMeshButtonConfig->realSize.x,
+            m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y - addMeshButtonConfig->realSize.y
+        };
+        state.windowPos = objectsLayerPos;
+    });
 }
 
 void ObjectManipulationLayer::initWindowConfig()
@@ -85,25 +98,26 @@ void ObjectManipulationLayer::initComponents()
     layout->reserveComponents(itemsCount);
 
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
-        resetModeState();
         activateSelectionMode();
     }));
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
-        //TODO
-        resetModeState();
+        activateGizmoMode(ImGuizmo::OPERATION::TRANSLATE);
     }));
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, rotate, rotatePath, m_radioButtons, defaultConfig, [this](Button*) {
-        //TODO
-        resetModeState();
+        activateGizmoMode(ImGuizmo::OPERATION::ROTATE);
     }));
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, scale, scalePath, m_radioButtons, defaultConfig, [this](Button*) {
-        //TODO
-        resetModeState();
+        activateGizmoMode(ImGuizmo::OPERATION::SCALE);
     }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
+    m_addMeshButton = emplaceComponent<RadioImageButton>(layout, plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
         resetModeState();
-        invokeObjectsLayer(button);
-    }));
+        
+        auto* radioButton = dynamic_cast<ui::components::RadioButton*>(button);
+        radioButton->setIsSelected(false);
+        
+        VisibilityHandler::show("OBJECTS_LAYER");
+    });
+    m_radioButtons.push_back(m_addMeshButton);
 }
 
 void ObjectManipulationLayer::resetModeState()
@@ -123,6 +137,8 @@ void ObjectManipulationLayer::resetModeState()
 
 void ObjectManipulationLayer::activateSelectionMode()
 {
+    resetModeState();
+
     ViewPortsHolderContext::s_selectionController->setSelectionModeActive(true);
     auto selectionMode = ViewPortsHolderContext::s_selectionController->selectionMode();
     ITool* tool{};
@@ -152,24 +168,15 @@ void ObjectManipulationLayer::activateSelectionMode()
     ViewPortsHolderContext::s_viewPortsController->m_currentTool = tool;
 }
 
-void ObjectManipulationLayer::invokeObjectsLayer(ui::components::Button* button)
+void ObjectManipulationLayer::activateGizmoMode(ImGuizmo::OPERATION operationType)
 {
-    auto* config = dynamic_cast<ui::styling::ButtonConfig*>(button->config());
+    resetModeState();
 
-    auto& layerRegistry = LayerRegistry::instance();
-    auto* layer         = layerRegistry.getLayer("OBJECTS_LAYER", "ObjectsLayer");
-    auto* objectsLayer  = static_cast<ObjectsLayer *>(layer);
+    GizmoLayerState state;
+    state.operationType = operationType;
 
-    objectsLayer->setOnFinishCallback([this]() {
-        resetModeState();
-    });
-    objectsLayer->setPosCallback([this, config]() {
-        return ImVec2{
-            m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x - config->realSize.x,
-            m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y - config->realSize.y};
-    });
-
-    VisibilityHandler::show("OBJECTS_LAYER");
+    WindowLayerBus::emit(state);
+    VisibilityHandler::show("GIZMO_LAYER");
 }
 
 void ObjectManipulationLayer::onImGuiRender()

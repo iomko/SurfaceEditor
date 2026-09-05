@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <variant>
+#include "../../include/enums/AdditionType.h"
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
@@ -19,14 +20,6 @@ namespace ui::components
     class Slider;
 } // ui::components
 
-enum class AdditionType
-{
-	NONE 	= -1,
-	PLANE 	= 0,
-	CUBE	= 1,
-	SURFACE	= 2
-};
-
 class AdditionLayer : public Layer, public Observable, public Observer, public ui::IWindow
 {
 public:
@@ -34,12 +27,9 @@ public:
 
 	void onImGuiRender() override;
 
-    void setAdditionType(const AdditionType& additionType)
-    {
-        m_additionType = additionType;
-    }
-
 protected:
+    void initConnections();
+
     void initWindowConfig() override;
 
     void initComponents() override;

@@ -1,10 +1,11 @@
 #include "ObjectsLayer.h"
 #include "../src/UI/Styling/Font.h"
+#include "../src/UI/WindowLayerBus.h"
+#include "../src/UI/Events.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
-#include "../AdditionLayerPlugin/AdditionLayer.h"
 
 namespace
 {
@@ -54,58 +55,44 @@ void ObjectsLayer::initComponents()
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    auto& layerRegistry = LayerRegistry::instance();
-    auto* layer         = layerRegistry.getLayer("ADDITION_LAYER", "AdditionLayer");
-    auto* additionLayer = static_cast<AdditionLayer*>(layer);
-
     ui::Layout* layout = emplaceLayout();
     layout->reserveComponents(itemsCount);
 
-    emplaceComponent<Button>(layout, "Plane", defaultConfig, [this, additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::PLANE);
-        invokeAdditionLayer();
+    emplaceComponent<Button>(layout, "Plane", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::PLANE);
     });
-    emplaceComponent<Button>(layout, "Cube", defaultConfig, [this, additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::CUBE);
-        invokeAdditionLayer();
+    emplaceComponent<Button>(layout, "Cube", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::CUBE);
     });
-    emplaceComponent<Button>(layout, "Surface", defaultConfig, [this, additionLayer](Button*) {
-        additionLayer->setAdditionType(AdditionType::SURFACE);
-        invokeAdditionLayer();
+    emplaceComponent<Button>(layout, "Surface", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::SURFACE);
     });
 }
 
-void ObjectsLayer::setOnFinishCallback(std::function<void()> onFinishCallback)
+void ObjectsLayer::invokeAdditionLayer(AdditionType additionType)
 {
-    m_onFinish = std::move(onFinishCallback);
-}
-
-void ObjectsLayer::setPosCallback(std::function<ImVec2()> getPosCallback)
-{
-    m_getPos = std::move(getPosCallback);
-}
-
-void ObjectsLayer::updatePosition()
-{
-    ImVec2 pos = m_getPos();
-
-    m_windowConfig.pos = WindowPosConfigBuilder().relativePosition(true).relativePosX(pos.x).relativePosY(pos.y).build();
-}
-
-void ObjectsLayer::invokeAdditionLayer()
-{
+    AdditionLayerState additionLayerState;
+    additionLayerState.additionType = additionType;
+    
+    WindowLayerBus::emit(additionLayerState);
     VisibilityHandler::hide(LAYER_NAME);
     VisibilityHandler::show("ADDITION_LAYER");
+}
 
-    m_onFinish();
+void ObjectsLayer::updatePos(ImVec2& actualPosition)
+{
+    m_windowConfig.pos = WindowPosConfigBuilder()
+        .relativePosition(true)
+        .relativePosX(actualPosition.x)
+        .relativePosY(actualPosition.y)
+        .build();
 }
 
 void ObjectsLayer::onImGuiRender()
 {
-    if (m_getPos)
-    {
-        updatePosition();
-    }
-    
+    ObjectsLayerState currState;
+    WindowLayerBus::emit(currState);
+    updatePos(currState.windowPos);
+
     this->render();
 }
