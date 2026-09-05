@@ -16,6 +16,8 @@ namespace ui
 
         bool clickedOnWindow(const glm::vec2& clickPos);
 
+        bool isVisible();
+
     protected:
         virtual void initWindowConfig() = 0;
 

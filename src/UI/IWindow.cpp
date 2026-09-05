@@ -13,8 +13,8 @@ namespace ui
     bool IWindow::clickedOnWindow(const glm::vec2& clickPos)
     {
         ImVec2 bottomRight = ImVec2(
-            m_windowConfig.pos.rawPos.x + m_windowConfig.size.rawSize.x,
-            m_windowConfig.pos.rawPos.y + m_windowConfig.size.rawSize.y
+            m_windowConfig.pos.rawPos.x + m_windowConfig.size.realSize.x,
+            m_windowConfig.pos.rawPos.y + m_windowConfig.size.realSize.y
         );
         
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -24,6 +24,11 @@ namespace ui
 
         return actualClickPos.x >= m_windowConfig.pos.rawPos.x && actualClickPos.x <= bottomRight.x &&
             actualClickPos.y >= m_windowConfig.pos.rawPos.y && actualClickPos.y <= bottomRight.y;
+    }
+
+    bool IWindow::isVisible()
+    {
+        return VisibilityHandler::isVisible(m_layerName);
     }
 
     void IWindow::render()

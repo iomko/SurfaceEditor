@@ -42,12 +42,11 @@ public:
 	{
 		for (auto& window : m_uiWindow)
 		{
-			if (window->clickedOnWindow(clickPos))
+			if (window->isVisible() && window->clickedOnWindow(clickPos))
 			{
 				return true;
 			}
 		}
-
 		return false;
 	}
 

@@ -12,7 +12,7 @@ namespace
     static constexpr const char* LAYER_NAME = "OBJECTS_LAYER";
 } // namespace
 
-static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
+static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg(LAYER_NAME);
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
