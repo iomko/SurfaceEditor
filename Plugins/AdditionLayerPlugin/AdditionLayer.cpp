@@ -271,47 +271,24 @@ void AdditionLayer::handleComponentsVisibility()
     m_subdivisionSlider->setIsVisible(!*m_automaticCheckBox->isChecked());
 }
 
-void AdditionLayer::setCreateButtonAsAddPlane()
+template <typename TParams>
+void AdditionLayer::setCreateButton(const std::string& commandId)
 {
     using namespace ui::components;
 
-    m_createButton->setAction([this](Button*) {
-        auto* command = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
+    m_createButton->setAction([this, commandId](Button*) {
+        auto* command = CommandRegistry::instance().getCommand(commandId);
         if (command != nullptr)
         {
-            PlaneParams params;
+            TParams params;
             params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
             params.m_size             = *m_sizeInputBox->inputValue();
-            params.m_position = glm::vec3{
+            params.m_position         = glm::vec3{
                 *m_posXInputBox->inputValue(),
                 *m_posZInputBox->inputValue(),
                 *m_posYInputBox->inputValue()
             };
             
-            command->execute(params);
-
-            VisibilityHandler::hide(LAYER_NAME);
-        }
-    });
-}
-
-void AdditionLayer::setCreateButtonAsAddCube()
-{
-    using namespace ui::components;
-
-    m_createButton->setAction([this](Button*) {
-        auto* command = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");   
-        if (command != nullptr)
-        {
-            CubeParams params;
-            params.m_size             = *m_sizeInputBox->inputValue();
-            params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
-            params.m_position = glm::vec3{
-                *m_posXInputBox->inputValue(),
-                *m_posZInputBox->inputValue(),
-                *m_posYInputBox->inputValue()
-            };
-                
             command->execute(params);
 
             VisibilityHandler::hide(LAYER_NAME);
@@ -349,11 +326,11 @@ void AdditionLayer::onImGuiRender()
     switch (m_additionType)
     {
         case AdditionType::PLANE:
-            setCreateButtonAsAddPlane();
+            setCreateButton<PlaneParams>("ADD_PLANE_COMMAND");
             m_meshLayout->setIsVisible(true);
             break;
         case AdditionType::CUBE:
-            setCreateButtonAsAddCube();
+            setCreateButton<CubeParams>("ADD_CUBE_COMMAND");
             m_meshLayout->setIsVisible(true);
             break;
         case AdditionType::SURFACE:

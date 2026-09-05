@@ -43,11 +43,10 @@ private:
 
     void handleComponentsVisibility();
 
-	void setCreateButtonAsAddPlane();
-
-	void setCreateButtonAsAddCube();
-
 	void setCreateButtonAsAddSurface();
+
+    template <typename TParams>
+    void setCreateButton(const std::string& commandId);
 
 private:
 	AdditionType m_additionType;
