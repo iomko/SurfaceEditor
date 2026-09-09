@@ -1,6 +1,6 @@
 #pragma once
 #include <utility>
-#include "../UI/Styling/CheckBox.h"
+#include <Styling/CheckBox.h>
 
 class CheckBoxConfigBuilder
 {

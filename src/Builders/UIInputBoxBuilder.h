@@ -1,5 +1,5 @@
 #pragma once
-#include "../UI/Styling/InputBox.h"
+#include <Styling/InputBox.h>
 
 class InputBoxBuilder
 {

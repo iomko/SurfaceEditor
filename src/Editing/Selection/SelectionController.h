@@ -1,7 +1,6 @@
 #pragma once
 #include "MeshSelectionManager.h"
 #include "FaceSelectionManager.h"
-#include "../../UI/IWindow.h"
 #include "../../UI/SelectionRectangle.h"
 
 enum class SelectionMode

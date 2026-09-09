@@ -2,8 +2,8 @@
 #include "ImGuizmo.h"
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
-#include "../src/UI/VisibilityHandler.h"
 #include "../src/UI/LayerRegistry.h"
+#include <Utils/VisibilityHandler.h>
 
 class GizmoLayer : public Layer, public Observable
 {

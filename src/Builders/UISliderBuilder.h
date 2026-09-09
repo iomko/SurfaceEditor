@@ -1,5 +1,5 @@
 #pragma once
-#include "../UI/Styling/Slider.h"
+#include <Styling/Slider.h>
 
 template<typename T>
 class SliderConfigBuilder

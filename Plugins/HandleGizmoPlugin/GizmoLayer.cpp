@@ -4,6 +4,7 @@
 #include "../../src/UI/LayerRegistry.h"
 #include "../../src/UI/WindowLayerBus.h"
 #include "../../src/UI/Events.h"
+#include <Utils/VisibilityHandler.h>
 
 static AutoRegisterLayerArgs<GizmoLayer, std::string> reg("GIZMO_LAYER");
 

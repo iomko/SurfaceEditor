@@ -1,5 +1,5 @@
 #pragma once
-#include "../UI/Styling/Window.h"
+#include <Styling/Window.h>
 
 class WindowPosConfigBuilder
 {

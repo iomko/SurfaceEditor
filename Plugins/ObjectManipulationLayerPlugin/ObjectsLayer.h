@@ -1,14 +1,14 @@
 #pragma once
 #include <imgui.h>
 #include <stdint.h>
+#include <Components/Window.h>
+#include <Utils/VisibilityHandler.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
-#include "../src/UI/VisibilityHandler.h"
-#include "../src/UI/IWindow.h"
 #include "../include/enums/AdditionType.h"
 
-class ObjectsLayer : public Layer, public Observable, public ui::IWindow
+class ObjectsLayer : public Layer, public Observable, public ui::components::Window
 {
 public:
     ObjectsLayer(const std::string& name);

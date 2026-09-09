@@ -5,13 +5,13 @@
 #include "../src/Tools/ToolRegistry.h"
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/WindowLayerBus.h"
-#include "../src/UI/Styling/Window.h"
-#include "../src/UI/Styling/Button.h"
-#include "../src/UI/Components/RadioImageButton.h"
-#include "../src/UI/VisibilityHandler.h"
 #include "../src/UI/Events.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
+#include <Styling/Window.h>
+#include <Styling/Button.h>
+#include <Components/RadioImageButton.h>
+#include <Utils/VisibilityHandler.h>
 
 namespace
 {
@@ -36,12 +36,9 @@ static AutoRegisterLayerArgs<ObjectManipulationLayer, std::string> reg(LAYER_NAM
 
 ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name)
-    , ui::IWindow(LAYER_NAME)
+    , ui::components::Window(LAYER_NAME)
 {
     VisibilityHandler::show(LAYER_NAME);
-
-    initWindowConfig();
-    initComponents();
     initConnections();
 }
 
@@ -94,7 +91,7 @@ void ObjectManipulationLayer::initComponents()
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    ui::Layout* layout = emplaceLayout();
+    ui::components::Layout* layout = emplaceLayout();
     layout->reserveComponents(itemsCount);
 
     m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {

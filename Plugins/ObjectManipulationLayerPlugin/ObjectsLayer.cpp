@@ -1,11 +1,11 @@
 #include "ObjectsLayer.h"
-#include "../src/UI/Styling/Font.h"
 #include "../src/UI/WindowLayerBus.h"
 #include "../src/UI/Events.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
 #include "../src/Builders/UIWindowBuilder.h"
 #include "../src/Builders/UIButtonBuilder.h"
+#include <Styling/Font.h>
 
 namespace
 {
@@ -16,11 +16,8 @@ static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg(LAYER_NAME);
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
     : Layer(name),
-      ui::IWindow(LAYER_NAME)
-{
-    initWindowConfig();
-    initComponents();
-}
+      ui::components::Window(LAYER_NAME)
+{ }
 
 void ObjectsLayer::initWindowConfig()
 {
@@ -55,7 +52,7 @@ void ObjectsLayer::initComponents()
         .onClickColor(ui::styling::Color::onClickOrange)
         .build();
 
-    ui::Layout* layout = emplaceLayout();
+    ui::components::Layout* layout = emplaceLayout();
     layout->reserveComponents(itemsCount);
 
     emplaceComponent<Button>(layout, "Plane", defaultConfig, [this](Button*) {

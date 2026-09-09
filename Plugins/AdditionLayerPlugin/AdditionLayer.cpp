@@ -1,17 +1,17 @@
 #include "AdditionLayer.h"
 #include "imgui.h"
-#include "../src/UI/Components/Label.h"
-#include "../src/UI/Components/CheckBox.h"
-#include "../src/UI/Components/InputBox.h"
-#include "../src/UI/Components/Slider.h"
-#include "../src/UI/Components/SameLine.h"
-#include "../src/UI/Components/Separator.h"
-#include "../src/UI/Components/Dummy.h"
-#include "../../src/Commands/CommandRegistry.h"
-#include "../../src/UI/Components/Button.h"
-#include "../../src/UI/Styling/Font.h"
+#include <Components/Label.h>
+#include <Components/CheckBox.h>
+#include <Components/InputBox.h>
+#include <Components/Slider.h>
+#include <Components/SameLine.h>
+#include <Components/Separator.h>
+#include <Components/Dummy.h>
+#include <Components/Button.h>
+#include <Styling/Font.h>
 #include "../../src/UI/WindowLayerBus.h"
 #include "../../src/UI/Events.h"
+#include "../../src/Commands/CommandRegistry.h"
 #include "../../src/Builders/UIWindowBuilder.h"
 #include "../../src/Builders/UIButtonBuilder.h"
 #include "../../src/Builders/UILabelBuilder.h"
@@ -28,11 +28,9 @@ static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
 AdditionLayer::AdditionLayer(const std::string& name)
     : Layer(name)
-    , ui::IWindow(LAYER_NAME)
+    , ui::components::Window(LAYER_NAME)
     , m_additionType(AdditionType::NONE)
 {
-    initWindowConfig();
-    initComponents();
     initConnections();
 }
 
@@ -103,7 +101,7 @@ void AdditionLayer::initDialogButtons()
 
     auto dummyCallback = [](Button*){};
 
-    ui::Layout* m_dialogLayout = emplaceLayout(ImVec2{ 0.28f, 0.0f });
+    ui::components::Layout* m_dialogLayout = emplaceLayout(ImVec2{ 0.28f, 0.0f });
     m_dialogLayout->reserveComponents(dialogItemsCount);
 
     m_createButton = emplaceComponent<Button>(m_dialogLayout, "Add", dialogButtonConfig, dummyCallback);

@@ -1,11 +1,11 @@
 #pragma once
 #include <string>
 #include <variant>
+#include <Components/Window.h>
 #include "../../include/enums/AdditionType.h"
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
-#include "../src/UI/IWindow.h"
 
 namespace ui::components
 {
@@ -20,7 +20,7 @@ namespace ui::components
     class Slider;
 } // ui::components
 
-class AdditionLayer : public Layer, public Observable, public Observer, public ui::IWindow
+class AdditionLayer : public Layer, public Observable, public Observer, public ui::components::Window
 {
 public:
     AdditionLayer(const std::string& name);
@@ -51,9 +51,9 @@ private:
 private:
 	AdditionType m_additionType;
 
-    ui::Layout* m_meshLayout;
-    ui::Layout* m_surfaceLayout;
-    ui::Layout* m_dialogLayout;
+    ui::components::Layout* m_meshLayout;
+    ui::components::Layout* m_surfaceLayout;
+    ui::components::Layout* m_dialogLayout;
 
     // Mesh components
     ui::components::InputBox<int>*   m_subdivisionInputBox;

@@ -1,6 +1,6 @@
 #pragma once
 #include <utility>
-#include "../UI/Styling/Button.h"
+#include <Styling/Button.h>
 
 class ButtonConfigBuilder
 {

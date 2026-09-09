@@ -1,6 +1,6 @@
 #pragma once
 #include <stdexcept>
-#include "../UI/Styling/Label.h"
+#include <Styling/Label.h>
 
 class LabelConfigBuilder
 {

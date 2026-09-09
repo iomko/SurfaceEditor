@@ -4,9 +4,9 @@
 #include <vector>
 #include <memory>
 #include <stdint.h>
+#include <Components/Window.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
-#include "../src/UI/IWindow.h"
 
 namespace ui::components
 {
@@ -14,7 +14,7 @@ namespace ui::components
     class RadioButton;
 } // ui::components
 
-class ObjectManipulationLayer : public Layer, public Observable, public ui::IWindow
+class ObjectManipulationLayer : public Layer, public Observable, public ui::components::Window
 {
 public:
     ObjectManipulationLayer(const std::string& name);
