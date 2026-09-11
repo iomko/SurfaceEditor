@@ -206,7 +206,7 @@ target_link_libraries(SurfaceEditorCore PUBLIC
 )
 
 if(UNIX)
-    target_link_libraries(SurfaceEditorCore PRIVATE
+    target_link_libraries(SurfaceEditorCore PUBLIC
         X11::X11
         ImGuiWrapper
     )
@@ -234,6 +234,8 @@ add_executable(SurfaceEditor
 target_link_libraries(SurfaceEditor PRIVATE
     SurfaceEditorCore
 )
+
+set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
 
 get_target_property(CORE_INCLUDE_DIRS SurfaceEditorCore INCLUDE_DIRECTORIES)
 
@@ -275,6 +277,9 @@ export(TARGETS
     glad_core
     ImGui
     ImGuizmo
+    ImGuiWrapper
+    glm_interface
+    stb
     TrianglePP
     Torch::Torch
     nlohmann_json
