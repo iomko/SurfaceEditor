@@ -3,8 +3,8 @@
 #include "../src/UI/Events.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
-#include "../src/Builders/UIWindowBuilder.h"
-#include "../src/Builders/UIButtonBuilder.h"
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
 #include <Styling/Font.h>
 
 namespace

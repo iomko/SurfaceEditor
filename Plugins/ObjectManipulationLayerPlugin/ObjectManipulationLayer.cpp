@@ -6,8 +6,8 @@
 #include "../src/UI/LayerRegistry.h"
 #include "../src/UI/WindowLayerBus.h"
 #include "../src/UI/Events.h"
-#include "../src/Builders/UIWindowBuilder.h"
-#include "../src/Builders/UIButtonBuilder.h"
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
 #include <Styling/Window.h>
 #include <Styling/Button.h>
 #include <Components/RadioImageButton.h>

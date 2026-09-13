@@ -9,15 +9,15 @@
 #include <Components/Dummy.h>
 #include <Components/Button.h>
 #include <Styling/Font.h>
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
+#include <Builders/UILabelBuilder.h>
+#include <Builders/UICheckBoxBuilder.h>
+#include <Builders/UIInputBoxBuilder.h>
+#include <Builders/UISliderBuilder.h>
 #include "../../src/UI/WindowLayerBus.h"
 #include "../../src/UI/Events.h"
 #include "../../src/Commands/CommandRegistry.h"
-#include "../../src/Builders/UIWindowBuilder.h"
-#include "../../src/Builders/UIButtonBuilder.h"
-#include "../../src/Builders/UILabelBuilder.h"
-#include "../../src/Builders/UICheckBoxBuilder.h"
-#include "../../src/Builders/UIInputBoxBuilder.h"
-#include "../../src/Builders/UISliderBuilder.h"
 
 namespace
 {
