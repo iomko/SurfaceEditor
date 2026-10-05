@@ -1,8 +1,6 @@
 #pragma once
-
 #include "../Core/Layer.h"
 #include "LayerRegistry.h"
-#include "Components/FontStyle.h"
 
 class ImGuiLayer : public Layer
 {

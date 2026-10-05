@@ -1,78 +1,95 @@
 #include "ObjectsLayer.h"
+#include "../src/UI/WindowLayerBus.h"
+#include "../src/UI/Events.h"
 #include "../src/Commands/CommandRegistry.h"
 #include "../src/Commands/CommandIDs.h"
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
+#include <Styling/Font.h>
 
-static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg("OBJECTS_LAYER");
+namespace
+{
+    static constexpr const char* LAYER_NAME = "OBJECTS_LAYER";
+} // namespace
+
+static AutoRegisterLayerArgs<ObjectsLayer, std::string> reg(LAYER_NAME);
 
 ObjectsLayer::ObjectsLayer(const std::string& name)
-    : Layer(name), m_windowSize{}
-{
-    auto& layerRegistry = LayerRegistry::instance();
-    auto layer = layerRegistry.getLayer("OBJECT_MANIPULATION_LAYER", "ObjectManipulationLayer");
-    auto objectManipulationLayer = static_cast<ObjectManipulationLayer*>(layer);
+    : Layer(name),
+      ui::components::Window(LAYER_NAME)
+{ }
 
-    m_windowPos = objectManipulationLayer->rightBottomCorner();
+void ObjectsLayer::initWindowConfig()
+{
+    auto sizeConfig = WindowSizeConfigBuilder().width(0.05f).height(0.09f).minHeight(0.6f).minWidth(0.6f).build();
+    auto flags      = ImGuiWindowFlags_NoTitleBar
+                    | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoMove
+                    | ImGuiWindowFlags_NoScrollbar
+                    | ImGuiWindowFlags_NoCollapse;
+
+    m_windowConfig = WindowConfigBuilder()
+        .name(LAYER_NAME)
+        .background(ui::styling::Color::gray)
+        .rounding(17.0f)
+        .size(sizeConfig)
+        .flags(flags)
+        .build();
 }
 
-void ObjectsLayer::setWindowSizeAndPosition()
+void ObjectsLayer::initComponents()
 {
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    using namespace ui::components;
 
-    float viewportWidth = viewport->WorkSize.x;
-    float viewportHeight = viewport->WorkSize.y;
+    static constexpr int itemsCount = 3;
 
-    float width  = viewportWidth * 0.05f;
-    float height = viewportHeight * 0.09f;
+    auto defaultConfig = ButtonConfigBuilder()
+        .rounding(12.0f)
+        .background(ui::styling::Color::darkGray)
+        .font(ui::styling::Font::regular(0.8f))
+        .size(ImVec2{ 0.04f, 0.02f })
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
 
-    m_windowSize = { width, height };
+    ui::components::Layout* layout = emplaceLayout();
+    layout->reserveComponents(itemsCount);
 
-    ImGui::SetNextWindowSize(m_windowSize, ImGuiCond_Always);
-    ImGui::SetNextWindowPos(*m_windowPos, ImGuiCond_Always);
+    emplaceComponent<Button>(layout, "Plane", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::PLANE);
+    });
+    emplaceComponent<Button>(layout, "Cube", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::CUBE);
+    });
+    emplaceComponent<Button>(layout, "Surface", defaultConfig, [this](Button*) {
+        invokeAdditionLayer(AdditionType::SURFACE);
+    });
+}
 
-    WindowStyle::checkResolutionRange("OBJECTS_LAYER", viewportHeight, viewportWidth);
+void ObjectsLayer::invokeAdditionLayer(AdditionType additionType)
+{
+    AdditionLayerState additionLayerState;
+    additionLayerState.additionType = additionType;
+    
+    WindowLayerBus::emit(additionLayerState);
+    VisibilityHandler::hide(LAYER_NAME);
+    VisibilityHandler::show("ADDITION_LAYER");
+}
+
+void ObjectsLayer::updatePos(ImVec2& actualPosition)
+{
+    m_windowConfig.pos = WindowPosConfigBuilder()
+        .relativePosition(true)
+        .relativePosX(actualPosition.x)
+        .relativePosY(actualPosition.y)
+        .build();
 }
 
 void ObjectsLayer::onImGuiRender()
 {
-    setWindowSizeAndPosition();
+    ObjectsLayerState currState;
+    WindowLayerBus::emit(currState);
+    updatePos(currState.windowPos);
 
-    if (!VisibilityHandler::isVisible("OBJECTS_LAYER"))
-    {
-        return;
-    }
-
-
-    int windowStyleColorApplied{}, windowStyleVarApplied{};
-    int styleColorApplied{}, styleVarApplied{};
-    int buttonCount{3};
-
-    static const ImGuiWindowFlags flags = WindowStyle::defaultWindow();
-    WindowStyle::setup(this->getName().c_str(), flags, windowStyleColorApplied, windowStyleVarApplied);
-
-    auto layout = ButtonStyle::calculateVerticalButtonLayout(buttonCount);
-    ButtonStyle::applyResponsiveFontScale(layout.height);
-    ButtonStyle::simplePopUpWindowStyle(layout.height, styleColorApplied, styleVarApplied);
-
-    if (ImGui::Button("Plane", ImVec2(layout.width, layout.height)))
-    {
-        AdditionLayer::setAdditionType(AdditionType::PLANE);
-        VisibilityHandler::show("ADDITION_LAYER");
-        VisibilityHandler::hide("OBJECTS_LAYER");
-    }
-    if (ImGui::Button("Cube", ImVec2(layout.width, layout.height)))
-    {
-        AdditionLayer::setAdditionType(AdditionType::CUBE);
-        VisibilityHandler::show("ADDITION_LAYER");
-        VisibilityHandler::hide("OBJECTS_LAYER");
-    }
-    if (ImGui::Button("Surface", ImVec2(layout.width, layout.height)))
-    {
-        AdditionLayer::setAdditionType(AdditionType::SURFACE);
-        VisibilityHandler::show("ADDITION_LAYER");
-        VisibilityHandler::hide("OBJECTS_LAYER");
-    }
-
-    ButtonStyle::closeStyling(styleColorApplied, styleVarApplied);
-
-    WindowStyle::end(windowStyleColorApplied, windowStyleVarApplied);
+    this->render();
 }

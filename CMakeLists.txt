@@ -62,6 +62,8 @@ find_package(TIFF REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+find_path(GLM_INCLUDE_DIR NAMES glm/glm.hpp REQUIRED)
+
 #FETCH
 include(FetchContent)
 
@@ -94,6 +96,8 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(stb)
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 
 add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -110,6 +114,7 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}/backends
 )
 target_link_libraries(ImGui PUBLIC glfw)
+add_library(imgui ALIAS ImGui)
 
 FetchContent_Declare(
     glad
@@ -120,6 +125,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
+set_target_properties(glad_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
+add_library(glad ALIAS glad_core)
 
 FetchContent_Declare(
     ImGuizmo
@@ -139,11 +148,11 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
 FetchContent_Declare(
-    stb
-    GIT_REPOSITORY https://github.com/nothings/stb.git
-    GIT_TAG master
+    ImGuiWrapper
+    GIT_REPOSITORY https://github.com/filipbaranek/ImGuiWrapper.git
+    GIT_TAG        main
 )
-FetchContent_MakeAvailable(stb)
+FetchContent_MakeAvailable(ImGuiWrapper)
 
 file(GLOB_RECURSE CORE_SRC
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
@@ -174,6 +183,11 @@ else()
   )
 endif()
 
+add_library(glm_interface INTERFACE)
+target_include_directories(glm_interface INTERFACE ${GLM_INCLUDE_DIR})
+add_library(glm ALIAS glm_interface)
+
+
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
@@ -197,13 +211,17 @@ target_link_libraries(SurfaceEditorCore PUBLIC
 )
 
 if(UNIX)
-    target_link_libraries(SurfaceEditorCore PRIVATE X11::X11)
+    target_link_libraries(SurfaceEditorCore PUBLIC
+        X11::X11
+        ImGuiWrapper
+    )
 endif()
 
 target_include_directories(SurfaceEditorCore PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${ImGuizmo_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
+    ${ImGuiWrapper_SOURCE_DIR}
     ${glad_SOURCE_DIR}
     ${stb_SOURCE_DIR}
     "${LIBTORCH_ROOT}/include"
@@ -243,6 +261,9 @@ include(Catch)
 catch_discover_tests(Test)
 
 target_link_libraries(Test PRIVATE Catch2::Catch2WithMain SurfaceEditorCore)
+set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
+
+get_target_property(CORE_INCLUDE_DIRS SurfaceEditorCore INCLUDE_DIRECTORIES)
 
 set_target_properties(ImGuizmo PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/_deps/imguizmo-src;${CMAKE_BINARY_DIR}/_deps/imgui-src"
@@ -285,6 +306,9 @@ export(TARGETS
     glad_core
     ImGui
     ImGuizmo
+    ImGuiWrapper
+    glm_interface
+    stb
     TrianglePP
     Torch::Torch
     nlohmann_json

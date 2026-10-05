@@ -1,35 +1,41 @@
 #pragma once
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include <vector>
 #include <memory>
+#include <stdint.h>
+#include <Components/Window.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
-#include "../src/UI/LayerRegistry.h"
-#include "../src/UI/Components/IWindow.h"
-#include "../src/UI/Components/ImageButton.h"
-#include "../src/UI/Components/WindowStyle.h"
-#include "../src/UI/Components/ButtonStyle.h"
-#include "../src/UI/VisibilityHandler.h"
-#include "../src/UI/OverlappingWindow.h"
 
+namespace ui::components
+{
+    class Button;
+    class RadioButton;
+} // ui::components
 
-class ObjectManipulationLayer : public Layer, public Observable, public OverlappingWindow, public IWindow
+class ObjectManipulationLayer : public Layer, public Observable, public ui::components::Window
 {
 public:
     ObjectManipulationLayer(const std::string& name);
 
-    inline ImVec2* rightBottomCorner() { return &m_rightBottomCorner; }
-
     void onImGuiRender() override;
 
-private:
-    void loadPanelImages();
+protected:
+    void initConnections();
 
-    void setWindowSizeAndPosition() override;
+    void initWindowConfig() override;
+
+    void initComponents() override;
 
 private:
-    std::vector<std::unique_ptr<ImageButton>> m_buttons;
-    ImVec2 m_rightBottomCorner;
-    bool m_imagesLoaded;
-    float m_iconSize;
+    void resetModeState();
+
+    void activateSelectionMode();
+
+    void activateGizmoMode(ImGuizmo::OPERATION operationType);
+
+private:
+    std::vector<ui::components::RadioButton*> m_radioButtons;
+    ui::components::RadioButton*              m_addMeshButton;
 };

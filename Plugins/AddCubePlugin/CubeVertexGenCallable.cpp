@@ -1,6 +1,5 @@
 #include "CubeVertexGenCallable.h"
 #include "../../src/Renderer/MaterialRegistry.h"
-
 #include "../../src/Callables/CallableRegistry.h"
 
 static AutoRegisterCallable<CubeVertexGenCallable> reg("CUBE_VERTEX_GEN_CALLABLE");

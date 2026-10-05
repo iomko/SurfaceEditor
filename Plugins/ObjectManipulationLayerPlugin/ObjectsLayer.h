@@ -1,25 +1,27 @@
 #pragma once
 #include <imgui.h>
-#include "ObjectManipulationLayer.h"
-#include "../AdditionLayerPlugin/AdditionLayer.h"
+#include <stdint.h>
+#include <Components/Window.h>
+#include <Utils/VisibilityHandler.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
-#include "../src/UI/VisibilityHandler.h"
-#include "../src/UI/Components/IWindow.h"
-#include "../src/UI/Components/WindowStyle.h"
-#include "../src/UI/Components/ButtonStyle.h"
+#include "../include/enums/AdditionType.h"
 
-class ObjectsLayer : public Layer, public Observable, public IWindow
+class ObjectsLayer : public Layer, public Observable, public ui::components::Window
 {
 public:
     ObjectsLayer(const std::string& name);
 
-    void setWindowSizeAndPosition() override;
-
     void onImGuiRender() override;
 
+protected:
+    void initWindowConfig() override;
+
+    void initComponents() override;
+
 private:
-    ImVec2 m_windowSize;
-    ImVec2* m_windowPos;
+    void invokeAdditionLayer(AdditionType additionType);
+
+    void updatePos(ImVec2& actualPosition);
 };
