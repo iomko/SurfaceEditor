@@ -1,362 +1,345 @@
 #include "AdditionLayer.h"
 #include "imgui.h"
+#include <Components/Label.h>
+#include <Components/CheckBox.h>
+#include <Components/InputBox.h>
+#include <Components/Slider.h>
+#include <Components/SameLine.h>
+#include <Components/Separator.h>
+#include <Components/Dummy.h>
+#include <Components/Button.h>
+#include <Styling/Font.h>
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
+#include <Builders/UILabelBuilder.h>
+#include <Builders/UICheckBoxBuilder.h>
+#include <Builders/UIInputBoxBuilder.h>
+#include <Builders/UISliderBuilder.h>
+#include "../../src/UI/WindowLayerBus.h"
+#include "../../src/UI/Events.h"
 #include "../../src/Commands/CommandRegistry.h"
+
+namespace
+{
+    static constexpr const char* LAYER_NAME = "ADDITION_LAYER";
+} // namespace
 
 static AutoRegisterLayerArgs<AdditionLayer, std::string> reg("ADDITION_LAYER");
 
 AdditionLayer::AdditionLayer(const std::string& name)
-    : Layer(name) {}
-
-// void AdditionLayer::onEvent(Event &event)
-// {
-//     if (event.getType() == EventType::MouseButtonPress)
-//     {
-//         if (m_isMouseInsideWindow)
-//         {
-//             event.isHandled = true;
-//         }
-//     }
-// }
-
-void AdditionLayer::addPlane()
+    : Layer(name)
+    , ui::components::Window(LAYER_NAME)
+    , m_additionType(AdditionType::NONE)
 {
-    auto* addPlaneCommand = CommandRegistry::instance().getCommand("ADD_PLANE_COMMAND");
-
-    if (addPlaneCommand)
-    {
-        defaultSettingsWindow(addPlaneCommand, [this]() -> PlaneParams {
-            PlaneParams addPlaneCommandParams;
-            addPlaneCommandParams.m_subdivisionLevel = m_subdivision;
-            addPlaneCommandParams.m_size = m_size;
-            addPlaneCommandParams.m_position = glm::vec3(m_xPos, m_zPos, m_yPos);
-            
-            return addPlaneCommandParams;
-        });
-    }
+    initConnections();
 }
 
-void AdditionLayer::addCube()
+void AdditionLayer::initConnections()
 {
-    auto* addCubeCommand = CommandRegistry::instance().getCommand("ADD_CUBE_COMMAND");
-
-    if (addCubeCommand)
-    {
-        defaultSettingsWindow(addCubeCommand, [this]() -> CubeParams {
-            CubeParams addCubeParams;
-            addCubeParams.m_size = m_size;
-            addCubeParams.m_subdivisionLevel = m_subdivision;
-            addCubeParams.m_position = glm::vec3(m_xPos, m_zPos, m_yPos);
-            
-            return addCubeParams;
-        });
-    }
+    WindowLayerBus::on<AdditionLayerState>([this](AdditionLayerState& state) {
+        m_additionType = static_cast<AdditionType>(state.additionType);
+    });
 }
 
-void AdditionLayer::addSurface()
+void AdditionLayer::initWindowConfig()
 {
-    auto* fetchCommand = CommandRegistry::instance().getCommand("FETCH_SURFACE_COMMAND");
+    auto posConfig = WindowPosConfigBuilder()
+        .posX(0.38f)
+        .posY(0.28f)
+        .build();
 
-    if (!fetchCommand)
-    {
-        return;
-    }
+    auto sizeConfig = WindowSizeConfigBuilder()
+        .width(0.25f)
+        .height(0.4f)
+        .minWidth(0.6f)
+        .minHeight(0.75f)
+        .build();
 
-    float windowWidth   = ImGui::GetWindowWidth();
-    float windowHeight  = ImGui::GetWindowHeight();
-    float panelWidth    = windowWidth * 0.85f;
-    float inputBoxWidth = panelWidth * 0.4f;
-    float panelHeight   = windowHeight * 0.7f;
-    float buttonWidth   = panelWidth * 0.4f;
-    float buttonHeight  = panelHeight * 0.2f;
-    float spacing       = ImGui::GetStyle().ItemSpacing.x;
-    float pairWidth     = inputBoxWidth * 2 + spacing;
-    float paddingX      = (panelWidth - pairWidth) * 0.42f;
+    auto titleBarConfig = WindowTitleBarBuilder()
+        .background(ui::styling::Color::titleBarOrange)
+        .font(ui::styling::Font::extraBold(20.0f))
+        .build();
 
-    int buttonColorsApplied{}, buttonVarsApplied{};
+    auto flags = ImGuiWindowFlags_NoResize
+               | ImGuiWindowFlags_NoMove
+               | ImGuiWindowFlags_NoScrollbar
+               | ImGuiWindowFlags_NoCollapse;
+    
+    m_windowConfig = WindowConfigBuilder()
+        .name("\tEnter parameters")
+        .layerName(LAYER_NAME)
+        .background(ui::styling::Color::transparentGray)
+        .rounding(20.0f)
+        .pos(posConfig)
+        .size(sizeConfig)
+        .titleBar(titleBarConfig)
+        .flags(flags)
+        .build();
+}
 
-    ImGui::SetCursorPosX((windowWidth - panelWidth) * 0.5f);
-    ImGui::SetCursorPosY((windowHeight - panelHeight) * 0.7f);
-    ImGui::BeginGroup();
+void AdditionLayer::initComponents()
+{
+    initMeshComponents();
+    initSurfaceComponents();
+    initDialogButtons();
+}
 
-    FontStyle::headliner();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + panelWidth * 0.07f);
-    const char* leftCornerText = windowWidth > 300.0f ? "Lower-left corner" : "LL corner";
-    ImGui::TextUnformatted(leftCornerText);
-    ImGui::SameLine(panelWidth * 0.5f);
-    const char* rightCornerText = windowWidth > 300.0f ? "Upper-right corner" : "UR corner";
-    ImGui::TextUnformatted(rightCornerText);
-    FontStyle::end();
+void AdditionLayer::initDialogButtons()
+{
+    using namespace ui::components;
 
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
+    static constexpr int dialogItemsCount = 3;
 
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
-    ImGui::Text("Lon LL");
-    ImGui::SameLine(0, panelWidth * 0.31f);
-    ImGui::Text("Lon UR");
+    auto dialogButtonConfig = ButtonConfigBuilder()
+        .rounding(8.0f)
+        .background(ui::styling::Color::lightGray)
+        .font(ui::styling::Font::regular(0.6f))
+        .size(ImVec2{ 0.042f, 0.04f })
+        .onHoverColor(ui::styling::Color::hoverOverOrange)
+        .onClickColor(ui::styling::Color::onClickOrange)
+        .build();
 
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::InputFloat("##Lon LL", &m_lowerLeftLon);
-    ImGui::SameLine(0, spacing);
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::InputFloat("##Lon UR", &m_upperRightLon);
+    auto dummyCallback = [](Button*){};
 
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
-    ImGui::Text("Lat LL");
-    ImGui::SameLine(0, panelWidth * 0.31f);
-    ImGui::Text("Lat UR");
+    ui::components::Layout* m_dialogLayout = emplaceLayout(ImVec2{ 0.28f, 0.0f });
+    m_dialogLayout->reserveComponents(dialogItemsCount);
 
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + paddingX);
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::InputFloat("##Lat LL", &m_lowerLeftLat);
-    ImGui::SameLine(0, spacing);
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::InputFloat("##Lat UR", &m_upperRightLat);
-
-    ImGui::SetCursorPosX(windowWidth * 0.42f);
-    ImGui::Text("API key");
-    ImGui::SetCursorPosX(windowWidth * 0.33f);
-    ImGui::SetNextItemWidth(inputBoxWidth);
-    ImGui::InputText("##API Key", m_apiKeyBuffer, IM_ARRAYSIZE(m_apiKeyBuffer));
-    ImGui::PopStyleColor();
-
-    ImGui::Spacing();
-    WindowStyle::drawHorizontalSeparator(panelWidth);
-    ImGui::Spacing();
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (panelHeight * 0.05f));
-    ImGui::SetCursorPosX(windowWidth * 0.42f);
-    ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
-    if (ImGui::Button("Add"))
-    {
-        OpenTopoParams params;
-        params.m_lowerLeftLon = m_lowerLeftLon;
-        params.m_lowerLeftLat = m_lowerLeftLat;
-        params.m_upperRightLon = m_upperRightLon;
-        params.m_upperRightLat = m_upperRightLat;
-        params.m_apiKey = std::string(m_apiKeyBuffer);
-
-        fetchCommand->execute(params);
-
+    m_createButton = emplaceComponent<Button>(m_dialogLayout, "Add", dialogButtonConfig, dummyCallback);
+    emplaceComponent<SameLine>(m_dialogLayout);
+    emplaceComponent<Button>(m_dialogLayout, "Cancel", dialogButtonConfig, [](Button*) {
         VisibilityHandler::hide("ADDITION_LAYER");
-    }
-    ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
+    });
 
-    ImGui::EndGroup();
+    m_subdivisionSlider->linkWith(m_subdivisionInputBox);
+    m_sizeSlider->linkWith(m_sizeInputBox);
+
+    *m_subdivisionInputBox->inputValue() = 1;
+    *m_sizeInputBox->inputValue()        = 1.0f;
 }
 
-void AdditionLayer::defaultSettingsWindow(CommandConcept* command, std::function<CommandParams()> paramsCallback)
+void AdditionLayer::initMeshComponents()
 {
-    float windowWidth       = ImGui::GetWindowWidth();
-    float windowHeight      = ImGui::GetWindowHeight();
-    float panelWidth        = windowWidth * 0.7f;
-    float panelHeight       = windowHeight * 0.81f;
-    float inputWidth        = panelWidth * 0.31f;
-    float sliderWidth       = panelWidth * 0.65;
-    float buttonHeight      = panelHeight * 0.15f;
-    float buttonWidth       = panelWidth * 0.4f;
+    using namespace ui::components;
 
-    auto inputBoxBackground = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
+    static constexpr int mainItemsCount = 31;
 
-    int sliderColorsApplied{};
-    int checkboxColorsApplied{}, checkboxVarsApplied{};
-    int buttonColorsApplied{}, buttonVarsApplied{};
+    auto headlinersConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::extraBold(0.025f))
+        .build();
 
-    ImGui::SetCursorPosX((windowWidth - panelWidth) * 0.5f);
-    ImGui::SetCursorPosY((windowHeight - panelHeight) * 0.7f);
-    ImGui::BeginGroup();
+    auto defaultTextConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::regular(0.02))
+        .build();
 
-    // Subdivision//
-    int lastSubdivision = m_subdivision;
+    auto checkBoxConfig = CheckBoxConfigBuilder()
+        .checkMarkColor(ui::styling::Color::selectedOrange)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .build();
 
-    FontStyle::headliner();
-    ImGui::Text("Subdivision");
-    FontStyle::end();
+    auto inputBoxConfig = InputBoxBuilder()
+        .width(0.17f)
+        .background(ui::styling::Color::lightGray)
+        .build();
 
-    ImGui::SetNextItemWidth(sliderWidth);
-    ImGui::Text("Automatic:");
+    auto intSliderConfig = SliderConfigBuilder<int>()
+        .width(0.37f)
+        .max(100)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
+        .build();
 
-    ImGui::SameLine();
-    CheckBoxStyle::basic(checkboxColorsApplied, checkboxVarsApplied, 1.0f);
-    ImGui::Checkbox("##Automatic", &m_automaticSubdivision);
-    CheckBoxStyle::end(checkboxColorsApplied, checkboxVarsApplied);
+    auto floatSliderConfig = SliderConfigBuilder<float>()
+        .width(0.36f)
+        .max(100.0f)
+        .background(ui::styling::Color::lightGray)
+        .onHoverBackground(ui::styling::Color::lightGray)
+        .onActiveBackground(ui::styling::Color::lightGray)
+        .grabBackground(ui::styling::Color::titleBarOrange)
+        .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
+        .build();
 
-    if (!m_automaticSubdivision)
-    {
-        ImGui::SetNextItemWidth(inputWidth);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-        ImGui::InputInt("##SubdivisionInput", &m_subdivision, 0.0f, 0.0f);
-        ImGui::PopStyleColor();
+    m_meshLayout = emplaceLayout(ImVec2{ 0.2f, 0.05f });
+    m_meshLayout->reserveComponents(mainItemsCount);
 
-        ImGui::SameLine();
-        SliderStyle::basic(sliderColorsApplied, sliderWidth);
-        ImGui::SliderInt("##Subdivision", &m_subdivision, 1, 300);
-        SliderStyle::end(sliderColorsApplied);
-    }
-    else
-    {
-        m_subdivision = 1;
-        ImGui::Dummy(ImVec2(0.0f, ImGui::GetFrameHeight()));
-    }
-
-    if (m_subdivision < 1.0f || m_subdivision > 300)
-    {
-        m_subdivision = lastSubdivision;
-    }
-    //----------//
-
-    ImGui::Spacing();
-    WindowStyle::drawHorizontalSeparator(panelWidth);
-    ImGui::Spacing();
-
-    //Size//
-    int lastSize = m_size;
-
-    FontStyle::headliner();
-    ImGui::Text("Size");
-    FontStyle::end();
-
-    ImGui::SetNextItemWidth(inputWidth);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputFloat("##SizeInput", &m_size, 0.0f, 0.0f, "%.3f");
-    ImGui::PopStyleColor();
-
-    ImGui::SameLine();
-    SliderStyle::basic(sliderColorsApplied, sliderWidth);
-    ImGui::SliderFloat("##Size", &m_size, 1.0f, 1000.0f, "%.0f");
-    SliderStyle::end(sliderColorsApplied);
-
-    if (m_size < 1.0f || m_size > 1000.0f)
-    {
-        m_size = lastSize;
-    }
-    //---//
-
-    ImGui::Spacing();
-    WindowStyle::drawHorizontalSeparator(panelWidth);
-    ImGui::Spacing();
-
-    // Position//
-    FontStyle::headliner();
-    ImGui::Text("Position");
-    FontStyle::end();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + panelWidth * 0.01f);
-    ImGui::Text("X");
-    ImGui::SameLine(panelWidth * 0.34f);
-    ImGui::Text("Y");
-    ImGui::SameLine(panelWidth * 0.67f);
-    ImGui::Text("Z");
-
-    ImGui::SetNextItemWidth(inputWidth);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputFloat("##X", &m_xPos, 0.0f, 0.0, "%.3f");
-    ImGui::PopStyleColor();
-
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(inputWidth);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputFloat("##Y", &m_yPos, 0.0f, 0.0f, "%.3f");
-    ImGui::PopStyleColor();
-
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(inputWidth);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, inputBoxBackground);
-    ImGui::InputFloat("##Z", &m_zPos, 0.0f, 0.0f, "%.3f");
-    ImGui::PopStyleColor();
-
-    ImGui::Spacing();
-    WindowStyle::drawHorizontalSeparator(panelWidth);
-    ImGui::Spacing();
-    //-------//
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (panelHeight * 0.05f));
-    ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
-    ButtonStyle::simplePopUpWindowStyle(buttonHeight, buttonColorsApplied, buttonVarsApplied);
-    const char* buttonName = windowWidth > 320.0f ? "Add To Scene" : "Add";
-    if (ImGui::Button(buttonName, ImVec2(buttonWidth, 0)))
-    {
-        CommandParams params = paramsCallback();
-
-        std::visit(
-            [&](auto&& p) {
-                command->execute(p);
-            },
-            params
-        );
-
-        VisibilityHandler::hide("ADDITION_LAYER");
-    }
-    ButtonStyle::closeStyling(buttonColorsApplied, buttonVarsApplied);
-
-    ImGui::EndGroup();
+    emplaceComponent<Label>(m_meshLayout, "Subdivision", headlinersConfig);
+    emplaceComponent<Label>(m_meshLayout, "Automatic:", defaultTextConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    m_automaticCheckBox   = emplaceComponent<CheckBox>(m_meshLayout, "AutomaticCheckBox", checkBoxConfig);
+    m_subdivisionInputBox = emplaceComponent<InputBox<int>>(m_meshLayout, "SubdivisionInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    m_subdivisionSlider = emplaceComponent<Slider<int>>(m_meshLayout, "SubdivisionSlider", intSliderConfig);
+    emplaceComponent<Separator>(m_meshLayout, 0.55f);
+    emplaceComponent<Label>(m_meshLayout, "Size", headlinersConfig);
+    m_sizeInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "SizeInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    m_sizeSlider = emplaceComponent<Slider<float>>(m_meshLayout, "SizeSlider", floatSliderConfig);
+    emplaceComponent<Separator>(m_meshLayout, 0.55f);
+    emplaceComponent<Label>(m_meshLayout, "Position", headlinersConfig);
+    emplaceComponent<Dummy>(m_meshLayout, 0.003f, 0.0f);
+    emplaceComponent<SameLine>(m_meshLayout);
+    emplaceComponent<Label>(m_meshLayout, "X:", defaultTextConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    emplaceComponent<Dummy>(m_meshLayout, 0.13f, 0.0f);
+    emplaceComponent<SameLine>(m_meshLayout);
+    emplaceComponent<Label>(m_meshLayout, "Y:", defaultTextConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    emplaceComponent<Dummy>(m_meshLayout, 0.13f, 0.0f);
+    emplaceComponent<SameLine>(m_meshLayout);
+    emplaceComponent<Label>(m_meshLayout, "Z:", defaultTextConfig);
+    m_posXInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosXInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    m_posYInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosYInputBox", inputBoxConfig);
+    emplaceComponent<SameLine>(m_meshLayout);
+    m_posZInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosZInputBox", inputBoxConfig);
+    emplaceComponent<Separator>(m_meshLayout, 0.55f);
 }
 
-void AdditionLayer::setWindowSizeAndPosition()
+void AdditionLayer::initSurfaceComponents()
 {
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    using namespace ui::components;
 
-    float viewportWidth  = viewport->WorkSize.x;
-    float viewportHeight = viewport->WorkSize.y;
+    static constexpr int mainItemsCount = 23;
 
-    static constexpr const float fullWidth = 1920.0f;
-    float width  = viewportWidth * 0.2f;
-    float height = fullWidth * 0.16f;
+    auto headlinersConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::extraBold(0.025f))
+        .build();
 
-    float posX = viewport->WorkPos.x + (viewportWidth - width) * 0.5f;
-    float posY = viewport->WorkPos.y + (viewportHeight - height) * 0.5f;
+    auto defaultTextConfig = LabelConfigBuilder()
+        .font(ui::styling::Font::regular(0.02))
+        .build();
 
-    ImGui::SetNextWindowSize({width, height}, ImGuiCond_Always);
-    ImGui::SetNextWindowPos({posX, posY}, ImGuiCond_Always);
+    auto inputBoxConfig = InputBoxBuilder()
+        .width(0.17f)
+        .background(ui::styling::Color::lightGray)
+        .build();
 
-    float minHeight = 0.8f;
-    float minWidth = 0.4f;
-    WindowStyle::checkResolutionRange("ADDITION_LAYER", viewportHeight, viewportWidth, minHeight, minWidth);
+    auto apiKeyConfig = InputBoxBuilder()
+        .width(0.35f)
+        .background(ui::styling::Color::lightGray)
+        .build();
+
+    m_surfaceLayout = emplaceLayout(ImVec2{ 0.2f, 0.05f });
+    m_surfaceLayout->reserveComponents(mainItemsCount);
+
+    emplaceComponent<Label>(m_surfaceLayout, "Geographic Bounds", headlinersConfig);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.13f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Label>(m_surfaceLayout, "Longitude", defaultTextConfig);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.01f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Label>(m_surfaceLayout, "Latitude", defaultTextConfig);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.02f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Label>(m_surfaceLayout, "LL:", defaultTextConfig);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.02f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    m_lowerLeftLon = emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lon", inputBoxConfig);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    m_lowerLeftLat = emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lat", inputBoxConfig);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.02f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Label>(m_surfaceLayout, "UR:", defaultTextConfig);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.01f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    m_upperRightLon = emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lon", inputBoxConfig);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    m_upperRightLat = emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lat", inputBoxConfig);
+    emplaceComponent<Separator>(m_surfaceLayout, 0.55f);
+    emplaceComponent<Label>(m_surfaceLayout, "API Configuration", headlinersConfig);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.19f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);
+    emplaceComponent<Label>(m_surfaceLayout, "API Key:", defaultTextConfig);
+    emplaceComponent<Dummy>(m_surfaceLayout, 0.08f, 0.0f);
+    emplaceComponent<SameLine>(m_surfaceLayout);    
+    m_apiKeyBuffer = emplaceComponent<InputBox<char>>(m_surfaceLayout, "APIKeyInput", apiKeyConfig);
+    emplaceComponent<Separator>(m_surfaceLayout, 0.55f);
+}
+
+void AdditionLayer::handleComponentsVisibility()
+{
+    m_subdivisionInputBox->setIsVisible(!*m_automaticCheckBox->isChecked());
+    m_subdivisionSlider->setIsVisible(!*m_automaticCheckBox->isChecked());
+}
+
+template <typename TParams>
+void AdditionLayer::setCreateButton(const std::string& commandId)
+{
+    using namespace ui::components;
+
+    m_createButton->setAction([this, commandId](Button*) {
+        auto* command = CommandRegistry::instance().getCommand(commandId);
+        if (command != nullptr)
+        {
+            TParams params;
+            params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
+            params.m_size             = *m_sizeInputBox->inputValue();
+            params.m_position         = glm::vec3{
+                *m_posXInputBox->inputValue(),
+                *m_posZInputBox->inputValue(),
+                *m_posYInputBox->inputValue()
+            };
+            
+            command->execute(params);
+
+            VisibilityHandler::hide(LAYER_NAME);
+        }
+    });
+}
+
+void AdditionLayer::setCreateButtonAsAddSurface()
+{
+    using namespace ui::components; 
+
+    m_createButton->setAction([this](Button*) {
+        auto* command = CommandRegistry::instance().getCommand("ADD_SURFACE_COMMAND");
+        if (command != nullptr)
+        {
+            OpenTopoParams params;
+            params.m_lowerLeftLon  = *m_lowerLeftLon->inputValue();
+            params.m_lowerLeftLat  = *m_lowerLeftLat->inputValue();
+            params.m_upperRightLon = *m_upperRightLon->inputValue();
+            params.m_upperRightLat = *m_upperRightLat->inputValue();
+            params.m_apiKey        = *m_apiKeyBuffer->inputValue();
+            
+            command->execute(params);
+
+            VisibilityHandler::hide(LAYER_NAME);
+        }
+    });
 }
 
 void AdditionLayer::onImGuiRender()
 {
-    setWindowSizeAndPosition();
+    m_meshLayout->setIsVisible(false);
+    m_surfaceLayout->setIsVisible(false);
 
-    if (!VisibilityHandler::isVisible("ADDITION_LAYER"))
-    {
-        return;
-    }
-
-    bool isWindowTransparent{ true };
-    int windowAppliedColorStyles{}, windowAppliedVarStyles{};
-
-    static const ImGuiWindowFlags flags = WindowStyle::windowWithTitleBar();
-    
-    FontStyle::headliner();
-    WindowStyle::setDefaultTitleBar(windowAppliedColorStyles);    
-    WindowStyle::setup("Enter object parameters", flags, windowAppliedColorStyles, windowAppliedVarStyles, isWindowTransparent);
-    FontStyle::end();
-    FontStyle::regular();
-
-    ImVec2 windowPos = ImGui::GetWindowPos();
-    ImVec2 windowSize = ImGui::GetWindowSize();
-    ImVec2 mousePos = ImGui::GetMousePos();
-
-    m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
-                             mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-
-    switch (s_additionType)
+    switch (m_additionType)
     {
         case AdditionType::PLANE:
-            addPlane();
+            setCreateButton<PlaneParams>("ADD_PLANE_COMMAND");
+            m_meshLayout->setIsVisible(true);
             break;
         case AdditionType::CUBE:
-            addCube();
+            setCreateButton<CubeParams>("ADD_CUBE_COMMAND");
+            m_meshLayout->setIsVisible(true);
             break;
         case AdditionType::SURFACE:
-            addSurface();
+            setCreateButtonAsAddSurface();
+            m_surfaceLayout->setIsVisible(true);
             break;
-        case AdditionType::NONE:
         default:
             break;
     }
 
-    WindowStyle::end(windowAppliedColorStyles, windowAppliedVarStyles);
-    FontStyle::end();
+    handleComponentsVisibility();
+
+    this->render();
 }

@@ -2,6 +2,7 @@
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
 #include "../../src/Commands/CommandRegistry.h"
+#include "../../src/Core/Application.h"
 
 static AutoRegisterCallback<HandleGizmoCallBack> registerHandleGizmoCallback("HANDLE_GIZMO_CALLBACK");
 
