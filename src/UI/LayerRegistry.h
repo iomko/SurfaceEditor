@@ -7,8 +7,9 @@
 #include <tuple>
 #include <utility>
 #include <type_traits>
-#include "../Core/Layer.h"
 #include <stdexcept>
+#include "../Core/Layer.h"
+#include "VisibilityHandler.h"
 
 class LayerRegistry
 {
@@ -24,6 +25,8 @@ public:
     template <typename LayerT>
     void registerLayer(std::string id)
     {
+        VisibilityHandler::init(id);
+
         m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
         {
             return std::make_unique<LayerT>();
@@ -33,6 +36,8 @@ public:
     template <typename LayerT, typename... CtorArgs>
     void registerLayerWithArgs(std::string id)
     {
+        VisibilityHandler::init(id);
+        
         m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
         {
             // musí existovať tuple argumentov

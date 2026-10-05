@@ -1,7 +1,85 @@
 #include "Scene.h"
 #include "../Renderer/Renderer.h"
 
-std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera *camera, Window *window, SceneResources &res)
+std::vector<SceneResources::MeshFacePair> SceneUtilities::retDataUnderSelectionRectangle(
+    const RectanglePos& selectionRect,
+    Camera* camera,
+    Window* window,
+    SceneResources& res
+)
+{
+    std::vector<SceneResources::MeshFacePair> selectedFaces;
+
+    const auto& faceRayIntersect = [&res](const SceneResources::MeshFacePair& meshFacePair, const Ray& ray) -> bool
+    {
+        ExtendedFace* face = meshFacePair.second;
+        Mesh* mesh = meshFacePair.first;
+
+        if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+            TriangleBufferStorage& triangleBufferStorage = opt->get();
+            std::vector<BufferStorageDataType::TriangleVertex>& triangleBufferVertices = triangleBufferStorage.data.vertices;
+            std::vector<FaceTriangle>& faceTriangles = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second;
+
+            for (FaceTriangleIndex triangleIndex : face->faceTriangleIndices)
+            {
+                int vaoStartIndex = faceTriangles[triangleIndex].indexInVAO;
+
+                const glm::vec3& firstVertex  = triangleBufferVertices[vaoStartIndex].position;
+                const glm::vec3& secondVertex = triangleBufferVertices[vaoStartIndex + 1].position;
+                const glm::vec3& thirdVertex  = triangleBufferVertices[vaoStartIndex + 2].position;
+
+                float t;
+                if (Ray::intersectsTriangle(ray.origin, ray.direction, firstVertex, secondVertex, thirdVertex, t))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    const int sampleX = 5;
+    const int sampleY = 5;
+
+    for (int i = 0; i < sampleX; ++i)
+    {
+        double mouseX = selectionRect.startPos.x + i * (selectionRect.endPos.x - selectionRect.startPos.x) / (sampleX - 1);
+        for (int j = 0; j < sampleY; ++j)
+        {
+            double mouseY = selectionRect.startPos.y + j * (selectionRect.endPos.y - selectionRect.startPos.y) / (sampleY - 1);
+
+            Ray ray = Ray::fromPos(*camera, *window, mouseX, mouseY);
+
+            std::vector<OctreeNode<SceneResources::MeshFacePair>*> octreeNodes;
+            for (auto& entry : res.coordsOctreeMap)
+            {
+                Octree<SceneResources::MeshFacePair>& octree = entry.second;
+                octree.findMaxDepthNodes<Ray>(ray, [](const AABBBoundingRegion& region, const Ray& ray)
+                {
+                    return region.intersectsRay(ray);
+                }, octreeNodes);
+            }
+
+            for (OctreeNode<SceneResources::MeshFacePair>* node : octreeNodes)
+            {
+                for (SceneResources::MeshFacePair& meshFacePair : node->nodeData)
+                {
+                    if (faceRayIntersect(meshFacePair, ray))
+                    {
+                        if (std::find(selectedFaces.begin(), selectedFaces.end(), meshFacePair) == selectedFaces.end())
+                        {
+                            selectedFaces.push_back(meshFacePair);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return selectedFaces;
+}
+
+std::pair<SceneResources::MeshFacePair, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, SceneResources& res)
 {
 	Ray ray = Ray::fromMousePos(*camera, *window);
 

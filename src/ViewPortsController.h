@@ -30,13 +30,40 @@ public:
 	OpParams* m_currentToolParams = nullptr;
 };
 
+class ViewPortsUILayerController
+{
+public:
+	void registerUiWindow(OverlappingWindow* uiWindow)
+	{
+		m_uiWindow.push_back(uiWindow);
+	}
+
+	bool clickedOnUiWindow(const glm::vec2& clickPos)
+	{
+		for (auto& window : m_uiWindow)
+		{
+			if (window->clickedOnWindow(clickPos))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+private:
+	std::vector<OverlappingWindow*> m_uiWindow;
+};
+
 class ViewPortsHolderContext
 {
 public:
-	static ViewPortsController* s_viewPortsController;
-	static SelectionController* s_selectionController;
-	static Camera* s_camera;
-	static Window* s_window;
+	static inline Window* s_window 								  				  = nullptr;
+	static inline std::unique_ptr<ViewPortsUILayerController> s_uiLayerController = std::make_unique<ViewPortsUILayerController>();
+	static inline std::unique_ptr<ViewPortsController> s_viewPortsController 	  = std::make_unique<ViewPortsController>();
+	static inline std::unique_ptr<SelectionController> s_selectionController 	  = std::make_unique<SelectionController>();
+	static inline std::unique_ptr<Camera> s_camera =
+		std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 };
 
 class ViewPortLayer : public Layer, public Observable
@@ -94,7 +121,7 @@ public:
 
 	void onEvent(Event& event) override
 	{
-		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController;
+		ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController.get();
 
 		if (event.getType() == EventType::MouseButtonPress ||
 			event.getType() == EventType::MouseScroll ||
@@ -134,6 +161,19 @@ public:
 						currentTool->getInteractionHandler()->onUpdate();
 					}
 				}
+
+				if (Input::isMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT))
+				{
+					if (currentToolParams != nullptr)
+					{
+						currentTool->getInteractionHandler()->onEnd(*currentToolParams);
+					}
+					else
+					{
+						currentTool->getInteractionHandler()->onEnd();
+					}
+				}
+
 				event.isHandled = true;
 			}
 			updateCameraDirection(event);

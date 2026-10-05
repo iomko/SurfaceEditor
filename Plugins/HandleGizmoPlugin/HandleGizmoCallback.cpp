@@ -21,84 +21,59 @@ glm::vec3 HandleGizmoCallBack::calcFaceMiddlePos(ExtendedFace *face)
     return sum / float(count);
 }
 
-void HandleGizmoCallBack::chooseSelectionMode(const GizmoParams &iParams, bool &end)
+void HandleGizmoCallBack::init(bool& earlyReturn)
 {
-    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
-    const SelectionHolder &selectionHolder = selectionController->getHolder();
-    const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
+    earlyReturn = false;
+    auto selectionController    = ViewPortsHolderContext::s_selectionController.get();
+    const auto& selectionHolder = selectionController->getHolder();
 
-    if (iParams.m_selectionMode == GizmoParams::SelectionMode::Mesh)
+    if (m_selectionMode == SelectionMode::MESH)
     {
-        bool modeSwitched = false;
-
-        for (auto &mesh : selectedMeshes)
+        earlyReturn = selectionHolder.meshes.empty();
+        if (selectionController->newSelectionEvent() && !earlyReturn)
         {
-            auto &faces = selectionHolder.faces.find(mesh)->second;
-
-            if (!faces.empty())
+            calcMiddlePos<Mesh*>(selectionHolder.meshes, [](Mesh* mesh) {
+                return glm::vec3(mesh->m_transform[3]);
+            });
+        }
+    }
+    else if (m_selectionMode == SelectionMode::FACE)
+    {
+        earlyReturn = selectionHolder.faces.empty();
+        if (selectionController->newSelectionEvent() && !earlyReturn)
+        {
+            std::vector<ExtendedFace*> selectedFaces;
+            for (auto &mesh : selectionHolder.meshes)
             {
-                modeSwitched = true;
-                m_lastSelectedFacesCount = 0;
-
-                for (auto &face : faces)
+                const std::vector<ExtendedFace*>& faces = selectionHolder.faces.find(mesh)->second;
+                for (int i{}; i < faces.size(); ++i)
                 {
-                    ViewPortsHolderContext::s_selectionController->unregisterFace(mesh, face);
+                    selectedFaces.push_back(faces[i]);
                 }
             }
-        }
 
-        if (selectedMeshes.size() != m_lastSelectedMeshesCount || modeSwitched)
-        {
-            m_lastSelectedMeshesCount = selectedMeshes.size();
-            if (!selectedMeshes.empty())
-            {
-                calcMiddlePos<Mesh *>(selectedMeshes, [](Mesh *mesh)
-                                      { return glm::vec3(mesh->m_transform[3]); });
-            }
-        }
-        if (selectedMeshes.empty())
-        {
-            end = true;
+            calcMiddlePos<ExtendedFace*>(selectedFaces, [this](ExtendedFace* face) {
+                return calcFaceMiddlePos(face);
+            });
         }
     }
-    else
-    {
-        std::vector<ExtendedFace *> selectedFaces;
-        for (auto &selectedMesh : selectedMeshes)
-        {
-            const std::vector<ExtendedFace *> &faces = selectionHolder.faces.find(selectedMesh)->second;
-            for (int i{}; i < faces.size(); ++i)
-            {
-                selectedFaces.push_back(faces[i]);
-            }
-        }
-        if (selectedFaces.size() != m_lastSelectedFacesCount)
-        {
-            m_lastSelectedFacesCount = selectedFaces.size();
-            if (!selectedFaces.empty())
-            {
-                calcMiddlePos<ExtendedFace *>(selectedFaces, [this](ExtendedFace *face)
-                                              { return calcFaceMiddlePos(face); });
-            }
-        }
-        if (selectedMeshes.empty() || selectedFaces.empty())
-        {
-            end = true;
-        }
-    }
+
+    selectionController->setNewSelectionEvent(false);
 }
 
 void HandleGizmoCallBack::update() 
 {
-    if (m_selectionMode == GizmoParams::SelectionMode::Mesh)
+    if (m_selectionMode == SelectionMode::MESH)
     {
         MoveSelectedMeshesParams meshParams;
         meshParams.transformMatrix = m_realTimeTransform;
 
         auto* command = CommandRegistry::instance().getCommand("MOVE_SELECTED_MESHES_COMMAND");
 
-        if(command)
+        if (command)
+        {
             command->execute(meshParams);
+        }
     }
     else
     {
@@ -108,9 +83,7 @@ void HandleGizmoCallBack::update()
         auto* command = CommandRegistry::instance().getCommand("MOVE_SELECTED_FACES_COMMAND");
         if(command)
         {
-            
             command->execute(faceParams);
-
         }
     }
 }
@@ -158,49 +131,52 @@ void HandleGizmoCallBack::execute(const GizmoParams &iParams)
     glfwGetFramebufferSize(Application::getWindow().getWindowHandle(), &width, &height);
     ImGuizmo::SetRect(x, y, (float)width, (float)height);
 
-    bool end = false;
-    chooseSelectionMode(iParams, end);
+    bool earlyReturn{};
+    init(earlyReturn);
 
-    if (end)
+    if (earlyReturn)
     {
         return;
     }
 
-    m_selectionMode = iParams.m_selectionMode;
+    m_selectionMode = ViewPortsHolderContext::s_selectionController->selectionMode();
+    std::function<void()> realTimeCallback;
 
     switch (iParams.m_type)
     {
     case ImGuizmo::OPERATION::TRANSLATE:
-        handleGizmo(
-            iParams.m_type,
-            m_selectionMode == GizmoParams::SelectionMode::Mesh ? std::function<void()>([this]
-                                                                                        { m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f); })
-                                                                : std::function<void()>([this]
-                                                                                        {
-                        m_realTimeTransform = glm::mat4(1.0f);
-                        m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
-                        update(); }));
+        if (m_selectionMode == SelectionMode::MESH)
+        {
+            realTimeCallback = [this]() {
+                m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+            };
+        }
+        else
+        {
+            realTimeCallback = [this]() {
+                m_realTimeTransform = glm::mat4(1.0f);
+                m_realTimeTransform[3] += glm::vec4(glm::vec3(m_transform[3]), 0.0f);
+                update();
+            };
+        }
         break;
     case ImGuizmo::OPERATION::ROTATE:
-        handleGizmo(
-            iParams.m_type,
-            [this]()
-            {
-                m_realTimeTransform *= m_transform;
-            });
+        realTimeCallback = [this]() {
+            m_realTimeTransform *= m_transform;
+        };
         break;
     case ImGuizmo::OPERATION::SCALE:
-    default:
-        handleGizmo(
-            iParams.m_type,
-            [this]()
-            {
-                glm::vec3 pivot = glm::vec3(m_gizmoTransform[3]);
-                glm::mat4 pivotMat = glm::translate(glm::mat4(1.0f), pivot);
-                glm::mat4 negPivotMat = glm::translate(glm::mat4(1.0f), -pivot);
+        realTimeCallback = [this]() {
+            glm::vec3 pivot = glm::vec3(m_gizmoTransform[3]);
+            glm::mat4 pivotMat = glm::translate(glm::mat4(1.0f), pivot);
+            glm::mat4 negPivotMat = glm::translate(glm::mat4(1.0f), -pivot);
 
-                m_realTimeTransform = pivotMat * m_transform * negPivotMat * m_realTimeTransform;
-            });
+            m_realTimeTransform = pivotMat * m_transform * negPivotMat * m_realTimeTransform;
+        };
+        break;
+    default:
         break;
     }
+
+    handleGizmo(iParams.m_type, realTimeCallback);
 }

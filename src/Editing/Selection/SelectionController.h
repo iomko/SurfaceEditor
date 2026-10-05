@@ -1,11 +1,21 @@
 #pragma once
 #include "MeshSelectionManager.h"
 #include "FaceSelectionManager.h"
+#include "../../UI/OverlappingWindow.h"
+#include "../../UI/SelectionRectangle.h"
+
+enum class SelectionMode
+{
+	MESH,
+	FACE,
+	EDGE,
+	VERTEX
+};
 
 class SelectionController
 {
 public:
-	SelectionController() : m_faceManager(m_holder), m_meshManager(m_holder) {}
+	SelectionController();
 
 	const SelectionHolder& getHolder() const
 	{
@@ -32,8 +42,53 @@ public:
 		m_meshManager.unregisterMesh(mesh);
 	}
 
+	void clear();
+
+	const SelectionMode& selectionMode() const
+	{
+		return m_selectionMode;
+	}
+
+	void setSelectionMode(const SelectionMode& selectionMode)
+	{
+		m_selectionMode = selectionMode;
+	}
+
+	const bool& newSelectionEvent() const
+	{
+		return m_newSelectionEvent;
+	}
+
+	void setNewSelectionEvent(bool isNewSelectionEvent)
+	{
+		m_newSelectionEvent = isNewSelectionEvent;
+	}
+
+	void setSelectionModeActive(const bool& isActive)
+	{
+		m_selectionModeActive = isActive;
+	}
+
+	void createSelectionRectangle()
+	{
+		m_selectionRectangle.create();
+	}
+
+	void drawSelectionRectangle();
+
+	void updateSelectionRectangle(int width, int height, const RectanglePos& rectanglePos);
+
+	void clearSelectionRectangle()
+	{
+		m_selectionRectangle.clear();
+	}
+
 private:
-	SelectionHolder m_holder;
+	SelectionHolder 	 m_holder;
 	FaceSelectionManager m_faceManager;
 	MeshSelectionManager m_meshManager;
+	SelectionRectangle   m_selectionRectangle;
+	SelectionMode		 m_selectionMode = SelectionMode::MESH;
+	bool				 m_newSelectionEvent;
+	bool 				 m_selectionModeActive;
 };

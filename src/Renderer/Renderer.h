@@ -41,6 +41,19 @@ public:
         bufferData.vao.unbind();
         shader->unbind();
     }
+
+    static void drawLineLoop(BufferStorageData<LineVertex>& bufferData, Shader *shader)
+    {
+        shader->bind();
+        bufferData.vao.bind();
+
+        glLineWidth(2.0f);
+        glDrawArrays(GL_LINE_LOOP, 0, bufferData.vertices.size());
+        glLineWidth(1.0f);
+
+        bufferData.vao.unbind();
+        shader->unbind();
+    }
 };
 
 

@@ -6,10 +6,13 @@ class Input
 {
 public:
 	static void updateButtonClicks()
-	{
-		for (auto& [button, clicked] : mouseButtonClicked)
-			clicked = false;
-	}
+    {
+        for (auto& [button, clicked] : mouseButtonClicked)
+            clicked = false;
+
+        for (auto& [button, released] : mouseButtonReleased)
+            released = false;
+    }
 
     static void updateMousePosition()
     {
@@ -54,13 +57,17 @@ public:
         return keyState == GLFW_PRESS || keyState == GLFW_REPEAT;
     }
     
-	static bool isMouseButtonDown(int mouse)
-	{
-		auto mouseButtonState = glfwGetMouseButton(Application::getWindow().getWindowHandle(), mouse);
-		return mouseButtonState == GLFW_PRESS;
-	}
+	static bool isMouseButtonReleased(int button)
+    {
+        return mouseButtonReleased[button];
+    }
 
-	static bool isMouseButtonPressed(int button)
+    static bool isMouseButtonDown(int button)
+    {
+        return mouseButtonStates[button];
+    }
+
+    static bool isMouseButtonPressed(int button)
 	{
 		return mouseButtonClicked[button];
 	}
@@ -82,6 +89,8 @@ public:
 public:
     inline static std::unordered_map<int, bool> keyStates;
     inline static std::unordered_map<int, bool> mouseButtonClicked;
+    inline static std::unordered_map<int, bool> mouseButtonStates;
+    inline static std::unordered_map<int, bool> mouseButtonReleased;
 
     inline static double lastMouseX = 0.0;
     inline static double lastMouseY = 0.0;

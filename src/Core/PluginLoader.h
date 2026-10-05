@@ -29,7 +29,7 @@ public:
 
         if (!create)
         {
-            std::cout << "CreatePlugin symbol not found\n";
+            std::cout << "CreatePlugin symbol not found: " << path << "\n";
             return {nullptr, nullptr, path};
         }
 
@@ -47,6 +47,8 @@ public:
     {
         printf("Directory: %s \n", directory.c_str());
         std::vector<LoadedPlugin> plugins;
+
+        std::cout << "Toto je to directory: " << directory << std::endl;
 
         for (auto &file : std::filesystem::recursive_directory_iterator(directory))
         {

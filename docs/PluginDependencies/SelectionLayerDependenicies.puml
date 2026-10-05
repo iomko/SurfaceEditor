@@ -18,16 +18,9 @@ package "SelectMeshPlugin"{
     class MeshSelectionTool
 }
 
-package "DeselectMeshPlugin"{
-    class DeslectMeshCallBack
-    class DeslectMeshCommand
-    class MeshDeselectionTool
-}
-
 class SelectionLayer
 SelectionLayer --> SelectFacePlugin
 SelectionLayer --> DeselectFacePlugin
 SelectionLayer --> SelectMeshPlugin
-SelectionLayer --> DeselectMeshPlugin
 
 @enduml

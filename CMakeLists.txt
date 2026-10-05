@@ -81,11 +81,19 @@ FetchContent_MakeAvailable(TrianglePP)
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git  
-    GIT_TAG v1.92.5-docking                                     
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.5-docking
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
+
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
 
 add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -121,28 +129,32 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ImGuizmo)
 
 FetchContent_Declare(
-    ImGuiFileDialog
-    GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
-    GIT_TAG master
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_PROGRESS TRUE
 )
-FetchContent_MakeAvailable(ImGuiFileDialog)
-
-target_include_directories(ImGuiFileDialog PUBLIC
-    ${imguifiledialog_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}
-)
-target_link_libraries(ImGuiFileDialog PUBLIC ImGui)
+FetchContent_MakeAvailable(nlohmann_json)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
 
 file(GLOB_RECURSE CORE_SRC
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
+# Core library
 add_library(SurfaceEditorCore SHARED ${CORE_SRC})
 
 add_dependencies(SurfaceEditorCore libtorch_ep)
 
+# find libtorch .so
 if(UNIX)
   set_property(TARGET SurfaceEditorCore PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
   set_property(TARGET SurfaceEditorCore PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
@@ -166,8 +178,23 @@ target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
 
-target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuiFileDialog ImGuizmo glfw Torch::Torch)
-target_link_libraries(SurfaceEditorCore PRIVATE OpenGL::GL glm::glm CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP)
+target_link_libraries(SurfaceEditorCore PUBLIC
+    glad_core
+    ImGui
+    ImGuizmo
+    glfw
+    Torch::Torch
+    nlohmann_json::nlohmann_json
+)
+
+target_link_libraries(SurfaceEditorCore PUBLIC
+    OpenGL::GL
+    glm::glm
+    CURL::libcurl
+    Eigen3::Eigen
+    TIFF::TIFF
+    TrianglePP
+)
 
 if(UNIX)
     target_link_libraries(SurfaceEditorCore PRIVATE X11::X11)
@@ -176,8 +203,11 @@ endif()
 target_include_directories(SurfaceEditorCore PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${ImGuizmo_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}  
+    ${imgui_SOURCE_DIR}
     ${glad_SOURCE_DIR}
+    ${stb_SOURCE_DIR}
+    "${LIBTORCH_ROOT}/include"
+    "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )
 
 set_target_properties(SurfaceEditorCore PROPERTIES
@@ -250,4 +280,13 @@ foreach(plugin ${PLUGINS})
     endif()
 endforeach()
 
-export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo ImGuiFileDialog TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
+export(TARGETS
+    SurfaceEditorCore
+    glad_core
+    ImGui
+    ImGuizmo
+    TrianglePP
+    Torch::Torch
+    nlohmann_json
+    FILE SurfaceEditorCoreConfig.cmake
+)

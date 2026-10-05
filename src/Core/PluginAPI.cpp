@@ -11,7 +11,7 @@ void setupLayerPlugin(std::string layer_id, const std::string name, bool useWind
 {
 	WindowLayerBus &bus = WindowLayerBus::instance();
 	Application &app = Application::getInstance();
-	Layer *layer;
+	Layer* layer{};
 	if (useWindowLateyBus == false)
 	{
 		layer = LayerRegistry::instance().getLayer(layer_id, name);
@@ -29,7 +29,7 @@ void setupPlugin(std::string command_id, std::string callback_id, std::string to
 	auto *callback = CallbackRegistry::instance().getCallback(callback_id);
 	if (callback == nullptr)
 	{
-		printf("not callback with id %s\n", callback_id.c_str());
+		std::cout << "no callback with id " << callback_id << '\n';
 		return;
 	}
 	auto *command = CommandRegistry::instance().getCommand(command_id); // zjednotit + osobitny .h ako ciselnik a robit cez id

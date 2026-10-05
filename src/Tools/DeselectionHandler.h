@@ -10,8 +10,12 @@ public:
 
 	void onBegin() override
 	{
+	}
+
+	void onUpdate() override
+	{
 		this->getCommand()->execute();
 	}
-	void onUpdate() override {}
+	
 	void onEnd() override {}
 };

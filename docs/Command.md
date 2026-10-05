@@ -43,6 +43,16 @@ Command is a class that represents the execution of specific functionality withi
 
 `SolidifyMeshesCommand` – Adds thickness (depth) to a mesh.  
 
+`MoveVertexCallback` – Updates the position, rotation and scale of vertex based on the gizmo transformation matrix.
+
+`MoveMeshCallback` – Updates the position, rotation and scale of mesh based on the gizmo transformation matrix using `MoveVertexCallback`.
+
+`MoveSelectedMeshesCallback` – Applies `MoveMeshCallback` to each selected mesh.
+
+`MoveSelectedFacesCallback` – Applies `MoveVertexCallback` to each selected face and its vertices.
+
+`HandleGizmoCallback` – Handles all the gizmo translation, rotation and scaling logic with use of transformation matrices.
+
 # CommandRegistry
 
 CommandRegistry is a class that stores all registered instances of the Command type.
