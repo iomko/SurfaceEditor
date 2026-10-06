@@ -41,12 +41,22 @@ void operator delete(void* p) noexcept
 
 int main(int argc, char** argv)
 {
-    // Creates GLFW/OpenGL/GLAD etc.
+    std::printf("Creating application...\n");
+
     Application& app =
         Application::getInstance(100, 100, "SurfaceEditor");
 
-    // Run Catch2
+    std::printf("Running tests...\n");
+
     int result = Catch::Session().run(argc, argv);
-    app.close(); // Close the application and clean up resources
+
+    std::printf("Tests finished: %d\n", result);
+
+    std::printf("Closing application...\n");
+    app.close();
+
+    std::printf("Application closed.\n");
+
     return result;
 }
+
