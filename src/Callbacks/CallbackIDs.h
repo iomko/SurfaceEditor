@@ -30,7 +30,7 @@ public:
         {
             if(addChildOutlinerNodeCallbacks.contains(type_id))
             {
-                return std::to_string(addChildOutlinerNodeCallbacks[type_id]); 
+                return std::to_string(addChildOutlinerNodeCallbacks[type_id]);
             }
             addChildOutlinerNodeCallbacks[type_id] = index; 
             registered = true;
@@ -39,7 +39,7 @@ public:
         {
             if(addNewOutlinerNodeCallbacks.contains(type_id))
             {
-                return std::to_string(addNewOutlinerNodeCallbacks[type_id]); 
+                return std::to_string(addNewOutlinerNodeCallbacks[type_id]);
             }
             addNewOutlinerNodeCallbacks[type_id] = index;
             registered = true;

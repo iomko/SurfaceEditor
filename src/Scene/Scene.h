@@ -5,6 +5,7 @@
 #include "../Scene/Camera.h"
 #include "../Structures/Octree.h"
 #include "../Core/Window.h"
+#include "../UI/SelectionRectangle.h"
 #include "Structures/PrintableMesh.h"
 
 struct SceneResources
@@ -27,6 +28,12 @@ struct SceneResources
 class SceneUtilities
 {
 public:
+	static std::vector<SceneResources::MeshFacePair> retDataUnderSelectionRectangle(
+		const RectanglePos& selectionRect,
+		Camera* camera,
+		Window* window,
+		SceneResources& res
+	);
 	static std::pair<SceneResources::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneResources& res);
 	static std::pair<glm::vec3, glm::vec3> calculateOctreeBounds(const glm::vec3& voxelIndex, const glm::vec3& voxelSize);
 	static glm::vec3 calculateOctreeIDFromOctree(Octree<ExtendedFace*>* octree, const glm::vec3& voxelSize);

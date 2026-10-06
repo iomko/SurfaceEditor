@@ -1,0 +1,63 @@
+{
+    "features": [
+        {
+            "id": 4
+        },
+        {
+            "id": 2
+        },
+        {
+            "id": 0
+        },
+        {
+            "id": 3
+        },
+        {
+            "id": 1
+        }
+    ],
+    "labels": [
+        {
+            "conditions": [
+                {
+                    "componentIndex": 0,
+                    "featureId": 4,
+                    "operator": ">",
+                    "value": 10.0
+                }
+            ],
+            "mode": "ALL",
+            "name": "FaceLabel"
+        },
+        {
+            "conditions": [
+                {
+                    "componentIndex": 0,
+                    "featureId": 3,
+                    "operator": ">",
+                    "value": 20.0
+                },
+                {
+                    "componentIndex": 0,
+                    "featureId": 1,
+                    "operator": ">",
+                    "value": 10.0
+                }
+            ],
+            "mode": "ALL",
+            "name": "FaceArea"
+        },
+        {
+            "conditions": [
+                {
+                    "componentIndex": 0,
+                    "featureId": 4,
+                    "operator": ">",
+                    "value": 0.0
+                }
+            ],
+            "mode": "ANY",
+            "name": "Label2"
+        }
+    ]
+}

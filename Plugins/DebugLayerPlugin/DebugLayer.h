@@ -3,6 +3,7 @@
 #include "imgui.h" 
 #include "../../src/Patterns/Observer.h"
 #include "../../src/Core/Layer.h"
+#include "../../src/Ml/Analyser/Analyser.h"
 
 extern char DEBUG_LAYER[];
 class DebugLayer : public Layer, public Observable, public Observer {
@@ -14,6 +15,14 @@ public:
 	void onImGuiRender() override;
 
 private:
+	void updateEdgesVaoData(Mesh* mesh);
+
+	void updateFacesVaoData(Mesh* mesh);
+
+	void unhighlightAllFaces(Mesh* mesh);
+
     bool m_skewCheckboxState = false;
 	bool m_isMouseInsideWindow;
+
+	std::pair<std::string, std::string> m_selectedAnalyserName;
 };

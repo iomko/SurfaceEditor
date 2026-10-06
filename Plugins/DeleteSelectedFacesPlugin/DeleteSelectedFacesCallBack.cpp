@@ -10,7 +10,7 @@ DeleteSelectedFacesCallBack::DeleteSelectedFacesCallBack() {}
 void DeleteSelectedFacesCallBack::execute()
 {
     // Get selected meshes
-    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController;
+    SelectionController *selectionController = ViewPortsHolderContext::s_selectionController.get();
     const SelectionHolder &selectionHolder = selectionController->getHolder();
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
     const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;

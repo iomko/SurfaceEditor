@@ -7,8 +7,26 @@
 #include <tuple>
 #include <utility>
 #include <type_traits>
-#include "../Core/Layer.h"
 #include <stdexcept>
+#include <Utils/VisibilityHandler.h>
+#include <Components/Window.h>
+#include "../Core/Layer.h"
+#include "../ViewPortsController.h"
+
+template <typename T>
+struct NormalizeArg {
+    using type = T;
+};
+
+template <>
+struct NormalizeArg<const char*> {
+    using type = std::string;
+};
+
+template <>
+struct NormalizeArg<char*> {
+    using type = std::string;
+};
 
 class LayerRegistry
 {
@@ -24,15 +42,31 @@ public:
     template <typename LayerT>
     void registerLayer(std::string id)
     {
+        VisibilityHandler::init(id);
+
         m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
         {
-            return std::make_unique<LayerT>();
+            if constexpr (std::is_base_of_v<ui::components::Window, LayerT>)
+            {
+                auto layer = ui::components::Window::create<LayerT>();
+                
+                ViewPortsHolderContext::s_uiLayerController->registerUiWindow(
+                    static_cast<ui::components::Window*>(layer.get()));
+                    
+                return layer;
+            }
+            else
+            {
+                return std::make_unique<LayerT>();
+            }
         };
     }
 
     template <typename LayerT, typename... CtorArgs>
     void registerLayerWithArgs(std::string id)
     {
+        VisibilityHandler::init(id);
+        
         m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
         {
             // musí existovať tuple argumentov
@@ -47,8 +81,21 @@ public:
             return std::apply(
                 [&](auto &&...args)
                 {
-                    return std::make_unique<LayerT>(
-                        std::forward<decltype(args)>(args)...);
+                    if constexpr (std::is_base_of_v<ui::components::Window, LayerT>)
+                    {
+                        auto layer = ui::components::Window::create<LayerT>(
+                            std::forward<decltype(args)>(args)...);
+                            
+                        ViewPortsHolderContext::s_uiLayerController->registerUiWindow(
+                            static_cast<ui::components::Window*>(layer.get()));
+                            
+                        return layer;
+                    }
+                    else
+                    {
+                        return std::make_unique<LayerT>(
+                            std::forward<decltype(args)>(args)...);
+                    }
                 },
                 tup);
         };
@@ -70,7 +117,7 @@ public:
         std::any anyArgs;
         if constexpr (sizeof...(Args) > 0)
         {
-            using TupleT = std::tuple<std::decay_t<Args>...>;
+            using TupleT = std::tuple<typename NormalizeArg<std::decay_t<Args>>::type...>;
             anyArgs = std::make_any<TupleT>(std::forward<Args>(args)...);
         }
 

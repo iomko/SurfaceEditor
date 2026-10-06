@@ -1,27 +1,75 @@
 #pragma once
 #include <string>
-#include "../../src/Patterns/Observer.h"
-#include "../../src/Core/Layer.h"
-#include "../../src/UI/LayerRegistry.h"
-class AdditionLayer : public Layer, public Observable, public Observer {
+#include <variant>
+#include <Components/Window.h>
+#include "../../include/enums/AdditionType.h"
+#include "../src/Patterns/Observer.h"
+#include "../src/Core/Layer.h"
+#include "../src/UI/LayerRegistry.h"
+
+namespace ui::components
+{
+    class Button;
+
+    class CheckBox;
+
+    template<typename T>
+    class InputBox;
+
+    template<typename T>
+    class Slider;
+} // ui::components
+
+class AdditionLayer : public Layer, public Observable, public Observer, public ui::components::Window
+{
 public:
     AdditionLayer(const std::string& name);
 
-    void onEvent(Event& event) override;
-
 	void onImGuiRender() override;
 
+protected:
+    void initConnections();
+
+    void initWindowConfig() override;
+
+    void initComponents() override;
+
 private:
+    void initDialogButtons();
 
-	float m_lowerLeftLon = 0.0f;
-	float m_lowerLeftLat = 0.0f;
-	float m_upperRightLon = 0.0f;
-	float m_upperRightLat = 0.0f;
+    void initMeshComponents();
 
-	char m_apiKeyBuffer[256] = "";
+    void initSurfaceComponents();
 
-    bool m_isMouseInsideWindow;
-    int m_subdivision = 1;
-    float m_size = 1.0f;
-	glm::ivec3 m_position = {0, 0, 0};
+    void handleComponentsVisibility();
+
+	void setCreateButtonAsAddSurface();
+
+    template <typename TParams>
+    void setCreateButton(const std::string& commandId);
+
+private:
+	AdditionType m_additionType;
+
+    ui::components::Layout* m_meshLayout;
+    ui::components::Layout* m_surfaceLayout;
+    ui::components::Layout* m_dialogLayout;
+
+    // Mesh components
+    ui::components::InputBox<int>*   m_subdivisionInputBox;
+    ui::components::InputBox<float>* m_sizeInputBox;
+    ui::components::InputBox<float>* m_posXInputBox;
+    ui::components::InputBox<float>* m_posYInputBox;
+    ui::components::InputBox<float>* m_posZInputBox;
+    ui::components::Slider<int>*     m_subdivisionSlider;
+    ui::components::Slider<float>*     m_sizeSlider;
+    ui::components::Button*          m_createButton;
+    ui::components::CheckBox*        m_automaticCheckBox;
+    
+    // Surface components
+    ui::components::InputBox<float>* m_lowerLeftLon;
+	ui::components::InputBox<float>* m_lowerLeftLat;
+	ui::components::InputBox<float>* m_upperRightLon;
+	ui::components::InputBox<float>* m_upperRightLat;
+	ui::components::InputBox<char>*  m_apiKeyBuffer;
 };

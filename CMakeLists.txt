@@ -62,6 +62,8 @@ find_package(TIFF REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+find_path(GLM_INCLUDE_DIR NAMES glm/glm.hpp REQUIRED)
+
 #FETCH
 include(FetchContent)
 
@@ -81,11 +83,21 @@ FetchContent_MakeAvailable(TrianglePP)
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git  
-    GIT_TAG v1.92.5-docking                                     
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.5-docking
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
+
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 
 add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -102,6 +114,7 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}/backends
 )
 target_link_libraries(ImGui PUBLIC glfw)
+add_library(imgui ALIAS ImGui)
 
 FetchContent_Declare(
     glad
@@ -111,7 +124,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
+
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
+set_target_properties(glad_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
+add_library(glad ALIAS glad_core)
 
 FetchContent_Declare(
     ImGuizmo
@@ -119,6 +137,14 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(ImGuizmo)
+
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 FetchContent_Declare(
     ImGuiFileDialog
@@ -135,14 +161,23 @@ target_link_libraries(ImGuiFileDialog PUBLIC ImGui)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
+FetchContent_Declare(
+    ImGuiWrapper
+    GIT_REPOSITORY https://github.com/filipbaranek/ImGuiWrapper.git
+    GIT_TAG        main
+)
+FetchContent_MakeAvailable(ImGuiWrapper)
+
 file(GLOB_RECURSE CORE_SRC
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
+# Core library
 add_library(SurfaceEditorCore SHARED ${CORE_SRC})
 
 add_dependencies(SurfaceEditorCore libtorch_ep)
 
+# find libtorch .so
 if(UNIX)
   set_property(TARGET SurfaceEditorCore PROPERTY BUILD_RPATH "${LIBTORCH_LIBDIR}")
   set_property(TARGET SurfaceEditorCore PROPERTY INSTALL_RPATH "${LIBTORCH_LIBDIR}")
@@ -162,23 +197,52 @@ else()
   )
 endif()
 
+add_library(glm_interface INTERFACE)
+target_include_directories(glm_interface INTERFACE ${GLM_INCLUDE_DIR})
+add_library(glm ALIAS glm_interface)
+
+
 target_include_directories(Torch::Torch INTERFACE
   "${LIBTORCH_ROOT}/include"
 )
 
-target_link_libraries(SurfaceEditorCore PUBLIC glad_core ImGui ImGuiFileDialog ImGuizmo glfw Torch::Torch)
-target_link_libraries(SurfaceEditorCore PRIVATE OpenGL::GL glm::glm CURL::libcurl Eigen3::Eigen TIFF::TIFF TrianglePP)
+target_link_libraries(SurfaceEditorCore PUBLIC
+    glad_core
+    ImGui
+    ImGuiFileDialog
+    ImGuizmo
+    glfw
+    Torch::Torch
+    nlohmann_json::nlohmann_json
+)
+
+target_link_libraries(SurfaceEditorCore PRIVATE
+    OpenGL::GL
+    glm::glm
+    CURL::libcurl
+    Eigen3::Eigen
+    TIFF::TIFF
+    TrianglePP
+)
 
 if(UNIX)
-    target_link_libraries(SurfaceEditorCore PRIVATE X11::X11)
+    target_link_libraries(SurfaceEditorCore PUBLIC
+        X11::X11
+        ImGuiWrapper
+    )
 endif()
 
 target_include_directories(SurfaceEditorCore PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${ImGuizmo_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}  
+    ${imgui_SOURCE_DIR}
+    ${ImGuiWrapper_SOURCE_DIR}
     ${glad_SOURCE_DIR}
+    ${stb_SOURCE_DIR}
+    "${LIBTORCH_ROOT}/include"
+    "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )
+
 
 set_target_properties(SurfaceEditorCore PROPERTIES
     POSITION_INDEPENDENT_CODE ON
@@ -191,6 +255,7 @@ add_executable(SurfaceEditor
 )
 
 target_link_libraries(SurfaceEditor PRIVATE SurfaceEditorCore)
+set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
 endif()
 
 add_executable(Test
@@ -250,4 +315,17 @@ foreach(plugin ${PLUGINS})
     endif()
 endforeach()
 
-export(TARGETS SurfaceEditorCore glad_core ImGui ImGuizmo ImGuiFileDialog TrianglePP Torch::Torch FILE SurfaceEditorCoreConfig.cmake)
+export(TARGETS
+    SurfaceEditorCore
+    glad_core
+    ImGui
+    ImGuizmo
+    ImGuiWrapper
+    ImGuiFileDialog
+    glm_interface
+    stb
+    TrianglePP
+    Torch::Torch
+    nlohmann_json
+    FILE SurfaceEditorCoreConfig.cmake
+)
