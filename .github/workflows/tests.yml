@@ -34,8 +34,7 @@ jobs:
             libtiff-dev \
             libcurl4-openssl-dev \
             libeigen3-dev \
-            xvfb \
-            gdb
+            xvfb
 
       - name: Configure CMake
         run: |
@@ -119,16 +118,14 @@ jobs:
           echo "FLAGS=$FLAGS" >> $GITHUB_ENV
           echo "TEST_ARGS=$TEST_ARGS" >> $GITHUB_ENV
 
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCI_BUILD=ON $FLAGS
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCI_BUILD=ON $FLAGS
 
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Run tests with GDB
+      - name: Run tests
         run: |
-          xvfb-run -a gdb \
-            -batch \
-            -ex "run" \
-            -ex "bt" \
-            -ex "thread apply all bt" \
-            --args ./build/Test "$TEST_ARGS"
+          cd build
+          echo "FLAGS=$FLAGS"
+          echo "TEST_ARGS=$TEST_ARGS"
+          xvfb-run -a ./Test $TEST_ARGS
