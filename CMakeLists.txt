@@ -273,10 +273,6 @@ add_executable(Test
     "${PROJECT_SOURCE_DIR}/Tests/geometryUtilsTests.cpp"
 )
 
-enable_testing()
-include(Catch)
-catch_discover_tests(Test)
-
 target_link_libraries(Test PRIVATE Catch2::Catch2WithMain SurfaceEditorCore)
 
 set_target_properties(ImGuizmo PROPERTIES

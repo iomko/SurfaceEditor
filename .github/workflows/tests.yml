@@ -33,7 +33,8 @@ jobs:
             libglm-dev \
             libtiff-dev \
             libcurl4-openssl-dev \
-            libeigen3-dev 
+            libeigen3-dev \
+            xvfb
 
       - name: Configure CMake
         run: |
@@ -127,4 +128,4 @@ jobs:
           cd build
           echo "FLAGS=$FLAGS"
           echo "TEST_ARGS=$TEST_ARGS"
-          ./Test $TEST_ARGS
+          xvfb-run -a ./Test $TEST_ARGS
