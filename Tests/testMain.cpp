@@ -43,8 +43,7 @@ int main(int argc, char** argv)
 {
     std::printf("Creating application...\n");
 
-    Application& app =
-        Application::getInstance(100, 100, "SurfaceEditor");
+    Application& app = Application::getInstance(100, 100, "SurfaceEditor");
 
     std::printf("Running tests...\n");
 
