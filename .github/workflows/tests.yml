@@ -34,7 +34,8 @@ jobs:
             libtiff-dev \
             libcurl4-openssl-dev \
             libeigen3-dev \
-            xvfb
+            xvfb \
+            gdb
 
       - name: Configure CMake
         run: |
