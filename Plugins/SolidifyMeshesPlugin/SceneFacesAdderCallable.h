@@ -1,6 +1,6 @@
 #pragma once
-#include "Callable.h"
-#include "../Params/OperationParams.h"
+#include "../../src/Callables/Callable.h"
+#include "../../src/Params/OperationParams.h"
 
 class SceneFacesAdderCallable : public Callable<FaceParams, void>
 {

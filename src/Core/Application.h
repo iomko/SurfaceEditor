@@ -26,12 +26,26 @@ public:
 
 	void close()
 	{
-		if (window) {
-			window->terminate();
-			delete window;
-			window = nullptr;
+		if (!window)
+			return;
+
+		// Destroy OpenGL-dependent global resources FIRST.
+		ViewPortsHolderContext::shutdown();
+
+		// Destroy ImGui resources.
+		if (m_imGuiLayer)
+		{
+			m_imGuiLayer->onDetach();
+			delete m_imGuiLayer;
+			m_imGuiLayer = nullptr;
 		}
+
+		// NOW destroy OpenGL context.
+		window->terminate();
+		delete window;
+		window = nullptr;
 	}
+
 	LayerStack& getLayerStack()
 	{
 		return m_layerStack;

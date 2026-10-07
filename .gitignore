@@ -39,10 +39,10 @@ imgui.ini
 # =========================
 .vscode/
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
 
 # =========================
 # CLion / JetBrains
@@ -52,4 +52,4 @@ imgui.ini
 # =========================
 # OS files
 # =========================
-.DS_Store
+.DS_Store.github/workflows/input.json 

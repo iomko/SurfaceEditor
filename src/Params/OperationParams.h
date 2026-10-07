@@ -9,6 +9,7 @@ struct OpParams {
 struct ImportExportMeshesParams : public OpParams
 {
 	std::string m_filePathMeshes = "";
+	bool exportOnlySelected = false;
 };
 
 struct BoxSelectionParams : public OpParams
@@ -73,6 +74,7 @@ struct MoveMeshParams : public OpParams
 struct MeshParams : public OpParams
 {
 	Mesh* m_mesh = nullptr;
+	std::string m_name = "Mesh";
 };
 
 struct FaceParams : public OpParams

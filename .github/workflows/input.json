@@ -1,0 +1,5 @@
+{
+  "inputs": {
+    "modules": "octree halfedge"
+  }
+}
