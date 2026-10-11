@@ -37,6 +37,28 @@ FaceSkewnessModel::FaceSkewnessModel(const std::string& instanceName)
 
 std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
 {
+    //Clear red colored faces
+    for(ExtendedFace* face : mesh->m_halfEdgeStructure->m_faces) {
+        face->m_isSkewed = false;
+
+        FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
+
+        FaceTriangle& faceTriangle = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
+
+        if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+            TriangleBufferStorage& triangleBufferStorage = opt->get();
+            auto& triangleBufferVertices = triangleBufferStorage.data.vertices;
+
+            int faceIndexInVao = faceTriangle.indexInVAO;
+            for (int j = faceIndexInVao; j < faceIndexInVao + 3; ++j) {
+                triangleBufferVertices.at(j).isSkewed = 0.0f;
+            }
+        }
+    }
+    //
+    updateFacesVaoData(mesh);
+    
+
     std::vector<float> buffer;
     std::vector<ExtendedFace*> faces = mesh->m_halfEdgeStructure->m_faces;
 
@@ -80,14 +102,17 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
     std::vector<float> results(dataSize);
     std::memcpy(results.data(), probs.data_ptr<float>(), dataSize * sizeof(float));
 
+
     for (size_t i = 0; i < results.size(); i++)
     {
         if (results[i] > 0.995f)
         {
+            //Make faces red
             ExtendedFace* face = mesh->m_halfEdgeStructure->m_faces[i];
             face->m_isSkewed = true;
 
             FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
+
             FaceTriangle& faceTriangle =
                 mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
 
@@ -100,15 +125,18 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
                     triangleBufferVertices.at(j).isSkewed = 1.0f;
                 }
             }
+            //
         }
     }
 
+    /*
     for (auto it = mesh->bufferLayout.triangleBuffersBegin();
          it != mesh->bufferLayout.triangleBuffersEnd(); ++it)
     {
         TriangleBufferStorage& triangleBufferStorage = it->second;
         triangleBufferStorage.update();
     }
+    */
 
     updateFacesVaoData(mesh);
 

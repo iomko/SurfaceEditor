@@ -9,6 +9,10 @@
 
 #include "PredictorsSettingsLayer.h"
 
+#include "ImGuiFileDialog.h"
+
+#include "../ImportMeshesPlugin/OBJImporter.h"
+
 #include <cstring>
 #include <iostream>
 
@@ -51,6 +55,166 @@ Predictor* PredictorsSettingsLayer::getSelectedPredictor() const
     }
 
     return dynamic_cast<Predictor*>(analyser);
+}
+
+void PredictorsSettingsLayer::renderTrainingSourceSettings()
+{
+    ImGui::Separator();
+    ImGui::Text("Training Mesh Source");
+
+    int sourceMode = static_cast<int>(m_trainingMeshSourceMode);
+    const char* sourceModes[] = { "Meshes From Scene", "OBJ Files" };
+
+    if (ImGui::Combo("Source", &sourceMode, sourceModes, IM_ARRAYSIZE(sourceModes)))
+    {
+        m_trainingMeshSourceMode = static_cast<TrainingMeshSourceMode>(sourceMode);
+    }
+
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::SceneMeshes)
+    {
+        ImGui::Checkbox("Train only on selected", &m_trainOnlySelected);
+
+        if (m_trainOnlySelected)
+        {
+            ImGui::TextDisabled("Training will use only selected meshes.");
+        }
+        else
+        {
+            ImGui::TextDisabled("Training will use all meshes in the scene.");
+        }
+    }
+    else if (m_trainingMeshSourceMode == TrainingMeshSourceMode::ObjFiles)
+    {
+        if (ImGui::Button("Select OBJ Files", ImVec2(180.0f, 0.0f)))
+        {
+            IGFD::FileDialogConfig config;
+            config.path = ".";
+            config.countSelectionMax = 0;
+            config.flags = 0;
+
+            ImGuiFileDialog::Instance()->OpenDialog(
+                "ChooseObjFilesDialog",
+                "Choose OBJ Files",
+                ".obj",
+                config
+            );
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseObjFilesDialog"))
+        {
+            if (ImGuiFileDialog::Instance()->IsOk())
+            {
+                m_selectedObjFilePaths.clear();
+
+                const auto selection = ImGuiFileDialog::Instance()->GetSelection();
+
+                for (const auto& selectedFile : selection)
+                {
+                    m_selectedObjFilePaths.push_back(selectedFile.second);
+                }
+            }
+
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+        ImGui::Text("Selected OBJ files: %d", static_cast<int>(m_selectedObjFilePaths.size()));
+
+        ImGui::BeginChild("SelectedObjFilesList", ImVec2(0.0f, 90.0f), true);
+
+        if (m_selectedObjFilePaths.empty())
+        {
+            ImGui::TextDisabled("No OBJ files selected.");
+        }
+        else
+        {
+            for (const std::string& filePath : m_selectedObjFilePaths)
+            {
+                ImGui::BulletText("%s", filePath.c_str());
+            }
+        }
+
+        ImGui::EndChild();
+
+        if (!m_selectedObjFilePaths.empty())
+        {
+            if (ImGui::Button("Clear OBJ Selection", ImVec2(180.0f, 0.0f)))
+            {
+                m_selectedObjFilePaths.clear();
+            }
+        }
+    }
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectSceneTrainingMeshes()
+{
+    std::vector<Mesh*> meshes;
+
+    if (m_trainOnlySelected)
+    {
+        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+
+        if (!selectionController)
+        {
+            std::cerr << "[ML] ERROR: SelectionController is null." << std::endl;
+            return meshes;
+        }
+
+        const SelectionHolder& selectionHolder = selectionController->getHolder();
+        meshes = selectionHolder.meshes;
+    }
+    else
+    {
+        SceneResources::MeshFaceOctreeCoordsMap meshFacesPairMap = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res.meshFaceOctreeCoordsMap;
+
+        for (auto& [mesh, _] : meshFacesPairMap) {
+            meshes.emplace_back(mesh);
+        }
+    }
+
+    return meshes;
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectObjTrainingMeshes()
+{
+    std::vector<Mesh*> meshes;
+
+    if (m_selectedObjFilePaths.empty())
+    {
+        std::cerr << "[ML] ERROR: No OBJ files selected." << std::endl;
+        return meshes;
+    }
+
+    for (const std::string& filePath : m_selectedObjFilePaths) {
+
+        OBJImporter objImporter;
+        objImporter.setFilePath(filePath);
+        objImporter.read();
+
+        for (Mesh* mesh : objImporter.getMeshes()) {
+            
+            if(mesh) {
+                meshes.emplace_back(mesh);
+            }
+
+        }
+    }
+
+    return meshes;
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectTrainingMeshes()
+{
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::SceneMeshes)
+    {
+        return collectSceneTrainingMeshes();
+    }
+
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::ObjFiles)
+    {
+        return collectObjTrainingMeshes();
+    }
+
+    return {};
 }
 
 void PredictorsSettingsLayer::onImGuiRender()
@@ -334,9 +498,7 @@ void PredictorsSettingsLayer::onImGuiRender()
         ImGui::Separator();
         ImGui::InputText("Predictor Name", m_predictorNameBuffer, sizeof(m_predictorNameBuffer));
 
-        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-        const SelectionHolder& selectionHolder = selectionController->getHolder();
-        const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+        renderTrainingSourceSettings();
 
         if (ImGui::Button("Retrain Current", ImVec2(180.0f, 0.0f)))
         {
@@ -349,11 +511,20 @@ void PredictorsSettingsLayer::onImGuiRender()
 
                 if (typedPredictorName == currentInstanceName)
                 {
-                    m_predictorEditor.applyFeatureChanges();
-                    m_predictorEditor.save();
+                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
 
-                    currentPredictor->reloadFromConfig();
-                    currentPredictor->train(selectedMeshes);
+                    if (trainingMeshes.empty())
+                    {
+                        std::cerr << "[ML] ERROR: Cannot retrain predictor. No training meshes were found." << std::endl;
+                    }
+                    else
+                    {
+                        m_predictorEditor.applyFeatureChanges();
+                        m_predictorEditor.save();
+
+                        currentPredictor->reloadFromConfig();
+                        currentPredictor->train(trainingMeshes);
+                    }
                 }
                 else
                 {
@@ -400,34 +571,43 @@ void PredictorsSettingsLayer::onImGuiRender()
                 }
                 else
                 {
-                    const std::string typeId =
-                        m_predictorInstances[m_selectedPredictorIndex].typeId;
+                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
 
-                    Analyser* analyser =
-                        AnalyserRegistry::instance().createAnalyserInstance(typeId, newInstanceName);
-
-                    auto* newPredictor = dynamic_cast<Predictor*>(analyser);
-                    if (newPredictor)
+                    if (trainingMeshes.empty())
                     {
-                        m_predictorEditor.saveToPredictor(newPredictor);
-                        newPredictor->reloadFromConfig();
-                        newPredictor->train(selectedMeshes);
+                        std::cerr << "[ML] ERROR: Cannot train new predictor copy. No training meshes were found." << std::endl;
+                    }
+                    else
+                    {
+                        const std::string typeId =
+                            m_predictorInstances[m_selectedPredictorIndex].typeId;
 
-                        refreshPredictorInstances();
+                        Analyser* analyser =
+                            AnalyserRegistry::instance().createAnalyserInstance(typeId, newInstanceName);
 
-                        for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
+                        auto* newPredictor = dynamic_cast<Predictor*>(analyser);
+                        if (newPredictor)
                         {
-                            if (m_predictorInstances[i].instanceId == newInstanceName)
+                            m_predictorEditor.saveToPredictor(newPredictor);
+                            newPredictor->reloadFromConfig();
+                            newPredictor->train(trainingMeshes);
+
+                            refreshPredictorInstances();
+
+                            for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
                             {
-                                m_selectedPredictorIndex = i;
-                                break;
+                                if (m_predictorInstances[i].instanceId == newInstanceName)
+                                {
+                                    m_selectedPredictorIndex = i;
+                                    break;
+                                }
                             }
+
+                            m_predictorEditor.open(newPredictor);
+
+                            std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+                            std::strncpy(m_predictorNameBuffer, newPredictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
                         }
-
-                        m_predictorEditor.open(newPredictor);
-
-                        std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
-                        std::strncpy(m_predictorNameBuffer, newPredictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
                     }
                 }
             }

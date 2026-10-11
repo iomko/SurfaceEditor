@@ -44,16 +44,16 @@ void MeshVaoInitCallable::invoke(const MeshParams &input)
         glm::vec3 faceNormal = utils::geometry::computePolygonNormal(meshFace);
 
         // Triangulation
-        std::vector<glm::vec3> faceVertices;
+        std::vector<glm::vec3> triangulatedVertices;
         for (auto it = meshFace->faceVertexBegin(); it != meshFace->faceVertexEnd(); ++it)
         {
             glm::vec3 vertexPosition = (*it).m_position;
-            faceVertices.emplace_back(vertexPosition);
+            triangulatedVertices.emplace_back(vertexPosition);
         }
-        glm::vec3 firstVertex = faceVertices.at(0);
-        faceVertices.emplace_back(firstVertex);
+        //glm::vec3 firstVertex = triangulatedVertices.at(0);
+        //triangulatedVertices.emplace_back(firstVertex);
 
-        std::vector<glm::vec3> triangulatedVertices = utils::geometry::triangulatePolygon(faceVertices);
+        //std::vector<glm::vec3> triangulatedVertices = utils::geometry::triangulatePolygon(faceVertices);
 
         // Update ExtendedFace info
         for (int i = 0, indexInFace = 0; i < triangulatedVertices.size(); i += 3, ++indexInFace)
@@ -71,6 +71,13 @@ void MeshVaoInitCallable::invoke(const MeshParams &input)
 
             int faceTriangleIndex = halfEdgeFaceTriangles.size() - 1;
             meshFace->faceTriangleIndices.emplace_back(faceTriangleIndex);
+        }
+    }
+
+    for (size_t i = 0; i < meshFaces.size(); i++)
+    {
+        if(meshFaces[i]->faceTriangleIndices.size() == 0) {
+            std::cout << "Mesh with face id: " << i << " doesnt have triangleIndices" << std::endl;
         }
     }
 

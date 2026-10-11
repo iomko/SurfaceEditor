@@ -8,6 +8,10 @@
 #include <vector>
 #include <cassert>
 
+#include "../../src/ViewPortsController.h"
+
+#include "../../src/Ml/Analyser/AnalyserExecutionLayerRegistry.h"
+
 static AutoRegisterLayerArgs<DebugLayer, std::string> regDebugLayer("DEBUG_LAYER");
 
 DebugLayer::DebugLayer(const std::string &name)
@@ -70,30 +74,45 @@ void DebugLayer::onImGuiRender()
 
     auto* selectedAnalyser = AnalyserRegistry::instance().getAnalyserInstance(m_selectedAnalyserName.second);
 
-    if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
 
-        if (ImGui::Button("Predict")) {
-            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-            const SelectionHolder& selectionHolder = selectionController->getHolder();
-            const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+    if (selectedAnalyser) {
+        std::string selectedTypeId =
+            AnalyserRegistry::instance().getInstanceTypeId(m_selectedAnalyserName.second);
 
-            for (Mesh* mesh : selectedMeshes) {
-                predictor->predict(mesh);
+        auto* executionLayer =
+            AnalyserExecutionLayerRegistry::instance().getExecutionLayer(selectedTypeId);
+
+        if (executionLayer) {
+            executionLayer->onImGuiRender(selectedAnalyser);
+        } else {
+            ImGui::Separator();
+
+            if (auto* predictor = dynamic_cast<Predictor*>(selectedAnalyser)) {
+                if (ImGui::Button("Predict")) {
+                    const SceneResources::MeshFaceOctreeCoordsMap& meshes =
+                        ViewPortsHolderContext::s_viewPortsController
+                            ->m_scene
+                            ->m_res
+                            .meshFaceOctreeCoordsMap;
+
+                    for (auto& [mesh, _] : meshes) {
+                        predictor->predict(mesh);
+                    }
+                }
+            } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
+                if (ImGui::Button("Process")) {
+                    const SceneResources::MeshFaceOctreeCoordsMap& meshes =
+                        ViewPortsHolderContext::s_viewPortsController
+                            ->m_scene
+                            ->m_res
+                            .meshFaceOctreeCoordsMap;
+
+                    for (auto& [mesh, _] : meshes) {
+                        processor->process(mesh);
+                    }
+                }
             }
         }
-
-    } else if (auto* processor = dynamic_cast<Processor*>(selectedAnalyser)) {
-
-        if (ImGui::Button("Process")) {
-            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
-            const SelectionHolder& selectionHolder = selectionController->getHolder();
-            const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
-
-            for (Mesh* mesh : selectedMeshes) {
-                processor->process(mesh);
-            }
-        }
-
     }
 
     ImGui::End();
