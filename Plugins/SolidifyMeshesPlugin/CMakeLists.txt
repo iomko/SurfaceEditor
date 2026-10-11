@@ -16,6 +16,10 @@ add_library(SolidifyMeshesPlugin SHARED
     SolidifyMeshesPluginEntry.cpp
     SolidifyMeshesCallBack.cpp
     SolidifyMeshesCommand.cpp
+    EdgesVaoInitCallable.cpp
+    FacesVaoInitCallable.cpp
+    FaceVaoInitCallable.cpp
+    SceneFacesAdderCallable.cpp
 )
 
 target_link_libraries(SolidifyMeshesPlugin PRIVATE

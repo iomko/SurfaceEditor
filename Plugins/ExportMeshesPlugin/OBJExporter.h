@@ -1,6 +1,8 @@
 #pragma once
 #include "../../src/IO/BaseExporter.h"
+#include "../../src/Utils/GeometryUtils.h"
 #include <filesystem>
+#include <fstream>
 
 class OBJExporter : public BaseExporter
 {
@@ -23,8 +25,6 @@ public:
 private:
 	bool writeMeshData()
 	{
-		/*
-		/*
 		if (m_meshes.empty()) {
 			std::cerr << "Error: No meshes to export." << std::endl;
 			return false;
@@ -39,62 +39,49 @@ private:
 		std::cout << "File created: " << m_filePath << std::endl;
 
 		std::ostringstream outputVectorStringStream;
-		std::map<ExtendedVertexIndex, int> vertexIndexMap;
+		std::map<int, int> vertexIndexMap;
 		std::ostringstream outputNormalStringStream;
 		std::map<glm::vec3, int> normalIndexMap;
 		std::ostringstream outputFaceStringStream;
 		int currentVertexIndexInt = 1;
-		int currentFaceIndexInt = 1;
+		int currentNormalIndexInt = 1;
 
 		for (const auto& mesh : m_meshes)
 		{
 			outputFile << "o " << mesh->m_meshID << std::endl;
 
 			// Write vertices
-			for (auto& vertex : mesh->m_halfEdgeStructure->m_vertices)
+			for (const auto& vertex : mesh->m_halfEdgeStructure->m_vertices)
 			{
-				outputVectorStringStream << "v " << vertex.getPosition().x << " "
-					<< vertex.getPosition().y << " "
-					<< vertex.getPosition().z << std::endl;
-				vertexIndexMap[vertex.getHalfEdge()->getVertexIndex()] = currentVertexIndexInt;
+				outputVectorStringStream << "v " << vertex->m_position.x << " "
+					<< vertex->m_position.y << " "
+					<< vertex->m_position.z << std::endl;
+				vertexIndexMap[vertex->m_vertexIndexInVector] = currentVertexIndexInt;
 				++currentVertexIndexInt;
 			}
 
-			// Write normals and faces
+			// Iterate through all faces
+			for (const auto& face : mesh->m_halfEdgeStructure->m_faces)
+			{
+				// Compute face normal
+				glm::vec3 faceNormal = utils::geometry::computePolygonNormal(face);
 
-
-			//musime prechadzat cez vsetky meshes
-
-			Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-			//GET FACEINFO MAPPINGS
-			SceneResources::MeshFacesMap::iterator meshFacesMapIt = scene->m_res.meshData.meshFacesMap.find(mesh);
-			if (meshFacesMapIt != scene->m_res.meshData.meshFacesMap.end()) {
-				SceneResources::FaceInfoMap& faceInfoMap = meshFacesMapIt->second;
-
-				//ITERATE THROUGH ALL THE FACEINFO
-				for (const auto& [faceIndex, faceInfo] : faceInfoMap) {
-
-					auto normalIndexIt = normalIndexMap.find(faceInfo.normal);
-					if (normalIndexIt == normalIndexMap.end()) {
-						outputNormalStringStream << "vn " << faceInfo.normal.x << " "
-							<< faceInfo.normal.y << " "
-							<< faceInfo.normal.z << std::endl;
-						normalIndexMap[faceInfo.normal] = currentFaceIndexInt;
-						++currentFaceIndexInt;
-					}
-
-					ExtendedFace& face = mesh->m_halfEdgeStructure->m_faces.at(faceIndex);
-
-					outputFaceStringStream << "f ";
-					for (auto faceVertexIt = face.faceVertexBegin(); faceVertexIt != face.faceVertexEnd(); ++faceVertexIt) {
-						int vertexIndexInStringStream = vertexIndexMap[faceVertexIt.operator*().getHalfEdge()->getVertexIndex()];
-						int normalIndexInStringStream = normalIndexMap[faceInfo.normal];
-						outputFaceStringStream << vertexIndexInStringStream << "/0/" << normalIndexInStringStream << " ";
-					}
-					outputFaceStringStream << std::endl;
-
+				auto normalIndexIt = normalIndexMap.find(faceNormal);
+				if (normalIndexIt == normalIndexMap.end()) {
+					outputNormalStringStream << "vn " << faceNormal.x << " "
+						<< faceNormal.y << " "
+						<< faceNormal.z << std::endl;
+					normalIndexMap[faceNormal] = currentNormalIndexInt;
+					++currentNormalIndexInt;
 				}
+
+				outputFaceStringStream << "f ";
+				for (auto faceVertexIt = face->faceVertexBegin(); faceVertexIt != face->faceVertexEnd(); ++faceVertexIt) {
+				int vertexIndexInStringStream = vertexIndexMap[(*faceVertexIt).m_vertexIndexInVector];
+					int normalIndexInStringStream = normalIndexMap[faceNormal];
+					outputFaceStringStream << vertexIndexInStringStream << "/0/" << normalIndexInStringStream << " ";
+				}
+				outputFaceStringStream << std::endl;
 			}
 
 			// Write to file
@@ -111,7 +98,7 @@ private:
 		}
 
 		outputFile.close();
-		*/
+		
 		return true;
 	}
 

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(SurfaceEditor VERSION 1.0 LANGUAGES C CXX)
 
+option(CI_BUILD "Disable app + plugins (CI mode)" OFF)
+
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Renderer/Shaders")
 add_compile_definitions(ML_DATA_DIR="${CMAKE_SOURCE_DIR}/src/Ml/ModelsData")
 
@@ -38,12 +40,9 @@ ExternalProject_Add(libtorch_ep
   PREFIX "${LIBTORCH_PREFIX}"
   DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/_deps/downloads"
   SOURCE_DIR "${LIBTORCH_SRC}"
-
   STAMP_DIR "${LIBTORCH_PREFIX}/stamp"
   TMP_DIR   "${LIBTORCH_PREFIX}/tmp"
-
   BINARY_DIR "${LIBTORCH_PREFIX}/build"
-
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -67,6 +66,13 @@ find_path(GLM_INCLUDE_DIR NAMES glm/glm.hpp REQUIRED)
 
 #FETCH
 include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG v3.5.0
+)
+FetchContent_MakeAvailable(Catch2)
 
 FetchContent_Declare(
     TrianglePP
@@ -113,11 +119,11 @@ add_library(imgui ALIAS ImGui)
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-    GIT_TAG        73db193f853e2ee079bf3ca8a64aa2eaf6459043
-    GIT_PROGRESS   TRUE
-    SOURCE_SUBDIR  cmake
+    GIT_TAG 73db193f853e2ee079bf3ca8a64aa2eaf6459043
+    SOURCE_SUBDIR cmake
 )
 FetchContent_MakeAvailable(glad)
+
 
 glad_add_library(glad_core STATIC REPRODUCIBLE LOADER API gl:core=3.3)
 set_target_properties(glad_core PROPERTIES
@@ -129,7 +135,6 @@ FetchContent_Declare(
     ImGuizmo
     GIT_REPOSITORY https://github.com/Gl1tchs/ImGuizmo.git
     GIT_TAG master
-    GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(ImGuizmo)
 
@@ -140,6 +145,19 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(nlohmann_json)
+
+FetchContent_Declare(
+    ImGuiFileDialog
+    GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(ImGuiFileDialog)
+
+target_include_directories(ImGuiFileDialog PUBLIC
+    ${imguifiledialog_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+target_link_libraries(ImGuiFileDialog PUBLIC ImGui)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL=1)
 
@@ -166,6 +184,7 @@ if(UNIX)
 endif()
 
 add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
+
 if(WIN32)
   set_property(TARGET Torch::Torch PROPERTY
     INTERFACE_LINK_LIBRARIES
@@ -190,13 +209,14 @@ target_include_directories(Torch::Torch INTERFACE
 target_link_libraries(SurfaceEditorCore PUBLIC
     glad_core
     ImGui
+    ImGuiFileDialog
     ImGuizmo
     glfw
     Torch::Torch
     nlohmann_json::nlohmann_json
 )
 
-target_link_libraries(SurfaceEditorCore PUBLIC
+target_link_libraries(SurfaceEditorCore PRIVATE
     OpenGL::GL
     glm::glm
     CURL::libcurl
@@ -223,21 +243,37 @@ target_include_directories(SurfaceEditorCore PUBLIC
     "${LIBTORCH_ROOT}/include/torch/csrc/api/include"
 )
 
+
 set_target_properties(SurfaceEditorCore PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+# 👇 VYPNUTÉ LEN V CI
+if(NOT CI_BUILD)
 add_executable(SurfaceEditor
     "${PROJECT_SOURCE_DIR}/src/Core/main.cpp"
 )
 
-target_link_libraries(SurfaceEditor PRIVATE
-    SurfaceEditorCore
+target_link_libraries(SurfaceEditor PRIVATE SurfaceEditorCore)
+set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
+endif()
+
+add_executable(Test
+    "${PROJECT_SOURCE_DIR}/Tests/testMain.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/octreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/quadtreeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/extendedHalfEdgeTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/meshTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/printableMeshTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/rayTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/ray2DTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/aabbTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/boundingRegion2DTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/containerUtilsTests.cpp"
+    "${PROJECT_SOURCE_DIR}/Tests/geometryUtilsTests.cpp"
 )
 
-set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
-
-get_target_property(CORE_INCLUDE_DIRS SurfaceEditorCore INCLUDE_DIRECTORIES)
+target_link_libraries(Test PRIVATE Catch2::Catch2WithMain SurfaceEditorCore)
 
 set_target_properties(ImGuizmo PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/_deps/imguizmo-src;${CMAKE_BINARY_DIR}/_deps/imgui-src"
@@ -251,7 +287,6 @@ target_compile_definitions(SurfaceEditorCore PUBLIC
 
 function(add_surface_editor_plugin PLUGIN_NAME)
     add_subdirectory(Plugins/${PLUGIN_NAME})
-
     set_target_properties(${PLUGIN_NAME} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
@@ -264,8 +299,12 @@ file(GLOB PLUGINS Plugins/*)
 foreach(plugin ${PLUGINS})
     message(STATUS "Looking for plugin in: ${plugin}")
     get_filename_component(plugin_name ${plugin} NAME)
-
-    option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+    if(CI_BUILD)
+        option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" OFF)
+    else()
+        option(BUILD_PLUGIN_${plugin_name} "Build plugin ${plugin_name}" ON)
+    endif(CI_BUILD)
+    
 
     if(BUILD_PLUGIN_${plugin_name})
         add_surface_editor_plugin(${plugin_name})
@@ -278,6 +317,7 @@ export(TARGETS
     ImGui
     ImGuizmo
     ImGuiWrapper
+    ImGuiFileDialog
     glm_interface
     stb
     TrianglePP

@@ -66,7 +66,16 @@ public:
     static inline std::unique_ptr<ViewPortsController> s_viewPortsController = std::make_unique<ViewPortsController>();
     static inline std::unique_ptr<SelectionController> s_selectionController = std::make_unique<SelectionController>();
     static inline std::unique_ptr<Camera> s_camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    static inline void shutdown()
+    {
+        s_uiLayerController.reset();
+        s_viewPortsController.reset();
+        s_selectionController.reset();
+        s_camera.reset();
+    }
 };
+
 
 class ViewPortLayer : public Layer, public Observable
 {

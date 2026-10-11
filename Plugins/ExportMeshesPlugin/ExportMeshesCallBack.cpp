@@ -1,22 +1,32 @@
 #include "ExportMeshesCallBack.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "OBJExporter.h"
+#include "../../src/ViewPortsController.h"
 
 static AutoRegisterCallback<ExportMeshesCallback> registerExportMeshesCallback("EXPORT_MESHES_CALLBACK");
 void ExportMeshesCallback::execute(const ImportExportMeshesParams &params)
 {
     OBJExporter objExporter;
-    bool fileOpened = false;
     objExporter.setFilePath(params.m_filePathMeshes);
-
-    /*
-    for (const auto selectedMesh : ViewPortsHolderContext::s_viewPortsController->m_selectedMeshes)
+    
+    if(params.exportOnlySelected)
     {
-        selectedMesh->m_meshID = selectedMesh->m_meshID;
-        objExporter.parseMesh(selectedMesh);
+        for (const auto selectedMesh : ViewPortsHolderContext::s_selectionController->getHolder().meshes)
+        {
+            selectedMesh->m_meshID = selectedMesh->m_meshID;
+            objExporter.parseMesh(selectedMesh);
+        }
+    }
+    else
+    {
+        Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+        for (const auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap)
+        {
+            objExporter.parseMesh(mesh);
+        }
     }
 
-    if (ViewPortsHolderContext::s_viewPortsController->m_selectedMeshes.size() == 0)
+    if (ViewPortsHolderContext::s_selectionController->getHolder().meshes.size() == 0)
     {
         if (std::filesystem::exists(params.m_filePathMeshes))
         {
@@ -27,5 +37,5 @@ void ExportMeshesCallback::execute(const ImportExportMeshesParams &params)
     {
         objExporter.write();
     }
-    */
+    
 }

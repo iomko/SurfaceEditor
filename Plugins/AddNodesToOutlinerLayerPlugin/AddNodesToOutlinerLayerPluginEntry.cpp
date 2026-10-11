@@ -21,7 +21,7 @@ public:
             {
                 std::string id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
                 auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
-                printf("Getting template on id %d\n", id);
+                printf("Getting template on id %s\n", id.c_str());
                 if(addNewOutlinerNodeCallBackMesh)
                 {
                     Observable* addNewOutlinerNodeMeshObservalbe = dynamic_cast<Observable*>(addNewOutlinerNodeCallBackMesh);
@@ -30,7 +30,7 @@ public:
                 }
                 id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true);
                 auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
-                printf("Getting template on id %d\n", id);
+                printf("Getting template on id %s\n", id.c_str());
                 
                 if(addChildOutlinerNodeCallBackPrintableMesh)
                 {

@@ -24,6 +24,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Plugins: Plugins.md
   - Src:
       - Ray: Ray.md
       - Ray2D: Ray2D.md
@@ -92,6 +93,8 @@ nav:
           - glm_overrides: glm_overrides.md
           - InterpolationUtils: InterpolationUtils.md
           - ThirdApiUtils: ThirdApiUtils.md
+  - Tests: Tests.md
+    
           
           
             

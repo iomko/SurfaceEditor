@@ -10,6 +10,7 @@ static AutoRegisterCallback<DeleteFaceCallBack> registerDeleteFaceCallBack("DELE
 void DeleteFaceCallBack::execute(const SingleFaceParams &iParams)
 {
     Mesh *selectedMesh = iParams.mesh;
+    selectedMesh->m_halfEdgeStructure->ensureGraphBuilt();
     ExtendedFace *selectedFace = iParams.face;
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
