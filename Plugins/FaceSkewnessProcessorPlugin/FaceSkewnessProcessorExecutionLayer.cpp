@@ -30,7 +30,7 @@ void FaceSkewnessProcessorExecutionLayer::onImGuiRender(Analyser* analyser) {
 
     if (ImGui::Button("Process selected meshes")) {
         SelectionController* selectionController =
-            ViewPortsHolderContext::s_selectionController;
+            ViewPortsHolderContext::s_selectionController.get();
 
         const SelectionHolder& selectionHolder =
             selectionController->getHolder();

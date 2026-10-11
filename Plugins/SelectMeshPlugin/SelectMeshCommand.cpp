@@ -1,9 +1,9 @@
 #include "SelectMeshCommand.h"
 #include "../../src/Commands/CommandRegistry.h"
 
-void SelectMeshCommand::execute()
+void SelectMeshCommand::execute(const SelectionToolParams& iParams)
 {
-    notifyObservers();
+    notifyObservers(iParams);
 }
 
 void SelectMeshCommand::undo()

@@ -230,6 +230,13 @@ namespace HalfEdgeDS
 		HalfEdgeMesh()
 		{
 		}
+		virtual ~HalfEdgeMesh()
+		{
+			for (auto* obj : m_faces) delete obj;
+			for (auto* obj : m_edges) delete obj;
+			for (auto* obj : m_vertices) delete obj;
+			for (auto* obj : m_halfEdges) delete obj;
+		}
 
 		auto halfEdgeIterBegin() { return m_halfEdges.begin(); }
 		auto halfEdgeIterEnd() { return m_halfEdges.end(); }

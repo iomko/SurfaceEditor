@@ -151,7 +151,7 @@ std::vector<Mesh*> PredictorsSettingsLayer::collectSceneTrainingMeshes()
 
     if (m_trainOnlySelected)
     {
-        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController;
+        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
 
         if (!selectionController)
         {

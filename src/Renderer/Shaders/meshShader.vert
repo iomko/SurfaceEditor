@@ -4,7 +4,7 @@ layout (location = 1) in vec3 l_Normal;
 layout (location = 2) in float l_IsHighlighted;
 layout (location = 3) in float l_IsSkewed;
 
-out vec3 v_color;
+out vec4 v_color;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -16,13 +16,13 @@ void main()
     gl_Position = mvp * vec4(l_Pos, 1.0);
 
     if (l_IsHighlighted == 1.0f)
-        v_color = vec3(255.0 / 255.0, 198.0 / 255.0, 111.0 / 255.0);
+        v_color = vec4(255.0 / 255.0, 198.0 / 255.0, 111.0 / 255.0, 0.7);
     else
-        v_color = vec3(0.5, 0.5, 0.5);
+        v_color = vec4(0.5, 0.5, 0.5, 1.0);
 
     if (l_IsSkewed == 1.0f) {
-        v_color = vec3(1.0, 0.0, 0.0);
+        v_color.rgb = vec3(1.0, 0.0, 0.0);
     } else if (l_IsSkewed == 0.5f) {
-        v_color = vec3(0.0, 1.0, 0.0);
+        v_color.rgb = vec3(0.0, 1.0, 0.0);
     }
 }

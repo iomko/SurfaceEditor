@@ -3,8 +3,8 @@
 #include "../../src/Callbacks/Callback.h"
 #include "../../src/Patterns/Observer.h"
 
-class SelectMeshCallBack : public Callback<>, public Observer
+class SelectMeshCallBack : public Callback<SelectionToolParams>, public Observer
 {
 public:
-	virtual void execute() override;
+	virtual void execute(const SelectionToolParams& iParams) override;
 };

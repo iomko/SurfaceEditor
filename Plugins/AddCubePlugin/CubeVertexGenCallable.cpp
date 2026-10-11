@@ -1,6 +1,5 @@
 #include "CubeVertexGenCallable.h"
 #include "../../src/Renderer/MaterialRegistry.h"
-
 #include "../../src/Callables/CallableRegistry.h"
 
 static AutoRegisterCallable<CubeVertexGenCallable> reg("CUBE_VERTEX_GEN_CALLABLE");
@@ -79,5 +78,9 @@ void CubeVertexGenCallable::invoke(const CubeParams &input, MeshParams &output)
     }
 
     Mesh *mesh = new Mesh(cubeIndices, cubeVertices);
+    mesh->m_transform[3].x = position.x;
+    mesh->m_transform[3].y = position.y;
+    mesh->m_transform[3].z = position.z;
+    
     output.m_mesh = mesh;
 }

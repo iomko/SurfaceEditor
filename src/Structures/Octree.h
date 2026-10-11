@@ -220,7 +220,7 @@ public:
     }
 
     Iterator begin() {
-        if (rootNode == nullptr) {
+        if (rootNode == nullptr || rootNode->dataCount == 0) {
             return end();
         }
 

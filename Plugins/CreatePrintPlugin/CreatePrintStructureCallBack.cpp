@@ -22,7 +22,7 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
     auto [printableMeshIt, _] = sceneResources.printableMeshMap.try_emplace(inputMesh, new PrintableMesh());
     PrintableMesh *outputPrintableMesh = printableMeshIt->second;
 
-    ViewPortsController *controller = ViewPortsHolderContext::s_viewPortsController;
+    ViewPortsController *controller = ViewPortsHolderContext::s_viewPortsController.get();
     Scene *scene = controller->m_scene;
     SceneResources::CoordsOctreeMap &octreeCoordsMap = scene->m_res.coordsOctreeMap;
 

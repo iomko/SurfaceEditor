@@ -27,7 +27,6 @@
 #include "../ViewPortsController.h"
 
 
-
 #include "../Structures/ExtendedHalfEdge.h"
 
 #include "../Utils/GeometryUtils.h"
@@ -86,7 +85,6 @@ int main()
 	WindowLayerBus& windowLayerBus = WindowLayerBus::instance();
 	std::cout << &windowLayerBus << std::endl;
 	Application &app = Application::getInstance(SCR_WIDTH, SCR_HEIGHT, "SurfaceEditor");
-	Camera *camera = new Camera(glm::vec3(0.0f, 0.0f, 17.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
@@ -98,25 +96,24 @@ int main()
 	// Shader meshShader = Shader("src/Renderer/Shaders/meshShader.vert", "src/Renderer/Shaders/meshShader.frag");
 	Shader meshShader(getShaderPath("meshShader.vert"), getShaderPath("meshShader.frag"));
 
+	ViewPortsHolderContext::s_selectionController->createSelectionRectangle();
+
+	Camera* camera = ViewPortsHolderContext::s_camera.get();
 	Scene scene(25.0f, 25.0f, 25.0f);
 
 	// viewPortLayer
-	ViewPortLayer *viewPortLayer = new ViewPortLayer("viewPortLayer");
+	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
 	viewPortLayer->m_camera = camera;
 
 	viewPortLayer->m_shaderSettings.m_faceShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_meshShader = &meshShader;
 	viewPortLayer->m_shaderSettings.m_edgeShader = &linesShader;
 
-	ViewPortsController *viewPortsHolder = new ViewPortsController();
+	ViewPortsController* viewPortsHolder = ViewPortsHolderContext::s_viewPortsController.get();
 	viewPortsHolder->addLayer(viewPortLayer);
 	viewPortsHolder->m_activeViewPortLayer = viewPortLayer;
-	SelectionController *selectionController = new SelectionController();
 
 	viewPortsHolder->m_scene = &scene;
-	ViewPortsHolderContext::s_viewPortsController = viewPortsHolder;
-	ViewPortsHolderContext::s_selectionController = selectionController;
-	ViewPortsHolderContext::s_camera = camera;
 	ViewPortsHolderContext::s_window = app.window;
 
 	// ViewPortLayer
@@ -143,9 +140,35 @@ int main()
 	MaterialRegistry::registerMaterial("defaultMeshMaterial", &meshShader);
 	MaterialRegistry::registerMaterial("defaultLineMaterial", &linesShader);
 
+	auto drawMesh = [&](Mesh* mesh, const SelectionHolder& selectionHolder)
+	{
+		auto& faces = selectionHolder.faces.find(mesh)->second;
+
+		for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it)
+		{
+			Shader* shader = it->first->m_shader;
+
+			glm::mat4 model;
+			if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+			{
+				model = *mesh->m_realTimeTransform;
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+			}
+
+			shader->bind();
+			shader->setMat4("u_model", model);
+
+			Renderer::drawTriangles(it->second.data, shader);
+
+			shader->unbind();
+		}
+	};
+
 	while (!glfwWindowShouldClose(app.getWindow().getWindowHandle()))
 	{
-
 		linesShader.bind();
 		glm::mat4 projection = glm::mat4(1.0f);
 
@@ -183,65 +206,74 @@ int main()
 
         //chcem zapisovat do depth bufferu
         glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
-		const SelectionHolder& selectionHolder = selectionController->getHolder();
+		const SelectionHolder& selectionHolder = ViewPortsHolderContext::s_selectionController->getHolder();
 
-        //draw meshes
-        for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap) {			
-			for (auto it = mesh->bufferLayout.triangleBuffersBegin(); it != mesh->bufferLayout.triangleBuffersEnd(); ++it) {
-				Shader* shader = it->first->m_shader;
-				auto& faces = selectionHolder.faces.find(mesh)->second;
-
-				glm::mat4 model;
-				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
-				{
-					model = *mesh->m_realTimeTransform;
-				}
-				else
-				{
-					model = glm::mat4(1.0f);
-				}
-				shader->bind();
-				shader->setMat4("u_model", model);
-				shader->unbind();
-
-				BufferStorageData<BufferStorageDataType::TriangleVertex>& triangleBufferData = it->second.data;				
-				Renderer::drawTriangles(triangleBufferData, shader);
-            }
-            
-            for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it) {
-				Shader *shader = it->first->m_shader;
-				auto& faces = selectionHolder.faces.find(mesh)->second;
-
-				glm::mat4 model;
-				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
-				{
-					model = *mesh->m_realTimeTransform;
-				}
-				else
-				{
-					model = glm::mat4(1.0f);
-				}
-				shader->bind();
-				shader->setMat4("u_model", model);
-				shader->unbind();
-
-				BufferStorageData<BufferStorageDataType::LineVertex>& lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader);
-            }
-        }
-        //draw printableMeshes
-        for(auto& [_, printableMesh] : scene.m_res.printableMeshMap) {
-
-			for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it)
+		//Render transparent meshes
+		glDisable(GL_BLEND);
+		glDepthMask(GL_TRUE);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			if (mesh->m_selected)
 			{
-				Shader *shader = it->first->m_shader;
-				BufferStorageData<BufferStorageDataType::LineVertex> &lineBufferData = it->second.data;
-				Renderer::drawLines(lineBufferData, shader);
+				continue;
+			}
+
+			drawMesh(mesh, selectionHolder);
+		}
+		//Render solid meshes
+		glEnable(GL_BLEND);
+		glDepthMask(GL_FALSE);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			if (!mesh->m_selected)
+			{
+				continue;
+			}
+
+			drawMesh(mesh, selectionHolder);
+		}
+		// restore state
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		{
+			auto& faces = selectionHolder.faces.find(mesh)->second;
+
+			for (auto it = mesh->bufferLayout.lineBuffersBegin(); it != mesh->bufferLayout.lineBuffersEnd(); ++it)
+			{
+				Shader* shader = it->first->m_shader;
+
+				glm::mat4 model;
+				if (faces.empty() && mesh->m_realTimeTransform != nullptr && mesh->m_selected)
+				{
+					model = *mesh->m_realTimeTransform;
+				}
+				else
+				{
+					model = glm::mat4(1.0f);
+				}
+
+				shader->bind();
+				shader->setMat4("u_model", model);
+
+				Renderer::drawLines(it->second.data, shader);
+
+				shader->unbind();
 			}
 		}
+
+		for (auto& [_, printableMesh] : scene.m_res.printableMeshMap)
+		{
+			for (auto it = printableMesh->bufferLayout.lineBuffersBegin(); it != printableMesh->bufferLayout.lineBuffersEnd(); ++it)
+			{
+				Shader* shader = it->first->m_shader;
+				Renderer::drawLines(it->second.data, shader);
+			}
+		}
+
+		ViewPortsHolderContext::s_selectionController->drawSelectionRectangle();
 
 		app.run();
 		app.getWindow().update();

@@ -1,0 +1,131 @@
+name: Cpp CI SurfaceEditor
+
+on:
+  pull_request:
+
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: "Moduly: octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+        required: false
+        default: "octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            g++ \
+            python3 \
+            python3-pip \
+            python3-jinja2 \
+            libx11-dev \
+            libgl1-mesa-dev \
+            libglfw3-dev \
+            libglm-dev \
+            libtiff-dev \
+            libcurl4-openssl-dev \
+            libeigen3-dev \
+            xvfb
+
+      - name: Configure CMake
+        run: |
+          rm -rf build
+          mkdir -p build
+          cd build
+
+          MODULES="${{ github.event.inputs.modules }}"
+
+          # AK push alebo PR → všetko zapnuté
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            MODULES="octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+          fi
+
+          FLAGS="" 
+          # example of setting flags: FLAGS="$FLAGS -DBUILD_PLUGIN_AddCubePlugin=ON"
+          TEST_ARGS=""
+          # example of setting test args: TEST_ARGS="$TEST_ARGS [octree],"
+
+          # default (push / PR)
+          if [ -z "$MODULES" ]; then
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DCI_BUILD=ON
+            exit 0
+          fi
+
+          # OCTREE
+          if [[ "$MODULES" == *"octree"* ]]; then
+            TEST_ARGS="$TEST_ARGS [octree],"
+          fi
+
+          # QUADTREE
+          if [[ "$MODULES" == *"quadtree"* ]]; then
+            TEST_ARGS="$TEST_ARGS [quadtree],"
+          fi
+
+          # HEADEDGE
+          if [[ "$MODULES" == *"halfedge"* ]]; then
+            TEST_ARGS="$TEST_ARGS [extendedHalfEdge],"
+          fi
+
+          # MESH
+          if [[ "$MODULES" == *"mesh"* ]]; then
+            TEST_ARGS="$TEST_ARGS [mesh],"
+          fi
+
+          # PRINTABLE MESH
+          if [[ "$MODULES" == *"printableMesh"* ]]; then
+            TEST_ARGS="$TEST_ARGS [PrintableMesh],"
+          fi
+
+          # RAY
+          if [[ "$MODULES" == *"ray"* ]]; then
+            TEST_ARGS="$TEST_ARGS [ray],"
+          fi
+
+          # RAY2D
+          if [[ "$MODULES" == *"ray2D"* ]]; then
+            TEST_ARGS="$TEST_ARGS [ray2D],"
+          fi
+
+          # AABB
+          if [[ "$MODULES" == *"aabb"* ]]; then
+            TEST_ARGS="$TEST_ARGS [aabb],"
+          fi
+
+          # BOUNDING REGION 2D
+          if [[ "$MODULES" == *"boundingRegion2D"* ]]; then
+            TEST_ARGS="$TEST_ARGS [boundingRegion2D],"
+          fi
+
+          # CONTAINER UTILS
+          if [[ "$MODULES" == *"containerUtils"* ]]; then
+            TEST_ARGS="$TEST_ARGS [containerUtils],"
+          fi
+
+          # GEOMETRY UTILS
+          if [[ "$MODULES" == *"geometryUtils"* ]]; then
+            TEST_ARGS="$TEST_ARGS [geometryUtils],"
+          fi
+
+          echo "FLAGS=$FLAGS" >> $GITHUB_ENV
+          echo "TEST_ARGS=$TEST_ARGS" >> $GITHUB_ENV
+
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCI_BUILD=ON $FLAGS
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        run: |
+          cd build
+          echo "FLAGS=$FLAGS"
+          echo "TEST_ARGS=$TEST_ARGS"
+          xvfb-run -a ./Test $TEST_ARGS
