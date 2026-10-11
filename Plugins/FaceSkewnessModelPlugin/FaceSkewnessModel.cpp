@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 
 #include "../../src/Ml/Analyser/AnalyserRegistry.h"
 #include "../../src/Ml/Editor/PredictorConfigDeserializer.h"
@@ -18,9 +19,11 @@
 
 static AutoRegisterAnalyser<FaceSkewnessModel> regFaceSkewnessPredictor("FACE_SKEWNESS_PREDICTOR");
 
-FaceSkewnessModel::FaceSkewnessModel()
+FaceSkewnessModel::FaceSkewnessModel(const std::string& instanceName)
     : NeuralNetworkModel<ExtendedFace>(
+        "FACE_SKEWNESS_PREDICTOR",
         NAME,
+        instanceName,
         {
             FaceSideLengthsFeature::ID,
             FaceSideLengthRatioFeature::ID,
@@ -34,6 +37,28 @@ FaceSkewnessModel::FaceSkewnessModel()
 
 std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
 {
+    //Clear red colored faces
+    for(ExtendedFace* face : mesh->m_halfEdgeStructure->m_faces) {
+        face->m_isSkewed = false;
+
+        FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
+
+        FaceTriangle& faceTriangle = mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
+
+        if (auto opt = mesh->bufferLayout.getTriangleBufferStorage(face->material)) {
+            TriangleBufferStorage& triangleBufferStorage = opt->get();
+            auto& triangleBufferVertices = triangleBufferStorage.data.vertices;
+
+            int faceIndexInVao = faceTriangle.indexInVAO;
+            for (int j = faceIndexInVao; j < faceIndexInVao + 3; ++j) {
+                triangleBufferVertices.at(j).isSkewed = 0.0f;
+            }
+        }
+    }
+    //
+    updateFacesVaoData(mesh);
+    
+
     std::vector<float> buffer;
     std::vector<ExtendedFace*> faces = mesh->m_halfEdgeStructure->m_faces;
 
@@ -47,8 +72,8 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
     size_t dataSize = faces.size();
     if (dataSize == 0) return {};
 
-    normMean = loadTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_mean.txt");
-    normStd  = loadTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_std.txt");
+    normMean = loadTxt(getNormMeanPath());
+    normStd  = loadTxt(getNormStdPath());
 
     if (normMean.size() != m_info.featuresSize || normStd.size() != m_info.featuresSize) {
         std::cerr << "[ML] ERROR: normalization vectors have invalid size.\n";
@@ -56,7 +81,7 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
     }
 
     model = FaceMLP(static_cast<int64_t>(m_info.featuresSize));
-    torch::load(model, std::string(ML_DATA_DIR) + "/triangle_skew_model.pt");
+    torch::load(model, getWeightsPath());
     model->eval();
 
     torch::Tensor input = torch::from_blob(
@@ -77,14 +102,17 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
     std::vector<float> results(dataSize);
     std::memcpy(results.data(), probs.data_ptr<float>(), dataSize * sizeof(float));
 
+
     for (size_t i = 0; i < results.size(); i++)
     {
         if (results[i] > 0.995f)
         {
+            //Make faces red
             ExtendedFace* face = mesh->m_halfEdgeStructure->m_faces[i];
             face->m_isSkewed = true;
 
             FaceTriangleIndex faceTriangleIndex = face->faceTriangleIndices.front();
+
             FaceTriangle& faceTriangle =
                 mesh->m_halfEdgeStructure->m_faceTriangles.find(face->material)->second.at(faceTriangleIndex);
 
@@ -97,15 +125,18 @@ std::vector<float> FaceSkewnessModel::predict(Mesh* mesh)
                     triangleBufferVertices.at(j).isSkewed = 1.0f;
                 }
             }
+            //
         }
     }
 
+    /*
     for (auto it = mesh->bufferLayout.triangleBuffersBegin();
          it != mesh->bufferLayout.triangleBuffersEnd(); ++it)
     {
         TriangleBufferStorage& triangleBufferStorage = it->second;
         triangleBufferStorage.update();
     }
+    */
 
     updateFacesVaoData(mesh);
 
@@ -233,8 +264,6 @@ bool FaceSkewnessModel::evaluateTrainingLabel(
         return false;
     }
 
-    // Current FaceSkewnessModel is a binary classifier.
-    // We use the first label definition in config as the positive class.
     return evaluateLabelDefinition(face, config.labels.front());
 }
 
@@ -343,45 +372,101 @@ void FaceSkewnessModel::updateFacesVaoData(Mesh *mesh)
 
 void FaceSkewnessModel::train(const std::vector<Mesh*>& meshes)
 {
-    std::cout << "START TRAINING MODEL" << std::endl;
+    std::cout << "[ML] START TRAINING MODEL: " << getName() << std::endl;
 
     std::vector<float> rawFeatures;
     std::vector<int64_t> labels;
 
+    std::cout << "[ML] Extracting dataset..." << std::endl;
     extractDataset(meshes, rawFeatures, labels);
 
     size_t rows = labels.size();
     size_t cols = m_info.featuresSize;
 
-    if (rows == 0) return;
+    std::cout << "[ML] Dataset extracted. Rows: " << rows
+              << ", Feature count: " << cols
+              << ", Raw feature values: " << rawFeatures.size()
+              << std::endl;
 
+    if (rows == 0) {
+        std::cerr << "[ML] ERROR: No training rows were extracted. Training aborted." << std::endl;
+        return;
+    }
+
+    if (cols == 0 || cols == static_cast<size_t>(-1)) {
+        std::cerr << "[ML] ERROR: Invalid feature count: " << cols << ". Training aborted." << std::endl;
+        return;
+    }
+
+    if (rawFeatures.size() != rows * cols) {
+        std::cerr << "[ML] ERROR: rawFeatures size mismatch. Expected "
+                  << (rows * cols) << ", got " << rawFeatures.size()
+                  << ". Training aborted." << std::endl;
+        return;
+    }
+
+    size_t positiveCount = 0;
+    for (int64_t label : labels) {
+        if (label == 1) {
+            ++positiveCount;
+        }
+    }
+
+    std::cout << "[ML] Label distribution -> positive: " << positiveCount
+              << ", negative: " << (rows - positiveCount) << std::endl;
+
+    std::cout << "[ML] Computing normalization..." << std::endl;
     normMean = computeMean(rawFeatures, rows, cols);
     normStd  = computeStd(rawFeatures, normMean, rows, cols);
+    std::cout << "[ML] Normalization computed." << std::endl;
 
     for (size_t r = 0; r < rows; ++r)
         for (size_t c = 0; c < cols; ++c)
             rawFeatures[r * cols + c] =
                 (rawFeatures[r * cols + c] - normMean[c]) / normStd[c];
 
+    std::cout << "[ML] Creating tensors..." << std::endl;
     torch::Tensor X = torch::from_blob(rawFeatures.data(), { (long)rows, (long)cols }, torch::kFloat32).clone();
     torch::Tensor y = torch::from_blob(labels.data(), { (long)rows }, torch::kInt64).clone();
+    std::cout << "[ML] Tensor shapes -> X: " << X.sizes() << ", y: " << y.sizes() << std::endl;
 
     model = FaceMLP((int64_t)cols);
     model->train();
 
     torch::optim::Adam optimizer(model->parameters(), 1e-3);
 
-    for (int epoch = 0; epoch < 200; ++epoch)
+    constexpr int totalEpochs = 200;
+    constexpr int printEvery = 10;
+
+    std::cout << "[ML] Starting epoch loop..." << std::endl;
+
+    for (int epoch = 0; epoch < totalEpochs; ++epoch)
     {
         optimizer.zero_grad();
-        auto loss = torch::nn::functional::cross_entropy(model->forward(X), y);
+
+        torch::Tensor logits = model->forward(X);
+        torch::Tensor loss = torch::nn::functional::cross_entropy(logits, y);
+
         loss.backward();
         optimizer.step();
+
+        if (epoch == 0 || (epoch + 1) % printEvery == 0 || epoch == totalEpochs - 1)
+        {
+            const float lossValue = loss.item<float>();
+            std::cout << "[ML] Epoch " << (epoch + 1) << "/" << totalEpochs
+                      << " | loss = " << std::fixed << std::setprecision(6) << lossValue
+                      << std::endl;
+        }
     }
 
-    torch::save(model, std::string(ML_DATA_DIR) + "/triangle_skew_model.pt");
-    saveTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_mean.txt", normMean);
-    saveTxt(std::string(ML_DATA_DIR) + "/triangle_skew_norm_std.txt", normStd);
+    std::cout << "[ML] Saving model weights to: " << getWeightsPath() << std::endl;
+    torch::save(model, getWeightsPath());
 
-    std::cout << "DONE TRAINING MODEL" << std::endl;
+    std::cout << "[ML] Saving normalization mean to: " << getNormMeanPath() << std::endl;
+    saveTxt(getNormMeanPath(), normMean);
+
+    std::cout << "[ML] Saving normalization std to: " << getNormStdPath() << std::endl;
+    saveTxt(getNormStdPath(), normStd);
+
+    std::cout << "[ML] DONE TRAINING MODEL: " << getName() << std::endl;
 }

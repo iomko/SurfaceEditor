@@ -25,6 +25,14 @@ public:
 
         m_config = PredictorConfigDeserializer::loadFromFile(getConfigPath());
 
+        if (m_config.instanceName.empty()) {
+            m_config.instanceName = m_predictor->getInstanceName();
+        }
+
+        if (m_config.typeId.empty()) {
+            m_config.typeId = m_predictor->getTypeId();
+        }
+
         if (m_config.featureIds.empty())
         {
             const std::vector<FeatureStrategyConcept*> currentFeatures = m_predictor->getFeatures();
@@ -50,6 +58,19 @@ public:
         PredictorConfigSerializer::saveToFile(getConfigPath(), m_config);
     }
 
+    bool saveToPredictor(Predictor* predictor) const
+    {
+        if (!predictor) {
+            return false;
+        }
+
+        PredictorConfig config = buildConfig();
+        config.instanceName = predictor->getInstanceName();
+        config.typeId = predictor->getTypeId();
+
+        return PredictorConfigSerializer::saveToFile(predictor->getModelConfigPath(), config);
+    }
+
     Predictor* getPredictor() const
     {
         return m_predictor;
@@ -65,6 +86,13 @@ public:
         PredictorConfig config;
         config.featureIds = m_featureEditor.collectSelectedFeatureIds();
         config.labels = m_labelEditor.collectLabels();
+
+        if (m_predictor)
+        {
+            config.instanceName = m_predictor->getInstanceName();
+            config.typeId = m_predictor->getTypeId();
+        }
+
         return config;
     }
 

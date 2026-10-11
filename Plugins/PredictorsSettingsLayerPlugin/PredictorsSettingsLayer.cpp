@@ -9,7 +9,12 @@
 
 #include "PredictorsSettingsLayer.h"
 
+#include "ImGuiFileDialog.h"
+
+#include "../ImportMeshesPlugin/OBJImporter.h"
+
 #include <cstring>
+#include <iostream>
 
 static AutoRegisterLayerArgs<PredictorsSettingsLayer, std::string> reg("PREDICTORS_SETTINGS_LAYER");
 
@@ -29,16 +34,21 @@ void PredictorsSettingsLayer::onEvent(Event& event)
     }
 }
 
+void PredictorsSettingsLayer::refreshPredictorInstances()
+{
+    m_predictorInstances = AnalyserRegistry::instance().getPredictorInstances();
+}
+
 Predictor* PredictorsSettingsLayer::getSelectedPredictor() const
 {
     if (m_selectedPredictorIndex < 0 ||
-        m_selectedPredictorIndex >= static_cast<int>(m_predictorIds.size()))
+        m_selectedPredictorIndex >= static_cast<int>(m_predictorInstances.size()))
     {
         return nullptr;
     }
 
     Analyser* analyser =
-        AnalyserRegistry::instance().getAnalyser(m_predictorIds[m_selectedPredictorIndex]);
+        AnalyserRegistry::instance().getAnalyserInstance(m_predictorInstances[m_selectedPredictorIndex].instanceId);
 
     if (!analyser) {
         return nullptr;
@@ -47,34 +57,182 @@ Predictor* PredictorsSettingsLayer::getSelectedPredictor() const
     return dynamic_cast<Predictor*>(analyser);
 }
 
+void PredictorsSettingsLayer::renderTrainingSourceSettings()
+{
+    ImGui::Separator();
+    ImGui::Text("Training Mesh Source");
+
+    int sourceMode = static_cast<int>(m_trainingMeshSourceMode);
+    const char* sourceModes[] = { "Meshes From Scene", "OBJ Files" };
+
+    if (ImGui::Combo("Source", &sourceMode, sourceModes, IM_ARRAYSIZE(sourceModes)))
+    {
+        m_trainingMeshSourceMode = static_cast<TrainingMeshSourceMode>(sourceMode);
+    }
+
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::SceneMeshes)
+    {
+        ImGui::Checkbox("Train only on selected", &m_trainOnlySelected);
+
+        if (m_trainOnlySelected)
+        {
+            ImGui::TextDisabled("Training will use only selected meshes.");
+        }
+        else
+        {
+            ImGui::TextDisabled("Training will use all meshes in the scene.");
+        }
+    }
+    else if (m_trainingMeshSourceMode == TrainingMeshSourceMode::ObjFiles)
+    {
+        if (ImGui::Button("Select OBJ Files", ImVec2(180.0f, 0.0f)))
+        {
+            IGFD::FileDialogConfig config;
+            config.path = ".";
+            config.countSelectionMax = 0;
+            config.flags = 0;
+
+            ImGuiFileDialog::Instance()->OpenDialog(
+                "ChooseObjFilesDialog",
+                "Choose OBJ Files",
+                ".obj",
+                config
+            );
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseObjFilesDialog"))
+        {
+            if (ImGuiFileDialog::Instance()->IsOk())
+            {
+                m_selectedObjFilePaths.clear();
+
+                const auto selection = ImGuiFileDialog::Instance()->GetSelection();
+
+                for (const auto& selectedFile : selection)
+                {
+                    m_selectedObjFilePaths.push_back(selectedFile.second);
+                }
+            }
+
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+        ImGui::Text("Selected OBJ files: %d", static_cast<int>(m_selectedObjFilePaths.size()));
+
+        ImGui::BeginChild("SelectedObjFilesList", ImVec2(0.0f, 90.0f), true);
+
+        if (m_selectedObjFilePaths.empty())
+        {
+            ImGui::TextDisabled("No OBJ files selected.");
+        }
+        else
+        {
+            for (const std::string& filePath : m_selectedObjFilePaths)
+            {
+                ImGui::BulletText("%s", filePath.c_str());
+            }
+        }
+
+        ImGui::EndChild();
+
+        if (!m_selectedObjFilePaths.empty())
+        {
+            if (ImGui::Button("Clear OBJ Selection", ImVec2(180.0f, 0.0f)))
+            {
+                m_selectedObjFilePaths.clear();
+            }
+        }
+    }
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectSceneTrainingMeshes()
+{
+    std::vector<Mesh*> meshes;
+
+    if (m_trainOnlySelected)
+    {
+        SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
+
+        if (!selectionController)
+        {
+            std::cerr << "[ML] ERROR: SelectionController is null." << std::endl;
+            return meshes;
+        }
+
+        const SelectionHolder& selectionHolder = selectionController->getHolder();
+        meshes = selectionHolder.meshes;
+    }
+    else
+    {
+        SceneResources::MeshFaceOctreeCoordsMap meshFacesPairMap = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res.meshFaceOctreeCoordsMap;
+
+        for (auto& [mesh, _] : meshFacesPairMap) {
+            meshes.emplace_back(mesh);
+        }
+    }
+
+    return meshes;
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectObjTrainingMeshes()
+{
+    std::vector<Mesh*> meshes;
+
+    if (m_selectedObjFilePaths.empty())
+    {
+        std::cerr << "[ML] ERROR: No OBJ files selected." << std::endl;
+        return meshes;
+    }
+
+    for (const std::string& filePath : m_selectedObjFilePaths) {
+
+        OBJImporter objImporter;
+        objImporter.setFilePath(filePath);
+        objImporter.read();
+
+        for (Mesh* mesh : objImporter.getMeshes()) {
+            
+            if(mesh) {
+                meshes.emplace_back(mesh);
+            }
+
+        }
+    }
+
+    return meshes;
+}
+
+std::vector<Mesh*> PredictorsSettingsLayer::collectTrainingMeshes()
+{
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::SceneMeshes)
+    {
+        return collectSceneTrainingMeshes();
+    }
+
+    if (m_trainingMeshSourceMode == TrainingMeshSourceMode::ObjFiles)
+    {
+        return collectObjTrainingMeshes();
+    }
+
+    return {};
+}
+
 void PredictorsSettingsLayer::onImGuiRender()
 {
     if (!m_initialized)
     {
-        m_predictorNames.clear();
-        m_predictorIds.clear();
+        refreshPredictorInstances();
 
-        const auto namesWithIds = AnalyserRegistry::instance().getNamesWithId();
-        for (const auto& [name, id] : namesWithIds)
-        {
-            Analyser* analyser = AnalyserRegistry::instance().getAnalyser(id);
-            if (!analyser) {
-                continue;
-            }
-
-            auto* predictor = dynamic_cast<Predictor*>(analyser);
-            if (!predictor) {
-                continue;
-            }
-
-            m_predictorNames.push_back(name);
-            m_predictorIds.push_back(id);
-        }
-
-        if (!m_predictorIds.empty())
+        if (!m_predictorInstances.empty())
         {
             m_selectedPredictorIndex = 0;
             m_predictorEditor.open(getSelectedPredictor());
+
+            Predictor* predictor = getSelectedPredictor();
+            if (predictor) {
+                std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+                std::strncpy(m_predictorNameBuffer, predictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
+            }
         }
 
         m_previousPredictorIndex = m_selectedPredictorIndex;
@@ -95,15 +253,15 @@ void PredictorsSettingsLayer::onImGuiRender()
     bool predictorChanged = false;
 
     const std::string currentPredictorName =
-        m_predictorNames.empty() ? "None" : m_predictorNames[m_selectedPredictorIndex];
+        m_predictorInstances.empty() ? "None" : m_predictorInstances[m_selectedPredictorIndex].displayName;
 
     if (ImGui::BeginCombo("##PredictorDropdown", currentPredictorName.c_str()))
     {
-        for (int i = 0; i < static_cast<int>(m_predictorNames.size()); ++i)
+        for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
         {
             const bool isSelected = (m_selectedPredictorIndex == i);
 
-            if (ImGui::Selectable(m_predictorNames[i].c_str(), isSelected))
+            if (ImGui::Selectable(m_predictorInstances[i].displayName.c_str(), isSelected))
             {
                 m_selectedPredictorIndex = i;
                 predictorChanged = true;
@@ -120,6 +278,12 @@ void PredictorsSettingsLayer::onImGuiRender()
     if (predictorChanged)
     {
         m_predictorEditor.open(getSelectedPredictor());
+
+        Predictor* predictor = getSelectedPredictor();
+        std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+        if (predictor) {
+            std::strncpy(m_predictorNameBuffer, predictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
+        }
     }
 
     Predictor* predictor = m_predictorEditor.getPredictor();
@@ -322,13 +486,6 @@ void PredictorsSettingsLayer::onImGuiRender()
                 {
                     labelEditor.addConditionToSelectedLabel();
                 }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Save Config"))
-                {
-                    m_predictorEditor.save();
-                }
             }
             else
             {
@@ -339,17 +496,121 @@ void PredictorsSettingsLayer::onImGuiRender()
         }
 
         ImGui::Separator();
+        ImGui::InputText("Predictor Name", m_predictorNameBuffer, sizeof(m_predictorNameBuffer));
 
-        if (ImGui::Button("Retrain to apply", ImVec2(180.0f, 0.0f)))
+        renderTrainingSourceSettings();
+
+        if (ImGui::Button("Retrain Current", ImVec2(180.0f, 0.0f)))
         {
-            m_predictorEditor.applyFeatureChanges();
-            m_predictorEditor.save();
+            Predictor* currentPredictor = m_predictorEditor.getPredictor();
 
-            SelectionController* selectionController = ViewPortsHolderContext::s_selectionController.get();
-            const SelectionHolder& selectionHolder = selectionController->getHolder();
-            const std::vector<Mesh*>& selectedMeshes = selectionHolder.meshes;
+            if (currentPredictor && std::strlen(m_predictorNameBuffer) > 0)
+            {
+                const std::string typedPredictorName = m_predictorNameBuffer;
+                const std::string currentInstanceName = currentPredictor->getInstanceName();
 
-            predictor->train(selectedMeshes);
+                if (typedPredictorName == currentInstanceName)
+                {
+                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
+
+                    if (trainingMeshes.empty())
+                    {
+                        std::cerr << "[ML] ERROR: Cannot retrain predictor. No training meshes were found." << std::endl;
+                    }
+                    else
+                    {
+                        m_predictorEditor.applyFeatureChanges();
+                        m_predictorEditor.save();
+
+                        currentPredictor->reloadFromConfig();
+                        currentPredictor->train(trainingMeshes);
+                    }
+                }
+                else
+                {
+                    std::cerr << "[ML] ERROR: Cannot retrain current predictor. Predictor Name '"
+                              << typedPredictorName
+                              << "' does not match the currently selected predictor '"
+                              << currentInstanceName << "'." << std::endl;
+                }
+            }
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Train As New Copy", ImVec2(180.0f, 0.0f)))
+        {
+            Predictor* currentPredictor = m_predictorEditor.getPredictor();
+
+            if (currentPredictor && std::strlen(m_predictorNameBuffer) > 0)
+            {
+                const std::string newInstanceName = m_predictorNameBuffer;
+                const std::string currentInstanceName = currentPredictor->getInstanceName();
+
+                bool predictorAlreadyExists = false;
+                for (const auto& predictorInstance : m_predictorInstances)
+                {
+                    if (predictorInstance.instanceId == newInstanceName)
+                    {
+                        predictorAlreadyExists = true;
+                        break;
+                    }
+                }
+
+                if (newInstanceName == currentInstanceName)
+                {
+                    std::cerr << "[ML] ERROR: Cannot create predictor copy. Predictor Name '"
+                              << newInstanceName
+                              << "' matches the currently selected predictor. Use Retrain Current instead."
+                              << std::endl;
+                }
+                else if (predictorAlreadyExists)
+                {
+                    std::cerr << "[ML] ERROR: Cannot create predictor copy. Predictor with name '"
+                              << newInstanceName << "' already exists." << std::endl;
+                }
+                else
+                {
+                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
+
+                    if (trainingMeshes.empty())
+                    {
+                        std::cerr << "[ML] ERROR: Cannot train new predictor copy. No training meshes were found." << std::endl;
+                    }
+                    else
+                    {
+                        const std::string typeId =
+                            m_predictorInstances[m_selectedPredictorIndex].typeId;
+
+                        Analyser* analyser =
+                            AnalyserRegistry::instance().createAnalyserInstance(typeId, newInstanceName);
+
+                        auto* newPredictor = dynamic_cast<Predictor*>(analyser);
+                        if (newPredictor)
+                        {
+                            m_predictorEditor.saveToPredictor(newPredictor);
+                            newPredictor->reloadFromConfig();
+                            newPredictor->train(trainingMeshes);
+
+                            refreshPredictorInstances();
+
+                            for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
+                            {
+                                if (m_predictorInstances[i].instanceId == newInstanceName)
+                                {
+                                    m_selectedPredictorIndex = i;
+                                    break;
+                                }
+                            }
+
+                            m_predictorEditor.open(newPredictor);
+
+                            std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+                            std::strncpy(m_predictorNameBuffer, newPredictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
+                        }
+                    }
+                }
+            }
         }
     }
 
