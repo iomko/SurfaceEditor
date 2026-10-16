@@ -276,6 +276,9 @@ public:
                 ExtendedVertex *vertex = point.first;
                 ExtendedVertex *oppositeVertex = point.second;
 
+                if (vertex == oppositeVertex)
+                    continue;
+
                 std::vector<ExtendedEdge *> &edges = vertex->m_neighbourEdges;
 
                 for (ExtendedEdge *edge : edges)
@@ -314,6 +317,14 @@ public:
                     oppositeVertex->m_neighbourEdges.end(),
                     vertex->m_neighbourEdges.begin(),
                     vertex->m_neighbourEdges.end());
+
+                for (GraphEdge *graphEdge : vertex->m_graphEdges)
+                {
+                    graphEdge->vertex = oppositeVertex;
+                    graphEdge->graphEdgeIndexInVertex = static_cast<int>(oppositeVertex->m_graphEdges.size());
+                    oppositeVertex->m_graphEdges.emplace_back(graphEdge);
+                }
+                vertex->m_graphEdges.clear();
 
                 ExtendedVertex *&lastVertex = meshVertices.back();
                 lastVertex->m_vertexIndexInVector = vertex->m_vertexIndexInVector;

@@ -299,6 +299,44 @@ TEST_CASE("Connecting edges correctly reduces vertex and edge counts", "[extende
     
     // Verify the remaining merged edge correctly acts as a twin bridge
     REQUIRE(edge2->m_halfEdge->m_twin != nullptr);
+
+    for (auto* face : mesh.m_faces) {
+        for (auto* graphEdge : face->m_graphEdges) {
+            REQUIRE(graphEdge->vertex->m_vertexIndexInVector >= 0);
+            REQUIRE(mesh.m_vertices.at(graphEdge->vertex->m_vertexIndexInVector) == graphEdge->vertex);
+            REQUIRE(graphEdge->vertex->m_graphEdges.at(graphEdge->graphEdgeIndexInVertex) == graphEdge);
+        }
+    }
+}
+TEST_CASE("Connecting edges with an already shared endpoint", "[extendedHalfEdge][connect]") {
+    ExtendedHalfEdgeMesh mesh;
+    const glm::vec3 a{0, 0, 0};
+    const glm::vec3 b{1, 0, 0};
+    const glm::vec3 c{0, 1, 0};
+    const glm::vec3 d{1, 1, 0};
+
+    mesh.addFloatingFace({a, b, c});
+    mesh.addFloatingFace({a, c, d});
+    mesh.addFloatingFace({d, b, a});
+
+    auto findDirectedEdge = [&mesh](const glm::vec3 &from, const glm::vec3 &to) {
+        for (ExtendedEdge *edge : mesh.m_edges) {
+            if (edge->m_firstVertex->m_position == from && edge->m_secondVertex->m_position == to)
+                return edge;
+        }
+        return static_cast<ExtendedEdge *>(nullptr);
+    };
+
+    mesh.connectEdges(findDirectedEdge(c, a), findDirectedEdge(a, c));
+    mesh.connectEdges(findDirectedEdge(d, a), findDirectedEdge(a, d));
+    mesh.connectEdges(findDirectedEdge(b, a), findDirectedEdge(a, b));
+
+    for (auto *face : mesh.m_faces) {
+        for (auto *graphEdge : face->m_graphEdges) {
+            REQUIRE(mesh.m_vertices.at(graphEdge->vertex->m_vertexIndexInVector) == graphEdge->vertex);
+            REQUIRE(graphEdge->vertex->m_graphEdges.at(graphEdge->graphEdgeIndexInVertex) == graphEdge);
+        }
+    }
 }
 TEST_CASE("Connecting incompatible edges safely aborts", "[extendedHalfEdge][connect]") {
     ExtendedHalfEdgeMesh mesh;
