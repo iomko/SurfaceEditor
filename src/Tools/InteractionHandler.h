@@ -2,6 +2,8 @@
 #include "../Patterns/Command.h"
 #include <stdexcept>
 
+#include "../Core/Profiler.h"
+
 class InteractionHandlerConcept
 {
 public:
@@ -31,12 +33,15 @@ public:
 	virtual void onEnd() override = 0;
 
 	void onBegin(const OpParams&) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onBegin");
 		throw std::logic_error("onBegin with params not supported.");
 	}
 	void onUpdate(const OpParams&) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onUpdate");
 		throw std::logic_error("onUpdate with params not supported.");
 	}
 	void onEnd(const OpParams&) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onEnd");
 		throw std::logic_error("onEnd with params not supported.");
 	}
 
@@ -59,22 +64,28 @@ public:
 	virtual void onEnd(const IParams&) = 0;
 
 	void onBegin(const OpParams& iParams) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onBegin");
 		onBegin(static_cast<const IParams&>(iParams));
 	}
 	void onUpdate(const OpParams& iParams) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onUpdate");
 		onUpdate(static_cast<const IParams&>(iParams));
 	}
 	void onEnd(const OpParams& iParams) override final {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onEnd");
 		onEnd(static_cast<const IParams&>(iParams));
 	}
 
 	void onBegin() override {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onBegin");
 		throw std::logic_error("onBegin without params not supported.");
 	}
 	void onUpdate() override {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onUpdate");
 		throw std::logic_error("onUpdate without params not supported.");
 	}
 	void onEnd() override {
+		SE_PROFILE_SCOPE_N("InteractionHandler:onEnd");
 		throw std::logic_error("onEnd without params not supported.");
 	}
 

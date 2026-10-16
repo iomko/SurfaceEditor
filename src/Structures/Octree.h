@@ -6,6 +6,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "../Core/Profiler.h"
+
 template<typename T>
 class OctreeNode
 {
@@ -28,6 +30,7 @@ public:
 
     ~OctreeNode()
     {
+		SE_PROFILE_SCOPE;
         if (childrenNodes[0] != nullptr)
         {
             for (size_t i = 0; i < 8; ++i) {
@@ -60,6 +63,7 @@ public:
 
     void addData(T data, const AABBBoundingRegion& dataBounds, std::map<T, std::vector<OctreeNode<T>*>>& map)
     {
+		SE_PROFILE_SCOPE;
 
         if (nodeBounds.intersectsAABB(dataBounds))
         {
@@ -116,6 +120,7 @@ public:
         const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
         std::vector<OctreeNode<T>*>& accumulatedOctreeNodes)
     {
+		SE_PROFILE_SCOPE;
         if (octreeBoundsIntersectAlg(nodeBounds, queryShape)) {
             if (isLeaf) {
                 if (depth < maxDepth) {
@@ -255,6 +260,7 @@ public:
         const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
         std::vector<OctreeNode<T>*>& accumulatedOctreeNodes)
     {
+		SE_PROFILE_SCOPE;
         if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
             rootNode->findData(queryShape, octreeBoundsIntersectAlg, accumulatedOctreeNodes);
         }
@@ -267,6 +273,7 @@ public:
 		const std::function<bool(const AABBBoundingRegion&, const QueryShape&)>& octreeBoundsIntersectAlg,
 		const std::function<bool(const T&, const QueryShape&)>& dataIntersectAlg)
 	{
+		SE_PROFILE_SCOPE;
 		std::vector<OctreeNode<T>*> hitOctreeLeaves;
 
 		if (octreeBoundsIntersectAlg(rootNode->nodeBounds, queryShape)) {
@@ -284,6 +291,7 @@ public:
 
     void removeData(T data)
     {
+		SE_PROFILE_SCOPE;
         auto it = leafs.find(data);
         if (it != leafs.end()) {
             for (OctreeNode<T>* octree_node : it->second) {

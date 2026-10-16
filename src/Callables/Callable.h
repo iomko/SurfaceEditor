@@ -1,6 +1,7 @@
 #pragma once
 #include "../Patterns/Command.h"
 #include <stdexcept>
+#include "../../src/Core/Profiler.h"
 
 class CallableConcept {
 public:
@@ -15,6 +16,7 @@ public:
 	using OType = OParams;
 
 	OpParams* execute(const OpParams& input) final override {
+		SE_PROFILE_SCOPE_N("Callable:execute");
 		const auto& castedInput = static_cast<const IParams&>(input);
 		auto output = new OParams();
 		invoke(castedInput, *output);
@@ -31,6 +33,7 @@ public:
 	using OType = OParams;
 
 	OpParams* execute(const OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callable:execute");
 		auto output = new OParams();
 		invoke(*output);
 		return output;
@@ -46,6 +49,7 @@ public:
 	using OType = void;
 
 	OpParams* execute(const OpParams& input) final override {
+		SE_PROFILE_SCOPE_N("Callable:execute");
 		const auto& castedInput = static_cast<const IParams&>(input);
 		invoke(castedInput);
 		return nullptr;
@@ -61,6 +65,7 @@ public:
 	using OType = void;
 
 	OpParams* execute(const OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callable:execute");
 		invoke();
 		return nullptr;
 	}

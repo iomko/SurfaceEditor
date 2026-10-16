@@ -6,10 +6,13 @@
 #include "../../src/Callbacks/CallbackIDs.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 
+#include "../../src/Core/Profiler.h"
+
 static AutoRegisterCallable<MeshOutlinerAdderCallable> reg("MESH_OUTLINER_ADDER_CALLABLE");
 
 void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
 {
+    SE_PROFILE_SCOPE_N("MeshOutlinerAdderCallable:invoke");
     Mesh *mesh = input.m_mesh;
     auto *addNodeCallback = CallbackRegistry::instance().getCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false));
     Observable *observable = dynamic_cast<Observable *>(addNodeCallback);

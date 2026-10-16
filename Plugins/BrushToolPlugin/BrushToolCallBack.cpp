@@ -6,6 +6,8 @@
 #include "../../src/ViewPortsController.h"
 #include "../../src/Commands/CommandRegistry.h"
 
+#include "../../src/Renderer/MaterialRegistry.h"
+
 // Automatically register the BrushToolCallBack in the CallbackRegistry
 static AutoRegisterCallback<BrushToolCallBack> autoRegisterBrushToolCallBack("BRUSH_TOOL_CALLBACK");
 
@@ -53,11 +55,17 @@ void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataPa
             vertexParams.newPosition = moveByVector;
             vertexParams.mesh = closestMesh;
             vertexParams.vertex = vertex;
+            //vertexParams.updateBuffers = false;
 
             auto *moveVertexCommand = CommandRegistry::instance().getCommand("MOVE_VERTEX_COMMAND");
             if (moveVertexCommand)
                 moveVertexCommand->execute(vertexParams);
         }
+        /*closestMesh->bufferLayout.getLineBufferStorage(MaterialRegistry::getMaterial("defaultLineMaterial"))->get().update();
+            for(auto it = closestMesh->bufferLayout.triangleBuffersBegin(); it != closestMesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
+        }*/
     }
 }
 

@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
 project(SurfaceEditor VERSION 1.0 LANGUAGES C CXX)
 
+option(ENABLE_PROFILING "Enable profiling-friendly compiler flags" OFF)
+
+if(ENABLE_PROFILING)
+    add_compile_options(
+        -g
+        -fno-omit-frame-pointer
+    )
+
+    set(CMAKE_BUILD_TYPE Release)
+
+    add_link_options(
+        -g
+    )
+endif()
+
 option(CI_BUILD "Disable app + plugins (CI mode)" OFF)
 
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Renderer/Shaders")
@@ -66,6 +81,20 @@ find_path(GLM_INCLUDE_DIR NAMES glm/glm.hpp REQUIRED)
 
 #FETCH
 include(FetchContent)
+
+if(ENABLE_PROFILING)
+    set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy" FORCE)
+
+    FetchContent_Declare(
+        tracy
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(tracy)
+
+endif()
+
 
 FetchContent_Declare(
   Catch2
@@ -225,6 +254,16 @@ target_link_libraries(SurfaceEditorCore PRIVATE
     TrianglePP
 )
 
+if(ENABLE_PROFILING)
+    target_compile_definitions(SurfaceEditorCore
+        PUBLIC ENABLE_TRACY
+    )
+
+    target_link_libraries(SurfaceEditorCore
+        PUBLIC Tracy::TracyClient
+    )
+endif()
+
 if(UNIX)
     target_link_libraries(SurfaceEditorCore PUBLIC
         X11::X11
@@ -256,6 +295,18 @@ add_executable(SurfaceEditor
 
 target_link_libraries(SurfaceEditor PRIVATE SurfaceEditorCore)
 set_target_properties(SurfaceEditor PROPERTIES ENABLE_EXPORTS TRUE)
+
+if (ENABLE_PROFILING)
+    foreach(target SurfaceEditorCore)
+        target_compile_options(${target} PRIVATE
+            $<$<CONFIG:RelWithDebInfo>:-g>
+            #$<$<CONFIG:RelWithDebInfo>:-O2>
+            $<$<CONFIG:RelWithDebInfo>:-fno-omit-frame-pointer>
+        )
+    endforeach()
+endif()
+
+
 endif()
 
 add_executable(Test
@@ -312,16 +363,16 @@ foreach(plugin ${PLUGINS})
 endforeach()
 
 export(TARGETS
-    SurfaceEditorCore
-    glad_core
-    ImGui
-    ImGuizmo
-    ImGuiWrapper
-    ImGuiFileDialog
-    glm_interface
-    stb
-    TrianglePP
-    Torch::Torch
-    nlohmann_json
-    FILE SurfaceEditorCoreConfig.cmake
+SurfaceEditorCore
+glad_core
+ImGui
+ImGuizmo
+ImGuiWrapper
+ImGuiFileDialog
+glm_interface
+stb
+TrianglePP
+Torch::Torch
+nlohmann_json
+FILE SurfaceEditorCoreConfig.cmake   
 )

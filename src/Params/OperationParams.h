@@ -121,6 +121,7 @@ struct VertexParams : public OpParams
 	glm::vec3 newPosition;
 	glm::mat4 transformMatrix;
 	MoveBy moveBy;
+	bool updateBuffers = true;
 };
 
 struct BrushToolParams : public OpParams

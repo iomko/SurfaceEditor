@@ -6,10 +6,13 @@
 #include "../../src/Renderer/BufferStorages.h"
 #include "../../src/Renderer/MaterialRegistry.h"
 
+#include "../../src/Core/Profiler.h"
+
 static AutoRegisterCallable<MeshVaoInitCallable> reg("MESH_VAO_INIT_CALLABLE");
 
 void MeshVaoInitCallable::invoke(const MeshParams &input)
 {
+    SE_PROFILE_SCOPE_N("MeshVaoInitCallable:invoke");
     Mesh *mesh = input.m_mesh;
     Material *defaultLineMaterial = MaterialRegistry::getMaterial("defaultLineMaterial");
     Material *defaultMeshMaterial = MaterialRegistry::getMaterial("defaultMeshMaterial");
@@ -64,7 +67,7 @@ void MeshVaoInitCallable::invoke(const MeshParams &input)
 
             FaceTriangle faceTriangle;
             faceTriangle.face = meshFace;
-            faceTriangle.indexInVAO = triangleBufferVertices.size() - 3;
+            faceTriangle.indexInVAO = triangleBufferVertices.size() - 3;    
             faceTriangle.indexInFace = indexInFace;
 
             halfEdgeFaceTriangles.emplace_back(faceTriangle);

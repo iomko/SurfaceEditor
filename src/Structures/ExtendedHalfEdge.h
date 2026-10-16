@@ -3,6 +3,8 @@
 #include "Utils/ContainerUtils.h"
 #include <algorithm>
 
+#include "../Core/Profiler.h"
+
 class ExtendedHalfEdge;
 class ExtendedEdge;
 class ExtendedVertex;
@@ -99,6 +101,7 @@ public:
     }
     ~ExtendedHalfEdgeMesh()
     {
+		SE_PROFILE_SCOPE;
         // 1. Clear the graph first to delete all GraphEdge objects
         clearGraph();
 
@@ -120,6 +123,7 @@ public:
     }
     void clearGraph()
     {
+		SE_PROFILE_SCOPE;
         // 1. Clear all GraphEdges owned by Faces
         for (ExtendedFace *face : m_faces)
         {
@@ -142,6 +146,7 @@ public:
     }
     void build(const std::vector<std::vector<int>> &polygons, const std::vector<glm::vec3> &vertices)
     {
+		SE_PROFILE_SCOPE;
         ExtendedHalfEdgeMesh::HalfEdgeMesh::build(polygons, vertices);
         // Defer graph building for memory efficiency during import
         m_graphBuilt = false;
@@ -149,6 +154,7 @@ public:
 
     void ensureGraphBuilt()
     {
+		SE_PROFILE_SCOPE;
         if (!m_graphBuilt)
         {
             buildGraph();
@@ -164,6 +170,7 @@ public:
 public:
     ExtendedFace *addFloatingFace(const std::vector<glm::vec3> &vertices)
     {
+		SE_PROFILE_SCOPE;
 
         bool firstHalfEdge = true;
         ExtendedFace *face = this->createObject<ExtendedFace>(this->m_faces);
@@ -243,6 +250,7 @@ public:
 
     void connectEdges(ExtendedEdge *firstEdge, ExtendedEdge *secondEdge)
     {
+		SE_PROFILE_SCOPE;
 
         ExtendedHalfEdge *firstHalfEdge = firstEdge->m_halfEdge;
         ExtendedHalfEdge *secondHalfEdge = secondEdge->m_halfEdge;
@@ -328,6 +336,7 @@ public:
 
    std::tuple<ExtendedEdge*, ExtendedEdge*, ExtendedEdge*, ExtendedEdge*> splitEdge(ExtendedEdge* edge) {
 
+		SE_PROFILE_SCOPE;
         std::tuple<ExtendedEdge*, ExtendedEdge*, ExtendedEdge*, ExtendedEdge*> resTuple{nullptr, nullptr, nullptr, nullptr};
         //sucastou prveho facu
         ExtendedEdge* currEdge = edge;
@@ -692,6 +701,7 @@ public:
 private:
     void buildGraphForFace(ExtendedFace *face)
     {
+		SE_PROFILE_SCOPE;
         if (!face || !face->m_halfEdge)
             return;
 
@@ -731,6 +741,7 @@ private:
 
     void buildGraph()
     {
+		SE_PROFILE_SCOPE;
         //---GO_THROUGH_ALL_EDGES---
         for (ExtendedEdge *edge : m_edges)
         {
@@ -775,6 +786,7 @@ private:
 };
 inline ExtendedFace::~ExtendedFace()
 {
+	SE_PROFILE_SCOPE;
     for (GraphEdge *ge : m_graphEdges)
     {
         if (ge && ge->vertex)
@@ -789,6 +801,7 @@ inline ExtendedFace::~ExtendedFace()
 
 inline ExtendedVertex::~ExtendedVertex()
 {
+	SE_PROFILE_SCOPE;
     /*for (GraphEdge *ge : m_graphEdges)
     {
         if (ge && ge->face)

@@ -44,6 +44,8 @@
 
 #include "PluginLoader.h"
 
+#include "Profiler.h"
+
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
@@ -262,6 +264,7 @@ int main()
 
 				shader->unbind();
 			}
+			SE_PROFILE_FRAME;
 		}
 
 		for (auto& [_, printableMesh] : scene.m_res.printableMeshMap)

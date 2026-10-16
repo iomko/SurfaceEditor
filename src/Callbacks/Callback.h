@@ -3,6 +3,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include "../../src/Core/Profiler.h"
+
 struct CallbackConcept {
 	virtual ~CallbackConcept() = default;
 	virtual void execute() = 0;
@@ -19,15 +21,18 @@ public:
 
 	virtual void execute(const IParams& iParams, OParams& oParams) = 0;
 	void execute(const OpParams& iParams, OpParams& oParams) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		const IParams& castedInput = static_cast<const IParams&>(iParams);
 		OParams& castedOutput = static_cast<OParams&>(oParams);
 		execute(castedInput, castedOutput);
 	}
 
 	void execute() final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution without any parameters.");
 	}
 	void execute(const OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution with input parameters.");
 	}
 };
@@ -38,14 +43,17 @@ public:
 
 	virtual void execute(const IParams& iParams) = 0;
 	void execute(const OpParams& iParams) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		const IParams& castedIParams = static_cast<const IParams&>(iParams);
 		execute(castedIParams);
 	}
 
 	void execute() final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution without any parameters.");
 	}
 	void execute(const OpParams&, OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution with input and output parameters.");
 	}
 };
@@ -57,9 +65,11 @@ public:
 	virtual void execute() = 0;
 
 	void execute(const OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution with input parameters.");
 	}
 	void execute(const OpParams&, OpParams&) final override {
+		SE_PROFILE_SCOPE_N("Callback:execute");
 		throw std::logic_error("This callback does not support execution with input and output parameters.");
 	}
 };
@@ -78,14 +88,17 @@ public:
 	explicit ComposedCallback(std::unique_ptr<FunctionComposer> functionComposer) : m_composer(std::move(functionComposer)) {}
 	
 	void execute(const OpParams& iParams) final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		const IParams& castedIParams = static_cast<const IParams&>(iParams);
 		m_composer->execute(castedIParams);
 	}
 
 	void execute() final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		throw std::logic_error("This callback does not support execution without any parameters.");
 	}
 	void execute(const OpParams&, OpParams&) final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		throw std::logic_error("This callback does not support execution with input and output parameters.");
 	}
 };
@@ -100,13 +113,16 @@ public:
 	explicit ComposedCallback(std::unique_ptr<FunctionComposer> functionComposer) : m_composer(std::move(functionComposer)) {}
 	
 	void execute() final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		m_composer->execute();
 	}
 
 	void execute(const OpParams&) final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		throw std::logic_error("This callback does not support execution with input parameters.");
 	}
 	void execute(const OpParams&, OpParams&) final override {
+		SE_PROFILE_SCOPE_N("ComposedCallback:execute");
 		throw std::logic_error("This callback does not support execution with input and output parameters.");
 	}
 };

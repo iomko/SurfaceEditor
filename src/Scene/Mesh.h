@@ -6,6 +6,7 @@
 #include "../Renderer/BufferLayouts.h"
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include "../Core/Profiler.h"
 
 class Mesh
 {
@@ -30,6 +31,7 @@ public:
 
 	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
+		SE_PROFILE_SCOPE;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
        
@@ -38,6 +40,7 @@ public:
 
 	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
 	{
+		SE_PROFILE_SCOPE;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
 
@@ -46,10 +49,12 @@ public:
 
 	~Mesh()
 	{
+		SE_PROFILE_SCOPE;
 		delete m_halfEdgeStructure;
 	}
 
     void calculateMeshBounds() {
+		SE_PROFILE_SCOPE;
         glm::vec3 minBounds(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
         glm::vec3 maxBounds(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
         

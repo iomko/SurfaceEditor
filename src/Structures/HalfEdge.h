@@ -7,6 +7,8 @@
 #include <map>
 #include "../Renderer/Material.h"
 
+#include "../Core/Profiler.h"
+
 using FaceTriangleIndex = int;
 using EdgeLineIndex = int;
 
@@ -232,6 +234,7 @@ namespace HalfEdgeDS
 		}
 		virtual ~HalfEdgeMesh()
 		{
+			SE_PROFILE_SCOPE;
 			for (auto* obj : m_faces) delete obj;
 			for (auto* obj : m_edges) delete obj;
 			for (auto* obj : m_vertices) delete obj;
@@ -252,6 +255,7 @@ namespace HalfEdgeDS
 
 		static void getVerticesFromFace(Traits::FType *face, std::vector<typename Traits::VType> &vertices)
 		{
+			SE_PROFILE_SCOPE;
 			vertices.clear();
 
 			typename Traits::HType *halfEdge1 = face->m_halfEdge;
@@ -269,6 +273,7 @@ namespace HalfEdgeDS
 		template <typename T, typename Vector>
 		T *createObject(Vector &storageVector)
 		{
+			SE_PROFILE_SCOPE;
 			T *newObject = nullptr;
 			if constexpr (std::is_void_v<typename Traits::DerType>)
 			{
@@ -285,6 +290,7 @@ namespace HalfEdgeDS
 		template <typename T, typename Key, typename Map>
 		T *findObject(const Key &key, Map &helperMap)
 		{
+			SE_PROFILE_SCOPE;
 			auto it = helperMap.find(key);
 			return (it != helperMap.end()) ? it->second : nullptr;
 		}
@@ -292,6 +298,7 @@ namespace HalfEdgeDS
 		template <typename T, typename Key, typename Map, typename Vector>
 		T *findOrCreateObject(const Key &key, Map &helperMap, Vector &storageVector, bool *outWasCreated = nullptr)
 		{
+			SE_PROFILE_SCOPE;
 			auto it = helperMap.find(key);
 			if (it != helperMap.end())
 			{
@@ -319,6 +326,7 @@ namespace HalfEdgeDS
 		void build(const std::vector<std::vector<int>> &polygons,
 				   const std::vector<glm::vec3> &vertices)
 		{
+			SE_PROFILE_SCOPE;
 			// Clear old data (important if reused)
 			m_halfEdges.clear();
 			m_vertices.clear();

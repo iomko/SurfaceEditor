@@ -43,6 +43,7 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
         vertexParams.mesh = selectedMesh;
         vertexParams.newPosition = moveByVector;
         vertexParams.moveBy = VertexParams::MoveBy::VECTOR;
+        //vertexParams.updateBuffers = false;
         for (ExtendedVertex *vertex : verticesToMove)
         {
             vertexParams.vertex = vertex;
@@ -53,6 +54,12 @@ void MoveSelectedFacesCallBack::execute(const MoveSelectedFacesParams &iParams)
                 moveVertexCommand->execute(vertexParams);
             }
         }
+        /*selectedMesh->bufferLayout.getLineBufferStorage(MaterialRegistry::getMaterial("defaultLineMaterial"))->get().update();
+            for(auto it = selectedMesh->bufferLayout.triangleBuffersBegin(); it != selectedMesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
+        }*/
+        
         selectedMesh->calculateMeshBounds();
     }
 }

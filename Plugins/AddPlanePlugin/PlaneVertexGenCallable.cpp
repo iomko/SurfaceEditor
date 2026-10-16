@@ -2,10 +2,14 @@
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Callables/CallableRegistry.h"
 
+#include "../../src/Core/Profiler.h"
+
 static AutoRegisterCallable<PlaneVertexGenCallable> reg("PLANE_VERTEX_GEN_CALLABLE");
 
 void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output) 
 {
+
+    SE_PROFILE_SCOPE_N("PlaneVertexGenCallable:invoke");
     float planeSize = input.m_size;
     int planeSubidivisionLevel = input.m_subdivisionLevel;
     glm::vec3 position = input.m_position;
