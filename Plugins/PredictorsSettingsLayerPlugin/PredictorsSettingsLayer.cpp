@@ -6,6 +6,30 @@
 #include "../../src/Commands/CommandRegistry.h"
 #include "../../src/Commands/CommandIDs.h"
 #include "../../src/Ml/Analyser/AnalyserRegistry.h"
+#include <Styling/Font.h>
+#include <Builders/UIButtonBuilder.h>
+#include <Builders/UILabelBuilder.h>
+#include <Builders/UICheckBoxBuilder.h>
+#include <Builders/UIInputBoxBuilder.h>
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UICollapsingHeaderBuilder.h>
+#include <Builders/UIComboBuilder.h>
+#include <Builders/UIChildWindowBuilder.h>
+#include <Builders/UITreeBuilder.h>
+#include <Builders/UIDragBuilder.h>
+#include <Components/Button.h>
+#include <Components/CheckBox.h>
+#include <Components/ChildWindow.h>
+#include <Components/CollapsingHeader.h>
+#include <Components/Combo.h>
+#include <Components/Component.h>
+#include <Components/Drag.h>
+#include <Components/InputBox.h>
+#include <Components/Label.h>
+#include <Components/SameLine.h>
+#include <Components/Separator.h>
+#include <Components/Tree.h>
+#include <Utils/VisibilityHandler.h>
 
 #include "PredictorsSettingsLayer.h"
 
@@ -13,14 +37,377 @@
 
 #include "../ImportMeshesPlugin/OBJImporter.h"
 
+#include <algorithm>
 #include <cstring>
+#include <functional>
 #include <iostream>
+#include <iterator>
+#include <memory>
+#include <utility>
+
+namespace
+{
+    static constexpr const char *LAYER_NAME = "PREDICTORS_SETTINGS_LAYER";
+    static constexpr std::size_t LABEL_EDITOR_LAYOUT_SIZE_ESTIMATE = 21;
+
+    std::shared_ptr<ui::styling::LabelConfig> runtimeTextConfig()
+    {
+        static auto config = LabelConfigBuilder()
+                                 .font(ui::styling::Font::regular(0.02f))
+                                 .build();
+        return config;
+    }
+
+    std::shared_ptr<ui::styling::ButtonConfig> runtimeButtonConfig()
+    {
+        static auto config = ButtonConfigBuilder()
+                                 .rounding(8.0f)
+                                 .background(ui::styling::Color::lightGray)
+                                 .font(ui::styling::Font::regular(0.6f))
+                                 .size(ImVec2{0.18f, 0.04f})
+                                 .onHoverColor(ui::styling::Color::hoverOverOrange)
+                                 .onClickColor(ui::styling::Color::onClickOrange)
+                                 .build();
+        return config;
+    }
+
+    std::shared_ptr<ui::styling::DragConfig<float>> runtimeDragConfig()
+    {
+        static auto config = DragConfigBuilder<float>()
+                                 .speed(0.01f)
+                                 .width(0.18f)
+                                 .background(ui::styling::Color::lightGray)
+                                 .onHoverBackground(ui::styling::Color::hoverOverOrange)
+                                 .onActiveBackground(ui::styling::Color::onClickOrange)
+                                 .build();
+        return config;
+    }
+
+    void renderDisabledText(const std::string& text)
+    {
+        ui::components::Label<ui::styling::TextTypes::DISABLED> label(text, runtimeTextConfig());
+        label.render();
+    }
+
+    void renderText(const std::string& text) {
+        ui::components::Label<ui::styling::TextTypes::CLASSIC> label(text, runtimeTextConfig());
+        label.render();
+    }
+
+    class UsedFeaturesList : public ui::components::Component
+    {
+    public:
+        UsedFeaturesList(
+            FeatureEditor& featureEditor,
+            std::shared_ptr<ui::styling::ButtonConfig> removeButtonConfig)
+            : Component("Used Features", removeButtonConfig)
+            , m_featureEditor(featureEditor)
+            , m_removeButtonConfig(std::move(removeButtonConfig))
+        {
+        }
+
+        void render() override
+        {
+            const auto& usedFeatures = m_featureEditor.getState().usedFeatures;
+            renderText("Used Features");
+
+            if (usedFeatures.empty())
+            {
+                renderDisabledText("None");
+                return;
+            }
+
+            int featureToRemove = -1;
+            for (int i = 0; i < static_cast<int>(usedFeatures.size()); ++i)
+            {
+                ImGui::PushID(i);
+
+                FeatureStrategyConcept* feature = usedFeatures[i];
+                if (feature)
+                {
+                    renderText(feature->getName());
+                    ui::components::SameLine sameLine;
+                    sameLine.render();
+
+                    ui::components::Button removeButton(
+                        "Remove",
+                        m_removeButtonConfig,
+                        [&featureToRemove, i](ui::components::Button*) {
+                            featureToRemove = i;
+                        });
+                    removeButton.render();
+                }
+                else
+                {
+                    renderDisabledText("Unknown feature");
+                }
+
+                ImGui::PopID();
+            }
+
+            if (featureToRemove >= 0 && featureToRemove < static_cast<int>(usedFeatures.size()))
+            {
+                m_featureEditor.removeFeature(usedFeatures[featureToRemove]);
+            }
+        }
+
+    private:
+        FeatureEditor& m_featureEditor;
+        std::shared_ptr<ui::styling::ButtonConfig> m_removeButtonConfig;
+    };
+
+    class SelectedLabelDetails : public ui::components::Component
+    {
+    public:
+        SelectedLabelDetails(
+            LabelEditor& labelEditor,
+            std::shared_ptr<ui::styling::ComboConfig> comboConfig,
+            std::shared_ptr<ui::styling::InputBoxConfig> inputBoxConfig)
+            : Component("Selected Label Details", {})
+            , m_labelEditor(labelEditor)
+            , m_comboConfig(std::move(comboConfig))
+            , m_inputBoxConfig(std::move(inputBoxConfig))
+        {
+        }
+
+        void render() override
+        {
+            LabelEditorState& labelState = m_labelEditor.getState();
+            LabelDefinition* label = m_labelEditor.getSelectedLabel();
+            if (label)
+            {
+                renderText("Label Name");
+                ui::components::SameLine nameSameLine;
+                nameSameLine.render();
+                ui::components::InputBox<char> nameInputBox("Label Name", m_inputBoxConfig);
+                std::strncpy(
+                    nameInputBox.inputValue(),
+                    label->name.c_str(),
+                    sizeof(char) * 255);
+                nameInputBox.render();
+                label->name = nameInputBox.inputValue();
+
+                static const std::vector<std::string> matchModes{"ALL", "ANY"};
+                using MatchModeIterator = std::vector<std::string>::const_iterator;
+                renderText("Match Mode");
+                ui::components::SameLine sameLine;
+                sameLine.render();
+                ui::components::Combo<MatchModeIterator> matchModeCombo(
+                    "MatchMode",
+                    m_comboConfig,
+                    []() {
+                        return std::pair{matchModes.begin(), matchModes.end()};
+                    },
+                    [&label]() {
+                        return matchModes[static_cast<std::size_t>(label->mode)];
+                    },
+                    [](MatchModeIterator option) {
+                        return static_cast<ImGuiID>(std::distance(matchModes.begin(), option) + 1);
+                    },
+                    [](MatchModeIterator option) {
+                        return *option;
+                    },
+                    [&label](MatchModeIterator option) {
+                        return std::distance(matchModes.begin(), option) ==
+                               static_cast<std::ptrdiff_t>(label->mode);
+                    },
+                    [&label](MatchModeIterator option) {
+                        label->mode = static_cast<LabelMatchMode>(
+                            std::distance(matchModes.begin(), option));
+                    });
+                matchModeCombo.render();
+
+                ui::components::Separator separator(0.9f);
+                separator.render();
+                renderText("Conditions");
+                int conditionToRemove = -1;
+
+                for (int i = 0; i < static_cast<int>(label->conditions.size()); ++i)
+                {
+                    ImGui::PushID(i);
+                    LabelCondition& condition = label->conditions[i];
+
+                    int selectedPropertyIndex = -1;
+                    for (int p = 0; p < static_cast<int>(labelState.propertyOptions.size()); ++p)
+                    {
+                        if (labelState.propertyOptions[p].featureId == condition.featureId &&
+                            labelState.propertyOptions[p].componentIndex == condition.componentIndex)
+                        {
+                            selectedPropertyIndex = p;
+                            break;
+                        }
+                    }
+
+                    renderText("Property");
+                    ui::components::SameLine propertySameLine;
+                    propertySameLine.render();
+                    using PropertyIterator = std::vector<LabelPropertyOption>::iterator;
+                    if (labelState.propertyOptions.empty())
+                    {
+                        renderDisabledText("None available");
+                    }
+                    else
+                    {
+                        ui::components::Combo<PropertyIterator> propertyCombo(
+                            "Property",
+                            m_comboConfig,
+                            [&labelState]() {
+                                return std::pair{
+                                    labelState.propertyOptions.begin(),
+                                    labelState.propertyOptions.end()};
+                            },
+                            [&labelState, selectedPropertyIndex]() {
+                                return selectedPropertyIndex >= 0
+                                    ? labelState.propertyOptions[selectedPropertyIndex].displayName
+                                    : std::string{"None"};
+                            },
+                            [&labelState](PropertyIterator option) {
+                                return static_cast<ImGuiID>(
+                                    std::distance(labelState.propertyOptions.begin(), option) + 1);
+                            },
+                            [](PropertyIterator option) {
+                                return option->displayName;
+                            },
+                            [&labelState, selectedPropertyIndex](PropertyIterator option) {
+                                return selectedPropertyIndex >= 0 &&
+                                    std::distance(labelState.propertyOptions.begin(), option) ==
+                                        selectedPropertyIndex;
+                            },
+                            [&condition](PropertyIterator option) {
+                                condition.featureId = option->featureId;
+                                condition.componentIndex = option->componentIndex;
+                            });
+                        propertyCombo.render();
+                    }
+
+                    static const std::vector<std::string> operators{
+                        "==", "!=", "<", "<=", ">", ">="};
+                    using OperatorIterator = std::vector<std::string>::const_iterator;
+                    renderText("Operator");
+                    ui::components::SameLine operatorSameLine;
+                    operatorSameLine.render();
+                    ui::components::Combo<OperatorIterator> operatorCombo(
+                        "Operator",
+                        m_comboConfig,
+                        []() {
+                            return std::pair{operators.begin(), operators.end()};
+                        },
+                        [&condition]() {
+                            return operators[static_cast<std::size_t>(condition.op)];
+                        },
+                        [](OperatorIterator option) {
+                            return static_cast<ImGuiID>(std::distance(operators.begin(), option) + 1);
+                        },
+                        [](OperatorIterator option) {
+                            return *option;
+                        },
+                        [&condition](OperatorIterator option) {
+                            return std::distance(operators.begin(), option) ==
+                                   static_cast<std::ptrdiff_t>(condition.op);
+                        },
+                        [&condition](OperatorIterator option) {
+                            condition.op = static_cast<LabelOperator>(
+                                std::distance(operators.begin(), option));
+                        });
+                    operatorCombo.render();
+                    renderText("Value");
+                    ui::components::SameLine valueSameLine;
+                    valueSameLine.render();
+                    ui::components::Drag<float> valueDrag("Value", runtimeDragConfig());
+                    *valueDrag.inputValue() = condition.value;
+                    valueDrag.render();
+                    condition.value = *valueDrag.inputValue();
+
+                    ui::components::Button removeConditionButton(
+                        "Remove Condition",
+                        runtimeButtonConfig(),
+                        [&conditionToRemove, i](ui::components::Button*) {
+                            conditionToRemove = i;
+                        });
+                    removeConditionButton.render();
+                    ui::components::Separator conditionSeparator(0.9f);
+                    conditionSeparator.render();
+                    ImGui::PopID();
+                }
+
+                if (conditionToRemove >= 0)
+                {
+                    m_labelEditor.removeConditionFromSelectedLabel(conditionToRemove);
+                }
+
+                ui::components::Button addConditionButton(
+                    "+ Add Condition",
+                    runtimeButtonConfig(),
+                    [this](ui::components::Button*) {
+                        m_labelEditor.addConditionToSelectedLabel();
+                    });
+                addConditionButton.render();
+            }
+            else
+            {
+                renderText("No label selected.");
+            }
+        }
+
+    private:
+        LabelEditor& m_labelEditor;
+        std::shared_ptr<ui::styling::ComboConfig> m_comboConfig;
+        std::shared_ptr<ui::styling::InputBoxConfig> m_inputBoxConfig;
+    };
+
+    class TrainingSourceSettingsView final : public ui::components::Component
+    {
+    public:
+        TrainingSourceSettingsView(
+            std::function<void(ui::components::CheckBox&)> renderSettings,
+            std::shared_ptr<ui::styling::CheckBoxConfig> checkBoxConfig,
+            bool& trainOnlySelected)
+            : Component("Training Source Settings", {})
+            , m_renderSettings(std::move(renderSettings))
+            , m_trainOnlySelected(trainOnlySelected)
+            , m_trainOnlySelectedCheckBox("TrainOnlySelected", std::move(checkBoxConfig))
+        {
+            *m_trainOnlySelectedCheckBox.isChecked() = m_trainOnlySelected;
+        }
+
+        void render() override
+        {
+            m_renderSettings(m_trainOnlySelectedCheckBox);
+            m_trainOnlySelected = *m_trainOnlySelectedCheckBox.isChecked();
+        }
+
+    private:
+        std::function<void(ui::components::CheckBox&)> m_renderSettings;
+        bool& m_trainOnlySelected;
+        ui::components::CheckBox m_trainOnlySelectedCheckBox;
+    };
+
+    std::shared_ptr<ui::styling::ChildWindowConfig> makeLabelChildConfig(
+        const std::string& name,
+        float width,
+        float height)
+    {
+        return ChildWindowConfigBuilder()
+            .name(name)
+            .background(ui::styling::Color::transparentGray)
+            .rounding(8.0f)
+            .borderSize(1.0f)
+            .size(ChildWindowSizeConfigBuilder()
+                      .width(width)
+                      .height(height)
+                      .minWidth(0.0f)
+                      .minHeight(0.0f)
+                      .build())
+            .build();
+    }
+}
 
 static AutoRegisterLayerArgs<PredictorsSettingsLayer, std::string> reg("PREDICTORS_SETTINGS_LAYER");
 
 PredictorsSettingsLayer::PredictorsSettingsLayer(const std::string& name)
-    : Layer(name)
+    : Layer(name), ui::components::Window(LAYER_NAME)
 {
+    VisibilityHandler::show(LAYER_NAME);
 }
 
 void PredictorsSettingsLayer::onEvent(Event& event)
@@ -32,6 +419,290 @@ void PredictorsSettingsLayer::onEvent(Event& event)
             event.isHandled = true;
         }
     }
+}
+
+void PredictorsSettingsLayer::initWindowConfig()
+{
+    auto posConfig = WindowPosConfigBuilder()
+                         .posX(0.0f)
+                         .posY(0.0f)
+                         .build();
+
+    auto sizeConfig = WindowSizeConfigBuilder()
+                          .width(0.48f)
+                          .height(0.72f)
+                          .minWidth(0.01f)
+                          .minHeight(0.01f)
+                          .build();
+
+    auto titleBarConfig = WindowTitleBarBuilder()
+                              .background(ui::styling::Color::titleBarOrange)
+                              .font(ui::styling::Font::extraBold(20.0f))
+                              .build();
+
+    m_windowConfig = WindowConfigBuilder()
+                         .name("Predictors Settings Layer")
+                         .layerName(LAYER_NAME)
+                         .background(ui::styling::Color::transparentGray)
+                         .titleBar(titleBarConfig)
+                         .pos(posConfig)
+                         .size(sizeConfig)
+                         .build();
+}
+
+void PredictorsSettingsLayer::initComponents()
+{
+    using namespace ui::components;
+
+    auto buttonConfig = ButtonConfigBuilder()
+                            .rounding(8.0f)
+                            .background(ui::styling::Color::lightGray)
+                            .font(ui::styling::Font::regular(0.6f))
+                            .size(ImVec2{0.15f, 0.04f})
+                            .onHoverColor(ui::styling::Color::hoverOverOrange)
+                            .onClickColor(ui::styling::Color::onClickOrange)
+                            .build();
+
+    auto featureRemoveButtonConfig = ButtonConfigBuilder()
+                                         .rounding(8.0f)
+                                         .background(ui::styling::Color::lightGray)
+                                         .font(ui::styling::Font::regular(0.6f))
+                                         .size(ImVec2{0.08f, 0.04f})
+                                         .onHoverColor(ui::styling::Color::hoverOverOrange)
+                                         .onClickColor(ui::styling::Color::onClickOrange)
+                                         .build();
+
+    auto textConfig = LabelConfigBuilder()
+                          .font(ui::styling::Font::regular(0.02f))
+                          .build();
+
+    auto headingConfig = LabelConfigBuilder()
+                             .font(ui::styling::Font::extraBold(0.025f))
+                             .build();
+
+    auto collapsingHeaderConfig = CollapsingHeaderConfigBuilder()
+                                      .header(ui::styling::Color::titleBarOrange)
+                                      .headerHovered(ui::styling::Color::titleBarOrange)
+                                      .headerActive(ui::styling::Color::titleBarOrange)
+                                      .framePadding(ImVec2{6.0f, 4.0f})
+                                      .flags(ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth)
+                                      .build();
+
+    auto checkBoxConfig = CheckBoxConfigBuilder()
+                              .checkMarkColor(ui::styling::Color::selectedOrange)
+                              .background(ui::styling::Color::lightGray)
+                              .onHoverBackground(ui::styling::Color::lightGray)
+                              .onActiveBackground(ui::styling::Color::lightGray)
+                              .build();
+
+    auto inputBoxConfig = InputBoxBuilder()
+                              .width(0.18f)
+                              .background(ui::styling::Color::lightGray)
+                              .build();
+
+    auto comboConfig = ComboConfigBuilder()
+                           .frameBackground(ui::styling::Color::lightGray)
+                           .frameBackgroundHovered(ui::styling::Color::hoverOverOrange)
+                           .frameBackgroundActive(ui::styling::Color::onClickOrange)
+                           .border(ui::styling::Color::darkGray)
+                           .text(ImVec4{1.0f, 1.0f, 1.0f, 1.0f})
+                           .popUpBackground(ui::styling::Color::gray)
+                           .header(ui::styling::Color::selectedOrange)
+                           .headerHovered(ui::styling::Color::hoverOverOrange)
+                           .headerActive(ui::styling::Color::onClickOrange)
+                           .scrollBarBackground(ui::styling::Color::darkGray)
+                           .scrollBarGrab(ui::styling::Color::lightGray)
+                           .scrollBarGrabHovered(ui::styling::Color::hoverOverOrange)
+                           .scrollBarGrabActive(ui::styling::Color::onClickOrange)
+                           .navCursor(ui::styling::Color::titleBarOrange)
+                           .framePadding(ImVec2{6.0f, 4.0f})
+                           .frameRounding(8.0f)
+                           .frameBorderSize(0.0f)
+                           .popUpRounding(8.0f)
+                           .popUpBorderSize(1.0f)
+                           .build();
+
+    Layout* layout = emplaceLayout();
+    layout->reserveComponents(40);
+
+    emplaceComponent<Label<ui::styling::TextTypes::CLASSIC>>(layout, "Choose Predictor:", headingConfig);
+    using OptionIterator = std::vector<AnalyserRegistry::InstanceInfo>::iterator;
+    emplaceComponent<ui::components::Combo<OptionIterator>>(layout, "Select Predictor", comboConfig,
+                            [this](){
+                                return std::pair{m_predictorInstances.begin(), m_predictorInstances.end()};
+                            },
+                            [this](){
+                                if (m_selectedPredictorIndex >= 0 &&
+                                    m_selectedPredictorIndex < static_cast<int>(m_predictorInstances.size())) {
+                                    return m_predictorInstances[m_selectedPredictorIndex].displayName;
+                                }
+                                return std::string{"None"};
+                            },
+                            [this](OptionIterator option){
+                                return ImGui::GetID(option->instanceId.c_str());
+                            },
+                            [this](OptionIterator option) {
+                                return option->displayName;
+                            },
+                            [this](OptionIterator option) {
+                                return m_selectedPredictorIndex >= 0 &&
+                                       m_selectedPredictorIndex < static_cast<int>(m_predictorInstances.size()) &&
+                                       option->instanceId == m_predictorInstances[m_selectedPredictorIndex].instanceId;
+                            },
+                            [this](OptionIterator option) {
+                                m_selectedPredictorIndex = static_cast<int>(option - m_predictorInstances.begin());
+                                m_predictorEditor.open(getSelectedPredictor());
+
+                                Predictor* predictor = getSelectedPredictor();
+                                std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+                                if (predictor) {
+                                    std::strncpy(m_predictorNameBuffer, predictor->getName().c_str(),
+                                                 sizeof(m_predictorNameBuffer) - 1);
+                                }
+                                if (m_predictorNameInputBox)
+                                {
+                                    std::strncpy(
+                                        m_predictorNameInputBox->inputValue(),
+                                        m_predictorNameBuffer,
+                                        sizeof(m_predictorNameBuffer) - 1);
+                                }
+                            });
+    m_predictorContent = emplaceComponent<ChildWindow>(
+        layout, "PredictorContent", makeLabelChildConfig("PredictorContent", 0.48f, 0.72f));
+    Layout* predictorContentLayout = m_predictorContent->emplaceLayout();
+    predictorContentLayout->reserveComponents(30);
+
+    m_predictorContent->emplaceComponent<Separator>(predictorContentLayout, 0.9f);
+
+    auto featureEditorHeader = m_predictorContent->emplaceComponent<CollapsingHeader>(
+        predictorContentLayout, "Feature Editor", collapsingHeaderConfig);
+    Layout* featureEditorLayout = featureEditorHeader->emplaceLayout();
+    featureEditorLayout->reserveComponents(1);
+    featureEditorHeader->emplaceComponent<UsedFeaturesList>(
+        featureEditorLayout, m_predictorEditor.getFeatureEditor(), featureRemoveButtonConfig);
+
+    m_predictorContent->emplaceComponent<Separator>(predictorContentLayout, 0.9f);
+
+    auto labelEditorHeader = m_predictorContent->emplaceComponent<CollapsingHeader>(
+        predictorContentLayout, "Label Editor", collapsingHeaderConfig);
+    Layout* labelEditorLayout = labelEditorHeader->emplaceLayout();
+    labelEditorLayout->reserveComponents(4);
+    labelEditorHeader->emplaceComponent<Label<ui::styling::TextTypes::CLASSIC>>(
+        labelEditorLayout, "Label Editor", textConfig);
+
+    auto labelColumn = labelEditorHeader->emplaceComponent<ChildWindow>(
+        labelEditorLayout, "LabelEditorColumn", makeLabelChildConfig("LabelEditorColumn", 0.16f, 0.32f));
+    Layout* labelColumnLayout = labelColumn->emplaceLayout();
+    labelColumnLayout->reserveComponents(2);
+
+    auto labelTreePanel = labelColumn->emplaceComponent<ChildWindow>(
+        labelColumnLayout, "LabelsTreePanel", makeLabelChildConfig("LabelsTreePanel", 0.16f, 0.26f));
+    Layout* labelTreeLayout = labelTreePanel->emplaceLayout();
+    labelTreeLayout->reserveComponents(1);
+
+    using LabelIterator = std::vector<LabelDefinition>::iterator;
+    auto treeConfig = TreeConfigBuilder()
+                          .header(ui::styling::Color::selectedOrange)
+                          .headerHovered(ui::styling::Color::hoverOverOrange)
+                          .headerActive(ui::styling::Color::onClickOrange)
+                          .framePadding(ImVec2{6.0f, 4.0f})
+                          .flags(ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DrawLinesFull)
+                          .build();
+    labelTreePanel->emplaceComponent<Tree<LabelDefinition, LabelIterator>>(
+        labelTreeLayout,
+        "LabelTree",
+        treeConfig,
+        [this]() {
+            auto& labels = m_predictorEditor.getLabelEditor().getState().labels;
+            return std::pair{labels.begin(), labels.end()};
+        },
+        [](LabelIterator label) {
+            return std::pair{label, label};
+        },
+        [this](LabelIterator label) {
+            auto& labels = m_predictorEditor.getLabelEditor().getState().labels;
+            return static_cast<ImGuiID>(std::distance(labels.begin(), label) + 1);
+        },
+        [](LabelIterator label) {
+            return label->name;
+        },
+        [this](LabelIterator label) {
+            auto& state = m_predictorEditor.getLabelEditor().getState();
+            state.selectedLabelIndex = static_cast<int>(
+                std::distance(state.labels.begin(), label));
+        });
+
+    auto labelActionsPanel = labelColumn->emplaceComponent<ChildWindow>(
+        labelColumnLayout, "LabelActionsPanel", makeLabelChildConfig("LabelActionsPanel", 0.16f, 0.06f));
+    Layout* labelActionsLayout = labelActionsPanel->emplaceLayout();
+    labelActionsLayout->reserveComponents(3);
+    labelActionsPanel->emplaceComponent<Button>(
+        labelActionsLayout, "+ Add Label", featureRemoveButtonConfig,
+        [this](Button*) { m_predictorEditor.getLabelEditor().addLabel(); });
+    labelActionsPanel->emplaceComponent<SameLine>(labelActionsLayout);
+    labelActionsPanel->emplaceComponent<Button>(
+        labelActionsLayout, "Delete Label", featureRemoveButtonConfig,
+        [this](Button*) { m_predictorEditor.getLabelEditor().removeSelectedLabel(); });
+
+    labelEditorHeader->emplaceComponent<SameLine>(labelEditorLayout);
+    auto labelDetailsPanel = labelEditorHeader->emplaceComponent<ChildWindow>(
+        labelEditorLayout, "SelectedLabelEditor", makeLabelChildConfig("SelectedLabelEditor", 0.29f, 0.32f));
+    Layout* labelDetailsLayout = labelDetailsPanel->emplaceLayout();
+    labelDetailsLayout->reserveComponents(1);
+    labelDetailsPanel->emplaceComponent<SelectedLabelDetails>(
+        labelDetailsLayout, m_predictorEditor.getLabelEditor(), comboConfig, inputBoxConfig);
+
+    m_predictorContent->emplaceComponent<Label<ui::styling::TextTypes::CLASSIC>>(
+        predictorContentLayout, "Predictor Name", textConfig);
+    m_predictorNameInputBox = m_predictorContent->emplaceComponent<InputBox<char>>(
+        predictorContentLayout, "PredictorName", inputBoxConfig);
+    m_predictorContent->emplaceComponent<Separator>(predictorContentLayout, 0.9f);
+
+    m_predictorContent->emplaceComponent<Label<ui::styling::TextTypes::CLASSIC>>(
+        predictorContentLayout, "Training Mesh Source", headingConfig);
+    m_predictorContent->emplaceComponent<Label<ui::styling::TextTypes::CLASSIC>>(
+        predictorContentLayout, "Source", textConfig);
+    using TrainingSourceIterator = std::vector<std::string>::iterator;
+    m_predictorContent->emplaceComponent<ui::components::Combo<TrainingSourceIterator>>(
+        predictorContentLayout,
+        "TrainingSource",
+        comboConfig,
+        [this]() {
+            return std::pair{m_trainingSourceOptions.begin(), m_trainingSourceOptions.end()};
+        },
+        [this]() {
+            return m_trainingSourceOptions[static_cast<std::size_t>(m_trainingMeshSourceMode)];
+        },
+        [this](TrainingSourceIterator option) {
+            return static_cast<ImGuiID>(std::distance(m_trainingSourceOptions.begin(), option) + 1);
+        },
+        [](TrainingSourceIterator option) {
+            return *option;
+        },
+        [this](TrainingSourceIterator option) {
+            return std::distance(m_trainingSourceOptions.begin(), option) ==
+                   static_cast<std::ptrdiff_t>(m_trainingMeshSourceMode);
+        },
+        [this](TrainingSourceIterator option) {
+            m_trainingMeshSourceMode = static_cast<TrainingMeshSourceMode>(
+                std::distance(m_trainingSourceOptions.begin(), option));
+        });
+    m_predictorContent->emplaceComponent<TrainingSourceSettingsView>(
+        predictorContentLayout,
+        [this](CheckBox& checkBox) { renderTrainingSourceSettings(checkBox); },
+        checkBoxConfig,
+        m_trainOnlySelected);
+    m_predictorContent->emplaceComponent<Button>(
+        predictorContentLayout, "Retrain Current", buttonConfig, [](Button*) {});
+    m_predictorContent->emplaceComponent<SameLine>(predictorContentLayout);
+    m_predictorContent->emplaceComponent<Button>(
+        predictorContentLayout, "Train As New Copy", buttonConfig, [](Button*) {});
+
+    const std::size_t componentCount = layout->components().size()
+                                     + predictorContentLayout->components().size()
+                                     + featureEditorLayout->components().size()
+                                     + LABEL_EDITOR_LAYOUT_SIZE_ESTIMATE;
+    m_windowConfig.size.height = static_cast<float>(componentCount) * 0.018f;
 }
 
 void PredictorsSettingsLayer::refreshPredictorInstances()
@@ -57,35 +728,37 @@ Predictor* PredictorsSettingsLayer::getSelectedPredictor() const
     return dynamic_cast<Predictor*>(analyser);
 }
 
-void PredictorsSettingsLayer::renderTrainingSourceSettings()
+void PredictorsSettingsLayer::renderTrainingSourceSettings(
+    ui::components::CheckBox& trainOnlySelectedCheckBox)
 {
-    ImGui::Separator();
-    ImGui::Text("Training Mesh Source");
-
-    int sourceMode = static_cast<int>(m_trainingMeshSourceMode);
-    const char* sourceModes[] = { "Meshes From Scene", "OBJ Files" };
-
-    if (ImGui::Combo("Source", &sourceMode, sourceModes, IM_ARRAYSIZE(sourceModes)))
-    {
-        m_trainingMeshSourceMode = static_cast<TrainingMeshSourceMode>(sourceMode);
-    }
-
     if (m_trainingMeshSourceMode == TrainingMeshSourceMode::SceneMeshes)
     {
-        ImGui::Checkbox("Train only on selected", &m_trainOnlySelected);
+        trainOnlySelectedCheckBox.render();
+        ui::components::SameLine sameLine;
+        sameLine.render();
+        renderText("Train only on selected");
 
         if (m_trainOnlySelected)
         {
-            ImGui::TextDisabled("Training will use only selected meshes.");
+            renderDisabledText("Training will use only selected meshes.");
         }
         else
         {
-            ImGui::TextDisabled("Training will use all meshes in the scene.");
+            renderDisabledText("Training will use all meshes in the scene.");
         }
     }
     else if (m_trainingMeshSourceMode == TrainingMeshSourceMode::ObjFiles)
     {
-        if (ImGui::Button("Select OBJ Files", ImVec2(180.0f, 0.0f)))
+        bool selectObjFiles = false;
+        ui::components::Button selectObjFilesButton(
+            "Select OBJ Files",
+            runtimeButtonConfig(),
+            [&selectObjFiles](ui::components::Button*) {
+                selectObjFiles = true;
+            });
+        selectObjFilesButton.render();
+
+        if (selectObjFiles)
         {
             IGFD::FileDialogConfig config;
             config.path = ".";
@@ -117,27 +790,55 @@ void PredictorsSettingsLayer::renderTrainingSourceSettings()
             ImGuiFileDialog::Instance()->Close();
         }
 
-        ImGui::Text("Selected OBJ files: %d", static_cast<int>(m_selectedObjFilePaths.size()));
+        renderText("Selected OBJ files: " + std::to_string(m_selectedObjFilePaths.size()));
 
-        ImGui::BeginChild("SelectedObjFilesList", ImVec2(0.0f, 90.0f), true);
-
+        auto selectedFilesConfig = ChildWindowConfigBuilder()
+                                       .name("SelectedObjFilesList")
+                                       .background(ui::styling::Color::transparentGray)
+                                       .rounding(8.0f)
+                                       .borderSize(1.0f)
+                                       .size(ChildWindowSizeConfigBuilder()
+                                                 .width(0.46f)
+                                                 .height(0.09f)
+                                                 .minWidth(0.0f)
+                                                 .minHeight(0.0f)
+                                                 .build())
+                                       .build();
+        ui::components::ChildWindow selectedFilesWindow(
+            "SelectedObjFilesList",
+            selectedFilesConfig);
+        ui::components::Layout* selectedFilesLayout = selectedFilesWindow.emplaceLayout();
+        selectedFilesLayout->reserveComponents(static_cast<int>(
+            std::max<std::size_t>(m_selectedObjFilePaths.size(), 1)));
         if (m_selectedObjFilePaths.empty())
         {
-            ImGui::TextDisabled("No OBJ files selected.");
+            selectedFilesWindow.emplaceComponent<
+                ui::components::Label<ui::styling::TextTypes::DISABLED>>(
+                selectedFilesLayout, "No OBJ files selected.", runtimeTextConfig());
         }
         else
         {
             for (const std::string& filePath : m_selectedObjFilePaths)
             {
-                ImGui::BulletText("%s", filePath.c_str());
+                selectedFilesWindow.emplaceComponent<
+                    ui::components::Label<ui::styling::TextTypes::BULLET>>(
+                    selectedFilesLayout, filePath, runtimeTextConfig());
             }
         }
-
-        ImGui::EndChild();
+        selectedFilesWindow.render();
 
         if (!m_selectedObjFilePaths.empty())
         {
-            if (ImGui::Button("Clear OBJ Selection", ImVec2(180.0f, 0.0f)))
+            bool clearObjSelection = false;
+            ui::components::Button clearObjSelectionButton(
+                "Clear OBJ Selection",
+                runtimeButtonConfig(),
+                [&clearObjSelection](ui::components::Button*) {
+                    clearObjSelection = true;
+                });
+            clearObjSelectionButton.render();
+
+            if (clearObjSelection)
             {
                 m_selectedObjFilePaths.clear();
             }
@@ -219,8 +920,10 @@ std::vector<Mesh*> PredictorsSettingsLayer::collectTrainingMeshes()
 
 void PredictorsSettingsLayer::onImGuiRender()
 {
+    bool initializeNameInput = false;
     if (!m_initialized)
     {
+        initializeNameInput = true;
         refreshPredictorInstances();
 
         if (!m_predictorInstances.empty())
@@ -229,8 +932,8 @@ void PredictorsSettingsLayer::onImGuiRender()
             m_predictorEditor.open(getSelectedPredictor());
 
             Predictor* predictor = getSelectedPredictor();
-            if (predictor) {
-                std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
+            if (predictor)
+            {
                 std::strncpy(m_predictorNameBuffer, predictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
             }
         }
@@ -239,380 +942,36 @@ void PredictorsSettingsLayer::onImGuiRender()
         m_initialized = true;
     }
 
-    ImGui::Begin(this->getName().c_str());
-
-    ImVec2 windowPos = ImGui::GetWindowPos();
-    ImVec2 windowSize = ImGui::GetWindowSize();
-    ImVec2 mousePos = ImGui::GetMousePos();
-
-    m_isMouseInsideWindow =
-        (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
-         mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
-
-    ImGui::Text("Choose Predictor:");
-    bool predictorChanged = false;
-
-    const std::string currentPredictorName =
-        m_predictorInstances.empty() ? "None" : m_predictorInstances[m_selectedPredictorIndex].displayName;
-
-    if (ImGui::BeginCombo("##PredictorDropdown", currentPredictorName.c_str()))
+    if (m_predictorContent)
     {
-        for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
-        {
-            const bool isSelected = (m_selectedPredictorIndex == i);
-
-            if (ImGui::Selectable(m_predictorInstances[i].displayName.c_str(), isSelected))
-            {
-                m_selectedPredictorIndex = i;
-                predictorChanged = true;
-            }
-
-            if (isSelected) {
-                ImGui::SetItemDefaultFocus();
-            }
-        }
-
-        ImGui::EndCombo();
+        m_predictorContent->setIsVisible(m_predictorEditor.getPredictor() != nullptr);
     }
 
-    if (predictorChanged)
+    const bool hasNameInputBeforeRender = m_predictorNameInputBox != nullptr;
+    if (initializeNameInput && hasNameInputBeforeRender)
     {
-        m_predictorEditor.open(getSelectedPredictor());
-
-        Predictor* predictor = getSelectedPredictor();
-        std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
-        if (predictor) {
-            std::strncpy(m_predictorNameBuffer, predictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
-        }
+        std::strncpy(
+            m_predictorNameInputBox->inputValue(),
+            m_predictorNameBuffer,
+            sizeof(m_predictorNameBuffer) - 1);
     }
 
-    Predictor* predictor = m_predictorEditor.getPredictor();
-    if (predictor)
+    this->render();
+    if (m_predictorNameInputBox)
     {
-        FeatureEditor& featureEditor = m_predictorEditor.getFeatureEditor();
-        LabelEditor& labelEditor = m_predictorEditor.getLabelEditor();
-
-        FeatureEditorState& featureState = featureEditor.getState();
-        LabelEditorState& labelState = labelEditor.getState();
-
-        ImGui::Separator();
-
-        if (ImGui::CollapsingHeader("Feature Editor", ImGuiTreeNodeFlags_DefaultOpen))
+        if (initializeNameInput && !hasNameInputBeforeRender)
         {
-            ImGui::Text("Used Features:");
-            int featureToRemove = -1;
-
-            for (int i = 0; i < static_cast<int>(featureState.usedFeatures.size()); ++i)
-            {
-                ImGui::PushID(i);
-
-                const std::string featureName = featureState.usedFeatures[i]->getName();
-                ImGui::Text("%s", featureName.c_str());
-
-                ImGui::SameLine(250.0f);
-                if (ImGui::Button("Remove"))
-                {
-                    featureToRemove = i;
-                }
-
-                ImGui::PopID();
-            }
-
-            if (featureToRemove != -1)
-            {
-                featureEditor.removeFeature(featureState.usedFeatures[featureToRemove]);
-            }
-
-            ImGui::Separator();
-            ImGui::Text("Add Feature:");
-
-            std::string currentFeatureToAddName =
-                featureState.notUsedFeatures.empty() ? "None" : featureState.notUsedFeatures[featureState.selectedFeatureToAddIndex]->getName();
-
-            if (ImGui::BeginCombo("##AddFeatureDropdown", currentFeatureToAddName.c_str()))
-            {
-                for (int i = 0; i < static_cast<int>(featureState.notUsedFeatures.size()); ++i)
-                {
-                    const bool isSelected = (featureState.selectedFeatureToAddIndex == i);
-
-                    if (ImGui::Selectable(featureState.notUsedFeatures[i]->getName().c_str(), isSelected))
-                    {
-                        featureState.selectedFeatureToAddIndex = i;
-                    }
-
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-
-                ImGui::EndCombo();
-            }
-
-            if (!featureState.notUsedFeatures.empty())
-            {
-                if (ImGui::Button("Add Selected Feature"))
-                {
-                    featureEditor.addFeature(featureState.notUsedFeatures[featureState.selectedFeatureToAddIndex]);
-                }
-            }
+            std::strncpy(
+                m_predictorNameInputBox->inputValue(),
+                m_predictorNameBuffer,
+                sizeof(m_predictorNameBuffer) - 1);
         }
-
-        if (ImGui::CollapsingHeader("Label Editor", ImGuiTreeNodeFlags_DefaultOpen))
+        else
         {
-            ImGui::Separator();
-            ImGui::Text("Label Editor");
-
-            ImGui::BeginChild("LabelsList", ImVec2(220.0f, 260.0f), true);
-
-            for (int i = 0; i < static_cast<int>(labelState.labels.size()); ++i)
-            {
-                const bool selected = (labelState.selectedLabelIndex == i);
-                if (ImGui::Selectable(labelState.labels[i].name.c_str(), selected))
-                {
-                    labelState.selectedLabelIndex = i;
-                }
-            }
-
-            if (ImGui::Button("+ Add Label"))
-            {
-                labelEditor.addLabel();
-            }
-
-            if (labelState.selectedLabelIndex >= 0 &&
-                labelState.selectedLabelIndex < static_cast<int>(labelState.labels.size()))
-            {
-                if (ImGui::Button("Delete Label"))
-                {
-                    labelEditor.removeSelectedLabel();
-                }
-            }
-
-            ImGui::EndChild();
-
-            ImGui::SameLine();
-
-            ImGui::BeginChild("SelectedLabelEditor", ImVec2(0.0f, 260.0f), true);
-
-            LabelDefinition* label = labelEditor.getSelectedLabel();
-            if (label)
-            {
-                char nameBuffer[256];
-                std::memset(nameBuffer, 0, sizeof(nameBuffer));
-                std::strncpy(nameBuffer, label->name.c_str(), sizeof(nameBuffer) - 1);
-
-                if (ImGui::InputText("Label Name", nameBuffer, sizeof(nameBuffer)))
-                {
-                    label->name = nameBuffer;
-                }
-
-                int mode = static_cast<int>(label->mode);
-                const char* modes[] = { "ALL", "ANY" };
-                if (ImGui::Combo("Match Mode", &mode, modes, IM_ARRAYSIZE(modes)))
-                {
-                    label->mode = static_cast<LabelMatchMode>(mode);
-                }
-
-                ImGui::Separator();
-                ImGui::Text("Conditions");
-
-                int conditionToRemove = -1;
-
-                for (int i = 0; i < static_cast<int>(label->conditions.size()); ++i)
-                {
-                    ImGui::PushID(i);
-
-                    LabelCondition& cond = label->conditions[i];
-
-                    int selectedPropertyIndex = -1;
-                    for (int p = 0; p < static_cast<int>(labelState.propertyOptions.size()); ++p)
-                    {
-                        if (labelState.propertyOptions[p].featureId == cond.featureId &&
-                            labelState.propertyOptions[p].componentIndex == cond.componentIndex)
-                        {
-                            selectedPropertyIndex = p;
-                            break;
-                        }
-                    }
-
-                    const char* currentPropertyName =
-                        (selectedPropertyIndex >= 0 && selectedPropertyIndex < static_cast<int>(labelState.propertyOptions.size()))
-                            ? labelState.propertyOptions[selectedPropertyIndex].displayName.c_str()
-                            : "None";
-
-                    if (ImGui::BeginCombo("Property", currentPropertyName))
-                    {
-                        for (int p = 0; p < static_cast<int>(labelState.propertyOptions.size()); ++p)
-                        {
-                            const bool selected = (selectedPropertyIndex == p);
-
-                            if (ImGui::Selectable(labelState.propertyOptions[p].displayName.c_str(), selected))
-                            {
-                                cond.featureId = labelState.propertyOptions[p].featureId;
-                                cond.componentIndex = labelState.propertyOptions[p].componentIndex;
-                            }
-
-                            if (selected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
-                        }
-
-                        ImGui::EndCombo();
-                    }
-
-                    int op = static_cast<int>(cond.op);
-                    const char* ops[] = { "==", "!=", "<", "<=", ">", ">=" };
-                    if (ImGui::Combo("Operator", &op, ops, IM_ARRAYSIZE(ops)))
-                    {
-                        cond.op = static_cast<LabelOperator>(op);
-                    }
-
-                    ImGui::DragFloat("Value", &cond.value, 0.01f);
-
-                    if (ImGui::Button("Remove Condition"))
-                    {
-                        conditionToRemove = i;
-                    }
-
-                    ImGui::Separator();
-                    ImGui::PopID();
-                }
-
-                if (conditionToRemove != -1)
-                {
-                    labelEditor.removeConditionFromSelectedLabel(conditionToRemove);
-                }
-
-                if (ImGui::Button("+ Add Condition"))
-                {
-                    labelEditor.addConditionToSelectedLabel();
-                }
-            }
-            else
-            {
-                ImGui::TextUnformatted("No label selected.");
-            }
-
-            ImGui::EndChild();
-        }
-
-        ImGui::Separator();
-        ImGui::InputText("Predictor Name", m_predictorNameBuffer, sizeof(m_predictorNameBuffer));
-
-        renderTrainingSourceSettings();
-
-        if (ImGui::Button("Retrain Current", ImVec2(180.0f, 0.0f)))
-        {
-            Predictor* currentPredictor = m_predictorEditor.getPredictor();
-
-            if (currentPredictor && std::strlen(m_predictorNameBuffer) > 0)
-            {
-                const std::string typedPredictorName = m_predictorNameBuffer;
-                const std::string currentInstanceName = currentPredictor->getInstanceName();
-
-                if (typedPredictorName == currentInstanceName)
-                {
-                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
-
-                    if (trainingMeshes.empty())
-                    {
-                        std::cerr << "[ML] ERROR: Cannot retrain predictor. No training meshes were found." << std::endl;
-                    }
-                    else
-                    {
-                        m_predictorEditor.applyFeatureChanges();
-                        m_predictorEditor.save();
-
-                        currentPredictor->reloadFromConfig();
-                        currentPredictor->train(trainingMeshes);
-                    }
-                }
-                else
-                {
-                    std::cerr << "[ML] ERROR: Cannot retrain current predictor. Predictor Name '"
-                              << typedPredictorName
-                              << "' does not match the currently selected predictor '"
-                              << currentInstanceName << "'." << std::endl;
-                }
-            }
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Train As New Copy", ImVec2(180.0f, 0.0f)))
-        {
-            Predictor* currentPredictor = m_predictorEditor.getPredictor();
-
-            if (currentPredictor && std::strlen(m_predictorNameBuffer) > 0)
-            {
-                const std::string newInstanceName = m_predictorNameBuffer;
-                const std::string currentInstanceName = currentPredictor->getInstanceName();
-
-                bool predictorAlreadyExists = false;
-                for (const auto& predictorInstance : m_predictorInstances)
-                {
-                    if (predictorInstance.instanceId == newInstanceName)
-                    {
-                        predictorAlreadyExists = true;
-                        break;
-                    }
-                }
-
-                if (newInstanceName == currentInstanceName)
-                {
-                    std::cerr << "[ML] ERROR: Cannot create predictor copy. Predictor Name '"
-                              << newInstanceName
-                              << "' matches the currently selected predictor. Use Retrain Current instead."
-                              << std::endl;
-                }
-                else if (predictorAlreadyExists)
-                {
-                    std::cerr << "[ML] ERROR: Cannot create predictor copy. Predictor with name '"
-                              << newInstanceName << "' already exists." << std::endl;
-                }
-                else
-                {
-                    std::vector<Mesh*> trainingMeshes = collectTrainingMeshes();
-
-                    if (trainingMeshes.empty())
-                    {
-                        std::cerr << "[ML] ERROR: Cannot train new predictor copy. No training meshes were found." << std::endl;
-                    }
-                    else
-                    {
-                        const std::string typeId =
-                            m_predictorInstances[m_selectedPredictorIndex].typeId;
-
-                        Analyser* analyser =
-                            AnalyserRegistry::instance().createAnalyserInstance(typeId, newInstanceName);
-
-                        auto* newPredictor = dynamic_cast<Predictor*>(analyser);
-                        if (newPredictor)
-                        {
-                            m_predictorEditor.saveToPredictor(newPredictor);
-                            newPredictor->reloadFromConfig();
-                            newPredictor->train(trainingMeshes);
-
-                            refreshPredictorInstances();
-
-                            for (int i = 0; i < static_cast<int>(m_predictorInstances.size()); ++i)
-                            {
-                                if (m_predictorInstances[i].instanceId == newInstanceName)
-                                {
-                                    m_selectedPredictorIndex = i;
-                                    break;
-                                }
-                            }
-
-                            m_predictorEditor.open(newPredictor);
-
-                            std::memset(m_predictorNameBuffer, 0, sizeof(m_predictorNameBuffer));
-                            std::strncpy(m_predictorNameBuffer, newPredictor->getName().c_str(), sizeof(m_predictorNameBuffer) - 1);
-                        }
-                    }
-                }
-            }
+            std::strncpy(
+                m_predictorNameBuffer,
+                m_predictorNameInputBox->inputValue(),
+                sizeof(m_predictorNameBuffer) - 1);
         }
     }
-
-    ImGui::End();
 }

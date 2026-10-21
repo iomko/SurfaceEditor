@@ -1,9 +1,20 @@
 #include "OutlinerLayer.h"
+#include <Builders/UIWindowBuilder.h>
+#include <Builders/UIButtonBuilder.h>
+#include <Builders/UILabelBuilder.h>
+#include <Builders/UICheckBoxBuilder.h>
+#include <Styling/Font.h>
+#include <Components/Dummy.h>
+
+namespace
+{
+    static constexpr const char *LAYER_NAME = "OUTLINER_LAYER";
+}
 
 static AutoRegisterLayerArgs<OutlinerLayer,std::string, std::reference_wrapper<WindowLayerBus>> reg("OUTLINER_LAYER");
 
 OutlinerLayer::OutlinerLayer(const std::string &name, WindowLayerBus &windowLayerBus)
-    : Layer(name), m_windowLayerBus(windowLayerBus) 
+    : Layer(name), m_windowLayerBus(windowLayerBus)
     {
     }
 
@@ -17,6 +28,7 @@ void OutlinerLayer::onEvent(Event &event)
         }
     }
 }
+
 
 void OutlinerLayer::processTree(const std::vector<OutlinerNodeConcept *> &nodes, const ImGuiTreeNodeFlags &imguiFlags, OutlinerLayerState &outlinerLayerState)
 {
@@ -42,6 +54,19 @@ void OutlinerLayer::processTree(const std::vector<OutlinerNodeConcept *> &nodes,
 
 void OutlinerLayer::onImGuiRender() 
 {
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,ImVec4(0.15f, 0.15f, 0.17f, 0.70f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,20.0f);
+    ImGui::PushFont(ui::styling::Font::extraBold(20.0f));
+    
+    static bool collapseWindow = true;
+    static bool isMouseOnHeader = false;
+    ImGui::SetNextWindowCollapsed(collapseWindow);
+    if (isMouseOnHeader) {
+        collapseWindow = false;
+    } else if (!isMouseOnHeader && !m_state.m_isMouseInsideWindow) {
+        collapseWindow = true;
+    }
+
     ImGui::Begin(this->getName().c_str());
 
     // Get window position and size
@@ -52,6 +77,9 @@ void OutlinerLayer::onImGuiRender()
     m_state.m_isMouseInsideWindow = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
                                      mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
 
+    isMouseOnHeader = (mousePos.x >= windowPos.x && mousePos.x <= windowPos.x + windowSize.x &&
+                        mousePos.y >= windowPos.y && mousePos.y <= windowPos.y + windowSize.y);
+
     ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
     if (!m_state.m_nodes.empty())
@@ -60,6 +88,9 @@ void OutlinerLayer::onImGuiRender()
     }
 
     ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
+    ImGui::PopFont();
 }
 void OutlinerLayer::update(Observable* observable, const OpParams& iParams)
 {

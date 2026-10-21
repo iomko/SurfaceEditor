@@ -10,6 +10,11 @@
 #include "../../src/Ml/Analyser/Analyser.h"
 #include "../../src/Ml/Analyser/AnalyserRegistry.h"
 #include "../../src/Ml/Editor/PredictorEditor.h"
+#include <Components/CollapsingHeader.h>
+#include <Components/Combo.h>
+#include <Components/ChildWindow.h>
+#include <Components/InputBox.h>
+#include <Components/CheckBox.h>
 
 enum class TrainingMeshSourceMode
 {
@@ -17,18 +22,24 @@ enum class TrainingMeshSourceMode
     ObjFiles = 1
 };
 
-class PredictorsSettingsLayer : public Layer, public Observable, public Observer {
+class PredictorsSettingsLayer : public Layer, public Observable, public Observer, public ui::components::Window {
 public:
     PredictorsSettingsLayer(const std::string& name);
 
     void onEvent(Event& event) override;
     void onImGuiRender() override;
 
+protected:
+    void initWindowConfig() override;
+
+    void initComponents() override;
+
+
 private:
     Predictor* getSelectedPredictor() const;
     void refreshPredictorInstances();
 
-    void renderTrainingSourceSettings();
+    void renderTrainingSourceSettings(ui::components::CheckBox& trainOnlySelectedCheckBox);
     std::vector<Mesh*> collectTrainingMeshes();
 
     std::vector<Mesh*> collectSceneTrainingMeshes();
@@ -43,12 +54,15 @@ private:
     int m_previousPredictorIndex = -1;
 
     PredictorEditor m_predictorEditor;
+    ui::components::ChildWindow* m_predictorContent = nullptr;
+    ui::components::InputBox<char>* m_predictorNameInputBox = nullptr;
 
     bool m_initialized = false;
     char m_predictorNameBuffer[256] = {};
 
     TrainingMeshSourceMode m_trainingMeshSourceMode = TrainingMeshSourceMode::SceneMeshes;
     bool m_trainOnlySelected = true;
+    std::vector<std::string> m_trainingSourceOptions{"Meshes From Scene", "OBJ Files"};
 
     std::vector<std::string> m_selectedObjFilePaths;
 };
