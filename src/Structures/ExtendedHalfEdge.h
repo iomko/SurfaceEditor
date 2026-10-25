@@ -354,6 +354,16 @@ public:
                 utils::containers::swapLastAndPop(meshVertices, vertex->m_vertexIndexInVector);
             }
 
+            // The edge being removed can remain in an endpoint's adjacency list
+            // when that endpoint was already shared and its merge was skipped.
+            for (ExtendedVertex *vertex : mesh.m_vertices)
+            {
+                auto &neighbourEdges = vertex->m_neighbourEdges;
+                neighbourEdges.erase(
+                    std::remove(neighbourEdges.begin(), neighbourEdges.end(), firstEdge),
+                    neighbourEdges.end());
+            }
+
             // halfEdge
             firstEdge->m_halfEdge->m_edge = secondEdge;
             // twins
