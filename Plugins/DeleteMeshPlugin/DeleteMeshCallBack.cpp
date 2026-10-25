@@ -14,7 +14,7 @@ void DeleteMeshCallBack::execute(const MeshParams &iParams)
 
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
     scene->deleteMeshFromOctrees(selectedMesh);
-
+    delete selectedMesh;
     /*for (ExtendedFace *face : facesToDelete)
     {
 
