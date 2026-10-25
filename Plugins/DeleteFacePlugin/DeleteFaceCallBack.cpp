@@ -31,6 +31,20 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
     ExtendedHalfEdgeMesh *halfEdgeMesh = mesh->m_halfEdgeStructure;
 
     // Go Through all vertices of a face
+    std::vector<ExtendedVertex*> candidateVertices;
+
+    auto removeNeighbourEdge = [](ExtendedVertex* vertex, ExtendedEdge* edge)
+    {
+        if (!vertex || !edge)
+            return;
+
+        auto& neighbourEdges = vertex->m_neighbourEdges;
+        auto it = std::find(neighbourEdges.begin(), neighbourEdges.end(), edge);
+
+        if (it != neighbourEdges.end())
+            neighbourEdges.erase(it);
+    };
+
     ExtendedHalfEdge *halfEdge = face->m_halfEdge;
     do
     {
@@ -75,20 +89,16 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
             face->m_graphEdges.pop_back();
         }
 
+        if(foundGraphEdge)
+        {
+            delete foundGraphEdge;
+        }
+
         // Check if vertex needs to be deleted from HalfEdge
         if (vertex->m_graphEdges.empty())
         {
-            if (vertex->m_vertexIndexInVector != (halfEdgeMesh->m_vertices.size() - 1))
-            {
-                halfEdgeMesh->m_vertices.back()->m_vertexIndexInVector = vertex->m_vertexIndexInVector;
-                utils::containers::swapLastAndPop(halfEdgeMesh->m_vertices, vertex->m_vertexIndexInVector);
-            }
-            else
-            {
-                halfEdgeMesh->m_vertices.pop_back();
-            }
-
-            vertex->m_halfEdge->m_vertex = nullptr;
+            if (std::find(candidateVertices.begin(), candidateVertices.end(), vertex) == candidateVertices.end())
+                candidateVertices.push_back(vertex);
         }
         else
         {
@@ -108,6 +118,8 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
         if (halfEdge->m_twin == nullptr)
         {
             deleteLineBufferData(mesh, halfEdge->m_edge);
+            removeNeighbourEdge(halfEdge->m_edge->m_firstVertex, halfEdge->m_edge);
+            removeNeighbourEdge(halfEdge->m_edge->m_secondVertex, halfEdge->m_edge);
 
             if (halfEdge->m_edge->m_edgeIndexInVector != (halfEdgeMesh->m_edges.size() - 1))
             {
@@ -118,6 +130,7 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
             {
                 halfEdgeMesh->m_edges.pop_back();
             }
+            delete halfEdge->m_edge;
         }
         else
         {
@@ -141,7 +154,8 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
         {
             halfEdgeMesh->m_halfEdges.pop_back();
         }
-
+        if(halfEdge)
+            delete halfEdge;
         // Go next
         halfEdge = nextHalfEdge;
     } while (halfEdge != face->m_halfEdge);
@@ -156,7 +170,14 @@ void DeleteFaceCallBack::deleteHalfEdgeStructureData(Mesh *mesh, ExtendedFace *f
     {
         halfEdgeMesh->m_faces.pop_back();
     }
+    if(face)
+        delete face;
+    for(ExtendedVertex* vertex : candidateVertices)
+    {
+        halfEdgeMesh->tryDeleteIsolatedVertex(vertex);
+    }
 }
+
 void DeleteFaceCallBack::deleteLineBufferData(Mesh *mesh, ExtendedEdge *edge)
 {
 

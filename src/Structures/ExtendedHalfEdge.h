@@ -99,28 +99,50 @@ public:
     ExtendedHalfEdgeMesh() : ExtendedHalfEdgeMesh::HalfEdgeMesh(), m_graphBuilt(false)
     {
     }
-    ~ExtendedHalfEdgeMesh()
+    ~ExtendedHalfEdgeMesh() override
     {
 		SE_PROFILE_SCOPE;
         // 1. Clear the graph first to delete all GraphEdge objects
         clearGraph();
-
-        // 2. Delete all standard HalfEdgeDS objects
-        // (Order doesn't strictly matter here, but this is safe)
-        for (auto *obj : m_faces)
-            delete obj;
-        for (auto *obj : m_edges)
-            delete obj;
-        for (auto *obj : m_vertices)
-            delete obj;
-        for (auto *obj : m_halfEdges)
-            delete obj;
-
-        m_faces.clear();
-        m_edges.clear();
-        m_vertices.clear();
-        m_halfEdges.clear();
     }
+
+    bool tryDeleteIsolatedVertex(ExtendedVertex* vertex)
+    {
+        if (!vertex)
+            return false;
+
+        // The vertex must no longer participate in any face graph.
+        if (!vertex->m_graphEdges.empty())
+            return false;
+
+        // No incident edges should remain.
+        if (!vertex->m_neighbourEdges.empty())
+            return false;
+
+        // Find the vertex in the owning vector using its stored index.
+        const size_t index = vertex->m_vertexIndexInVector;
+
+        if (index >= m_vertices.size() || m_vertices[index] != vertex)
+            return false;
+
+        const size_t lastIndex = m_vertices.size() - 1;
+
+        if (index != lastIndex)
+        {
+            m_vertices[lastIndex]->m_vertexIndexInVector =
+                static_cast<int>(index);
+
+            utils::containers::swapLastAndPop(m_vertices, index);
+        }
+        else
+        {
+            m_vertices.pop_back();
+        }
+
+        delete vertex;
+        return true;
+    }
+
     void clearGraph()
     {
 		SE_PROFILE_SCOPE;
@@ -140,6 +162,7 @@ public:
         for (ExtendedVertex *vertex : m_vertices)
         {
             vertex->m_graphEdges.clear();
+            vertex->m_neighbourEdges.clear();
         }
 
         m_graphBuilt = false;

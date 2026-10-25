@@ -16,10 +16,10 @@ void DeleteSelectedMeshesCallBack::execute()
 
         MeshParams meshParams;
         meshParams.m_mesh = mesh;
+        ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
 
         auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DELETE_MESH_COMMAND");
         if(deleteMeshCommand) deleteMeshCommand->execute(meshParams); 
 
-        ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
     }
 }

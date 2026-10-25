@@ -205,6 +205,31 @@ Scene::Scene(float xSize, float ySize, float zSize)
 	m_voxelSize.z = zSize;
 }
 
+Scene::~Scene()
+{
+	this->clearMeshes();
+}
+
+void Scene::clearMeshes()
+{
+    // Clear spatial structures before deleting objects they reference.
+    m_res.coordsOctreeMap.clear();
+
+    // Delete all printable meshes, if Scene owns them.
+    for (auto& [mesh, printableMesh] : m_res.printableMeshMap)
+    {
+        delete printableMesh;
+    }
+    m_res.printableMeshMap.clear();
+
+    // Delete meshes registered in meshFaceOctreeCoordsMap.
+    for (auto& [mesh, faceMap] : m_res.meshFaceOctreeCoordsMap)
+    {
+        delete mesh;
+    }
+    m_res.meshFaceOctreeCoordsMap.clear();
+}
+
 glm::vec3 Scene::getVoxelSize()
 {
 	return m_voxelSize;

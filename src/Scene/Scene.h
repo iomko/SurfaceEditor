@@ -47,7 +47,8 @@ public:
 
 	Scene(float xSize, float ySize, float zSize);
 
-	~Scene() {}
+	~Scene();
+	void clearMeshes();
 	glm::vec3 getVoxelSize();
 
 	void addFaceIntoOctrees(Mesh* mesh, ExtendedFace* face);
