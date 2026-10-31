@@ -1,0 +1,62 @@
+
+class HalfEdgeMesh {
+    +vector~HalfEdge~ halfEdges
+    +vector~Vertex~ vertices
+    +vector~Edge~ edges
+    +vector~Face~ faces
+    +HalfEdgeIterator
+    +VertexIterator
+    +EdgeIterator
+    +FaceIterator
+}
+
+class HalfEdge {
+    +HalfEdge* next
+    +HalfEdge* previous
+    +HalfEdge* twin
+    +Vertex* vertex
+    +Edge* edge
+    +Face* face
+    +HalfEdgeMesh* mesh
+    +int index
+}
+
+class Vertex {
+    +HalfEdge* halfEdge
+    +Vector3 position
+    +HalfEdgeMesh* mesh
+    +int index
+}
+
+class Edge {
+    +HalfEdgeMesh* mesh
+    +HalfEdge* halfEdge
+    +Vertex* vertex1
+    +Vertex* vertex2
+    +int index
+    +bool isExternal
+}
+
+class Face {
+    +HalfEdgeIterator
+    +VertexIterator
+    +HalfEdge* currentHalfEdge
+    +bool hasStarted
+}
+
+
+HalfEdge --> HalfEdgeMesh : mesh
+HalfEdge --> HalfEdge : next / previous / twin
+HalfEdge --> Vertex : vertex
+HalfEdge --> Edge : edge
+HalfEdge --> Face : face
+
+Vertex --> HalfEdgeMesh : mesh
+Vertex --> HalfEdge : halfEdge
+
+Edge --> HalfEdgeMesh : mesh
+Edge --> HalfEdge : halfEdge
+Edge --> Vertex : vertex1 / vertex2
+
+Face --> HalfEdge : currentHalfEdge
+
