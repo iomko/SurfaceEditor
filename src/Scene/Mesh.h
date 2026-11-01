@@ -56,7 +56,7 @@ public:
     void calculateMeshBounds() {
 		SE_PROFILE_SCOPE;
         glm::vec3 minBounds(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-        glm::vec3 maxBounds(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+        glm::vec3 maxBounds(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
         
         for(ExtendedEdge* edge : m_halfEdgeStructure->m_edges) {
             minBounds = glm::min(minBounds, edge->m_firstVertex->m_position);

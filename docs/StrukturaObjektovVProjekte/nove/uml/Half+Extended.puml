@@ -1,0 +1,6 @@
+@startuml Half+Extended
+
+!include HalfEdge.puml
+!include ExtendedHalfEdge.puml
+
+@enduml
