@@ -249,6 +249,11 @@ target_compile_definitions(SurfaceEditorCore PUBLIC
     ML_DATA_DIR="${CMAKE_SOURCE_DIR}/src/Ml/ModelsData"
 )
 
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/simul/CMakeLists.txt")
+    message(FATAL_ERROR "Simul submodule missing, run: git submodule update --init")
+endif()
+add_subdirectory(external/simul EXCLUDE_FROM_ALL)
+
 function(add_surface_editor_plugin PLUGIN_NAME)
     add_subdirectory(Plugins/${PLUGIN_NAME})
 
