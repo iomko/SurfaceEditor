@@ -1,0 +1,3 @@
+[submodule "external/simul"]
+	path = external/simul
+	url = https://github.com/filipbaranek/Simul.git
