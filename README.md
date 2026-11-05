@@ -10,6 +10,22 @@ The full paper describing this project is available here:
 Currently, this project is **supported and tested only on Linux** systems.
 Support for other operating systems (such as macOS or Windows) may be added in the future.
 
+### Getting the source
+Simul, the networking library, is a git submodule in `external/simul`. GitHub's "Download ZIP" leaves it out, so clone the project with git:
+
+```bash
+git clone --recurse-submodules https://github.com/iomko/SurfaceEditor.git
+cd SurfaceEditor
+git config submodule.recurse true
+```
+
+If you already have a clone, run this inside it:
+
+```bash
+git submodule update --init
+git config submodule.recurse true
+```
+
 ### Dependencies
  To successfully build and use this project, cmake is requiring you to already have those packages installed: X11, glfw, OpenGL, glm, TIFF, CURL, Eigen3
 #### Installation of those packages
