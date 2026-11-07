@@ -126,8 +126,8 @@ void SplitEdgeCallBack::updateFaceVao(Mesh *mesh, ExtendedFace *face) {
             triangleBufferVertices.at(i).position = faceVerts.at(i - faceIndexInVao).m_position;
         }
 
-        scene->deleteFaceFromOctrees(mesh, face);
-        scene->addFaceIntoOctrees(mesh, face);
+        scene->removeFace(mesh, face);
+        scene->addFace(mesh, face);
     }
 
 }
@@ -176,7 +176,7 @@ void SplitEdgeCallBack::createFaceVao(Mesh *mesh, ExtendedFace *face) {
             face->faceTriangleIndices.emplace_back(faceTriangleIndex);
         }
 
-        scene->addFaceIntoOctrees(mesh, face);
+        scene->addFace(mesh, face);
     }
 
 }

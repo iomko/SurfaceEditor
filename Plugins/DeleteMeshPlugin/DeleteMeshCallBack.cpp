@@ -13,7 +13,7 @@ void DeleteMeshCallBack::execute(const MeshParams &iParams)
     std::vector<ExtendedFace *> facesToDelete = selectedMesh->getHalfEdgeStructure()->m_faces;
 
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-    scene->deleteMeshFromOctrees(selectedMesh);
+    scene->removeMesh(selectedMesh);
     delete selectedMesh;
     /*for (ExtendedFace *face : facesToDelete)
     {

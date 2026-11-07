@@ -1,4 +1,4 @@
-#include "Scene.h"
+/*#include "Scene.h"
 #include "../Renderer/Renderer.h"
 
 std::vector<SceneResources::MeshFacePair> SceneUtilities::retDataUnderSelectionRectangle(
@@ -349,3 +349,4 @@ Octree<SceneResources::MeshFacePair> *Scene::retrieveCreatedOctree(glm::vec3 oct
 
 	return retOctree;
 }
+*/

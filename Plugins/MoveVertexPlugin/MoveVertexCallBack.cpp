@@ -98,7 +98,7 @@ void MoveVertexCallBack::execute(const VertexParams &iParams)
                         break;
                     }
                 }
-                scene->deleteFaceFromOctrees(mesh, face);
+                scene->removeFace(mesh, face);
                 //scene->addFaceIntoOctrees(mesh, face);
             }
         }
@@ -116,7 +116,7 @@ void MoveVertexCallBack::execute(const VertexParams &iParams)
         for (GraphEdge *graphEdge : vertex->m_graphEdges)
         {
             ExtendedFace *face = graphEdge->face;
-            scene->addFaceIntoOctrees(mesh, face);
+            scene->addFace(mesh, face);
         }
 
         if (updateBuffers)

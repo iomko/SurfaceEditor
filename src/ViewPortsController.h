@@ -10,7 +10,6 @@
 #include "Core/Layer.h"
 
 class Event;
-class Scene;
 
 class ViewPortLayer;
 

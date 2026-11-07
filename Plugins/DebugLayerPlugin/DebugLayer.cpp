@@ -301,14 +301,14 @@ void DebugLayer::onImGuiRender()
                         addPlaneParams.m_subdivisionLevel = 50;
                         Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
                         std::vector<Mesh *> meshesBefore;
-                        for (const auto &[mesh, _] : scene->m_res.meshFaceOctreeCoordsMap)
+                        for (const auto &mesh : scene->getAllMeshes())
                         {
                             meshesBefore.push_back(mesh);
                         }
                         addPlaneCommand->execute(addPlaneParams);
 
                         //SELECT MESH
-                        for (const auto &[mesh, _] : scene->m_res.meshFaceOctreeCoordsMap)
+                        for (const auto &mesh : scene->getAllMeshes())
                         {
                             if (std::find(meshesBefore.begin(), meshesBefore.end(), mesh) == meshesBefore.end())
                             {

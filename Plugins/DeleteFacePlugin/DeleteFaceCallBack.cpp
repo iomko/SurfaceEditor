@@ -15,7 +15,7 @@ void DeleteFaceCallBack::execute(const SingleFaceParams &iParams)
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
     // first delete face from octrees
-    scene->deleteFaceFromOctrees(selectedMesh, selectedFace);
+    scene->removeFace(selectedMesh, selectedFace);
 
     // delete face data from triangleBufferStorage
     // so the deleted face wont be drawn

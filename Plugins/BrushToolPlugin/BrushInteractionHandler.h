@@ -27,7 +27,7 @@ public:
 		Camera* camera = ViewPortsHolderContext::s_camera.get();
 		Window* window = ViewPortsHolderContext::s_window;
 		Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+		std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, *scene);
 
 		OctreeNodeDataParams oParams;
 		oParams.meshFacePair = meshFaceHitPair.first;

@@ -20,7 +20,7 @@ void BrushToolCallBack::execute(const BrushToolParams &iParams, OctreeNodeDataPa
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
     Camera *camera = ViewPortsHolderContext::s_camera.get();
     Window *window = ViewPortsHolderContext::s_window;
-    std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, scene->m_res);
+    std::pair<SceneResources::MeshFacePair, glm::vec3> meshFaceHitPair = SceneUtilities::retClosestHitData(camera, window, *scene);
     SceneResources::MeshFacePair meshFacePair = meshFaceHitPair.first;
 
     glm::vec3 hitPoint = meshFaceHitPair.second;
@@ -104,30 +104,26 @@ BrushToolCallBack::collectIntersectingElements(const Sphere &sphere, Mesh *mesh)
     std::unordered_set<ExtendedVertex *> verticesToChange;
     std::unordered_set<ExtendedFace *> facesToChange;
 
-    auto octreeBoundsIntersectAlg = [](const AABBBoundingRegion &aabb, const Sphere &sphereIn)
-    {
-        return aabb.intersectsSphere(sphereIn);
-    };
+    std::vector<SceneResources::MeshFacePair> candidateFaces;
+    scene->query(sphere, candidateFaces);
 
-    auto dataIntersectAlg = [&](const std::pair<Mesh *, ExtendedFace *> &meshFacePair, const Sphere &sphereIn)
+    for (const SceneResources::MeshFacePair &meshFacePair : candidateFaces)
     {
-        bool intersects = false;
         Mesh *meshIn = meshFacePair.first;
         ExtendedFace *face = meshFacePair.second;
         if (meshIn != mesh)
         {
-            return intersects;
+            continue;
         }
-        else
+
+        bool intersects = false;
+        for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it)
         {
-            for (auto it = face->faceVertexBegin(); it != face->faceVertexEnd(); ++it)
+            ExtendedVertex *vertex = &it.operator*();
+            if (sphere.containsPoint(vertex->m_position))
             {
-                ExtendedVertex *vertex = &it.operator*();
-                if (sphereIn.containsPoint(vertex->m_position))
-                {
-                    intersects = true;
-                    verticesToChange.insert(vertex);
-                }
+                intersects = true;
+                verticesToChange.insert(vertex);
             }
         }
 
@@ -135,13 +131,6 @@ BrushToolCallBack::collectIntersectingElements(const Sphere &sphere, Mesh *mesh)
         {
             facesToChange.insert(face);
         }
-        return intersects;
-    };
-
-    for (auto &entry : scene->m_res.coordsOctreeMap)
-    {
-        Octree<SceneResources::MeshFacePair> &octree = entry.second;
-        octree.findDataInOctree<Sphere>(sphere, octreeBoundsIntersectAlg, dataIntersectAlg);
     }
 
     return {verticesToChange, facesToChange};

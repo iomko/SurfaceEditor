@@ -7,7 +7,7 @@ A utility struct that organizes and stores mappings for scene geometries.
 A helper class providing utility functions for octree-related coordinate and bounding box calculations.  
 
 ###### Methods:
-`std::pair<SceneResources::MeshFacePair, glm::vec3> retClosestHitData(Camera* camera, Window* window, SceneResources& res)` - Returns the closest intersected face in the scene under the camera's ray, along with the voxel coordinate in which the hit occurred.  
+`std::pair<FaceRef, glm::vec3> SceneUtilities::retClosestHitData(Camera* camera, Window* window, Scene& scene)` - Queries the scene's spatial indices for candidate faces, performs exact ray-triangle tests, and returns the nearest hit as a mesh/face pair and world-space hit point. If nothing is hit, the pair contains null pointers and the hit point is zero.
 
 `std::pair<glm::vec3, glm::vec3> calculateOctreeBounds(const glm::vec3& voxelIndex, const glm::vec3& voxelSize)` - Computes the world-space bounds (min, max) of an octree voxel based on its index and size.  
 
