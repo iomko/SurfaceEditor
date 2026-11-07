@@ -74,6 +74,7 @@ nav:
       - Scene:
           - Camera: Camera.md
           - Mesh: Mesh.md
+          - Object: Object.md
           - Scene: Scene.md
           - ViewPortLayerRenderSettings: ViewPortLayerRenderSettings.md
       - Tools:
