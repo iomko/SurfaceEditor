@@ -270,17 +270,22 @@ public:
 		}
 	}
 
-	void updateMesh(Mesh *mesh)
+	void updateMesh(Mesh *mesh, bool updateFaces = true)
 	{
+		m_meshIndex.remove(mesh);
+		mesh->calculateMeshBounds();
+		m_meshIndex.insert(mesh, mesh->m_meshBounds);
+
+		if (updateFaces == false)
+		{
+			return;
+		}
+
 		const auto faceIndexIt = m_faceIndices.find(mesh);
 		if (faceIndexIt == m_faceIndices.end())
 		{
 			throw std::logic_error("Cannot update a mesh that is not in the scene.");
 		}
-
-		m_meshIndex.remove(mesh);
-		mesh->calculateMeshBounds();
-		m_meshIndex.insert(mesh, mesh->m_meshBounds);
 
 		m_faceIndices.erase(faceIndexIt);
 		auto [updatedFaceIndexIt, inserted] = m_faceIndices.try_emplace(mesh, m_faceIndexFactory());

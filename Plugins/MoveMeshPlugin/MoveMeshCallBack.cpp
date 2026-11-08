@@ -7,6 +7,8 @@
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Commands/CommandRegistry.h"
 
+#include "../../src/Scene/Mesh.h"
+
 static AutoRegisterCallback<MoveMeshCallBack> registerCallback("MOVE_MESH_CALLBACK");
 
 void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
@@ -38,5 +40,5 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
             }*/
 
     }
-    iParams.mesh->calculateMeshBounds();
-}
+    Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+    scene->updateMesh(iParams.mesh, false);
