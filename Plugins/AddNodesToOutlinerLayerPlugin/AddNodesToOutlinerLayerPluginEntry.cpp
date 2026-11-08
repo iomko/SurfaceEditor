@@ -19,25 +19,20 @@ public:
             Observer* outlinerObserver = dynamic_cast<Observer*>(outlinerLayer);
             if(outlinerObserver)
             {
-                std::string id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(false);
-                auto* addNewOutlinerNodeCallBackMesh = CallbackRegistry::instance().getCallback(id);
-                printf("Getting template on id %s\n", id.c_str());
-                if(addNewOutlinerNodeCallBackMesh)
+                auto attachCallback = [outlinerObserver](const std::string& id)
                 {
-                    Observable* addNewOutlinerNodeMeshObservalbe = dynamic_cast<Observable*>(addNewOutlinerNodeCallBackMesh);
-                    addNewOutlinerNodeMeshObservalbe->addObserver(outlinerObserver);
-                    outlinerObserver->observe(addNewOutlinerNodeMeshObservalbe, addNewOutlinerNodeCallBackMesh);
-                }
-                id = TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true);
-                auto* addChildOutlinerNodeCallBackPrintableMesh = CallbackRegistry::instance().getCallback(id);
-                printf("Getting template on id %s\n", id.c_str());
-                
-                if(addChildOutlinerNodeCallBackPrintableMesh)
-                {
-                    Observable* addChildOutlinerNodePrintableMeshObservable = dynamic_cast<Observable*>(addChildOutlinerNodeCallBackPrintableMesh);
-                    addChildOutlinerNodePrintableMeshObservable->addObserver(outlinerObserver);
-                    outlinerObserver->observe(addChildOutlinerNodePrintableMeshObservable, addChildOutlinerNodeCallBackPrintableMesh);
-                }
+                    auto* callback = CallbackRegistry::instance().getCallback(id);
+                    auto* observable = dynamic_cast<Observable*>(callback);
+                    if (callback != nullptr && observable != nullptr)
+                    {
+                        observable->addObserver(outlinerObserver);
+                        outlinerObserver->observe(observable, callback);
+                    }
+                };
+
+                attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Object>(false));
+                attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(true));
+                attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true));
             }
         }
     }

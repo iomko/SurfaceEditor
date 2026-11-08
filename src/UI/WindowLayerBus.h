@@ -7,11 +7,19 @@
 struct OutlinerNodeConcept {
     OutlinerNodeConcept(int id, const std::string& name)
         : m_id(id), m_name(name) {}
-    virtual ~OutlinerNodeConcept() = default;
+    virtual ~OutlinerNodeConcept()
+    {
+        for (OutlinerNodeConcept* child : m_childs)
+        {
+            delete child;
+        }
+    }
 
     int m_id;
     std::string m_name;
     std::vector<OutlinerNodeConcept*> m_childs;
+
+    virtual void* getData() const = 0;
 };
 
 template<typename T>
@@ -19,6 +27,9 @@ class OutlinerNode : public OutlinerNodeConcept {
 public:
     OutlinerNode(int id, const std::string& name, T* data)
         : OutlinerNodeConcept(id, name), m_data(data) {}
+
+    void* getData() const override { return m_data; }
+
     T* m_data;
 };
 
@@ -27,6 +38,14 @@ struct LayerState {
 };
 
 struct OutlinerLayerState : LayerState {
+    ~OutlinerLayerState() override
+    {
+        for (OutlinerNodeConcept* node : m_nodes)
+        {
+            delete node;
+        }
+    }
+
     std::vector<OutlinerNodeConcept*> m_nodes;
     OutlinerNodeConcept* m_currentSelectedNode = nullptr;
     bool m_isMouseInsideWindow = false;

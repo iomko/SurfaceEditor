@@ -23,7 +23,7 @@ void OutlinerLayer::processTree(const std::vector<OutlinerNodeConcept *> &nodes,
     for (OutlinerNodeConcept *node : nodes)
     {
 
-        bool expanded = ImGui::TreeNodeEx((void *)(intptr_t)node->m_id, imguiFlags, "%s", node->m_name.c_str());
+        bool expanded = ImGui::TreeNodeEx(static_cast<void*>(node), imguiFlags, "%s", node->m_name.c_str());//(void *)(intptr_t)node->m_id currently all m_ids are 0
         if (ImGui::IsItemClicked())
         {
             outlinerLayerState.m_currentSelectedNode = node;

@@ -83,4 +83,5 @@ void CubeVertexGenCallable::invoke(const CubeParams &input, MeshParams &output)
     mesh->m_transform[3].z = position.z;
     
     output.m_mesh = mesh;
+    output.m_name = "Cube";
 }

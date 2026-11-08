@@ -4,6 +4,7 @@
 #include "OBJImporter.h"
 
 #include "../../src/Callables/CallableRegistry.h"
+#include <filesystem>
 
 static AutoRegisterCallback<ImportMeshesCallback> autoRegister("IMPORT_MESHES_CALLBACK");
 
@@ -11,24 +12,50 @@ void ImportMeshesCallback::execute(const ImportExportMeshesParams &params)
 {
     OBJImporter objImporter;
     objImporter.setFilePath(params.m_filePathMeshes);
-    objImporter.read();
-
-    for (const auto &importedMesh : objImporter.getMeshes())
+    if (!objImporter.read())
     {
-        auto callable1 = CallableRegistry::instance().getCallable("MESH_VAO_INIT_CALLABLE");
-        auto callable2 = CallableRegistry::instance().getCallable("SCENE_MESH_ADDER_CALLABLE");
-        auto callable3 = CallableRegistry::instance().getCallable("MESH_OUTLINER_ADDER_CALLABLE");
-
-        if(callable1 && callable2) 
+        for (Mesh* mesh : objImporter.getMeshes())
         {
-            MeshParams params;
-            params.m_mesh = importedMesh;
-            callable1->execute(params);
-            callable2->execute(params);
-            if(callable3)
-            {
-                callable3->execute(params);
-            }
+            delete mesh;
+        }
+        return;
+    }
+
+    const std::vector<Mesh*>& meshes = objImporter.getMeshes();
+    auto* initializeMesh = CallableRegistry::instance().getCallable("MESH_VAO_INIT_CALLABLE");
+    auto* addMeshToScene = CallableRegistry::instance().getCallable("SCENE_MESH_ADDER_CALLABLE");
+    auto* addMeshToOutliner = CallableRegistry::instance().getCallable("MESH_OUTLINER_ADDER_CALLABLE");
+    if (initializeMesh == nullptr || addMeshToScene == nullptr)
+    {
+        for (Mesh* mesh : meshes)
+        {
+            delete mesh;
+        }
+        throw std::logic_error("Mesh initialization and scene-adder callables are required for import.");
+    }
+
+    ViewPortsController* controller = ViewPortsHolderContext::s_viewPortsController.get();
+    
+    const std::string objectName = std::filesystem::path(params.m_filePathMeshes).stem().string();// Use the file name (without extension) as the object name
+    Object* object = controller->createObject(objectName.empty() ? "Imported Object" : objectName);
+    for (Mesh* mesh : meshes)
+    {
+        object->addMesh(mesh);
+        mesh->m_parentObject = object;
+    }
+
+    for (size_t meshIndex = 0; meshIndex < meshes.size(); ++meshIndex)
+    {
+        Mesh* importedMesh = meshes[meshIndex];
+        MeshParams meshParams;
+        meshParams.m_mesh = importedMesh;
+        meshParams.m_object = object;
+        meshParams.m_name = "Mesh " + std::to_string(meshIndex + 1);
+        initializeMesh->execute(meshParams);
+        addMeshToScene->execute(meshParams);
+        if (addMeshToOutliner != nullptr)
+        {
+            addMeshToOutliner->execute(meshParams);
         }
     }
 }

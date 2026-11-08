@@ -1,6 +1,7 @@
 #pragma once
-#include "Mesh.h"
 
+#include "Mesh.h"
+class Mesh;
 class Object
 {
 private:

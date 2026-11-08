@@ -48,4 +48,5 @@ void PlaneVertexGenCallable::invoke(const PlaneParams &input, MeshParams &output
     mesh->m_transform[3].z = position.z;
     
     output.m_mesh = mesh;
+    output.m_name = "Plane";
 }

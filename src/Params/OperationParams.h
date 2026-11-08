@@ -1,5 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
+#include "../Scene/Object.h"
 #include "ImGuizmo.h"
 
 struct OpParams {
@@ -75,6 +76,7 @@ struct MeshParams : public OpParams
 {
 	Mesh* m_mesh = nullptr;
 	std::string m_name = "Mesh";
+	Object* m_object = nullptr;
 };
 
 struct FaceParams : public OpParams
@@ -175,6 +177,11 @@ struct AddOutlinerNodeCallBackParams : public OpParams
 	std::string name = "";
 };
 
+struct RemoveOutlinerNodeParams : public AddOutlinerNodeCallBackParams
+{
+	void* data = nullptr;
+};
+
 template<typename T>
 struct AddNewOutlinerNodeCallBackParams : public AddOutlinerNodeCallBackParams 
 {	
@@ -186,4 +193,3 @@ struct AddChildOutlinerNodeCallBackParams : public AddNewOutlinerNodeCallBackPar
 {
 	OutlinerNodeConcept* parent = nullptr;
 };
-

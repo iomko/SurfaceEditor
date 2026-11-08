@@ -10,8 +10,15 @@ void SceneMeshAdderCallable::invoke(const MeshParams &input)
 {
     SE_PROFILE_SCOPE_N("SceneMeshAdderCallable:invoke");
     Mesh *mesh = input.m_mesh;
+    ViewPortsController* controller = ViewPortsHolderContext::s_viewPortsController.get();
+    
+    controller->m_scene->addMesh(mesh);
 
-    Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-
-    scene->addMesh(mesh);
+    Object* object = input.m_object;
+    if (object == nullptr)
+    {
+        object = controller->createObject(input.m_name);
+    }
+    object->addMesh(mesh);
+    mesh->m_parentObject = object;
 }
