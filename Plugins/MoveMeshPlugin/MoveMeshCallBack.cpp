@@ -42,3 +42,4 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
     }
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
     scene->updateMesh(iParams.mesh, false);
+}

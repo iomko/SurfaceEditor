@@ -405,10 +405,11 @@ private:
 		for (ExtendedFace *face : faces)
 		{
 			const FaceRef faceRef{mesh, face};
-			if (std::find(results.begin(), results.end(), faceRef) == results.end())
+			results.push_back(faceRef);
+			/*if (std::find(results.begin(), results.end(), faceRef) == results.end())
 			{
 				results.push_back(faceRef);
-			}
+			}*/
 		}
 	}
 
