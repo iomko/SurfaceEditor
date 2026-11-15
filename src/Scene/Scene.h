@@ -4,6 +4,7 @@
 #include "OctreeSpatialIndex.h"
 #include "Camera.h"
 #include "../Core/Window.h"
+#include "../Core/Profiler.h"
 #include "../UI/SelectionRectangle.h"
 #include "../Structures/PrintableMesh.h"
 
@@ -127,6 +128,7 @@ template <typename MeshIndex>
 	requires SpatialIndex<MeshIndex, Mesh *>
 inline void SceneTemplate<MeshIndex>::addMesh(Mesh *mesh)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::addMesh");
 	if (mesh == nullptr)
 	{
 		throw std::invalid_argument("Cannot add a null mesh to the scene.");
@@ -151,6 +153,7 @@ inline void SceneTemplate<MeshIndex>::addFace(
 	Mesh *mesh,
 	ExtendedFace *face)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::addFace");
 	if (mesh == nullptr || face == nullptr)
 	{
 		throw std::invalid_argument("Cannot index a null mesh or face.");
@@ -170,6 +173,7 @@ inline void SceneTemplate<MeshIndex>::removeFace(
 	Mesh *mesh,
 	ExtendedFace *face)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::removeFace");
 	if (mesh != nullptr && mesh->m_faceIndex)
 	{
 		mesh->m_faceIndex->remove(face);
@@ -182,6 +186,7 @@ inline void SceneTemplate<MeshIndex>::updateMesh(
 	Mesh *mesh,
 	bool updateFaces)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::updateMesh");
 	if (mesh == nullptr || !mesh->m_faceIndex)
 	{
 		throw std::logic_error("Cannot update a mesh that is not in the scene.");
@@ -208,6 +213,7 @@ template <typename MeshIndex>
 	requires SpatialIndex<MeshIndex, Mesh *>
 inline void SceneTemplate<MeshIndex>::removeMesh(Mesh *mesh)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::removeMesh");
 	if (mesh == nullptr || !mesh->m_faceIndex)
 	{
 		return;
@@ -223,6 +229,7 @@ inline void SceneTemplate<MeshIndex>::query(
 	const Ray &ray,
 	std::vector<FaceRef> &results)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::query");
 	std::vector<Mesh *> candidateMeshes;
 	m_meshIndex.query(ray, candidateMeshes);
 
@@ -245,6 +252,7 @@ inline void SceneTemplate<MeshIndex>::query(
 	const AABBBoundingRegion &bounds,
 	std::vector<FaceRef> &results)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::query");
 	std::vector<Mesh *> candidateMeshes;
 	m_meshIndex.query(bounds, candidateMeshes);
 
@@ -267,6 +275,7 @@ inline void SceneTemplate<MeshIndex>::query(
 	const Sphere &sphere,
 	std::vector<FaceRef> &results)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::query");
 	std::vector<Mesh *> candidateMeshes;
 	m_meshIndex.query(sphere, candidateMeshes);
 
@@ -287,6 +296,7 @@ template <typename MeshIndex>
 	requires SpatialIndex<MeshIndex, Mesh *>
 inline std::vector<Mesh *> SceneTemplate<MeshIndex>::getAllMeshes() const
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::getAllMeshes");
 	return m_meshIndex.getAllElements();
 }
 
@@ -297,6 +307,7 @@ inline void SceneTemplate<MeshIndex>::insertFace(
 	Mesh *mesh,
 	ExtendedFace *face)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::insertFace");
 	std::vector<ExtendedVertex> vertices;
 	mesh->m_halfEdgeStructure->getVerticesFromFace(face, vertices);
 	if (vertices.empty())
@@ -321,6 +332,7 @@ inline void SceneTemplate<MeshIndex>::appendFaceRefs(
 	const std::vector<ExtendedFace *> &faces,
 	std::vector<FaceRef> &results)
 {
+	SE_PROFILE_SCOPE_N("SceneTemplate::appendFaceRefs");
 	for (ExtendedFace *face : faces)
 	{
 		const FaceRef faceRef{mesh, face};
@@ -333,6 +345,7 @@ inline std::pair<FaceRef, glm::vec3> SceneUtilities::retClosestHitData(
 	Window *window,
 	Scene &scene)
 {
+	SE_PROFILE_SCOPE_N("SceneUtilities::retClosestHitData");
 	if (camera == nullptr || window == nullptr)
 	{
 		throw std::invalid_argument("Camera and window are required for scene picking.");
@@ -410,6 +423,7 @@ inline std::vector<FaceRef> SceneUtilities::retDataUnderSelectionRectangle(
 	Window *window,
 	Scene &scene)
 {
+	SE_PROFILE_SCOPE_N("SceneUtilities::retDataUnderSelectionRectangle");
 	if (camera == nullptr || window == nullptr)
 	{
 		throw std::invalid_argument("Camera and window are required for rectangle selection.");
