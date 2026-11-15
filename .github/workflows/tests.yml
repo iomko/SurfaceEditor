@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       modules:
-        description: "Moduly: octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+        description: "Moduly: octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils scene"
         required: false
-        default: "octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+        default: "octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils scene"
 
 jobs:
   build-and-test:
@@ -113,6 +113,11 @@ jobs:
           # GEOMETRY UTILS
           if [[ "$MODULES" == *"geometryUtils"* ]]; then
             TEST_ARGS="$TEST_ARGS [geometryUtils],"
+          fi
+
+          # SCENE
+          if [[ "$MODULES" == *"scene"* ]]; then
+            TEST_ARGS="$TEST_ARGS [scene],"
           fi
 
           echo "FLAGS=$FLAGS" >> $GITHUB_ENV
