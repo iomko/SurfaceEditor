@@ -7,6 +7,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <functional>
 #include <stdexcept>
@@ -58,6 +59,29 @@ void populateRenderableFace(
 		vertex.position = position;
 		storage.data.vertices.push_back(vertex);
 	}
+}
+
+std::vector<glm::vec3> triangleAtScreenPositions(
+	Window &window,
+	const std::array<glm::vec2, 3> &screenPositions)
+{
+	const float depth = 2.0f;
+	const float halfFovRadians = glm::radians(45.0f) * 0.5f;
+	std::vector<glm::vec3> vertices;
+	vertices.reserve(screenPositions.size());
+	for (const glm::vec2 &screenPosition : screenPositions)
+	{
+		const float normalizedX =
+			2.0f * screenPosition.x / window.getScreenWidth() - 1.0f;
+		const float normalizedY =
+			1.0f - 2.0f * screenPosition.y / window.getScreenHeight();
+		vertices.emplace_back(
+			normalizedX * depth * std::tan(halfFovRadians) *
+				static_cast<float>(window.getScreenWidth()) / window.getScreenHeight(),
+			normalizedY * depth * std::tan(halfFovRadians),
+			-1.0f);
+	}
+	return vertices;
 }
 
 Camera makePickingCamera(Window &window, const glm::vec3 &rayDirection)
@@ -306,6 +330,72 @@ TEST_CASE("SceneUtilities returns closest hit", "[scene][utilities]")
 	scene.removeMesh(&farMesh);
 }
 
+TEST_CASE("SceneUtilities accepts a ray on a triangle edge", "[scene][utilities][edge]")
+{
+	Window &window = Application::getWindow();
+	GLFWwindow *nativeWindow = window.getWindowHandle();
+	REQUIRE(nativeWindow != nullptr);
+	CursorPositionGuard cursorPositionGuard{nativeWindow};
+	glfwSetCursorPos(
+		nativeWindow,
+		window.getScreenWidth() / 2.0,
+		window.getScreenHeight() / 2.0);
+
+	Mesh mesh(trianglePolygons, triangleVertices);
+	Material material{"scene-test-edge-hit-material"};
+	populateRenderableFace(mesh, material, {});
+	Scene scene = makeScene();
+	scene.addMesh(&mesh);
+
+	const glm::vec3 rayOrigin{0.0f, 0.0f, -3.0f};
+	const glm::vec3 edgeHitPosition{0.0f, -1.0f, 0.0f};
+	const glm::vec3 rayDirection = edgeHitPosition - rayOrigin;
+	Camera camera = makePickingCamera(window, rayDirection);
+	const Ray ray = Ray::fromMousePos(camera, window);
+	const glm::vec3 normalizedDirection = glm::normalize(rayDirection);
+	REQUIRE(ray.direction.x == Catch::Approx(normalizedDirection.x).margin(0.001f));
+	REQUIRE(ray.direction.y == Catch::Approx(normalizedDirection.y).margin(0.001f));
+	REQUIRE(ray.direction.z == Catch::Approx(normalizedDirection.z).margin(0.001f));
+
+	const auto [hit, position] =
+		SceneUtilities::retClosestHitData(&camera, &window, scene);
+	const FaceRef expectedHit{&mesh, mesh.m_halfEdgeStructure->m_faces.front()};
+	REQUIRE(hit == expectedHit);
+	REQUIRE(position.x == Catch::Approx(edgeHitPosition.x).margin(0.001f));
+	REQUIRE(position.y == Catch::Approx(edgeHitPosition.y).margin(0.001f));
+	REQUIRE(position.z == Catch::Approx(edgeHitPosition.z).margin(0.001f));
+
+	scene.removeMesh(&mesh);
+}
+
+TEST_CASE("SceneUtilities rejects a ray just outside a triangle edge", "[scene][utilities][edge]")
+{
+	Window &window = Application::getWindow();
+	GLFWwindow *nativeWindow = window.getWindowHandle();
+	REQUIRE(nativeWindow != nullptr);
+	CursorPositionGuard cursorPositionGuard{nativeWindow};
+	glfwSetCursorPos(
+		nativeWindow,
+		window.getScreenWidth() / 2.0,
+		window.getScreenHeight() / 2.0);
+
+	Mesh mesh(trianglePolygons, triangleVertices);
+	Material material{"scene-test-edge-miss-material"};
+	populateRenderableFace(mesh, material, {});
+	Scene scene = makeScene();
+	scene.addMesh(&mesh);
+
+	const glm::vec3 rayDirection{0.34f, 0.0f, 1.0f};
+	Camera camera = makePickingCamera(window, rayDirection); //P on z=0 is (0.500001, 0, 0)
+	const auto [hit, position] =
+		SceneUtilities::retClosestHitData(&camera, &window, scene);
+	REQUIRE(hit.first == nullptr);
+	REQUIRE(hit.second == nullptr);
+	REQUIRE(position == glm::vec3{0.0f});
+
+	scene.removeMesh(&mesh);
+}
+
 TEST_CASE("SceneUtilities rectangle-selected faces", "[scene][utilities]")
 {
 	Window &window = Application::getWindow();
@@ -396,4 +486,100 @@ TEST_CASE("SceneUtilities rectangle-selected faces", "[scene][utilities]")
 	scene.removeMesh(&leftMesh);
 	scene.removeMesh(&centerMesh);
 	scene.removeMesh(&rightMesh);
+}
+
+TEST_CASE(
+	"SceneUtilities rectangle selection includes triangle corner and edge contacts",
+	"[scene][utilities][edge]")
+{
+	Window &window = Application::getWindow();
+	const auto cornerVertices = triangleAtScreenPositions(
+		window,
+		{glm::vec2{49.0f, 50.0f}, glm::vec2{50.0f, 49.0f}, glm::vec2{50.0f, 50.0f}});
+	const auto edgeVertices = triangleAtScreenPositions(
+		window,
+		{glm::vec2{50.0f, 52.0f}, glm::vec2{50.0f, 68.0f}, glm::vec2{49.0f, 60.0f}});
+	Mesh cornerMesh(trianglePolygons, cornerVertices);
+	Mesh edgeMesh(trianglePolygons, edgeVertices);
+	Material cornerMaterial{"scene-test-corner-contact-material"};
+	Material edgeMaterial{"scene-test-edge-contact-material"};
+	populateRenderableFace(cornerMesh, cornerMaterial, {}, cornerVertices);
+	populateRenderableFace(edgeMesh, edgeMaterial, {}, edgeVertices);
+	Scene scene = makeScene();
+	scene.addMesh(&cornerMesh);
+	scene.addMesh(&edgeMesh);
+
+	Camera camera{{0.0f, 0.0f, -3.0f}};
+	camera.m_matrices.viewMatrix = glm::lookAt(
+		camera.getState().position,
+		glm::vec3{0.0f, 0.0f, 0.0f},
+		glm::vec3{0.0f, 1.0f, 0.0f});
+	camera.m_matrices.perspectiveMatrix = glm::perspective(
+		glm::radians(45.0f),
+		static_cast<float>(window.getScreenWidth()) / window.getScreenHeight(),
+		0.1f,
+		100.0f);
+
+	const auto hits = SceneUtilities::retDataUnderSelectionRectangle(
+		{{50.0f, 50.0f}, {70.0f, 70.0f}},
+		&camera,
+		&window,
+		scene);
+	REQUIRE(hits.size() == 2);
+	REQUIRE(std::find(
+				hits.begin(),
+				hits.end(),
+				FaceRef{&cornerMesh, cornerMesh.m_halfEdgeStructure->m_faces.front()}) !=
+			hits.end());
+	REQUIRE(std::find(
+				hits.begin(),
+				hits.end(),
+				FaceRef{&edgeMesh, edgeMesh.m_halfEdgeStructure->m_faces.front()}) !=
+			hits.end());
+
+	scene.removeMesh(&cornerMesh);
+	scene.removeMesh(&edgeMesh);
+}
+
+TEST_CASE(
+	"SceneUtilities rectangle selection rejects triangles just outside its corner and edge",
+	"[scene][utilities][edge]")
+{
+	Window &window = Application::getWindow();
+	const auto cornerMissVertices = triangleAtScreenPositions(
+		window,
+		{glm::vec2{49.99f, 49.99f}, glm::vec2{49.0f, 49.99f}, glm::vec2{49.99f, 49.0f}});
+	const auto edgeMissVertices = triangleAtScreenPositions(
+		window,
+		{glm::vec2{49.99f, 52.0f}, glm::vec2{49.99f, 68.0f}, glm::vec2{49.0f, 60.0f}});
+	Mesh cornerMissMesh(trianglePolygons, cornerMissVertices);
+	Mesh edgeMissMesh(trianglePolygons, edgeMissVertices);
+	Material cornerMissMaterial{"scene-test-corner-miss-material"};
+	Material edgeMissMaterial{"scene-test-edge-miss-material"};
+	populateRenderableFace(cornerMissMesh, cornerMissMaterial, {}, cornerMissVertices);
+	populateRenderableFace(edgeMissMesh, edgeMissMaterial, {}, edgeMissVertices);
+	Scene scene = makeScene();
+	scene.addMesh(&cornerMissMesh);
+	scene.addMesh(&edgeMissMesh);
+
+	Camera camera{{0.0f, 0.0f, -3.0f}};
+	camera.m_matrices.viewMatrix = glm::lookAt(
+		camera.getState().position,
+		glm::vec3{0.0f, 0.0f, 0.0f},
+		glm::vec3{0.0f, 1.0f, 0.0f});
+	camera.m_matrices.perspectiveMatrix = glm::perspective(
+		glm::radians(45.0f),
+		static_cast<float>(window.getScreenWidth()) / window.getScreenHeight(),
+		0.1f,
+		100.0f);
+
+	const auto hits = SceneUtilities::retDataUnderSelectionRectangle(
+		{{50.0f, 50.0f}, {70.0f, 70.0f}},
+		&camera,
+		&window,
+		scene);
+	REQUIRE(hits.empty());
+
+	scene.removeMesh(&cornerMissMesh);
+	scene.removeMesh(&edgeMissMesh);
 }
