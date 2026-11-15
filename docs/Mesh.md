@@ -15,4 +15,5 @@ The Mesh class represents a 3D polygonal mesh object that is built up on Half-Ed
 Each mesh may be attached to a [ModelObject](ModelObject.md) through
 `ModelObject::addMesh`; `Mesh::m_parentObject` is the non-owning back-pointer
 to that model. The model object owns attached meshes, while the
-[ModelObjectRepository](ModelObjectRepository.md) owns model objects.
+[ModelObjectRepository](ModelObjectRepository.md) owns model objects. Each
+mesh also stores its face spatial index while it is registered in a scene.

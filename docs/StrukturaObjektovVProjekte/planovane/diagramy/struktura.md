@@ -5,8 +5,8 @@ flowchart TB
     ModelObjectRepository --> VecObj["Vector pre objekty"] --> MODEL_OBJECT
 
     subgraph SCENE_DATA["Scene data"]
-        SCENE --> OCTREEMESH["Map&lt;ModelObject*, Octree pre meshe objektu&gt"]
-        SCENE --> OCTREEFACE["Map&lt;Mesh*, Octree pre face meshu&gt"]
+        SCENE --> OCTREEMESH["OctreeSpatialIndex&lt;Mesh*&gt;<br/>ne-vlastniace indexy meshov"]
+        OCTREEMESH -.-> MESH
     end
 
     subgraph MODEL_OBJECT_DATA["ModelObject data"]
@@ -15,6 +15,7 @@ flowchart TB
         MESH--> HEM["ExtendedHalfEdgeMESH"]
         MESH --> AABB["AABBBoundingRegion"]
         MESH --> TRANS["Transformácie<br/>Position / Rotation / Scale"]
+        MESH --> OCTREEFACE["OctreeSpatialIndex&lt;ExtendedFace*&gt;"]
     end
     MESH .->|odkazujeCezIndexi| BufferManager
 

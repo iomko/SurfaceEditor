@@ -3,8 +3,8 @@ flowchart TB
     Application --> ModelObjectRepository
     ModelObjectRepository --> VecObj["Vector pre objekty"] --> MODEL_OBJECT
 
-    SCENE --> OCTREEMESH["Map&lt;ModelObject*, Octree pre meshe objektu&gt"]
-    SCENE --> OCTREEFACE["Map&lt;Mesh*, Octree pre face meshu&gt"]
+    SCENE --> OCTREEMESH["OctreeSpatialIndex&lt;Mesh*&gt;<br/>ne-vlastniace indexy meshov"]
+        OCTREEMESH -.-> MESH
 
     MODEL_OBJECT --> VECMESH["Vector ukladajuci meshe"] --> MESH
 
@@ -12,6 +12,7 @@ flowchart TB
     MESH --> AABB["AABBBoundingRegion"]
     MESH --> MBL["MESHBufferLayout"]
     MESH --> TRANS["Transformácie<br/>Position / Rotation / Scale"]
+    MESH --> OCTREEFACE["OctreeSpatialIndex&lt;ExtendedFace*&gt;"]
 
     style SCENE fill:#245b87,color:#fff
     style MESH fill:#245b87,color:#fff

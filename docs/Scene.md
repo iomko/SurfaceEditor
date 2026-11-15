@@ -21,8 +21,10 @@ Manages the voxel-based spatial partitioning of the scene using octrees.
 `Scene` indexes meshes and faces for spatial queries; it does not own
 `ModelObject` instances. Model objects and their attached meshes are owned by
 the application-level [ModelObjectRepository](ModelObjectRepository.md).
-See [ModelObject](ModelObject.md) for the relationship between models and
-meshes.
+Each mesh stores its own face spatial index; the scene stores the mesh index
+and queries each candidate mesh's face index. See [ModelObject](ModelObject.md)
+for the relationship between models and meshes. The `SceneTemplate` mesh
+index must satisfy the [`SpatialIndex`](Scene.md#sym:SpatialIndex) concept.
 
 ###### Methods:
 `Scene(float xSize, float ySize, float zSize)` - Initializes a Scene with a given voxel size in X, Y, and Z directions.  
