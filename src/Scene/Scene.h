@@ -576,7 +576,7 @@ public:
 					}
 
 					if (intersectsFace &&
-						std::find(selectedFaces.begin(), selectedFaces.end(), candidate) == selectedFaces.end())
+						std::find(selectedFaces.begin(), selectedFaces.end(), candidate) == selectedFaces.end())//maybe comment
 					{
 						selectedFaces.push_back(candidate);
 					}

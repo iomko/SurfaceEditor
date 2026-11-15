@@ -16,7 +16,7 @@ void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
     SE_PROFILE_SCOPE_N("MeshOutlinerAdderCallable:invoke");
     Mesh *mesh = input.m_mesh;
     ViewPortsController* controller = ViewPortsHolderContext::s_viewPortsController.get();
-    Object* object = input.m_object;
+    ModelObject* object = input.m_object;
     if (object == nullptr && controller != nullptr)
     {
         object = mesh->m_parentObject;
@@ -27,13 +27,13 @@ void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
     }
 
     auto* addObjectCallback = CallbackRegistry::instance().getCallback(
-        TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Object>(false));
+        TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<ModelObject>(false));
     auto* addObjectObservable = dynamic_cast<Observable*>(addObjectCallback);
     if (addObjectObservable == nullptr)
     {
         throw std::logic_error("Object outliner callback is not registered.");
     }
-    AddNewOutlinerNodeCallBackParams<Object> objectParams;
+    AddNewOutlinerNodeCallBackParams<ModelObject> objectParams;
     objectParams.name = object->getObjectName();
     objectParams.data = object;
     addObjectObservable->notifyObservers(objectParams);
@@ -47,7 +47,7 @@ void MeshOutlinerAdderCallable::invoke(const MeshParams &input)
     OutlinerNodeConcept* objectNode = nullptr;
     for (OutlinerNodeConcept* node : layerState->m_nodes)
     {
-        auto* typedNode = dynamic_cast<OutlinerNode<Object>*>(node);
+        auto* typedNode = dynamic_cast<OutlinerNode<ModelObject>*>(node);
         if (typedNode != nullptr && typedNode->m_data == object)
         {
             objectNode = node;

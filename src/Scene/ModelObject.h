@@ -2,15 +2,15 @@
 
 #include "Mesh.h"
 class Mesh;
-class Object
+class ModelObject
 {
 private:
     std::string m_objectName;
     std::vector<Mesh*> m_meshes;
 public:
-    Object();
-    Object(std::string objectName);
-    ~Object();  
+    ModelObject();
+    ModelObject(std::string objectName);
+    ~ModelObject();  
 
     void addMesh(Mesh* mesh);
     bool containsMesh(Mesh* mesh) const;

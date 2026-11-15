@@ -30,7 +30,7 @@ public:
                     }
                 };
 
-                attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Object>(false));
+                attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<ModelObject>(false));
                 attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<Mesh>(true));
                 attachCallback(TemplateOutlinerNodeAdderCallbackIDManger::instance().GetIndex<PrintableMesh>(true));
             }

@@ -5,6 +5,7 @@
 
 #include "Layer.h"
 #include "../UI/ImGuiLayer.h"
+#include "ModelObjectRepository.h"
 
 
 class Application
@@ -31,6 +32,7 @@ public:
 
 		// Destroy OpenGL-dependent global resources FIRST.
 		ViewPortsHolderContext::shutdown();
+		m_modelObjectRepository.clear();
 
 		// Destroy ImGui resources.
 		if (m_imGuiLayer)
@@ -49,6 +51,11 @@ public:
 	LayerStack& getLayerStack()
 	{
 		return m_layerStack;
+	}
+
+	ModelObjectRepository& getModelObjectRepository()
+	{
+		return m_modelObjectRepository;
 	}
 
 	void onEvent(Event& event)
@@ -98,5 +105,6 @@ public:
 	inline static Window* window = nullptr;
 private:
 	LayerStack m_layerStack;
+	ModelObjectRepository m_modelObjectRepository;
 	ImGuiLayer* m_imGuiLayer = nullptr;
 };

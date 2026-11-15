@@ -43,7 +43,7 @@ public:
     {
     }
     ~ExtendedFace();
-
+    
     // graph
     std::vector<GraphEdge *> m_graphEdges;
 

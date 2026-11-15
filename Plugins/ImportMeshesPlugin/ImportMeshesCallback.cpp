@@ -1,5 +1,6 @@
 #include "ImportMeshesCallBack.h"
 #include "../../src/ViewPortsController.h"
+#include "../../src/Core/Application.h"
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "OBJImporter.h"
 
@@ -34,10 +35,9 @@ void ImportMeshesCallback::execute(const ImportExportMeshesParams &params)
         throw std::logic_error("Mesh initialization and scene-adder callables are required for import.");
     }
 
-    ViewPortsController* controller = ViewPortsHolderContext::s_viewPortsController.get();
-    
     const std::string objectName = std::filesystem::path(params.m_filePathMeshes).stem().string();// Use the file name (without extension) as the object name
-    Object* object = controller->createObject(objectName.empty() ? "Imported Object" : objectName);
+    ModelObject* object = Application::getInstance().getModelObjectRepository().createObject(
+        objectName.empty() ? "Imported Object" : objectName);
     for (Mesh* mesh : meshes)
     {
         object->addMesh(mesh);

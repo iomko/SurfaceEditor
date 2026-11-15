@@ -1,12 +1,12 @@
 ```mermaid
 flowchart TB
-    ViewPortController --> VecObj["Vector pre objekty"] --> OBJECT
-    ViewPortController --> SCENE
+    Application --> ModelObjectRepository
+    ModelObjectRepository --> VecObj["Vector pre objekty"] --> MODEL_OBJECT
 
-    SCENE --> OCTREEMESH["Map&lt;Object*, Octree pre meshe objektu&gt"]
+    SCENE --> OCTREEMESH["Map&lt;ModelObject*, Octree pre meshe objektu&gt"]
     SCENE --> OCTREEFACE["Map&lt;Mesh*, Octree pre face meshu&gt"]
 
-    OBJECT --> VECMESH["Vector ukladajuci meshe"] --> MESH
+    MODEL_OBJECT --> VECMESH["Vector ukladajuci meshe"] --> MESH
 
     MESH--> HEM["ExtendedHalfEdgeMESH"]
     MESH --> AABB["AABBBoundingRegion"]
@@ -15,7 +15,7 @@ flowchart TB
 
     style SCENE fill:#245b87,color:#fff
     style MESH fill:#245b87,color:#fff
-    style OBJECT fill:#245b87,color:#fff
+    style MODEL_OBJECT fill:#245b87,color:#fff
     style HEM fill:#386c52,color:#fff
     style MBL fill:#805b9c,color:#fff
     style VecObj fill:#946b32,color:#fff

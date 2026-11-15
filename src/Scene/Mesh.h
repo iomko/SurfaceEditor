@@ -8,8 +8,8 @@
 
 #include "../Core/Profiler.h"
 
-#include "Object.h"
-class Object;
+#include "ModelObject.h"
+class ModelObject;
 class Mesh
 {
 public:
@@ -29,7 +29,7 @@ public:
 	glm::mat4 m_transform = glm::mat4(1.0f);
     glm::mat4* m_realTimeTransform = nullptr;
 
-	Object* m_parentObject = nullptr;
+	ModelObject* m_parentObject = nullptr;
 
 public:
 

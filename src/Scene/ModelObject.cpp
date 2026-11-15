@@ -1,18 +1,18 @@
-#include "Object.h"
+#include "ModelObject.h"
 
-Object::Object()
+ModelObject::ModelObject()
 {
     this->m_meshes = std::vector<Mesh*>();
     this->m_objectName = "DefaultObject";
 }
 
-Object::Object(std::string objectName)
+ModelObject::ModelObject(std::string objectName)
 {
     this->m_meshes = std::vector<Mesh*>();
     this->m_objectName = objectName;
 }
 
-Object::~Object()
+ModelObject::~ModelObject()
 {
     for (Mesh* mesh : m_meshes)
     {
@@ -20,7 +20,7 @@ Object::~Object()
     }
 }
 
-void Object::addMesh(Mesh* mesh)
+void ModelObject::addMesh(Mesh* mesh)
 {
     if (mesh == nullptr)
     {
@@ -33,12 +33,12 @@ void Object::addMesh(Mesh* mesh)
     }
 }
 
-bool Object::containsMesh(Mesh* mesh) const
+bool ModelObject::containsMesh(Mesh* mesh) const
 {
     return std::find(m_meshes.begin(), m_meshes.end(), mesh) != m_meshes.end();
 }
 
-bool Object::tryRemoveMesh(Mesh* mesh)
+bool ModelObject::tryRemoveMesh(Mesh* mesh)
 {
     auto it = std::find(m_meshes.begin(), m_meshes.end(), mesh);
     if (it != m_meshes.end())
@@ -49,12 +49,12 @@ bool Object::tryRemoveMesh(Mesh* mesh)
     return false;
 }
 
-const std::vector<Mesh*>& Object::getMeshes() const
+const std::vector<Mesh*>& ModelObject::getMeshes() const
 {
     return m_meshes;
 }
 
-std::string Object::getObjectName() const 
+std::string ModelObject::getObjectName() const 
 {
     return m_objectName;
 }

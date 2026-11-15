@@ -11,7 +11,6 @@
 #include "Scene/ViewPortLayerRenderSettings.h"
 #include "Tools/Tool.h"
 #include "Core/Layer.h"
-#include "Scene/Object.h"
 
 class Event;
 
@@ -35,44 +34,6 @@ public:
 
     ITool* m_currentTool = nullptr;
     OpParams* m_currentToolParams = nullptr;
-
-    Object* addObject(std::unique_ptr<Object> object)
-    {
-        if (!object)
-        {
-            throw std::invalid_argument("Cannot add a null object.");
-        }
-
-        Object* rawObject = object.get();
-        m_objects.push_back(std::move(object));
-        return rawObject;
-    }
-
-    Object* createObject(const std::string& name)
-    {
-        return addObject(std::make_unique<Object>(name));
-    }
-
-    bool removeObject(Object* object)
-    {
-        const auto it = std::find_if(
-            m_objects.begin(),
-            m_objects.end(),
-            [object](const std::unique_ptr<Object>& candidate)
-            {
-                return candidate.get() == object;
-            });
-        if (it == m_objects.end() || !(*it)->getMeshes().empty())
-        {
-            return false;
-        }
-
-        m_objects.erase(it);
-        return true;
-    }
-
-private:
-    std::vector<std::unique_ptr<Object>> m_objects;
 };
 
 class ViewPortsUILayerController

@@ -4,6 +4,7 @@
 
 #include "../../src/Callbacks/CallbackRegister.h"
 #include "../../src/ViewPortsController.h"
+#include "../../src/Core/Application.h"
 #include "../../src/Callables/CallableRegistry.h"
 
 static AutoRegisterCallback<DeleteMeshCallBack> registerDeleteMeshCallBack("DELETE_MESH_CALLBACK");
@@ -19,7 +20,7 @@ void DeleteMeshCallBack::execute(const MeshParams &iParams)
     ViewPortsController* controller = ViewPortsHolderContext::s_viewPortsController.get();
     
     Scene *scene = controller->m_scene;
-    Object* object = selectedMesh->m_parentObject;
+    ModelObject* object = selectedMesh->m_parentObject;
     const bool removesObject = object != nullptr && object->getMeshes().size() == 1;
     scene->removeMesh(selectedMesh);
     ViewPortsHolderContext::s_selectionController->unregisterMesh(selectedMesh);
@@ -46,6 +47,6 @@ void DeleteMeshCallBack::execute(const MeshParams &iParams)
     if (removesObject)
     {
         removeOutlinerNode(object);
-        controller->removeObject(object);
+        Application::getInstance().getModelObjectRepository().removeObject(object);
     }
 }

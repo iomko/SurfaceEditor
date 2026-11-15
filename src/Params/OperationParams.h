@@ -1,6 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
-#include "../Scene/Object.h"
+#include "../Scene/ModelObject.h"
 #include "ImGuizmo.h"
 
 struct OpParams {
@@ -76,7 +76,7 @@ struct MeshParams : public OpParams
 {
 	Mesh* m_mesh = nullptr;
 	std::string m_name = "Mesh";
-	Object* m_object = nullptr;
+	ModelObject* m_object = nullptr;
 };
 
 struct FaceParams : public OpParams

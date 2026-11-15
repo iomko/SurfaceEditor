@@ -11,3 +11,8 @@ The Mesh class represents a 3D polygonal mesh object that is built up on Half-Ed
 `bool isBuildSuccessful()` - Returns the value of the m_buildSuccessful flag. Currently not implemented.  
 
 `HalfEdgeDS::HalfEdgeMesh* getHalfEdgeStructure()` - Returns the internal pointer to the half-edge mesh structure.  
+
+Each mesh may be attached to a [ModelObject](ModelObject.md) through
+`ModelObject::addMesh`; `Mesh::m_parentObject` is the non-owning back-pointer
+to that model. The model object owns attached meshes, while the
+[ModelObjectRepository](ModelObjectRepository.md) owns model objects.

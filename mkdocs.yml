@@ -34,6 +34,7 @@ nav:
           - Event: Event.md
           - Input: Input.md
           - Layer: Layer.md
+          - ModelObjectRepository: ModelObjectRepository.md
           - Window: Window.md
           - EditorSettings: EditorSettings.md
       - Callables:
@@ -74,7 +75,7 @@ nav:
       - Scene:
           - Camera: Camera.md
           - Mesh: Mesh.md
-          - Object: Object.md
+          - ModelObject: ModelObject.md
           - Scene: Scene.md
           - ViewPortLayerRenderSettings: ViewPortLayerRenderSettings.md
       - Tools:
