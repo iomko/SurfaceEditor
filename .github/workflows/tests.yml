@@ -46,7 +46,7 @@ jobs:
 
           # AK push alebo PR → všetko zapnuté
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            MODULES="octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils"
+            MODULES="octree quadtree halfedge mesh printableMesh ray ray2D aabb boundingRegion2D containerUtils geometryUtils scene"
           fi
 
           FLAGS="" 
