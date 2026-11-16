@@ -9,9 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <functional>
 #include <stdexcept>
-#include <utility>
 #include <vector>
 
 namespace
@@ -25,12 +23,7 @@ const std::vector<glm::vec3> triangleVertices{
 Scene makeScene()
 {
 	const glm::vec3 cellSize{10.0f};
-	return Scene{
-		OctreeSpatialIndex<Mesh *>{cellSize},
-		[cellSize]
-		{
-			return FaceSpatialIndex{cellSize};
-		}};
+	return Scene{cellSize};
 }
 
 std::vector<FaceRef> queryRay(Scene &scene, const glm::vec3 &origin)
@@ -133,18 +126,6 @@ struct CursorPositionGuard
 	double m_x = 0.0;
 	double m_y = 0.0;
 };
-}
-
-TEST_CASE("SceneTemplate validates its face-index factory", "[scene][construction]")
-{
-	const glm::vec3 cellSize{10.0f};
-	std::function<FaceSpatialIndex()> emptyFactory;
-
-	REQUIRE_THROWS_AS(
-		Scene(
-			OctreeSpatialIndex<Mesh *>{cellSize},
-			std::move(emptyFactory)),
-		std::invalid_argument);
 }
 
 TEST_CASE("SceneTemplate adds and removes meshes", "[scene][mesh]")

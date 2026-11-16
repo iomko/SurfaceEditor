@@ -10,6 +10,7 @@
 #include "../Structures/PrintableMesh.h"
 
 #include <algorithm>
+#include <concepts>
 #include <functional>
 #include <limits>
 #include <map>
@@ -39,6 +40,11 @@ class SceneTemplate
 {
 public:
 	SceneTemplate(MeshIndex meshIndex, std::function<FaceSpatialIndex()> faceIndexFactory);
+	template <typename IndexConfig>
+		requires std::constructible_from<MeshIndex, const IndexConfig &> &&
+				 std::constructible_from<FaceSpatialIndex, const IndexConfig &> &&
+				 std::copy_constructible<IndexConfig>
+	explicit SceneTemplate(IndexConfig indexConfig);
 	~SceneTemplate();
 
 	SceneTemplate(const SceneTemplate &) = delete;
@@ -95,6 +101,19 @@ inline SceneTemplate<MeshIndex>::SceneTemplate(
 	{
 		throw std::invalid_argument("A face spatial-index factory is required.");
 	}
+}
+
+template <typename MeshIndex>
+	requires SpatialIndex<MeshIndex, Mesh *>
+template <typename IndexConfig>
+	requires std::constructible_from<MeshIndex, const IndexConfig &> &&
+			 std::constructible_from<FaceSpatialIndex, const IndexConfig &> &&
+			 std::copy_constructible<IndexConfig>
+inline SceneTemplate<MeshIndex>::SceneTemplate(IndexConfig indexConfig)
+	: m_meshIndex(indexConfig),
+	  m_faceIndexFactory([indexConfig]()
+						 { return FaceSpatialIndex(indexConfig); })
+{
 }
 
 template <typename MeshIndex>

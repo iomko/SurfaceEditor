@@ -103,12 +103,7 @@ int main()
 	Camera* camera = ViewPortsHolderContext::s_camera.get();
 	const glm::vec3 cellSize{25.0f};
 
-	Scene scene{
-		OctreeSpatialIndex<Mesh*>{cellSize},
-		[cellSize] {
-			return OctreeSpatialIndex<ExtendedFace*>{cellSize};
-		}
-	};
+	Scene scene{cellSize};
 
 	// viewPortLayer
 	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");

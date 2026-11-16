@@ -27,7 +27,8 @@ for the relationship between models and meshes. The `SceneTemplate` mesh
 index must satisfy the [`SpatialIndex`](Scene.md#sym:SpatialIndex) concept.
 
 ###### Methods:
-`Scene(float xSize, float ySize, float zSize)` - Initializes a Scene with a given voxel size in X, Y, and Z directions.  
+`Scene{indexConfig}` - Initializes the mesh and face spatial indices from the same configuration object, when both index types can be constructed from it. For the octree-backed `Scene`, this is a `glm::vec3` voxel size, for example `Scene scene{glm::vec3{25.0f}}`.  
+`Scene(meshIndex, faceIndexFactory)` - Initializes the scene with an explicitly constructed mesh spatial index and a factory that creates face spatial indices. Use this form when the two index types need different constructor parameters or custom construction.  
 `glm::vec3 getVoxelSize()` - Returns the current voxel size used in the scene.  
 `void addFaceIntoOctrees(Mesh* mesh, HalfEdgeDS::Face* face)` - Inserts a face into all the octrees corresponding to the voxels it intersects, creating new octrees if necessary.  
 `void deleteMeshFromOctrees(Mesh* mesh)` - Removes all faces of a mesh from all octrees.  
