@@ -112,23 +112,25 @@ public:
 		// Step 2: inside-outside test
 		glm::vec3 C; // vector perpendicular to triangle's plane
 
+		float epsilon = 1e-6f;
+
 		// edge 0
 		glm::vec3 edge0 = v1 - v0;
 		glm::vec3 vp0 = P - v0;
 		C = glm::cross(edge0, vp0);
-		if (glm::dot(N, C) < 0) return false; // P is on the right side
+		if (dot(N, C) / dot(N, N) < -epsilon) return false; // P is on the right side
 
 		// edge 1
 		glm::vec3 edge1 = v2 - v1;
 		glm::vec3 vp1 = P - v1;
 		C = glm::cross(edge1, vp1);
-		if (glm::dot(N, C) < 0)  return false; // P is on the right side
+		if (dot(N, C) / dot(N, N) < -epsilon)  return false; // P is on the right side
 
 		// edge 2
 		glm::vec3 edge2 = v0 - v2;
 		glm::vec3 vp2 = P - v2;
 		C = glm::cross(edge2, vp2);
-		if (glm::dot(N, C) < 0) return false; // P is on the right side;
+		if (dot(N, C) / dot(N, N) < -epsilon) return false; // P is on the right side;
 
 		return true; // this ray hits the triangle
 	}

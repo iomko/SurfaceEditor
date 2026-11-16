@@ -1,11 +1,15 @@
 #pragma once
 
+#include <memory>
+
 #include <iostream>
 #include <vector>
 #include "../Utils/glm_overrides.h"
 #include <unordered_set>
 #include <map>
 #include "../Renderer/Material.h"
+
+#include "../Core/Profiler.h"
 
 using FaceTriangleIndex = int;
 using EdgeLineIndex = int;
@@ -232,10 +236,8 @@ namespace HalfEdgeDS
 		}
 		virtual ~HalfEdgeMesh()
 		{
-			for (auto* obj : m_faces) delete obj;
-			for (auto* obj : m_edges) delete obj;
-			for (auto* obj : m_vertices) delete obj;
-			for (auto* obj : m_halfEdges) delete obj;
+			SE_PROFILE_SCOPE;
+			this->clear();
 		}
 
 		auto halfEdgeIterBegin() { return m_halfEdges.begin(); }
@@ -252,6 +254,7 @@ namespace HalfEdgeDS
 
 		static void getVerticesFromFace(Traits::FType *face, std::vector<typename Traits::VType> &vertices)
 		{
+			SE_PROFILE_SCOPE;
 			vertices.clear();
 
 			typename Traits::HType *halfEdge1 = face->m_halfEdge;
@@ -269,22 +272,30 @@ namespace HalfEdgeDS
 		template <typename T, typename Vector>
 		T *createObject(Vector &storageVector)
 		{
-			T *newObject = nullptr;
+			SE_PROFILE_SCOPE;
+			std::unique_ptr<T> newObject;
 			if constexpr (std::is_void_v<typename Traits::DerType>)
 			{
-				newObject = new T(*this);
+				newObject = std::make_unique<T>(*this);
 			}
 			else
 			{
-				newObject = new T(static_cast<typename Traits::DerType &>(*this));
+				newObject = std::make_unique<T>(
+					static_cast<typename Traits::DerType&>(*this)
+				);
 			}
-			storageVector.emplace_back(newObject);
-			return newObject;
+
+			T* result = newObject.get();
+			storageVector.emplace_back(result);
+			newObject.release();
+
+			return result;
 		}
 
 		template <typename T, typename Key, typename Map>
 		T *findObject(const Key &key, Map &helperMap)
 		{
+			SE_PROFILE_SCOPE;
 			auto it = helperMap.find(key);
 			return (it != helperMap.end()) ? it->second : nullptr;
 		}
@@ -292,6 +303,7 @@ namespace HalfEdgeDS
 		template <typename T, typename Key, typename Map, typename Vector>
 		T *findOrCreateObject(const Key &key, Map &helperMap, Vector &storageVector, bool *outWasCreated = nullptr)
 		{
+			SE_PROFILE_SCOPE;
 			auto it = helperMap.find(key);
 			if (it != helperMap.end())
 			{
@@ -316,14 +328,24 @@ namespace HalfEdgeDS
 			return newObject;
 		}
 
-		void build(const std::vector<std::vector<int>> &polygons,
-				   const std::vector<glm::vec3> &vertices)
+		void clear()
 		{
-			// Clear old data (important if reused)
+			for (auto* obj : m_faces) delete obj;
+			for (auto* obj : m_edges) delete obj;
+			for (auto* obj : m_vertices) delete obj;
+			for (auto* obj : m_halfEdges) delete obj;
 			m_halfEdges.clear();
 			m_vertices.clear();
 			m_edges.clear();
 			m_faces.clear();
+		}
+
+		void build(const std::vector<std::vector<int>> &polygons,
+				   const std::vector<glm::vec3> &vertices)
+		{
+			SE_PROFILE_SCOPE;
+			// Clear old data (important if reused)
+			this->clear();
 
 			// --- HELPERS ---
 			std::map<int, typename Traits::VType *> vertexMap;

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <Components/Window.h>
 #include "Editing/Selection/SelectionController.h"
 #include "Patterns/Observer.h"
@@ -10,7 +13,6 @@
 #include "Core/Layer.h"
 
 class Event;
-class Scene;
 
 class ViewPortLayer;
 

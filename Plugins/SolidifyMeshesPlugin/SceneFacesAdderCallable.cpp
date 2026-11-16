@@ -11,10 +11,8 @@ void SceneFacesAdderCallable::invoke(const FaceParams &input)
 
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
 
-    SceneResources::MeshFaceOctreeCoordsMap &meshFaceOctreeCoordsMap = scene->m_res.meshFaceOctreeCoordsMap;
-
     for (ExtendedFace *face : faces)
     {
-        scene->addFaceIntoOctrees(mesh, face);
+        scene->addFace(mesh, face);
     }
 }

@@ -20,7 +20,7 @@ void ExportMeshesCallback::execute(const ImportExportMeshesParams &params)
     else
     {
         Scene* scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-        for (const auto& [mesh, _] : scene->m_res.meshFaceOctreeCoordsMap)
+        for (const auto& mesh : scene->getAllMeshes())
         {
             objExporter.parseMesh(mesh);
         }

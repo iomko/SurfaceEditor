@@ -21,6 +21,15 @@ public:
         if(parent == nullptr)
             return;
 
+        for (OutlinerNodeConcept* existing : parent->m_childs)
+        {
+            auto* typedNode = dynamic_cast<OutlinerNode<T>*>(existing);
+            if (typedNode != nullptr && typedNode->m_data == data)
+            {
+                return;
+            }
+        }
+
         auto* node = new OutlinerNode<T>(id, name, data);
         parent->m_childs.emplace_back(node);
     }

@@ -44,6 +44,8 @@
 
 #include "PluginLoader.h"
 
+#include "Profiler.h"
+
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
@@ -99,7 +101,9 @@ int main()
 	ViewPortsHolderContext::s_selectionController->createSelectionRectangle();
 
 	Camera* camera = ViewPortsHolderContext::s_camera.get();
-	Scene scene(25.0f, 25.0f, 25.0f);
+	const glm::vec3 cellSize{25.0f};
+
+	Scene scene{cellSize};
 
 	// viewPortLayer
 	ViewPortLayer* viewPortLayer = new ViewPortLayer("viewPortLayer");
@@ -213,7 +217,7 @@ int main()
 		//Render transparent meshes
 		glDisable(GL_BLEND);
 		glDepthMask(GL_TRUE);
-		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		for (auto& mesh : scene.getAllMeshes())
 		{
 			if (mesh->m_selected)
 			{
@@ -225,7 +229,7 @@ int main()
 		//Render solid meshes
 		glEnable(GL_BLEND);
 		glDepthMask(GL_FALSE);
-		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		for (auto& mesh : scene.getAllMeshes())
 		{
 			if (!mesh->m_selected)
 			{
@@ -237,7 +241,7 @@ int main()
 		// restore state
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
-		for (auto& [mesh, _] : scene.m_res.meshFaceOctreeCoordsMap)
+		for (auto& mesh : scene.getAllMeshes())
 		{
 			auto& faces = selectionHolder.faces.find(mesh)->second;
 
@@ -262,6 +266,7 @@ int main()
 
 				shader->unbind();
 			}
+			SE_PROFILE_FRAME;
 		}
 
 		for (auto& [_, printableMesh] : scene.m_res.printableMeshMap)

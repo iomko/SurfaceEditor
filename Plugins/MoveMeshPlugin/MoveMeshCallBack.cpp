@@ -7,6 +7,8 @@
 #include "../../src/Renderer/MaterialRegistry.h"
 #include "../../src/Commands/CommandRegistry.h"
 
+#include "../../src/Scene/Mesh.h"
+
 static AutoRegisterCallback<MoveMeshCallBack> registerCallback("MOVE_MESH_CALLBACK");
 
 void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
@@ -16,10 +18,10 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
     vertexParams.mesh = iParams.mesh;
     vertexParams.transformMatrix = iParams.transformMatrix;
     vertexParams.moveBy = VertexParams::MoveBy::TRANSFORM_MATRIX;
+    //vertexParams.updateBuffers = false;
 
     auto *moveVertexCommand = CommandRegistry::instance().getCommand("MOVE_VERTEX_COMMAND");
     // chceme ist cez vsetky vertices a posunut ich o moveByVector
-
     if(moveVertexCommand)
     {
         const std::vector<ExtendedVertex *> &vertices = iParams.mesh->getHalfEdgeStructure()->m_vertices;
@@ -28,8 +30,16 @@ void MoveMeshCallBack::execute(const MoveMeshParams &iParams)
         {
             vertexParams.vertex = vertex;
             moveVertexCommand->execute(vertexParams);
+
         }
 
+            /*iParams.mesh->bufferLayout.getLineBufferStorage(MaterialRegistry::getMaterial("defaultLineMaterial"))->get().update();
+            for(auto it = iParams.mesh->bufferLayout.triangleBuffersBegin(); it != iParams.mesh->bufferLayout.triangleBuffersEnd(); ++it) {
+                TriangleBufferStorage& triangleBufferStorage = it->second;
+                triangleBufferStorage.update();
+            }*/
+
     }
-    iParams.mesh->calculateMeshBounds();
+    Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
+    scene->updateMesh(iParams.mesh, false);
 }

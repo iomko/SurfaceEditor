@@ -2,6 +2,7 @@
 
 #include "../Params/OperationParams.h"
 #include <stdexcept>
+#include "../../src/Core/Profiler.h"
 
 struct CommandConcept
 {
@@ -26,6 +27,7 @@ public:
 	virtual void execute(const IParams &iParams, OParams &oParams) = 0;
 	void execute(const OpParams &iParams, OpParams &oParams) override
 	{
+		SE_PROFILE_SCOPE_N("Command:execute");
 		const IParams &specificIParams = static_cast<const IParams &>(iParams);
 		OParams &specificOParams = static_cast<OParams &>(oParams);
 		execute(specificIParams, specificOParams);
@@ -43,6 +45,7 @@ public:
 	virtual void execute(const IParams &iParams) = 0;
 	void execute(const OpParams &iParams) override
 	{
+		SE_PROFILE_SCOPE_N("Command:execute");
 		const IParams &specificIParams = static_cast<const IParams &>(iParams);
 		execute(specificIParams);
 	}
