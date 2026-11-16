@@ -30,7 +30,7 @@ struct SceneResources
 	PrintableMeshMap printableMeshMap;
 };
 
-static_assert(SpatialIndex<OctreeSpatialIndex<Mesh *>, Mesh *>);
+static_assert(SpatialIndex<MeshSpatialIndex, Mesh *>);
 static_assert(SpatialIndex<FaceSpatialIndex, ExtendedFace *>);
 
 template <typename MeshIndex>
@@ -72,7 +72,7 @@ private:
 	std::function<FaceSpatialIndex()> m_faceIndexFactory;
 };
 
-using Scene = SceneTemplate<OctreeSpatialIndex<Mesh *>>;
+using Scene = SceneTemplate<MeshSpatialIndex>;
 
 class SceneUtilities
 {

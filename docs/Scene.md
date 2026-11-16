@@ -26,21 +26,25 @@ and queries each candidate mesh's face index. See [ModelObject](ModelObject.md)
 for the relationship between models and meshes. The `SceneTemplate` mesh
 index must satisfy the [`SpatialIndex`](Scene.md#sym:SpatialIndex) concept.
 
-#### Face spatial-index type
-`FaceSpatialIndex` is the shared type alias declared in
-[`SceneSpatialIndex.h`](../src/Scene/SceneSpatialIndex.h). Both `SceneTemplate`
-and `Mesh` use this alias: the scene creates and queries face indices, while
-each mesh stores its own index through `std::unique_ptr<FaceSpatialIndex>`.
-Consequently, changing the alias updates the face-index type used by both
-classes without making `Mesh` depend directly on a concrete index
-implementation.
+#### Spatial-index types
+[`SceneSpatialIndex.h`](../src/Scene/SceneSpatialIndex.h) is the central
+selection point for the scene's spatial-index implementations. It declares
+`MeshSpatialIndex` for indexing meshes and `FaceSpatialIndex` for indexing
+faces. Both aliases currently use `OctreeSpatialIndex`.
 
-The selected type must support the operations used by `SceneTemplate`:
-insertion, removal, and ray, AABB, and sphere queries. It must also be
-constructible through the scene's configured face-index factory. The
-single-configuration constructor can be used when both the mesh index and
-face index accept the same configuration. Use the explicit mesh-index and
-face-index-factory constructor when they need different parameters.
+`SceneTemplate` uses both aliases: `Scene` is
+`SceneTemplate<MeshSpatialIndex>`, and the scene creates and queries face
+indices using `FaceSpatialIndex`. Each `Mesh` stores its face index through
+`std::unique_ptr<FaceSpatialIndex>`. Change the aliases in
+`SceneSpatialIndex.h` to select different implementations without referring
+to concrete index types in `Mesh.h` or in the `Scene` alias.
+
+Both selected types must satisfy the [`SpatialIndex`](Scene.md#sym:SpatialIndex)
+concept. The face index must also support the operations used by
+`SceneTemplate`: insertion, removal, and ray, AABB, and sphere queries. The
+single-configuration constructor can be used when both index types accept the
+same configuration. Use the explicit mesh-index and face-index-factory
+constructor when they need different parameters.
 
 ###### Methods:
 `Scene{indexConfig}` - Initializes the mesh and face spatial indices from the same configuration object, when both index types can be constructed from it. For the octree-backed `Scene`, this is a `glm::vec3` voxel size, for example `Scene scene{glm::vec3{25.0f}}`.  
