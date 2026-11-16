@@ -2,6 +2,7 @@
 
 #include "Mesh.h"
 #include "OctreeSpatialIndex.h"
+#include "SceneSpatialIndex.h"
 #include "SpatialIndex.h"
 #include "Camera.h"
 #include "../Core/Window.h"
@@ -30,9 +31,7 @@ struct SceneResources
 };
 
 static_assert(SpatialIndex<OctreeSpatialIndex<Mesh *>, Mesh *>);
-static_assert(SpatialIndex<OctreeSpatialIndex<ExtendedFace *>, ExtendedFace *>);
-
-using FaceSpatialIndex = OctreeSpatialIndex<ExtendedFace *>;
+static_assert(SpatialIndex<FaceSpatialIndex, ExtendedFace *>);
 
 template <typename MeshIndex>
 	requires SpatialIndex<MeshIndex, Mesh *>

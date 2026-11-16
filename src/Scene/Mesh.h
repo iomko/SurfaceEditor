@@ -9,7 +9,7 @@
 #include "../Core/Profiler.h"
 
 #include "ModelObject.h"
-#include "OctreeSpatialIndex.h"
+#include "SceneSpatialIndex.h"
 
 #include <memory>
 
@@ -34,7 +34,7 @@ public:
     glm::mat4* m_realTimeTransform = nullptr;
 
 	ModelObject* m_parentObject = nullptr;
-    std::unique_ptr<OctreeSpatialIndex<ExtendedFace*>> m_faceIndex;
+    std::unique_ptr<FaceSpatialIndex> m_faceIndex;
 
 public:
 
