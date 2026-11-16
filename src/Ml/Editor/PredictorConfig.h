@@ -36,6 +36,9 @@ struct LabelDefinition
 
 struct PredictorConfig
 {
+    std::string instanceName;
+    std::string typeId;
+
     std::vector<int> featureIds;
     std::vector<LabelDefinition> labels;
 };

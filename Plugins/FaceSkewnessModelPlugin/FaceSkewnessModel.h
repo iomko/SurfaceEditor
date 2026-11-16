@@ -19,7 +19,7 @@ public:
     static constexpr int ID = AnalyserIDS::FACE_SKEWNESS_PREDICTOR;
     static constexpr const char* NAME = "FaceSkewnessPredictor";
 
-    FaceSkewnessModel();
+    FaceSkewnessModel(const std::string& instanceName = "FACE_SKEWNESS_PREDICTOR");
 
     std::vector<float> predict(Mesh* mesh) override;
     void train(const std::vector<Mesh*>& meshes) override;

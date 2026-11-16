@@ -22,6 +22,10 @@ public:
     virtual bool removeFeature(FeatureStrategyConcept* feature) = 0;
     virtual std::vector<FeatureStrategyConcept*> getFeatures() const = 0;
     virtual std::string getModelConfigPath() const = 0;
+
+    virtual std::string getInstanceName() const = 0;
+    virtual std::string getTypeId() const = 0;
+    virtual void reloadFromConfig() = 0;
 };
 
 class Processor : public Analyser {

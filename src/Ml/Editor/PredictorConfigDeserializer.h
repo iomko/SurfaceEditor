@@ -18,6 +18,14 @@ public:
             return config;
         }
 
+        if (json.contains("instanceName") && json["instanceName"].is_string()) {
+            config.instanceName = json["instanceName"].get<std::string>();
+        }
+
+        if (json.contains("typeId") && json["typeId"].is_string()) {
+            config.typeId = json["typeId"].get<std::string>();
+        }
+
         if (json.contains("features") && json["features"].is_array())
         {
             for (const auto& featureJson : json["features"])

@@ -13,6 +13,8 @@ public:
     static nlohmann::json toJson(const PredictorConfig& config)
     {
         nlohmann::json root;
+        root["instanceName"] = config.instanceName;
+        root["typeId"] = config.typeId;
         root["features"] = nlohmann::json::array();
         root["labels"] = nlohmann::json::array();
 

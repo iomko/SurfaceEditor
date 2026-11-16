@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cctype>
 
 struct ModelInfo {
     size_t featuresSize = static_cast<size_t>(-1);
@@ -20,8 +21,15 @@ struct ModelInfo {
 template<typename Type>
 class NeuralNetworkModel : public Predictor {
 public:
-    NeuralNetworkModel(const std::string& modelName, const std::vector<int>& defaultFeatureIds) :
-        m_modelName(modelName), m_defaultFeatureIds(defaultFeatureIds)
+    NeuralNetworkModel(
+        const std::string& modelTypeId,
+        const std::string& modelTypeName,
+        const std::string& instanceName,
+        const std::vector<int>& defaultFeatureIds)
+        : m_modelTypeId(modelTypeId),
+          m_modelTypeName(modelTypeName),
+          m_instanceName(instanceName),
+          m_defaultFeatureIds(defaultFeatureIds)
     {
         initializeFeaturesWithConfig();
     }
@@ -98,11 +106,36 @@ public:
     }
 
     std::string getModelConfigPath() const override {
-        return std::string(ML_DATA_DIR) + "/" + m_modelName + ".config.json";
+        return std::string(ML_DATA_DIR) + "/" + getFileSafeInstanceName() + ".config.json";
     }
 
     std::string getName() const override {
-        return m_modelName;
+        return m_instanceName;
+    }
+
+    std::string getInstanceName() const override {
+        return m_instanceName;
+    }
+
+    std::string getTypeId() const override {
+        return m_modelTypeId;
+    }
+
+    void reloadFromConfig() override {
+        initializeFeaturesWithConfig();
+    }
+
+protected:
+    std::string getWeightsPath() const {
+        return std::string(ML_DATA_DIR) + "/" + getFileSafeInstanceName() + ".model.pt";
+    }
+
+    std::string getNormMeanPath() const {
+        return std::string(ML_DATA_DIR) + "/" + getFileSafeInstanceName() + ".norm_mean.txt";
+    }
+
+    std::string getNormStdPath() const {
+        return std::string(ML_DATA_DIR) + "/" + getFileSafeInstanceName() + ".norm_std.txt";
     }
 
 protected:
@@ -110,8 +143,28 @@ protected:
     std::vector<FeatureStrategy<Type>*> m_featureStrategies;
 
 private:
-    std::string m_modelName;
+    std::string m_modelTypeId;
+    std::string m_modelTypeName;
+    std::string m_instanceName;
     std::vector<int> m_defaultFeatureIds;
+
+    std::string getFileSafeInstanceName() const
+    {
+        std::string result = m_instanceName;
+
+        for (char& c : result)
+        {
+            if (!(std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-')) {
+                c = '_';
+            }
+        }
+
+        if (result.empty()) {
+            result = m_modelTypeId;
+        }
+
+        return result;
+    }
 
     void rebuildModelInfo()
     {
@@ -126,6 +179,8 @@ private:
     PredictorConfig makeDefaultConfig() const
     {
         PredictorConfig config;
+        config.instanceName = m_instanceName;
+        config.typeId = m_modelTypeId;
         config.featureIds = m_defaultFeatureIds;
         return config;
     }
@@ -134,8 +189,18 @@ private:
     {
         PredictorConfig config = PredictorConfigDeserializer::loadFromFile(getModelConfigPath());
 
+        if (config.instanceName.empty()) {
+            config.instanceName = m_instanceName;
+        }
+
+        if (config.typeId.empty()) {
+            config.typeId = m_modelTypeId;
+        }
+
         if (config.featureIds.empty()) {
             config = makeDefaultConfig();
+            PredictorConfigSerializer::saveToFile(getModelConfigPath(), config);
+        } else {
             PredictorConfigSerializer::saveToFile(getModelConfigPath(), config);
         }
 
@@ -160,7 +225,7 @@ private:
 
             if (feature->getObjectType() != getFeatureObjectType()) {
                 std::cerr << "[ML] WARNING: Feature ID " << id
-                          << " has incompatible object type for model " << m_modelName << ".\n";
+                          << " has incompatible object type for model " << m_instanceName << ".\n";
                 continue;
             }
 
@@ -182,6 +247,9 @@ private:
     void saveFeatureIdsToConfig() const
     {
         PredictorConfig config = PredictorConfigDeserializer::loadFromFile(getModelConfigPath());
+
+        config.instanceName = m_instanceName;
+        config.typeId = m_modelTypeId;
 
         config.featureIds.clear();
         for (auto* feature : m_featureStrategies)
