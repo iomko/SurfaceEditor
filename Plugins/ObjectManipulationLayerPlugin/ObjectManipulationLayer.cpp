@@ -11,6 +11,7 @@
 #include <Styling/Window.h>
 #include <Styling/Button.h>
 #include <Components/RadioImageButton.h>
+#include <Placements/ViewportPlacement.h>
 #include <Utils/VisibilityHandler.h>
 
 namespace
@@ -38,7 +39,7 @@ ObjectManipulationLayer::ObjectManipulationLayer(const std::string& name)
     : Layer(name)
     , ui::components::Window(LAYER_NAME)
 {
-    VisibilityHandler::show(LAYER_NAME);
+    VisibilityHandler::instance().show(LAYER_NAME);
     initConnections();
 }
 
@@ -56,7 +57,6 @@ void ObjectManipulationLayer::initConnections()
 
 void ObjectManipulationLayer::initWindowConfig()
 {
-    auto posConfig  = WindowPosConfigBuilder().posX(0.025f).posY(0.37f).build();
     auto sizeConfig = WindowSizeConfigBuilder().minWidth(0.6f).minHeight(0.6f).build();
     auto flags      = ImGuiWindowFlags_NoTitleBar
                     | ImGuiWindowFlags_NoResize
@@ -68,10 +68,14 @@ void ObjectManipulationLayer::initWindowConfig()
         .name(LAYER_NAME)
         .background(ui::styling::Color::gray)
         .rounding(12.0f)
-        .pos(std::move(posConfig))
         .size(std::move(sizeConfig))
         .flags(flags)
         .build();
+}
+
+std::unique_ptr<ui::placements::Placement> ObjectManipulationLayer::createPlacement()
+{
+    return std::make_unique<ui::placements::ViewportPlacement>(0.025f, 0.37f);
 }
 
 void ObjectManipulationLayer::initComponents()
@@ -79,7 +83,6 @@ void ObjectManipulationLayer::initComponents()
     using namespace ui::components;
 
     static constexpr int itemsCount = 5;
-    m_radioButtons.reserve(itemsCount);
 
     auto defaultConfig = ButtonConfigBuilder()
         .rounding(17.0f)
@@ -94,33 +97,32 @@ void ObjectManipulationLayer::initComponents()
     ui::components::Layout* layout = emplaceLayout();
     layout->reserveComponents(itemsCount);
 
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioButtons, defaultConfig, [this](Button*) {
+    emplaceComponent<RadioImageButton>(layout, cursor, cursorPath, m_radioGroup, defaultConfig, [this](Button*) {
         activateSelectionMode();
-    }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, translate, translatePath, m_radioButtons, defaultConfig, [this](Button*) {
+    });
+    emplaceComponent<RadioImageButton>(layout, translate, translatePath, m_radioGroup, defaultConfig, [this](Button*) {
         activateGizmoMode(ImGuizmo::OPERATION::TRANSLATE);
-    }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, rotate, rotatePath, m_radioButtons, defaultConfig, [this](Button*) {
+    });
+    emplaceComponent<RadioImageButton>(layout, rotate, rotatePath, m_radioGroup, defaultConfig, [this](Button*) {
         activateGizmoMode(ImGuizmo::OPERATION::ROTATE);
-    }));
-    m_radioButtons.push_back(emplaceComponent<RadioImageButton>(layout, scale, scalePath, m_radioButtons, defaultConfig, [this](Button*) {
+    });
+    emplaceComponent<RadioImageButton>(layout, scale, scalePath, m_radioGroup, defaultConfig, [this](Button*) {
         activateGizmoMode(ImGuizmo::OPERATION::SCALE);
-    }));
-    m_addMeshButton = emplaceComponent<RadioImageButton>(layout, plus, plusPath, m_radioButtons, defaultConfig, [this](Button* button) {
+    });
+    m_addMeshButton = emplaceComponent<RadioImageButton>(layout, plus, plusPath, m_radioGroup, defaultConfig, [this](Button* button) {
         resetModeState();
-        
+
         auto* radioButton = dynamic_cast<ui::components::RadioButton*>(button);
         radioButton->setIsSelected(false);
-        
-        VisibilityHandler::show("OBJECTS_LAYER");
+
+        VisibilityHandler::instance().show("OBJECTS_LAYER");
     });
-    m_radioButtons.push_back(m_addMeshButton);
 }
 
 void ObjectManipulationLayer::resetModeState()
 {
-    VisibilityHandler::hide("GIZMO_LAYER");
-    VisibilityHandler::hide("OBJECTS_LAYER");
+    VisibilityHandler::instance().hide("GIZMO_LAYER");
+    VisibilityHandler::instance().hide("OBJECTS_LAYER");
 
     ViewPortsHolderContext::s_selectionController->setSelectionModeActive(false);
 
@@ -173,7 +175,7 @@ void ObjectManipulationLayer::activateGizmoMode(ImGuizmo::OPERATION operationTyp
     state.operationType = operationType;
 
     WindowLayerBus::emit(state);
-    VisibilityHandler::show("GIZMO_LAYER");
+    VisibilityHandler::instance().show("GIZMO_LAYER");
 }
 
 void ObjectManipulationLayer::onImGuiRender()

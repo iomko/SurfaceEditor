@@ -5,6 +5,7 @@
 #include <memory>
 #include <stdint.h>
 #include <Components/Window.h>
+#include <Components/RadioGroup.h>
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 
@@ -28,6 +29,8 @@ protected:
 
     void initComponents() override;
 
+    std::unique_ptr<ui::placements::Placement> createPlacement() override;
+
 private:
     void resetModeState();
 
@@ -36,6 +39,6 @@ private:
     void activateGizmoMode(ImGuizmo::OPERATION operationType);
 
 private:
-    std::vector<ui::components::RadioButton*> m_radioButtons;
-    ui::components::RadioButton*              m_addMeshButton;
+    ui::components::RadioGroup   m_radioGroup;
+    ui::components::RadioButton* m_addMeshButton;
 };

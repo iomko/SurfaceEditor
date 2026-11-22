@@ -5,6 +5,7 @@
 #include "../src/Commands/CommandIDs.h"
 #include <Builders/UIWindowBuilder.h>
 #include <Builders/UIButtonBuilder.h>
+#include <Placements/AnchoredPlacement.h>
 #include <Styling/Font.h>
 
 namespace
@@ -35,6 +36,15 @@ void ObjectsLayer::initWindowConfig()
         .size(sizeConfig)
         .flags(flags)
         .build();
+}
+
+std::unique_ptr<ui::placements::Placement> ObjectsLayer::createPlacement()
+{
+    return std::make_unique<ui::placements::AnchoredPlacement>([]() -> ImVec2 {
+        ObjectsLayerState currState;
+        WindowLayerBus::emit(currState);
+        return currState.windowPos;
+    });
 }
 
 void ObjectsLayer::initComponents()
@@ -72,24 +82,11 @@ void ObjectsLayer::invokeAdditionLayer(AdditionType additionType)
     additionLayerState.additionType = additionType;
     
     WindowLayerBus::emit(additionLayerState);
-    VisibilityHandler::hide(LAYER_NAME);
-    VisibilityHandler::show("ADDITION_LAYER");
-}
-
-void ObjectsLayer::updatePos(ImVec2& actualPosition)
-{
-    m_windowConfig.pos = WindowPosConfigBuilder()
-        .relativePosition(true)
-        .relativePosX(actualPosition.x)
-        .relativePosY(actualPosition.y)
-        .build();
+    VisibilityHandler::instance().hide(LAYER_NAME);
+    VisibilityHandler::instance().show("ADDITION_LAYER");
 }
 
 void ObjectsLayer::onImGuiRender()
 {
-    ObjectsLayerState currState;
-    WindowLayerBus::emit(currState);
-    updatePos(currState.windowPos);
-
     this->render();
 }

@@ -8,6 +8,8 @@
 #include <Components/Separator.h>
 #include <Components/Dummy.h>
 #include <Components/Button.h>
+#include <Bindings/ReferenceBinding.h>
+#include <Placements/CenteredPlacement.h>
 #include <Styling/Font.h>
 #include <Builders/UIWindowBuilder.h>
 #include <Builders/UIButtonBuilder.h>
@@ -30,6 +32,7 @@ AdditionLayer::AdditionLayer(const std::string& name)
     : Layer(name)
     , ui::components::Window(LAYER_NAME)
     , m_additionType(AdditionType::NONE)
+    , m_position{}
 {
     initConnections();
 }
@@ -43,11 +46,6 @@ void AdditionLayer::initConnections()
 
 void AdditionLayer::initWindowConfig()
 {
-    auto posConfig = WindowPosConfigBuilder()
-        .posX(0.38f)
-        .posY(0.28f)
-        .build();
-
     auto sizeConfig = WindowSizeConfigBuilder()
         .width(0.25f)
         .height(0.4f)
@@ -70,11 +68,15 @@ void AdditionLayer::initWindowConfig()
         .layerName(LAYER_NAME)
         .background(ui::styling::Color::transparentGray)
         .rounding(20.0f)
-        .pos(posConfig)
         .size(sizeConfig)
         .titleBar(titleBarConfig)
         .flags(flags)
         .build();
+}
+
+std::unique_ptr<ui::placements::Placement> AdditionLayer::createPlacement()
+{
+    return std::make_unique<ui::placements::CenteredPlacement>();
 }
 
 void AdditionLayer::initComponents()
@@ -107,21 +109,20 @@ void AdditionLayer::initDialogButtons()
     m_createButton = emplaceComponent<Button>(m_dialogLayout, "Add", dialogButtonConfig, dummyCallback);
     emplaceComponent<SameLine>(m_dialogLayout);
     emplaceComponent<Button>(m_dialogLayout, "Cancel", dialogButtonConfig, [](Button*) {
-        VisibilityHandler::hide("ADDITION_LAYER");
+        VisibilityHandler::instance().hide("ADDITION_LAYER");
     });
-
-    m_subdivisionSlider->linkWith(m_subdivisionInputBox);
-    m_sizeSlider->linkWith(m_sizeInputBox);
-
-    *m_subdivisionInputBox->inputValue() = 1;
-    *m_sizeInputBox->inputValue()        = 1.0f;
 }
 
 void AdditionLayer::initMeshComponents()
 {
     using namespace ui::components;
+    using namespace ui::bindings;
 
-    static constexpr int mainItemsCount = 31;
+    static constexpr int   mainItemsCount = 31;
+    static constexpr int   minSubdivision = 1;
+    static constexpr int   maxSubdivision = 100;
+    static constexpr float minSize        = 0.0f;
+    static constexpr float maxSize        = 100.0f;
 
     auto headlinersConfig = LabelConfigBuilder()
         .font(ui::styling::Font::extraBold(0.025f))
@@ -145,7 +146,8 @@ void AdditionLayer::initMeshComponents()
 
     auto intSliderConfig = SliderConfigBuilder<int>()
         .width(0.37f)
-        .max(100)
+        .min(minSubdivision)
+        .max(maxSubdivision)
         .background(ui::styling::Color::lightGray)
         .onHoverBackground(ui::styling::Color::lightGray)
         .onActiveBackground(ui::styling::Color::lightGray)
@@ -155,13 +157,17 @@ void AdditionLayer::initMeshComponents()
 
     auto floatSliderConfig = SliderConfigBuilder<float>()
         .width(0.36f)
-        .max(100.0f)
+        .min(minSize)
+        .max(maxSize)
         .background(ui::styling::Color::lightGray)
         .onHoverBackground(ui::styling::Color::lightGray)
         .onActiveBackground(ui::styling::Color::lightGray)
         .grabBackground(ui::styling::Color::titleBarOrange)
         .onGrabActiveBackground(ui::styling::Color::titleBarOrange)
         .build();
+
+    m_subdivision = std::make_shared<ClampedBinding<int>>(1, minSubdivision, maxSubdivision);
+    m_size        = std::make_shared<ClampedBinding<float>>(1.0f, minSize, maxSize);
 
     m_meshLayout = emplaceLayout(ImVec2{ 0.2f, 0.05f });
     m_meshLayout->reserveComponents(mainItemsCount);
@@ -170,14 +176,14 @@ void AdditionLayer::initMeshComponents()
     emplaceComponent<Label>(m_meshLayout, "Automatic:", defaultTextConfig);
     emplaceComponent<SameLine>(m_meshLayout);
     m_automaticCheckBox   = emplaceComponent<CheckBox>(m_meshLayout, "AutomaticCheckBox", checkBoxConfig);
-    m_subdivisionInputBox = emplaceComponent<InputBox<int>>(m_meshLayout, "SubdivisionInputBox", inputBoxConfig);
+    m_subdivisionInputBox = emplaceComponent<InputBox<int>>(m_meshLayout, "SubdivisionInputBox", m_subdivision, inputBoxConfig);
     emplaceComponent<SameLine>(m_meshLayout);
-    m_subdivisionSlider = emplaceComponent<Slider<int>>(m_meshLayout, "SubdivisionSlider", intSliderConfig);
+    m_subdivisionSlider = emplaceComponent<Slider<int>>(m_meshLayout, "SubdivisionSlider", m_subdivision, intSliderConfig);
     emplaceComponent<Separator>(m_meshLayout, 0.55f);
     emplaceComponent<Label>(m_meshLayout, "Size", headlinersConfig);
-    m_sizeInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "SizeInputBox", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_meshLayout, "SizeInputBox", m_size, inputBoxConfig);
     emplaceComponent<SameLine>(m_meshLayout);
-    m_sizeSlider = emplaceComponent<Slider<float>>(m_meshLayout, "SizeSlider", floatSliderConfig);
+    emplaceComponent<Slider<float>>(m_meshLayout, "SizeSlider", m_size, floatSliderConfig);
     emplaceComponent<Separator>(m_meshLayout, 0.55f);
     emplaceComponent<Label>(m_meshLayout, "Position", headlinersConfig);
     emplaceComponent<Dummy>(m_meshLayout, 0.003f, 0.0f);
@@ -191,17 +197,18 @@ void AdditionLayer::initMeshComponents()
     emplaceComponent<Dummy>(m_meshLayout, 0.13f, 0.0f);
     emplaceComponent<SameLine>(m_meshLayout);
     emplaceComponent<Label>(m_meshLayout, "Z:", defaultTextConfig);
-    m_posXInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosXInputBox", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_meshLayout, "PosXInputBox", std::make_shared<ReferenceBinding<float>>(m_position.x), inputBoxConfig);
     emplaceComponent<SameLine>(m_meshLayout);
-    m_posYInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosYInputBox", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_meshLayout, "PosYInputBox", std::make_shared<ReferenceBinding<float>>(m_position.z), inputBoxConfig);
     emplaceComponent<SameLine>(m_meshLayout);
-    m_posZInputBox = emplaceComponent<InputBox<float>>(m_meshLayout, "PosZInputBox", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_meshLayout, "PosZInputBox", std::make_shared<ReferenceBinding<float>>(m_position.y), inputBoxConfig);
     emplaceComponent<Separator>(m_meshLayout, 0.55f);
 }
 
 void AdditionLayer::initSurfaceComponents()
 {
     using namespace ui::components;
+    using namespace ui::bindings;
 
     static constexpr int mainItemsCount = 23;
 
@@ -240,18 +247,18 @@ void AdditionLayer::initSurfaceComponents()
     emplaceComponent<SameLine>(m_surfaceLayout);
     emplaceComponent<Dummy>(m_surfaceLayout, 0.02f, 0.0f);
     emplaceComponent<SameLine>(m_surfaceLayout);
-    m_lowerLeftLon = emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lon", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lon", std::make_shared<ReferenceBinding<float>>(m_surfaceParams.m_lowerLeftLon), inputBoxConfig);
     emplaceComponent<SameLine>(m_surfaceLayout);
-    m_lowerLeftLat = emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lat", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_surfaceLayout, "LL_Lat", std::make_shared<ReferenceBinding<float>>(m_surfaceParams.m_lowerLeftLat), inputBoxConfig);
     emplaceComponent<Dummy>(m_surfaceLayout, 0.02f, 0.0f);
     emplaceComponent<SameLine>(m_surfaceLayout);
     emplaceComponent<Label>(m_surfaceLayout, "UR:", defaultTextConfig);
     emplaceComponent<SameLine>(m_surfaceLayout);
     emplaceComponent<Dummy>(m_surfaceLayout, 0.01f, 0.0f);
     emplaceComponent<SameLine>(m_surfaceLayout);
-    m_upperRightLon = emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lon", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lon", std::make_shared<ReferenceBinding<float>>(m_surfaceParams.m_upperRightLon), inputBoxConfig);
     emplaceComponent<SameLine>(m_surfaceLayout);
-    m_upperRightLat = emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lat", inputBoxConfig);
+    emplaceComponent<InputBox<float>>(m_surfaceLayout, "UR_Lat", std::make_shared<ReferenceBinding<float>>(m_surfaceParams.m_upperRightLat), inputBoxConfig);
     emplaceComponent<Separator>(m_surfaceLayout, 0.55f);
     emplaceComponent<Label>(m_surfaceLayout, "API Configuration", headlinersConfig);
     emplaceComponent<Dummy>(m_surfaceLayout, 0.19f, 0.0f);
@@ -259,7 +266,7 @@ void AdditionLayer::initSurfaceComponents()
     emplaceComponent<Label>(m_surfaceLayout, "API Key:", defaultTextConfig);
     emplaceComponent<Dummy>(m_surfaceLayout, 0.08f, 0.0f);
     emplaceComponent<SameLine>(m_surfaceLayout);    
-    m_apiKeyBuffer = emplaceComponent<InputBox<char>>(m_surfaceLayout, "APIKeyInput", apiKeyConfig);
+    emplaceComponent<InputBox<std::string>>(m_surfaceLayout, "APIKeyInput", std::make_shared<ReferenceBinding<std::string>>(m_surfaceParams.m_apiKey), apiKeyConfig);
     emplaceComponent<Separator>(m_surfaceLayout, 0.55f);
 }
 
@@ -279,17 +286,13 @@ void AdditionLayer::setCreateButton(const std::string& commandId)
         if (command != nullptr)
         {
             TParams params;
-            params.m_subdivisionLevel = *m_subdivisionInputBox->inputValue();
-            params.m_size             = *m_sizeInputBox->inputValue();
-            params.m_position         = glm::vec3{
-                *m_posXInputBox->inputValue(),
-                *m_posZInputBox->inputValue(),
-                *m_posYInputBox->inputValue()
-            };
-            
+            params.m_subdivisionLevel = m_subdivision->get();
+            params.m_size             = m_size->get();
+            params.m_position         = m_position;
+
             command->execute(params);
 
-            VisibilityHandler::hide(LAYER_NAME);
+            VisibilityHandler::instance().hide(LAYER_NAME);
         }
     });
 }
@@ -302,16 +305,9 @@ void AdditionLayer::setCreateButtonAsAddSurface()
         auto* command = CommandRegistry::instance().getCommand("ADD_SURFACE_COMMAND");
         if (command != nullptr)
         {
-            OpenTopoParams params;
-            params.m_lowerLeftLon  = *m_lowerLeftLon->inputValue();
-            params.m_lowerLeftLat  = *m_lowerLeftLat->inputValue();
-            params.m_upperRightLon = *m_upperRightLon->inputValue();
-            params.m_upperRightLat = *m_upperRightLat->inputValue();
-            params.m_apiKey        = *m_apiKeyBuffer->inputValue();
-            
-            command->execute(params);
+            command->execute(m_surfaceParams);
 
-            VisibilityHandler::hide(LAYER_NAME);
+            VisibilityHandler::instance().hide(LAYER_NAME);
         }
     });
 }
