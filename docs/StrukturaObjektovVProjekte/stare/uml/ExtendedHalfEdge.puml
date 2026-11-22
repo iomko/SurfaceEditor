@@ -1,0 +1,54 @@
+
+HalfEdgeMesh <|-- ExtendedHalfEdgeMesh
+HalfEdge <|-- ExtendedHalfEdge
+Vertex <|-- ExtendedVertex
+Edge <|-- ExtendedEdge
+Face <|-- ExtendedFace
+
+class ExtendedHalfEdgeMesh {
+    +bool isGraphBuilt
+    +map~Material, vector~FaceTriangle~~ faceTriangles
+}
+
+class ExtendedHalfEdge {
+}
+
+class ExtendedVertex {
+    +vector~GraphEdge~ graphEdges
+    +vector~Edge~ adjacentEdges
+}
+
+class ExtendedEdge {
+    +int edgeLineIndex
+}
+
+class ExtendedFace {
+    +Material* material
+    +vector~GraphEdge~ graphEdges
+    +vector~int~ faceTriangleIndices
+    +Transformations transformations
+}
+
+class GraphEdge {
+    +ExtendedVertex* vertex
+    +ExtendedFace* face
+    +int vertexIndex
+    +int faceIndex
+}
+
+class FaceTriangle {
+    +int vaoIndex
+    +int faceIndex
+    +ExtendedFace* face
+}
+
+ExtendedVertex "1" o-- "*" GraphEdge : graphEdges
+ExtendedVertex "1" o-- "*" ExtendedEdge : adjacentEdges
+
+ExtendedFace "1" o-- "*" GraphEdge : graphEdges
+ExtendedFace "1" o-- "*" FaceTriangle : faceTriangleIndices(cez indexi)
+
+GraphEdge --> ExtendedVertex : vertex
+GraphEdge --> ExtendedFace : face
+
+FaceTriangle --> ExtendedFace : face

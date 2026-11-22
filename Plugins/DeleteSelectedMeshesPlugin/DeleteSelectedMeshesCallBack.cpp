@@ -9,6 +9,11 @@ void DeleteSelectedMeshesCallBack::execute()
 {
     const SelectionHolder& selectionsHolder = ViewPortsHolderContext::s_selectionController->getHolder();
     const std::vector<Mesh*>& selectedMeshes = selectionsHolder.meshes;
+    auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DELETE_MESH_COMMAND");
+    if (deleteMeshCommand == nullptr)
+    {
+        throw std::logic_error("Delete mesh command is not registered.");
+    }
 
     while(!selectedMeshes.empty())
     {
@@ -16,10 +21,9 @@ void DeleteSelectedMeshesCallBack::execute()
 
         MeshParams meshParams;
         meshParams.m_mesh = mesh;
-
-        auto* deleteMeshCommand = CommandRegistry::instance().getCommand("DELETE_MESH_COMMAND");
-        if(deleteMeshCommand) deleteMeshCommand->execute(meshParams); 
-
         ViewPortsHolderContext::s_selectionController->unregisterMesh(mesh);
+
+        deleteMeshCommand->execute(meshParams);
+
     }
 }

@@ -71,4 +71,5 @@ void FetchedSurfaceVertexGenCallable::invoke(const OpenTopoParams &input, MeshPa
     // Shader* meshShader = ViewPortsHolderContext::s_viewPortsController->m_viewPortLayers.at(0)->m_shaderSettings.m_meshShader;
     Mesh *mesh = new Mesh(surfaceIndices, surfaceVertices);
     output.m_mesh = mesh;
+    output.m_name = "Fetched Surface";
 }

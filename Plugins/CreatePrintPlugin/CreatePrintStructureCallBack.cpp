@@ -17,14 +17,11 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
     // Get or create Printable Mesh From SceneResources
     float perimeterHeight = iParams.height;
     Mesh *inputMesh = iParams.mesh;
-    SceneResources &sceneResources = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res;
-
-    auto [printableMeshIt, _] = sceneResources.printableMeshMap.try_emplace(inputMesh, new PrintableMesh());
-    PrintableMesh *outputPrintableMesh = printableMeshIt->second;
-
     ViewPortsController *controller = ViewPortsHolderContext::s_viewPortsController.get();
     Scene *scene = controller->m_scene;
-    SceneResources::CoordsOctreeMap &octreeCoordsMap = scene->m_res.coordsOctreeMap;
+
+    auto [printableMeshIt, _] = scene->m_res.printableMeshMap.try_emplace(inputMesh, new PrintableMesh());
+    PrintableMesh *outputPrintableMesh = printableMeshIt->second;
 
     // Go through all plane slices of the mesh
     float minPlaneY = inputMesh->m_meshBounds.getMinBoundsPos().y;
@@ -40,46 +37,31 @@ void CreatePrintStructureCallBack::execute(const PrintMeshSettingsParams &iParam
         // vytvor plane
         std::map<std::pair<glm::vec3, glm::vec3>, std::pair<ExtrudeEdge, ExtendedFace *>, glm::Vec3PairApproxComparator> printableEdgesMap;
 
-        // Go through all octrees in the scene
-        for (auto &octreeCoordsPair : octreeCoordsMap)
+        const glm::vec3 meshMin = inputMesh->m_meshBounds.getMinBoundsPos();
+        const glm::vec3 meshMax = inputMesh->m_meshBounds.getMaxBoundsPos();
+        const AABBBoundingRegion sliceBounds(
+            glm::vec3(meshMin.x, plane.point.y, meshMin.z),
+            glm::vec3(meshMax.x, plane.point.y, meshMax.z));
+
+        std::vector<SceneResources::MeshFacePair> candidateFaces;
+        scene->query(sliceBounds, candidateFaces);
+
+        for (const SceneResources::MeshFacePair &data : candidateFaces)
         {
-            auto &[coords, octree] = octreeCoordsPair;
-
-            auto octreeBoundsIntersectAlg = [](const AABBBoundingRegion &aabb, const Plane &plane)
+            auto &[mesh, face] = data;
+            if (inputMesh == mesh)
             {
-                return aabb.insersectsPlane(plane);
-            };
+                // Try plane-face intersection
+                utils::geometry::PlaneFaceIntersection planeIntersection = utils::geometry::planeIntersectsFace(plane, face);
 
-            // Get all leaf nodes that intersected with the plane
-            std::vector<OctreeNode<SceneResources::MeshFacePair> *> hitOctreeNodes;
-            octree.findMaxDepthNodes<Plane>(plane, octreeBoundsIntersectAlg, hitOctreeNodes);
-
-            // Go through each leaf node
-            for (OctreeNode<SceneResources::MeshFacePair> *octreeNode : hitOctreeNodes)
-            {
-                std::vector<SceneResources::MeshFacePair> &nodeData = octreeNode->nodeData;
-
-                // Go through each face
-                for (SceneResources::MeshFacePair &data : nodeData)
+                // If line intersected at two points of a triangle, then add that to the printable edges
+                if (planeIntersection.type == utils::geometry::PlaneFaceIntersection::Type::Edge)
                 {
-                    auto &[mesh, face] = data;
+                    glm::vec3 modifiedFirstPoint{planeIntersection.firstPoint.x, plane.point.y, planeIntersection.firstPoint.z};
+                    glm::vec3 modifiedSecondPoint{planeIntersection.secondPoint.x, plane.point.y, planeIntersection.secondPoint.z};
 
-                    if (inputMesh == mesh)
-                    {
-                        // Try plane-face intersection
-                        utils::geometry::PlaneFaceIntersection planeIntersection = utils::geometry::planeIntersectsFace(plane, face);
-
-                        // If line intersected at two points of a triangle, then add that to the printable edges
-                        if (planeIntersection.type == utils::geometry::PlaneFaceIntersection::Type::Edge)
-                        {
-
-                            glm::vec3 modifiedFirstPoint{planeIntersection.firstPoint.x, plane.point.y, planeIntersection.firstPoint.z};
-                            glm::vec3 modifiedSecondPoint{planeIntersection.secondPoint.x, plane.point.y, planeIntersection.secondPoint.z};
-
-                            printableEdgesMap.insert({{modifiedFirstPoint, modifiedSecondPoint},
-                                                      {ExtrudeEdge{modifiedFirstPoint, modifiedSecondPoint}, face}});
-                        }
-                    }
+                    printableEdgesMap.insert({{modifiedFirstPoint, modifiedSecondPoint},
+                                              {ExtrudeEdge{modifiedFirstPoint, modifiedSecondPoint}, face}});
                 }
             }
         }

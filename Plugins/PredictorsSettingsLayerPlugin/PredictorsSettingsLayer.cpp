@@ -164,9 +164,9 @@ std::vector<Mesh*> PredictorsSettingsLayer::collectSceneTrainingMeshes()
     }
     else
     {
-        SceneResources::MeshFaceOctreeCoordsMap meshFacesPairMap = ViewPortsHolderContext::s_viewPortsController->m_scene->m_res.meshFaceOctreeCoordsMap;
+        auto sceneMeshes = ViewPortsHolderContext::s_viewPortsController->m_scene->getAllMeshes();
 
-        for (auto& [mesh, _] : meshFacesPairMap) {
+        for (auto& mesh : sceneMeshes) {
             meshes.emplace_back(mesh);
         }
     }

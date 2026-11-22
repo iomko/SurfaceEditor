@@ -6,7 +6,14 @@
 #include "../Renderer/BufferLayouts.h"
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include "../Core/Profiler.h"
 
+#include "ModelObject.h"
+#include "SceneSpatialIndex.h"
+
+#include <memory>
+
+class ModelObject;
 class Mesh
 {
 public:
@@ -26,10 +33,14 @@ public:
 	glm::mat4 m_transform = glm::mat4(1.0f);
     glm::mat4* m_realTimeTransform = nullptr;
 
+	ModelObject* m_parentObject = nullptr;
+    std::unique_ptr<FaceSpatialIndex> m_faceIndex;
+
 public:
 
 	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices, const std::vector<int>& polygonNormalIndices, const std::vector<glm::vec3>& polygonsNormals = std::vector<glm::vec3>())
 	{
+		SE_PROFILE_SCOPE;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
        
@@ -38,6 +49,7 @@ public:
 
 	Mesh(std::vector<std::vector<int>>& polygonsIndices, const std::vector<glm::vec3>& polygonsVertices)
 	{
+		SE_PROFILE_SCOPE;
 		m_halfEdgeStructure = new ExtendedHalfEdgeMesh();
 		m_halfEdgeStructure->build(polygonsIndices, polygonsVertices);
 
@@ -46,12 +58,14 @@ public:
 
 	~Mesh()
 	{
+		SE_PROFILE_SCOPE;
 		delete m_halfEdgeStructure;
 	}
 
     void calculateMeshBounds() {
+		SE_PROFILE_SCOPE;
         glm::vec3 minBounds(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-        glm::vec3 maxBounds(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+        glm::vec3 maxBounds(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
         
         for(ExtendedEdge* edge : m_halfEdgeStructure->m_edges) {
             minBounds = glm::min(minBounds, edge->m_firstVertex->m_position);

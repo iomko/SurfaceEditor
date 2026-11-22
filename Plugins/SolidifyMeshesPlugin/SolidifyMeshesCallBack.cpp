@@ -19,8 +19,6 @@ void SolidifyMeshesCallBack::execute()
     // Get Selected Meshes
     SelectionController *selectionController = ViewPortsHolderContext::s_selectionController.get();
     Scene *scene = ViewPortsHolderContext::s_viewPortsController->m_scene;
-    SceneResources &sceneRes = scene->m_res;
-    SceneResources::CoordsOctreeMap &coordsOctreeMap = sceneRes.coordsOctreeMap;
     const SelectionHolder &selectionHolder = selectionController->getHolder();
     const std::vector<Mesh *> &selectedMeshes = selectionHolder.meshes;
 

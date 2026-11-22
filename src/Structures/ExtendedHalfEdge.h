@@ -3,6 +3,8 @@
 #include "Utils/ContainerUtils.h"
 #include <algorithm>
 
+#include "../Core/Profiler.h"
+
 class ExtendedHalfEdge;
 class ExtendedEdge;
 class ExtendedVertex;
@@ -41,7 +43,7 @@ public:
     {
     }
     ~ExtendedFace();
-
+    
     // graph
     std::vector<GraphEdge *> m_graphEdges;
 
@@ -97,29 +99,53 @@ public:
     ExtendedHalfEdgeMesh() : ExtendedHalfEdgeMesh::HalfEdgeMesh(), m_graphBuilt(false)
     {
     }
-    ~ExtendedHalfEdgeMesh()
+    ~ExtendedHalfEdgeMesh() override
     {
+		SE_PROFILE_SCOPE;
         // 1. Clear the graph first to delete all GraphEdge objects
         clearGraph();
-
-        // 2. Delete all standard HalfEdgeDS objects
-        // (Order doesn't strictly matter here, but this is safe)
-        for (auto *obj : m_faces)
-            delete obj;
-        for (auto *obj : m_edges)
-            delete obj;
-        for (auto *obj : m_vertices)
-            delete obj;
-        for (auto *obj : m_halfEdges)
-            delete obj;
-
-        m_faces.clear();
-        m_edges.clear();
-        m_vertices.clear();
-        m_halfEdges.clear();
     }
+
+    bool tryDeleteIsolatedVertex(ExtendedVertex* vertex)
+    {
+        if (!vertex)
+            return false;
+
+        // The vertex must no longer participate in any face graph.
+        if (!vertex->m_graphEdges.empty())
+            return false;
+
+        // No incident edges should remain.
+        if (!vertex->m_neighbourEdges.empty())
+            return false;
+
+        // Find the vertex in the owning vector using its stored index.
+        const size_t index = vertex->m_vertexIndexInVector;
+
+        if (index >= m_vertices.size() || m_vertices[index] != vertex)
+            return false;
+
+        const size_t lastIndex = m_vertices.size() - 1;
+
+        if (index != lastIndex)
+        {
+            m_vertices[lastIndex]->m_vertexIndexInVector =
+                static_cast<int>(index);
+
+            utils::containers::swapLastAndPop(m_vertices, index);
+        }
+        else
+        {
+            m_vertices.pop_back();
+        }
+
+        delete vertex;
+        return true;
+    }
+
     void clearGraph()
     {
+		SE_PROFILE_SCOPE;
         // 1. Clear all GraphEdges owned by Faces
         for (ExtendedFace *face : m_faces)
         {
@@ -136,12 +162,14 @@ public:
         for (ExtendedVertex *vertex : m_vertices)
         {
             vertex->m_graphEdges.clear();
+            vertex->m_neighbourEdges.clear();
         }
 
         m_graphBuilt = false;
     }
     void build(const std::vector<std::vector<int>> &polygons, const std::vector<glm::vec3> &vertices)
     {
+		SE_PROFILE_SCOPE;
         ExtendedHalfEdgeMesh::HalfEdgeMesh::build(polygons, vertices);
         // Defer graph building for memory efficiency during import
         m_graphBuilt = false;
@@ -149,6 +177,7 @@ public:
 
     void ensureGraphBuilt()
     {
+		SE_PROFILE_SCOPE;
         if (!m_graphBuilt)
         {
             buildGraph();
@@ -164,6 +193,7 @@ public:
 public:
     ExtendedFace *addFloatingFace(const std::vector<glm::vec3> &vertices)
     {
+		SE_PROFILE_SCOPE;
 
         bool firstHalfEdge = true;
         ExtendedFace *face = this->createObject<ExtendedFace>(this->m_faces);
@@ -243,6 +273,7 @@ public:
 
     void connectEdges(ExtendedEdge *firstEdge, ExtendedEdge *secondEdge)
     {
+		SE_PROFILE_SCOPE;
 
         ExtendedHalfEdge *firstHalfEdge = firstEdge->m_halfEdge;
         ExtendedHalfEdge *secondHalfEdge = secondEdge->m_halfEdge;
@@ -267,6 +298,9 @@ public:
 
                 ExtendedVertex *vertex = point.first;
                 ExtendedVertex *oppositeVertex = point.second;
+
+                if (vertex == oppositeVertex)
+                    continue;
 
                 std::vector<ExtendedEdge *> &edges = vertex->m_neighbourEdges;
 
@@ -307,9 +341,27 @@ public:
                     vertex->m_neighbourEdges.begin(),
                     vertex->m_neighbourEdges.end());
 
+                for (GraphEdge *graphEdge : vertex->m_graphEdges)
+                {
+                    graphEdge->vertex = oppositeVertex;
+                    graphEdge->graphEdgeIndexInVertex = static_cast<int>(oppositeVertex->m_graphEdges.size());
+                    oppositeVertex->m_graphEdges.emplace_back(graphEdge);
+                }
+                vertex->m_graphEdges.clear();
+
                 ExtendedVertex *&lastVertex = meshVertices.back();
                 lastVertex->m_vertexIndexInVector = vertex->m_vertexIndexInVector;
                 utils::containers::swapLastAndPop(meshVertices, vertex->m_vertexIndexInVector);
+            }
+
+            // The edge being removed can remain in an endpoint's adjacency list
+            // when that endpoint was already shared and its merge was skipped.
+            for (ExtendedVertex *vertex : mesh.m_vertices)
+            {
+                auto &neighbourEdges = vertex->m_neighbourEdges;
+                neighbourEdges.erase(
+                    std::remove(neighbourEdges.begin(), neighbourEdges.end(), firstEdge),
+                    neighbourEdges.end());
             }
 
             // halfEdge
@@ -328,6 +380,7 @@ public:
 
    std::tuple<ExtendedEdge*, ExtendedEdge*, ExtendedEdge*, ExtendedEdge*> splitEdge(ExtendedEdge* edge) {
 
+		SE_PROFILE_SCOPE;
         std::tuple<ExtendedEdge*, ExtendedEdge*, ExtendedEdge*, ExtendedEdge*> resTuple{nullptr, nullptr, nullptr, nullptr};
         //sucastou prveho facu
         ExtendedEdge* currEdge = edge;
@@ -692,6 +745,7 @@ public:
 private:
     void buildGraphForFace(ExtendedFace *face)
     {
+		SE_PROFILE_SCOPE;
         if (!face || !face->m_halfEdge)
             return;
 
@@ -731,6 +785,7 @@ private:
 
     void buildGraph()
     {
+		SE_PROFILE_SCOPE;
         //---GO_THROUGH_ALL_EDGES---
         for (ExtendedEdge *edge : m_edges)
         {
@@ -775,6 +830,7 @@ private:
 };
 inline ExtendedFace::~ExtendedFace()
 {
+	SE_PROFILE_SCOPE;
     for (GraphEdge *ge : m_graphEdges)
     {
         if (ge && ge->vertex)
@@ -789,6 +845,7 @@ inline ExtendedFace::~ExtendedFace()
 
 inline ExtendedVertex::~ExtendedVertex()
 {
+	SE_PROFILE_SCOPE;
     /*for (GraphEdge *ge : m_graphEdges)
     {
         if (ge && ge->face)

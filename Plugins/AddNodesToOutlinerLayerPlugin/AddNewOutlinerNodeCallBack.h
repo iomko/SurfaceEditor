@@ -17,6 +17,15 @@ public:
         if(layerState == nullptr || data == nullptr)
             return;
 
+        for (OutlinerNodeConcept* existing : layerState->m_nodes)
+        {
+            auto* typedNode = dynamic_cast<OutlinerNode<T>*>(existing);
+            if (typedNode != nullptr && typedNode->m_data == data)
+            {
+                return;
+            }
+        }
+
         auto* node = new OutlinerNode<T>(id, name, data);
         layerState->m_nodes.emplace_back(node);
     }
