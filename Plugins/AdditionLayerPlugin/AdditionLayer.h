@@ -1,8 +1,12 @@
 #pragma once
 #include <string>
 #include <variant>
+#include <memory>
+#include <glm/glm.hpp>
 #include <Components/Window.h>
+#include <Bindings/ClampedBinding.h>
 #include "../../include/enums/AdditionType.h"
+#include "../src/Params/OperationParams.h"
 #include "../src/Patterns/Observer.h"
 #include "../src/Core/Layer.h"
 #include "../src/UI/LayerRegistry.h"
@@ -34,6 +38,8 @@ protected:
 
     void initComponents() override;
 
+    std::unique_ptr<ui::placements::Placement> createPlacement() override;
+
 private:
     void initDialogButtons();
 
@@ -56,20 +62,16 @@ private:
     ui::components::Layout* m_dialogLayout;
 
     // Mesh components
-    ui::components::InputBox<int>*   m_subdivisionInputBox;
-    ui::components::InputBox<float>* m_sizeInputBox;
-    ui::components::InputBox<float>* m_posXInputBox;
-    ui::components::InputBox<float>* m_posYInputBox;
-    ui::components::InputBox<float>* m_posZInputBox;
-    ui::components::Slider<int>*     m_subdivisionSlider;
-    ui::components::Slider<float>*     m_sizeSlider;
-    ui::components::Button*          m_createButton;
-    ui::components::CheckBox*        m_automaticCheckBox;
-    
-    // Surface components
-    ui::components::InputBox<float>* m_lowerLeftLon;
-	ui::components::InputBox<float>* m_lowerLeftLat;
-	ui::components::InputBox<float>* m_upperRightLon;
-	ui::components::InputBox<float>* m_upperRightLat;
-	ui::components::InputBox<char>*  m_apiKeyBuffer;
+    ui::components::InputBox<int>* m_subdivisionInputBox;
+    ui::components::Slider<int>*   m_subdivisionSlider;
+    ui::components::Button*        m_createButton;
+    ui::components::CheckBox*      m_automaticCheckBox;
+
+    // Mesh values
+    std::shared_ptr<ui::bindings::ClampedBinding<int>>   m_subdivision;
+    std::shared_ptr<ui::bindings::ClampedBinding<float>> m_size;
+    glm::vec3                                            m_position;
+
+    // Surface values
+    OpenTopoParams m_surfaceParams;
 };

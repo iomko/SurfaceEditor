@@ -20,8 +20,8 @@ protected:
 
     void initComponents() override;
 
+    std::unique_ptr<ui::placements::Placement> createPlacement() override;
+
 private:
     void invokeAdditionLayer(AdditionType additionType);
-
-    void updatePos(ImVec2& actualPosition);
 };

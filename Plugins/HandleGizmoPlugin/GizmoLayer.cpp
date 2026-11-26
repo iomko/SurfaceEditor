@@ -23,7 +23,7 @@ void GizmoLayer::initConnections()
 
 void GizmoLayer::onImGuiRender()
 {
-    if (!VisibilityHandler::isVisible("GIZMO_LAYER"))
+    if (!VisibilityHandler::instance().isVisible("GIZMO_LAYER"))
     {
         return;
     }

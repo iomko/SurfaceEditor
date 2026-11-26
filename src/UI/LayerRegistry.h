@@ -42,7 +42,7 @@ public:
     template <typename LayerT>
     void registerLayer(std::string id)
     {
-        VisibilityHandler::init(id);
+        VisibilityHandler::instance().init(id);
 
         m_creators[id] = [](const std::any &) -> std::unique_ptr<Layer>
         {
@@ -65,7 +65,7 @@ public:
     template <typename LayerT, typename... CtorArgs>
     void registerLayerWithArgs(std::string id)
     {
-        VisibilityHandler::init(id);
+        VisibilityHandler::instance().init(id);
         
         m_creators[id] = [](const std::any &a) -> std::unique_ptr<Layer>
         {
